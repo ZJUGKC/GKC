@@ -1,0 +1,4 @@
+GKC
+===
+
+General Kind C++

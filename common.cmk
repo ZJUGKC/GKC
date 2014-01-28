@@ -1,0 +1,185 @@
+#string of compile flags
+
+#all warnings
+SET(STRING_CXX_FLAGS "-Wall")
+
+#windows
+IF(WIN32)
+	#Unicode and disable RTTI
+	SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} -D_UNICODE /GR-")
+ELSE(WIN32)
+	#Linux, hide all functions
+	SET(STRING_CXX_FLAGS
+		"${STRING_CXX_FLAGS} -fvisibility=hidden")
+ENDIF(WIN32)
+
+ADD_DEFINITIONS(${STRING_CXX_FLAGS})
+
+#string of link flags
+
+SET(STRING_LINK_FLAGS_TARGET "")
+SET(STRING_LINK_FLAGS_TARGET_SAVED "")
+
+#macro of set sub-system
+#strSubSystem: Foreground or Background
+#In Windows, Foreground is CONSOLE, Background is WINDOWS
+MACRO(SET_TARGET_SUBSYSTEM strSubSystem)
+	#Windows, set sub-system
+	IF(WIN32)
+		STRING(COMPARE EQUAL ${strSubSystem} "Foreground" IsFore)
+		IF(IsFore)
+			SET(strSub CONSOLE)
+		ELSE(IsFore)
+			SET(strSub WINDOWS)
+		ENDIF(IsFore)
+		SET(STRING_LINK_FLAGS_TARGET
+			"${STRING_LINK_FLAGS_TARGET_SAVED} /SUBSYSTEM:${strSub}")
+	ENDIF(WIN32)
+	#Linux, set x64 flags
+	IF(CMAKE_COMPILER_IS_GNUCXX)
+		IF(USE_64BITS)
+			SET(strSub "-m64")
+		ELSE(USE_64BITS)
+			SET(strSub "-m32")
+		ENDIF(USE_64BITS)
+		SET(STRING_LINK_FLAGS_TARGET
+			"${STRING_LINK_FLAGS_TARGET_SAVED} ${strSub}")
+	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+ENDMACRO(SET_TARGET_SUBSYSTEM)
+
+#Macro of Precompiled Header
+
+#Precompiled Header in Windows
+MACRO(WIN32_SET_PCH IsShared pchHeader pchSource)
+	GET_FILENAME_COMPONENT(pchBaseName ${pchHeader} NAME_WE)
+	#get pch filename
+	SET(pchBinary
+		"${CMAKE_CURRENT_BINARY_DIR}/${pchBaseName}.pch")
+	#set compile flags for creating pch
+	SET(src_compile_flags "/Fp\"${pchBinary}\"")
+	#check the shared library
+	IF(IsShared)
+		SET(src_compile_flags
+			"/D \"SHARED_LIBRARY\" ${src_compile_flags}")
+	ENDIF(IsShared)
+	#set source files
+	SET_SOURCE_FILES_PROPERTIES(${pchSource} PROPERTIES
+		COMPILE_FLAGS
+			"/Yc\"${pchHeader}\" ${src_compile_flags}"
+		OBJECT_OUTPUTS "${pchBinary}")
+	SET(Sources ${USE_PCH_SOURCES})
+	MESSAGE("using pch: ${pchBinary} for ${Sources}")
+	#set compile flags for using pch
+	SET_SOURCE_FILES_PROPERTIES(${Sources} PROPERTIES
+		COMPILE_FLAGS
+			"/Yu\"${pchBinary}\" /FI\"${pchBinary}\" ${src_compile_flags}"
+		OBJECT_DEPENDS "${pchBinary}")
+ENDMACRO(WIN32_SET_PCH)
+
+#Precompiled Header in Linux
+MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
+	SET(_compile_FLAGS ${CMAKE_CXX_FLAGS})
+	SET(_input "${CMAKE_CURRENT_SOURCE_DIR}/include/${pchHeader}")
+	MESSAGE("creating pch: ${_input}")
+	GET_FILENAME_COMPONENT(_name ${_input} NAME)
+	GET_FILENAME_COMPONENT(_path ${_input} PATH)
+	#generate the pch filename
+	SET(_outdir "${CMAKE_CURRENT_BINARY_DIR}/${_name}.gch")
+	IF(CMAKE_BUILD_TYPE)
+		SET(_output "${_outdir}/${CMAKE_BUILD_TYPE}.c++")
+		LIST(APPEND _compile_FLAGS
+			${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}})
+	ELSE(CMAKE_BUILD_TYPE)
+		SET(_output "${_outdir}/default.c++")
+	ENDIF(CMAKE_BUILD_TYPE)
+	#create a directory for storing the pch file
+	ADD_CUSTOM_COMMAND(OUTPUT ${_outdir}
+		COMMAND mkdir ${_outdir})
+	GET_DIRECTORY_PROPERTY(_directory_flags INCLUDE_DIRECTORIES)
+	#pch directory must appear before all other including directories
+	SET(_CMAKE_CURRENT_BINARY_DIR_included_before_path FALSE)
+	FOREACH(item ${_directory_flags})
+		IF(${item} STREQUAL ${_path} AND NOT
+			_CMAKE_CURRENT_BINARY_DIR_included_before_path)
+			MESSAGE(FATAL_ERROR
+				"This is the CREATE_PCH macro. "
+				"CMAKE_CURRENT_BINARY_DIR has to mentioned at "
+				"INCLUDE_DIRECTORIES's argument list before "
+				"${_path}, where ${_name} is located")
+		ENDIF(${item} STREQUAL ${_path} AND NOT
+			_CMAKE_CURRENT_BINARY_DIR_included_before_path)
+		IF(${item} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+			SET(_CMAKE_CURRENT_BINARY_DIR_included_before_path TRUE)
+		ENDIF(${item} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+		LIST(APPEND _compile_FLAGS "-I\"${item}\"")
+	ENDFOREACH(item)
+	GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
+	LIST(APPEND _compile_FLAGS ${_directory_flags})
+	#check x64 platform
+	IF(USE_64BITS)
+		LIST(APPEND _compile_FLAGS "-m64")
+	ELSE(USE_64BITS)
+		LIST(APPEND _compile_FLAGS "-m32")
+	ENDIF(USE_64BITS)
+	#check shared library
+	IF(IsShared)
+		LIST(APPEND _compile_FLAGS "-DSHARED_LIBRARY")
+	ENDIF(IsShared)
+	SEPARATE_ARGUMENTS(_compile_FLAGS)
+	MESSAGE("_compiler_FLAGS: ${_compile_FLAGS}")
+	#copy header files to building directory
+	ADD_CUSTOM_COMMAND(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_name}
+		COMMAND ${CMAKE_COMMAND} -E copy ${_input}
+			${CMAKE_CURRENT_BINARY_DIR}/${_name})
+	#Generate PCH
+	ADD_CUSTOM_COMMAND(OUTPUT ${_output}
+		COMMAND ${CMAKE_CXX_COMPILER} ${_compile_FLAGS}
+			-x c++-header -o ${_output} ${_input}
+		DEPENDS ${_input} ${_outdir}
+			${CMAKE_CURRENT_BINARY_DIR}/${_name})
+	ADD_CUSTOM_TARGET(${targetName}_gch DEPENDS ${_output})
+	ADD_DEPENDENCIES(${targetName} ${targetName}_gch)
+	#Use PCH by -include
+	SET(Sources ${USE_PCH_SOURCES})
+	SET(src_compile_flags "-include ${_name} -Winvalid-pch")
+	#x64
+	IF(USE_64BITS)
+		SET(src_compile_flags "${src_compile_flags} -m64")
+	ELSE(USE_64BITS)
+		SET(src_compile_flags "${src_compile_flags} -m32")
+	ENDIF(USE_64BITS)
+	#shared library
+	IF(IsShared)
+		SET(src_compile_flags
+			"${src_compile_flags} -DSHARED_LIBRARY")
+	ENDIF(IsShared)
+	#set source files
+	FOREACH(source ${Sources})
+		SET_SOURCE_FILES_PROPERTIES(${source} PROPERTIES
+			COMPILE_FLAGS "${src_compile_flags}"
+			OBJECT_DEPENDS "${_output}")
+	ENDFOREACH(source)
+	#set pch source file
+	SET_SOURCE_FILES_PROPERTIES(${pchSource} PROPERTIES
+		COMPILE_FLAGS "${src_compile_flags}"
+		OBJECT_DEPENDS "${_output}")
+ENDMACRO(UNIX_SET_PCH)
+
+#Set Precompiled Header
+#targetName: target name
+#targetType: "shared" or "exe"
+#pchHeader, pchSource: header file and source file for pch
+#SourceList: a list for source files using pch
+MACRO(SET_PCH targetName targetType pchHeader pchSource SourceList)
+	SET(USE_PCH_SOURCES "${ARGN}")
+	LIST(APPEND USE_PCH_SOURCES ${SourceList})
+	STRING(COMPARE EQUAL ${targetType} "shared" IsShared)
+	IF(WIN32)
+		WIN32_SET_PCH(${IsShared} ${pchHeader} ${pchSource})
+	ENDIF(WIN32)
+	IF(CMAKE_COMPILER_IS_GNUCXX)
+		UNIX_SET_PCH(${targetName} ${IsShared}
+			${pchHeader} ${pchSource})
+	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+ENDMACRO(SET_PCH)

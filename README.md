@@ -4,3 +4,12 @@ GKC
 General Kind C++
 
 =======================================
+compiler:
+---------------------------------------
+### Windows
+
+Visual Studio Express 2013
+
+### Linux
+
+g++-4.8

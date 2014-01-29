@@ -118,8 +118,10 @@ MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
 	#check x64 platform
 	IF(USE_64BITS)
 		LIST(APPEND _compile_FLAGS "-m64")
+		LIST(APPEND _compile_FLAGS "-DCM_X64")
 	ELSE(USE_64BITS)
 		LIST(APPEND _compile_FLAGS "-m32")
+		LIST(APPEND _compile_FLAGS "-DCM_X86")
 	ENDIF(USE_64BITS)
 	#check shared library
 	IF(IsShared)
@@ -145,9 +147,9 @@ MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
 	SET(src_compile_flags "-include ${_name} -Winvalid-pch")
 	#x64
 	IF(USE_64BITS)
-		SET(src_compile_flags "${src_compile_flags} -m64")
+		SET(src_compile_flags "${src_compile_flags} -m64 -DCM_X64")
 	ELSE(USE_64BITS)
-		SET(src_compile_flags "${src_compile_flags} -m32")
+		SET(src_compile_flags "${src_compile_flags} -m32 -DCM_X86")
 	ENDIF(USE_64BITS)
 	#shared library
 	IF(IsShared)

@@ -11,43 +11,14 @@
 */
 
 /*
-This file contains preprocessor directives used to help programming
-for cross-platform.
+This file contains basic classes.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __GKC_DEF_H__
-#define __GKC_DEF_H__
+#ifndef __GKC_BASE_H__
+#define __GKC_BASE_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-//macros
-
-//DEBUG
-#if ( defined(_DEBUG) || !defined(NDEBUG) )
-#define DEBUG
-#endif
-
-//Machine Type
-#if ( !defined(CM_X86) && !defined(CM_X64) )
-//windows
-#define OS_WINDOWS
-//WIN64
-#ifdef _WIN64
-#define WIN64
-#define CM_X64
-#else
-#define CM_X86
-#endif //WIN64
-#else
-//linux
-#define OS_LINUX
-#endif //Machine Type
-
-//basic types
-#include "system/base_types.h"
-
-//composite types
-#include "system/composite_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
@@ -58,5 +29,5 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__GKC_DEF_H__
+#endif //__GKC_BASE_H__
 ////////////////////////////////////////////////////////////////////////////////

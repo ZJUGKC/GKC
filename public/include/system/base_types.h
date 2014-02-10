@@ -1,4 +1,16 @@
-﻿////////////////////////////////////////////////////////////////////////////////
+﻿/*
+** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** All rights reserved.
+**
+** This program is free software; you can redistribute it and/or
+** modify it under the terms of the 2-Clause BSD License.
+**
+** Author contact information:
+**   yxxinyuan@zju.edu.cn
+**
+*/
+
+////////////////////////////////////////////////////////////////////////////////
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -19,11 +31,11 @@ typedef unsigned int    uint;
 
 #if defined(OS_WINDOWS)
 
-#include "Windows/base_type.h"
+#include "Windows/base_types.h"
 
 #elif defined(OS_LINUX)
 
-#include "Linux/base_type.h"
+#include "Linux/base_types.h"
 
 #else
 	#error error OS type!
@@ -46,6 +58,5 @@ typedef uint64   uintptr;
 #else
 	#error error machine type!
 #endif
-
 
 ////////////////////////////////////////////////////////////////////////////////

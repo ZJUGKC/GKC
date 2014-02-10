@@ -1,16 +1,26 @@
+#
+# Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the 2-Clause BSD License.
+#
+# Author contact information:
+#   yxxinyuan@zju.edu.cn
+#
+
 #string of compile flags
 
 #all warnings
 SET(STRING_CXX_FLAGS "-Wall")
 
-#windows
 IF(WIN32)
-	#Unicode and disable RTTI
+	#Windows, Unicode and disable RTTI
 	SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} -D_UNICODE /GR-")
 ELSE(WIN32)
-	#Linux, hide all functions
+	#Linux, hide all functions and disable RTTI
 	SET(STRING_CXX_FLAGS
-		"${STRING_CXX_FLAGS} -fvisibility=hidden")
+		"${STRING_CXX_FLAGS} -fvisibility=hidden -fno-rtti")
 ENDIF(WIN32)
 
 ADD_DEFINITIONS(${STRING_CXX_FLAGS})
@@ -43,7 +53,7 @@ MACRO(SET_TARGET_SUBSYSTEM strSubSystem)
 			SET(strSub "-m32")
 		ENDIF(USE_64BITS)
 		SET(STRING_LINK_FLAGS_TARGET
-			"${STRING_LINK_FLAGS_TARGET_SAVED} ${strSub}")
+			"${STRING_LINK_FLAGS_TARGET_SAVED} ${strSub} -lpthread")
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_TARGET_SUBSYSTEM)
 

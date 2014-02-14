@@ -48,4 +48,10 @@
 #define ENUM_ENTRY(name, value)    name = (value),
 #define END_ENUM()  }; private: int m_value; };
 
+//function parameter
+
+#define IN
+#define OUT
+#define INOUT
+
 ////////////////////////////////////////////////////////////////////////////////

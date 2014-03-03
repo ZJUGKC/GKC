@@ -10,30 +10,30 @@
 **
 */
 
+/*
+This file contains main function for UI program.
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
-// internal header
-////////////////////////////////////////////////////////////////////////////////
 
-//OS
+//wWinMain
 
-#if defined(OS_WINDOWS)
-	#include "Windows/os_headers.h"
-#elif defined(OS_LINUX)
-	#include "Linux/os_headers.h"
-#else
-	#error Error OS type!
-#endif
+int APIENTRY wWinMain(IN HINSTANCE hInstance,
+	IN HINSTANCE hPrevInstance,
+	IN LPWSTR    lpCmdLine,
+	IN int       nCmdShow)
+{
+	HRESULT hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	if( FAILED(hr) ) {
+		::MessageBoxW(NULL, L"Cannot initialize STA!", L"Error", MB_OK);
+		return -1;
+	}
 
-//CRT
+	int ret = ProgramEntryPoint::UIMain();
 
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
+	::CoUninitialize();
 
-#if defined(OS_WINDOWS)
-	#include <tchar.h>
-#endif
+	return ret;
+}
 
 ////////////////////////////////////////////////////////////////////////////////

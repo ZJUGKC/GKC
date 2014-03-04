@@ -45,7 +45,7 @@
 		operator int() const throw() { return m_value; } \
 		enum __Enum {
 #define ENUM_ENTRY(name)      name,
-#define ENUM_ENTRY(name, value)    name = (value),
+#define ENUM_VALUE_ENTRY(name, value)    name = (value),
 #define END_ENUM()  }; private: int m_value; };
 
 //function parameter

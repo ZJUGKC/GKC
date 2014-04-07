@@ -46,6 +46,71 @@ inline void Swap<int>(int& t1, int& t2)
 	t1 ^= t2 ^= t1 ^= t2;
 }
 
+// classes
+
+// RefPtr<T>
+
+template <class T>
+class RefPtr
+{
+public:
+	RefPtr() throw() : m_p(NULL)
+	{
+	}
+	explicit RefPtr(T& t) throw() : m_p(&t)
+	{
+	}
+	RefPtr(const RefPtr<T>& src) throw() : m_p(src.m_p)
+	{
+	}
+	~RefPtr() throw()
+	{
+	}
+
+	void Release() throw()
+	{
+		m_p = NULL;
+	}
+
+	RefPtr<T>& operator=(const RefPtr<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_p = src.m_p;
+		}
+		return *this;
+	}
+
+	bool operator==(const RefPtr<T>& src) const throw()
+	{
+		return m_p == src.m_p;
+	}
+	bool IsNull() const throw()
+	{
+		return m_p == NULL;
+	}
+
+	T& Deref() throw()
+	{
+		assert( !IsNull() );
+		return *m_p;
+	}
+
+private:
+	T* m_p;
+};
+
+// PtrHelper
+
+class PtrHelper
+{
+public:
+	template <class T>
+	static RefPtr<T> ToRefPtr(T& t) throw()
+	{
+		return RefPtr<T>(t);
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

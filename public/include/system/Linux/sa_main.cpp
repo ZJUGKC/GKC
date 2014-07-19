@@ -11,21 +11,21 @@
 */
 
 /*
-This file contains main function for Shared Assembly program.
+This file contains main function for Shared Assembly.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+// so init functions
 
-/*
-class ProgramEntryPoint
+__attribute__((constructor)) void my_init()
 {
-public:
-	static bool SAMain(bool bInitOrDump);  //true : init, false : dump
-};
-*/
+	ProgramEntryPoint::SAMain(true);
+}
 
-#include "system/sa_main.cpp"
+__attribute__((destructor)) void my_fini()
+{
+	ProgramEntryPoint::SAMain(false);
+}
 
 ////////////////////////////////////////////////////////////////////////////////

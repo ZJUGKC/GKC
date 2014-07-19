@@ -11,21 +11,12 @@
 */
 
 /*
-This file contains main function for Shared Assembly program.
+This file contains global variables.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-
-/*
-class ProgramEntryPoint
-{
-public:
-	static bool SAMain(bool bInitOrDump);  //true : init, false : dump
-};
-*/
-
-#include "system/sa_main.cpp"
+extern GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>  g_spbMgr;
+extern GKC::Mutex  g_spbMutex;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,21 +11,41 @@
 */
 
 /*
-This file contains main function for Shared Assembly program.
+This file contains main functions for SA.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "precomp.h"
+
+#include "globals.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
+// ProgramEntryPoint
+
 class ProgramEntryPoint
 {
 public:
-	static bool SAMain(bool bInitOrDump);  //true : init, false : dump
+	static bool SAMain(bool bInitOrDump)
+	{
+		if( bInitOrDump ) {
+			//init
+			GKC::CallResult cr;
+			//spb
+			cr = g_spbMutex.Init();
+			if( cr.IsFailed() )
+				return false;
+			GKC::RefPtr<GKC::IMemoryManager> mgr(GKC::MemoryHelper::GetCrtMemoryManager());
+			g_spbMgr.SetMemoryManager(mgr);
+		}
+		else {
+			//dump
+		}
+		return true;
+	}
 };
-*/
 
-#include "system/sa_main.cpp"
+#include "GkcSAMain.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

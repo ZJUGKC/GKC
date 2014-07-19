@@ -24,4 +24,19 @@
 //no vtable
 #define NOVTABLE
 
+//export functions for shared library
+#ifdef SHARED_LIBRARY
+	#ifdef __cplusplus
+		#define SA_FUNCTION  extern "C" __attribute__((visibility("default")))
+	#else
+		#define SA_FUNCTION  __attribute__((visibility("default")))
+	#endif
+#else
+	#ifdef __cplusplus
+		#define SA_FUNCTION  extern "C"
+	#else
+		#define SA_FUNCTION
+	#endif
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////

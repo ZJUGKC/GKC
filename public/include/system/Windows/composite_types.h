@@ -24,4 +24,19 @@
 //no vtable
 #define NOVTABLE  __declspec(novtable)
 
+//export functions for shared library
+#ifdef SHARED_LIBRARY
+	#ifdef __cplusplus
+		#define SA_FUNCTION  extern "C" __declspec(dllexport)
+	#else
+		#define SA_FUNCTION  __declspec(dllexport)
+	#endif
+#else
+	#ifdef __cplusplus
+		#define SA_FUNCTION  extern "C" __declspec(dllimport)
+	#else
+		#define SA_FUNCTION  __declspec(dllimport)
+	#endif
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////

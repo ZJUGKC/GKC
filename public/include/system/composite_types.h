@@ -31,7 +31,7 @@
 		explicit E(int value = 0) throw() : m_value(value) { } \
 		E(const E& src) throw() : m_value(src.m_value) { } \
 		E& operator=(const E& src) throw() { \
-			if(this!=&src) { m_value = src.value; } return *this; } \
+			if(this!=&src) { m_value = src.m_value; } return *this; } \
 		E& operator=(int value) throw() \
 			{ m_value = value; return *this; } \
 		bool operator==(const E& src) const throw() \
@@ -53,5 +53,24 @@
 #define IN
 #define OUT
 #define INOUT
+
+//right value
+template <typename T>
+inline T&& rv_forward(T& t) throw()
+{
+	return static_cast<T&&>(t);
+}
+
+#pragma push_macro("new")
+#undef new
+
+//constructor
+template <class T, class... Args>
+inline void call_constructor(T& t, Args&&... args)
+{
+	::new(&t) T(rv_forward<Args>(args)...);
+}
+
+#pragma pop_macro("new")
 
 ////////////////////////////////////////////////////////////////////////////////

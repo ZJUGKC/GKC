@@ -14,43 +14,36 @@
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
+//------------------------------------------------------------------------------
 //OS
 
 #if defined(OS_WINDOWS)
-	#include "Windows/os_headers.h"
+	#include "Windows/other_types.h"
 #elif defined(OS_LINUX)
-	#include "Linux/os_headers.h"
+	#include "Linux/other_types.h"
 #else
 	#error Error OS type!
 #endif
 
-//CRT
+//------------------------------------------------------------------------------
+//functions
 
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
+//memory
+inline uintptr crt_alloc(uintptr& uBytes) throw()
+{
+	return (uintptr)::malloc(uBytes);
+}
 
-#include <errno.h>
+inline uintptr crt_realloc(uintptr& p, uintptr& uBytes) throw()
+{
+	return (uintptr)::realloc((void*)p, uBytes);
+}
 
-#if defined(OS_WINDOWS)
-	#include <tchar.h>
-#endif
+inline void    crt_free(uintptr& p) throw()
+{
+	::free((void*)p);
+}
 
-#include <math.h>
-#include <limits.h>
-#if defined(OS_WINDOWS)
-	#include <float.h>
-#elif defined(OS_LINUX)
-	#define FLT_EPSILON   __FLT_EPSILON__
-	#define FLT_MIN       __FLT_MIN__
-	#define FLT_MAX       __FLT_MAX__
-	#define DBL_EPSILON   __DBL_EPSILON__
-	#define DBL_MIN       __DBL_MIN__
-	#define DBL_MAX       __DBL_MAX__
-#else
-	#error Error OS type!
-#endif
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////

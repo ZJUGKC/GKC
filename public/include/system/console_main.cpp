@@ -11,21 +11,17 @@
 */
 
 /*
-This file contains main function for Shared Assembly program.
+This file contains main function for console application.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-
-/*
-class ProgramEntryPoint
-{
-public:
-	static bool SAMain(bool bInitOrDump);  //true : init, false : dump
-};
-*/
-
-#include "system/sa_main.cpp"
+#if defined(OS_WINDOWS)
+	#include "Windows/console_main.cpp"
+#elif defined(OS_LINUX)
+	#include "Linux/console_main.cpp"
+#else
+	#error Error OS type!
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////

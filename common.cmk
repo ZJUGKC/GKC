@@ -20,7 +20,7 @@ IF(WIN32)
 ELSE(WIN32)
 	#Linux, hide all functions and disable RTTI
 	SET(STRING_CXX_FLAGS
-		"${STRING_CXX_FLAGS} -fvisibility=hidden -fno-rtti")
+		"${STRING_CXX_FLAGS} -fvisibility=hidden -fno-rtti -std=c++11")
 ENDIF(WIN32)
 
 ADD_DEFINITIONS(${STRING_CXX_FLAGS})
@@ -53,7 +53,7 @@ MACRO(SET_TARGET_SUBSYSTEM strSubSystem)
 			SET(strSub "-m32")
 		ENDIF(USE_64BITS)
 		SET(STRING_LINK_FLAGS_TARGET
-			"${STRING_LINK_FLAGS_TARGET_SAVED} ${strSub} -lpthread")
+			"${STRING_LINK_FLAGS_TARGET_SAVED} ${strSub} -lpthread -luuid")
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_TARGET_SUBSYSTEM)
 
@@ -195,3 +195,5 @@ MACRO(SET_PCH targetName targetType pchHeader pchSource SourceList)
 			${pchHeader} ${pchSource})
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_PCH)
+
+#end

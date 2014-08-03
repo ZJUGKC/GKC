@@ -11,21 +11,18 @@
 */
 
 /*
-This file contains main function for Shared Assembly program.
+This file contains global variables.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "precomp.h"
+
+#include "globals.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
-class ProgramEntryPoint
-{
-public:
-	static bool SAMain(bool bInitOrDump);  //true : init, false : dump
-};
-*/
-
-#include "system/sa_main.cpp"
+#include "GkcDef.cpp"
+#include "GkcBase.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

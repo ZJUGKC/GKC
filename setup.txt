@@ -1,0 +1,8 @@
+===========================================
+Linux:
+
+1. Install libuuid:
+sudo apt-get install uuid-dev
+
+===========================================
+Windows:

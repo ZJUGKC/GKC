@@ -11,21 +11,16 @@
 */
 
 /*
-This file contains main function for Shared Assembly program.
+This file contains main function for Console Application.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+//main
 
-/*
-class ProgramEntryPoint
+int main(int argc, char *argv[], char *envp[])
 {
-public:
-	static bool SAMain(bool bInitOrDump);  //true : init, false : dump
-};
-*/
 
-#include "system/sa_main.cpp"
+}
 
 ////////////////////////////////////////////////////////////////////////////////

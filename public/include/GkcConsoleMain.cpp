@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains main function for Shared Assembly program.
+This file contains main function for console program.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,10 +22,10 @@ This file contains main function for Shared Assembly program.
 class ProgramEntryPoint
 {
 public:
-	static bool SAMain(bool bInitOrDump);  //true : init, false : dump
+	static int ConsoleMain();
 };
 */
 
-#include "system/sa_main.cpp"
+#include "system/console_main.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

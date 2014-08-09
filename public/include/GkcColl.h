@@ -100,19 +100,19 @@ public:
 			m_refNode.DeRef().m_t = t;
 		}
 		//compare
-		bool operator==(const Iterator& src) const throw()
+		bool operator==(const Iterator& right) const throw()
 		{
-			return m_refList == src.m_refList && m_refNode == src.m_refNode;
+			return m_refList == right.m_refList && m_refNode == right.m_refNode;
 		}
-		bool operator!=(const Iterator& src) const throw()
+		bool operator!=(const Iterator& right) const throw()
 		{
-			return m_refList != src.m_refList || m_refNode != src.m_refNode;
+			return m_refList != right.m_refList || m_refNode != right.m_refNode;
 		}
 		//next
 		void MoveNext() throw()
 		{
 			assert( !m_refNode.IsNull() );
-			m_refNode = RefPtr<T>(m_refNode.Deref().m_pNext);
+			m_refNode = m_refNode.Deref().m_pNext;
 		}
 
 	private:

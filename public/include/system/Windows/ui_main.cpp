@@ -28,7 +28,7 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 		::MessageBoxW(NULL, L"Cannot initialize STA!", L"Error", MB_OK);
 		return -1;
 	}
-	// this resolves ATL window thunking problem when Microsoft Layer for Unicode (MSLU) is used
+	// this statement solves a problem from ATL thunk technique which is not used in this library.
 	::DefWindowProcW(NULL, 0, 0, 0);
 	{
 		INITCOMMONCONTROLSEX iccx = { sizeof(INITCOMMONCONTROLSEX), ICC_COOL_CLASSES | ICC_BAR_CLASSES };

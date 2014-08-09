@@ -78,6 +78,7 @@ public:
 		m_p = NULL;
 	}
 
+	//operators
 	RefPtr<T>& operator=(const RefPtr<T>& src) throw()
 	{
 		if( this != &src ) {
@@ -85,14 +86,20 @@ public:
 		}
 		return *this;
 	}
-
-	bool operator==(const RefPtr<T>& src) const throw()
+	RefPtr<T>& operator=(T* p) throw()
 	{
-		return m_p == src.m_p;
+		m_p = p;
+		return *this;
 	}
-	bool operator!=(const RefPtr<T>& src) const throw()
+
+	//logical
+	bool operator==(const RefPtr<T>& right) const throw()
 	{
-		return !(*this == src);
+		return m_p == right.m_p;
+	}
+	bool operator!=(const RefPtr<T>& right) const throw()
+	{
+		return !(*this == right);
 	}
 	bool IsNull() const throw()
 	{

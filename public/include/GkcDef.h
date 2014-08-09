@@ -321,6 +321,31 @@ public:
 	{
 		return t1 == t2;
 	}
+	template <class T>
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return t1 != t2;
+	}
+	template <class T>
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return t1 < t2;
+	}
+	template <class T>
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return IsLT<T>(t2, t1);
+	}
+	template <class T>
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return !IsGT<T>(t1, t2);
+	}
+	template <class T>
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return !IsLT<T>(t1, t2);
+	}
 };
 
 //special
@@ -335,6 +360,98 @@ inline bool LogicalOperators::IsEqual<double>(const double& t1, const double& t2
 {
 	return ::fabs(t1 - t2) < DBL_EPSILON;
 }
+
+template <>
+inline bool LogicalOperators::IsNE<float>(const float& t1, const float& t2) throw()
+{
+	return ::fabsf(t1 - t2) >= FLT_EPSILON;
+}
+
+template <>
+inline bool LogicalOperators::IsNE<double>(const double& t1, const double& t2) throw()
+{
+	return ::fabs(t1 - t2) >= DBL_EPSILON;
+}
+
+template <>
+inline bool LogicalOperators::IsLT<float>(const float& t1, const float& t2) throw()
+{
+	return t1 + FLT_EPSILON <= t2;
+}
+
+template <>
+inline bool LogicalOperators::IsLT<double>(const double& t1, const double& t2) throw()
+{
+	return t1 + DBL_EPSILON <= t2;
+}
+
+//------------------------------------------------------------------------------
+//iterator
+
+// ReverseIterator<T>
+
+template <typename T>
+class ReverseIterator
+{
+public:
+	ReverseIterator() throw()
+	{
+	}
+	explicit ReverseIterator(const T& iter) throw() : m_iter(iter)
+	{
+	}
+	ReverseIterator(const ReverseIterator<T>& src) throw() : m_iter(src.m_iter)
+	{
+	}
+	~ReverseIterator() throw()
+	{
+	}
+
+	//operators
+	ReverseIterator<T>& operator=(const ReverseIterator<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_iter = src.m_iter;
+		}
+		return *this;
+	}
+
+	//logical
+	bool operator==(const ReverseIterator<T>& right) const throw()
+	{
+		return m_iter == right.m_iter;
+	}
+	bool operator!=(const ReverseIterator<T>& right) const throw()
+	{
+		return m_iter != right.m_iter;
+	}
+
+	T& get_Value() throw()
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		return tmp.get_Value();
+	}
+	void set_Value(T& t)
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		tmp.set_Value(t);
+	}
+
+	//methods
+	void MoveNext() throw()
+	{
+		m_iter.MovePrev();
+	}
+	void MovePrev() throw()
+	{
+		m_iter.MoveNext();
+	}
+
+private:
+	T m_iter;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 }

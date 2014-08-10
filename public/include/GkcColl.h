@@ -85,19 +85,16 @@ public:
 		//properties
 		RefPtr<T> get_Ref() throw()
 		{
-			assert( !m_refNode.IsNull() );
-			return RefPtr<T>(m_refNode.DeRef().m_t);
+			return RefPtr<T>(m_refNode.Deref().m_t);
 		}
 		T& get_Value() throw()
 		{
-			assert( !m_refNode.IsNull() );
-			return m_refNode.DeRef().m_t;
+			return m_refNode.Deref().m_t;
 		}
 		void set_Value(T& t)
 		{
 			//may throw
-			assert( !m_refNode.IsNull() );
-			m_refNode.DeRef().m_t = t;
+			m_refNode.Deref().m_t = t;
 		}
 		//compare
 		bool operator==(const Iterator& right) const throw()
@@ -111,7 +108,6 @@ public:
 		//next
 		void MoveNext() throw()
 		{
-			assert( !m_refNode.IsNull() );
 			m_refNode = m_refNode.Deref().m_pNext;
 		}
 

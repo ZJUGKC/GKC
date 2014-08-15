@@ -20,7 +20,9 @@ This file contains main function for Shared Assembly.
 
 __attribute__((constructor)) void my_init()
 {
-	ProgramEntryPoint::SAMain(true);
+	if( !ProgramEntryPoint::SAMain(true) ) {
+		throw GKC::Exception(GKC::CallResult(CR_SABAD));  //throw
+	}
 }
 
 __attribute__((destructor)) void my_fini()

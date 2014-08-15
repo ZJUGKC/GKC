@@ -44,63 +44,7 @@ private:
 
 public:
 	//iterator
-	class Iterator
-	{
-	public:
-		Iterator() throw()
-		{
-		}
-		Iterator(RefPtr<T>& element) throw() : m_element(element)
-		{
-		}
-		Iterator(const Iterator& src) throw() : m_element(src.m_element)
-		{
-		}
-		~Iterator() throw()
-		{
-		}
-		Iterator& operator=(const Iterator& src) throw()
-		{
-			if( this != &src ) {
-				m_element = src.m_element;
-			}
-			return *this;
-		}
-
-		T& get_Value() throw()
-		{
-			return m_element.Deref();
-		}
-		void set_Value(T& t)
-		{
-			m_element.Deref() = t;
-		}
-
-		//logical
-		bool operator==(const Iterator& right) const throw()
-		{
-			return m_element == right.m_element;
-		}
-		bool operator!=(const Iterator& right) const throw()
-		{
-			return m_element != right.m_element;
-		}
-
-		//methods
-		void MoveNext() throw()
-		{
-			m_element = &m_element.Deref() + 1;
-		}
-		void MovePrev() throw()
-		{
-			m_element = &m_element.Deref() - 1;
-		}
-
-	private:
-		RefPtr<T> m_element;
-
-		friend class thisClass;
-	};
+	typedef ArrayIterator<T>  Iterator;
 
 public:
 	FixedArray() //may throw
@@ -239,6 +183,571 @@ inline bool LogicalOperators::IsLT<FixedArrayEndian<T, t_size, t_bBigEndian>>(co
 	} //end if
 	return false;
 }
+
+// SharedArray<T>
+
+template <typename T>
+class SharedArray
+{
+private:
+	typedef SharedArray<T>  thisClass;
+
+public:
+	typedef T  EType;
+	typedef ArrayIterator<T>  Iterator;
+
+public:
+	SharedArray() throw() : m_pB(NULL), m_pT(NULL)
+	{
+	}
+	SharedArray(const SharedArray<T>& src) throw() : m_pB(src.m_pB), m_pT(src.m_pT)
+	{
+		//add ref
+		if( m_pB != NULL ) {
+			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+			assert( pB->m_shareCount > 0 );  //must have shared array
+			pB->AddRefCopy();
+		}
+	}
+	SharedArray(SharedArray<T>&& src) throw()
+	{
+		m_pB = src.m_pB;
+		m_pT = src.m_pT;
+		src.m_pB = NULL;
+		src.m_pT = NULL;
+	}
+	~SharedArray() throw()
+	{
+		Release();
+	}
+
+	//methods
+	void Release() throw()
+	{
+		if( m_pB != NULL ) {
+			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+			assert( pB->m_shareCount > 0 );  //must have shared array
+			if( pB->Release() <= 0 ) {
+				//free
+				if( m_pT != NULL ) {
+					pB->DestroyArray(m_pT);
+					m_pT = NULL;
+				}
+			}
+			assert( pB->m_weakCount > 0 );  //must have weak object
+			if( pB->WeakRelease() <= 0 ) {
+				//free block
+				pB->~SharedArrayBlock();
+				SharedArrayBlockHelper::Free(pB);
+				m_pB = NULL;
+			}
+		}
+		else {
+			assert( m_pT == NULL );
+		} //end if
+	}
+
+	//operators
+	SharedArray<T>& operator=(const SharedArray<T>& src) throw()
+	{
+		if( &src != this ) {
+			if( src.m_pT != m_pT ) {
+				//release
+				Release();
+				//assign
+				m_pB = src.m_pB;
+				m_pT = src.m_pT;
+				//add ref
+				if( m_pB != NULL ) {
+					SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+					assert( pB->m_shareCount > 0 );  //must have shared array
+					pB->AddRefCopy();
+				}
+			}
+		}
+		return *this;
+	}
+	SharedArray<T>& operator=(SharedArray<T>&& src) throw()
+	{
+		if( &src != this ) {
+			if( src.m_pT != m_pT ) {
+				//release
+				Release();
+				//assign
+				m_pB = src.m_pB;
+				m_pT = src.m_pT;
+				src.m_pB = NULL;
+				src.m_pT = NULL;
+			}
+		}
+		return *this;
+	}
+
+	Iterator operator[](uintptr index) throw()
+	{
+		return GetAt(index);
+	}
+
+	bool operator==(const SharedArray<T>& src) const throw()
+	{
+		return m_pT == src.m_pT;
+	}
+	bool operator!=(const SharedArray<T>& src) const throw()
+	{
+		return !operator==(src);
+	}
+	bool IsNull() const throw()
+	{
+		return m_pT == NULL;
+	}
+
+	uintptr GetCount() const throw()
+	{
+		return (m_pB == NULL) ? 0 : ((SharedArrayBlock*)m_pB)->GetLength();
+	}
+	bool IsEmpty() const throw()
+	{
+		return GetCount() == 0;
+	}
+
+	//iterator
+	Itertaor GetBegin() throw()
+	{
+		return Iterator(RefPtr<T>(m_pT));
+	}
+	Iterator GetEnd() throw()
+	{
+		return Iterator(RefPtr<T>(m_pT + GetCount()));
+	}
+	Iterator GetReverseBegin() throw()
+	{
+		return ReverseIterator<Iterator>(GetEnd());
+	}
+	Iterator GetReverseEnd() throw()
+	{
+		return ReverseIterator<Iterator>(GetBegin());
+	}
+	Iterator GetAt(uintptr index) throw()
+	{
+		assert( index < GetCount() );
+		return Iterator(RefPtr<T>(m_pT + index));
+	}
+	void SetAt(uintptr index, const T& t)  //may throw
+	{
+		assert( index < GetCount() );
+		m_pT[index] = t;
+	}
+
+	//size
+	template <typename... Args>
+	void SetCount(uintptr uCount, uintptr uGrowBy = 0, Args&&... args)  //may throw
+	{
+		assert( m_pB != NULL );  //must have a block for allocation
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		assert( !pB->GetMemoryManager().IsNull() );
+		uintptr uOldSize = pB->GetLength();
+		if( uCount == 0 ) {
+			// shrink to nothing
+			if( m_pT != NULL ) {
+				call_array_destructors(m_pT, uOldSize );
+				pB->GetMemoryManager().Deref().Free(m_pT);
+				m_pT = NULL;
+			}
+			pB->SetLength(0);
+			pB->SetAllocLength(0);
+		}
+		else if( uCount <= pB->GetAllocLength() ) {
+			// it fits
+			if( uCount > uOldSize ) {
+				// initialize the new elements
+				call_array_constructors(m_pT + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);
+			}
+			else if( uOldSize > uCount ) {
+				// destroy the old elements
+				call_array_destructors(m_pT + uCount, uOldSize - uCount);
+			}
+			pB->SetLength(uCount);
+		}
+		else {
+			// grow
+			grow_buffer(uCount, uGrowBy);  //may throw
+			// construct new elements
+			assert( uCount > pB->GetLength() );
+			call_array_constructors(m_pT + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);
+			pB->SetLength(uCount);
+		} //end if
+	}
+	//clear
+	void RemoveAll() throw()
+	{
+		SetCount(0);
+	}
+	void FreeExtra() throw()
+	{
+		assert( m_pB != NULL );
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		assert( !pB->GetMemoryManager().IsNull() );
+		uintptr uSize = pB->GetLength();
+		if( uSize == pB->GetAllocLength() )
+			return ;
+		// shrink to desired size
+		if( uSize == 0 ) {
+			//free
+			pB->GetMemoryManager().Deref().Free(m_pT);
+			m_pT = NULL;
+			pB->SetAllocLength(0);
+			return ;
+		}
+		uintptr uBytes;
+		SafeOperators::Multiply(uSize, sizeof(T), uBytes);  //no check
+		T* pNew = (T*)pB->GetMemoryManager().Deref().Reallocate(m_pT, uBytes);
+		if( pNew == NULL )
+			return ;
+		m_pT = pNew;
+		pB->SetAllocLength(uSize);
+	}
+
+	//add
+	template <typename... Args>
+	Iterator Add(Args&&... args)  //may throw
+	{
+		assert( m_pB != NULL );
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		uintptr uElement = pB->GetLength();
+		SetCount(uElement + 1, 0, rv_forward<Args>(args)...);
+		return GetAt(uElement);
+	}
+	void Append(const SharedArray<T>& src)  //may throw
+	{
+		assert( this != &src );  // cannot append to itself
+		assert( m_pB != NULL );
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		uintptr uOldSize = pB->GetLength();
+		SetCount(uOldSize + src.GetCount());
+		copy_elements(src.m_pT, m_pT + uOldSize, src.GetCount());
+	}
+	void Copy(const SharedArray<T>& src)  //may throw
+	{
+		assert( this != &src );  // cannot append to itself
+		uintptr uSize = src.GetCount();
+		SetCount(uSize);
+		copy_elements(src.m_pT, m_pT, uSize);
+	}
+
+	template <typename... Args>
+	void InsertAt(uintptr index, uintptr count = 1, Args&&... args)  //may throw
+	{
+		assert( count > 0 );  // zero size not allowed
+		assert( m_pB != NULL );
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		uintptr uSize = pB->GetLength();
+		if( index >= uSize ) {
+			// adding after the end of the array
+			SetCount(index + count, 0, rv_forward<Args>(args)...);  //grow so index is valid
+		}
+		else {
+			// inserting in the middle of the array
+			uintptr uOldSize = uSize;
+			SetCount(uSize + count, 0);  //grow it to new size
+			// destroy intial data before copying over it
+			call_array_destructors(m_pT + uOldSize, count);
+			// shift old data up to fill gap
+			relocate_elements(m_pT + index, m_pT + (index + count), uOldSize - index);
+			try {
+				// re-init slots we copied from
+				call_array_constructors(m_pT + index, count, rv_forward<Args>(args)...);
+			}
+			catch(...) {
+				relocate_elements(m_pT + (index + count), m_pT + index, uOldSize - index);
+				pB->SetLength(uOldSize);
+				throw ;  //re-throw
+			}
+		} //end if
+		assert( (index + count) <= pB->GetLength() );
+	}
+	void InsertArrayAt(uintptr index, const SharedArray<T>& src)  //may throw
+	{
+		uintptr uSize = src.GetCount();
+		if( uSize > 0 ) {
+			InsertAt(index, uSize);
+			for( uintptr i = 0; i < uSize; i ++ ) {
+				SetAt(index + i, src[i].get_Value());
+			}
+		} //end if
+	}
+
+	//remove
+	void RemoveAt(uintptr index, uintptr count = 1) throw()
+	{
+		assert( count > 0 );  // zero size not allowed
+		assert( m_pB != NULL );
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		uintptr uSize = pB->GetLength();
+		uintptr uCut = index + count;
+		assert( uCut >= index && uCut >= count && uCut <= uSize );  //no overflow
+		// just remove a range
+		uintptr uMoveCount = uSize - uCut;
+		//destructor
+		call_array_destructors(m_pT + index, count);
+		if( uMoveCount > 0 ) {
+			relocate_elements(m_pT + uCut, m_pT + index, uMoveCount);
+		}
+		//size
+		pB->SetLength(uSize - count);
+	}
+
+private:
+	//grow
+	void grow_buffer(uintptr uNewSize, uintptr uGrowBy)  //may throw
+	{
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		if( uNewSize <= pB->GetAllocLength() )
+			return ;
+		uintptr uAllocSize;
+		if( m_pT == NULL ) {
+			uAllocSize = (uGrowBy > uNewSize) ? uGrowBy : uNewSize;
+			uintptr uBytes = 0;
+			//overflow
+			if( SafeOperators::Multiply(uAllocSize, sizeof(T), uBytes).IsFailed() )
+				throw OverflowException();
+			//allocate
+			m_pT = static_cast<T*>(pB->GetMemoryManager().Deref().Allocate(uBytes));
+			if( m_pT == NULL )
+				throw OutOfMemoryException();
+		}
+		else {
+			//grow
+			if( uGrowBy == 0 ) {
+				//default situation
+				uGrowBy = pB->GetLength() / 8;
+				uGrowBy = (uGrowBy < 4) ? 4 : ((uGrowBy > 1024) ? 1024 : uGrowBy);
+			}
+			//overflow
+			if( SafeOperators::Add(pB->GetAllocLength(), uGrowBy, uAllocSize).IsFailed() )
+				throw OverflowException();
+			if( uNewSize > uAllocSize )
+				uAllocSize = uNewSize;  //no extra
+			uintptr uBytes = 0;
+			//overflow
+			if( SafeOperators::Multiply(uAllocSize, sizeof(T), uBytes).IsFailed() )
+				throw OverflowException();
+			//reallocate
+			//  because uBytes != 0, m_pT is not freed
+			T* pNew = static_cast<T*>(pB->GetMemoryManager().Deref().Reallocate((uintptr)m_pT, uBytes);
+			if( pNew == NULL )
+				throw OutOfMemoryException();
+			m_pT = pNew;
+		} //end if
+		pB->SetAllocLength(uAllocSize);
+	}
+
+	template <typename... Args>
+	static void call_array_constructors(T* p, uintptr size, Args&&... args)
+	{
+		uintptr i;
+		try {
+			for( i = 0; i < size; i ++ ) {
+				call_constructor(p + i, rv_forward<Args>(args)...);
+			}
+		}
+		catch(...) {
+			while( i > 0 ) {
+				i --;
+				p[i].~T();
+			}
+			throw;  //re-throw
+		}
+	}
+	static void call_array_destructors(T* p, uintptr size) throw()
+	{
+		for( uintptr i = 0; i < size; i ++ ) {
+			p[i].~T();
+		}
+	}
+	//copy
+	static void copy_elements(T* pSrc, T* pDest, uintptr size)
+	{
+		for( uintptr i = 0; i < size; i ++ ) {
+			pDest[i] = pSrc[i];
+		}
+	}
+	//relocate
+	static void relocate_elements(T* pSrc, T* pDest, uintptr size) throw()
+	{
+		mem_move(pSrc, size * sizeof(T), pDest);
+	}
+
+private:
+	void* m_pB;  //to array block
+	T*    m_pT;  //first address of array
+
+private:
+	friend class SharedArrayHelper;
+};
+
+// WeakArray<T>
+
+template <typename T>
+class WeakArray
+{
+public:
+	typedef T  EType;
+
+public:
+	WeakArray() throw() : m_pB(NULL), m_pT(NULL)
+	{
+	}
+	WeakArray(const WeakArray<T>& src) throw() : m_pB(src.m_pB), m_pT(src.m_pT)
+	{
+		//add ref
+		if( m_pB != NULL ) {
+			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+			assert( pB->m_weakCount > 0 );  //must have weak object
+			pB->WeakAddRef();
+		}
+	}
+	WeakArray(WeakArray<T>&& src) throw()
+	{
+		m_pB = src.m_pB;
+		m_pT = src.m_pT;
+		src.m_pB = NULL;
+		src.m_pT = NULL;
+	}
+	~WeakArray() throw()
+	{
+		Release();
+	}
+
+	//methods
+	void Release() throw()
+	{
+		if( m_pB != NULL ) {
+			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+			assert( pB->m_weakCount > 0 );  //must have weak object
+			if( pB->WeakRelease() <= 0 ) {
+				//free block
+				pB->~SharedArrayBlock();
+				SharedArrayBlockHelper::Free(pB);
+				m_pB = NULL;
+			}
+		}
+		else {
+			assert( m_pT == NULL );
+		} //end if
+	}
+
+	//operators
+	WeakArray<T>& operator=(const WeakArray<T>& src) throw()
+	{
+		if( &src != this ) {
+			if( src.m_pT != m_pT ) {
+				//release
+				Release();
+				//assign
+				m_pB = src.m_pB;
+				m_pT = src.m_pT;
+				if( m_pB != NULL ) {
+					//add ref
+					SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+					assert( pB->m_weakCount > 0 );  //must have weak object
+					pB->WeakAddRef();
+				}
+			}
+		}
+		return *this;
+	}
+	WeakArray<T>& operator=(WeakArray<T>&& src) throw()
+	{
+		if( &src != this ) {
+			if( src.m_pT != m_pT ) {
+				//release
+				Release();
+				//assign
+				m_pB = src.m_pB;
+				m_pT = src.m_pT;
+				src.m_pB = NULL;
+				src.m_pT = NULL;
+			}
+		}
+		return *this;
+	}
+
+	bool operator==(const WeakArray<T>& src) const throw()
+	{
+		return m_pT == src.m_pT;
+	}
+	bool operator!=(const WeakArray<T>& src) const throw()
+	{
+		return m_pT != src.m_pT;
+	}
+	bool IsNull() const throw()
+	{
+		return m_pT == NULL;
+	}
+
+private:
+	void*  m_pB;   //A pointer to SharedArrayBlock
+	T*     m_pT;   //A pointer to array
+
+private:
+	friend class SharedArrayHelper;
+};
+
+// SharedArrayHelper
+
+class SharedArrayHelper
+{
+public:
+	//make shared
+	template <typename T>
+	static SharedArray<T> MakeSharedArray(RefPtr<IMemoryManager>& mgr)
+	{
+		assert( !mgr.IsNull() );
+
+		//allocate
+		SharedArrayBlock* pB = SharedArrayBlockHelper::Allocate();
+		if( pB == NULL )
+			throw( OutOfMemoryException() );
+
+		SharedArray<T> ret;
+		call_constructor(*pB);  //no throw
+		pB->SetMemoryManager(mgr);
+		ret.m_pB = pB;
+
+		return ret;
+	}
+
+	//obtain weak array
+	template <typename T>
+	static WeakArray<T> ToWeakArray(SharedArray<T>& sp) throw()
+	{
+		WeakArray<T> ret;
+		ret.m_pT = sp.m_pT;
+		ret.m_pB = sp.m_pB;
+		if( ret.m_pB != NULL ) {
+			SharedArrayBlock* pB = (SharedArrayBlock*)ret.m_pB;
+			assert( pB->m_weakCount > 0 );  //must have weak object
+			pB->WeakAddRef();
+		}
+		return ret;
+	}
+	//To SharedArray
+	template <typename T>
+	static SharedArray<T> ToSharedArray(WeakArray<T>& sp) throw()
+	{
+		SharedArray<T> ret;
+		ret.m_pT = sp.m_pT;
+		ret.m_pB = sp.m_pB;
+		if( ret.m_pB != NULL ) {
+			SharedArrayBlock* pB = (SharedArrayBlock*)ret.m_pB;
+			if( !pB->AddRefLock() ) {
+				ret.m_pT = NULL;  //shared array freed
+				ret.m_pB = NULL;
+			}
+		}
+		return ret;
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 }

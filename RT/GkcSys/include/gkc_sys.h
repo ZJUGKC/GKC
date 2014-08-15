@@ -31,6 +31,12 @@ This file contains GkcSys functions.
 SA_FUNCTION GKC::SharedPtrBlock* SpbPool_Allocate() throw();
 SA_FUNCTION void SpbPool_Free(GKC::SharedPtrBlock* p) throw();
 
+//------------------------------------------------------------------------------
+// SharedArrayBlock Pool
+
+SA_FUNCTION GKC::SharedArrayBlock* SabPool_Allocate() throw();
+SA_FUNCTION void SabPool_Free(GKC::SharedArrayBlock* p) throw();
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_SYS_H__
 ////////////////////////////////////////////////////////////////////////////////

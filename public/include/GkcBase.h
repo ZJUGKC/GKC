@@ -486,7 +486,175 @@ private:
 	SharedPtrBlock& operator=(const SharedPtrBlock& src) throw();
 };
 
+// SharedArrayBlock
+
+struct SharedArrayBlock
+{
+public:
+	SharedArrayBlock() throw() : m_uLength(0), m_uAllocLength(0), m_shareCount(1), m_weakCount(1)
+	{
+	}
+	~SharedArrayBlock() throw()
+	{
+	}
+
+	//methods
+	RefPtr<IMemoryManager>& GetMemoryManager() throw()
+	{
+		return m_mgr;
+	}
+	void SetMemoryManager(RefPtr<IMemoryManager>& mgr) throw()
+	{
+		m_mgr = mgr;
+	}
+	uintptr GetLength() const throw()
+	{
+		return m_uLength;
+	}
+	void SetLength(uintptr uLength) throw()
+	{
+		m_uLength = uLength;
+	}
+	uintptr GetAllocLength() const throw()
+	{
+		return m_uAllocLength;
+	}
+	void SetAllocLength(uintptr uAllocLength) throw()
+	{
+		m_uAllocLength = uAllocLength;
+	}
+
+	int AddRefCopy() throw()
+	{
+		return atomic_increment((int&)m_shareCount);
+	}
+	bool AddRefLock() throw()
+	{
+		for( ; ; ) {
+			int tmp = m_shareCount;
+			if( tmp <= 0 )
+				return false;
+			if( atomic_compare_exchange((int&)m_shareCount, tmp, tmp + 1) == tmp )
+				return true;
+		}
+		return false;
+	}
+	int Release() throw()
+	{
+		return atomic_decrement((int&)m_shareCount);
+	}
+	int WeakAddRef() throw()
+	{
+		return atomic_increment((int&)m_weakCount);
+	}
+	int WeakRelease() throw()
+	{
+		return atomic_decrement((int&)m_weakCount);
+	}
+
+	int GetShareCount() const throw()
+	{
+		return m_shareCount;
+	}
+	int GetWeakCount() const throw()
+	{
+		return m_weakCount;
+	}
+
+	//destroy
+	template <typename T>
+	void DestroyArray(T* p) throw()
+	{
+		assert( !m_mgr.IsNull() );
+		//destruction
+		T* pt = p;
+		for( uintptr i = 0; i < m_uLength; i ++ ) {
+			pt->~T();
+			++ pt;
+		}
+		uintptr _p((uintptr)p);
+		//free
+		m_mgr.Deref().Free(_p);
+		m_uLength = 0;
+		m_uAllocLength = 0;
+	}
+
+private:
+	RefPtr<IMemoryManager> m_mgr;
+	uintptr  m_uLength;
+	uintptr  m_uAllocLength;
+	volatile int   m_shareCount;
+	volatile int   m_weakCount;
+
+private:
+	SharedArrayBlock(const SharedArrayBlock& src) throw();
+	SharedArrayBlock& operator=(const SharedArrayBlock& src) throw();
+};
+
 #pragma pack(pop)
+
+//------------------------------------------------------------------------------
+//Iterators
+
+// ArrayIterator<T>
+
+template <typename T>
+class ArrayIterator
+{
+public:
+	ArrayIterator() throw()
+	{
+	}
+	explicit ArrayIterator(RefPtr<T>& element) throw() : m_element(element)
+	{
+	}
+	ArrayIterator(const ArrayIterator<T>& src) throw() : m_element(src.m_element)
+	{
+	}
+	~ArrayIterator() throw()
+	{
+	}
+
+	ArrayIterator<T>& operator=(const ArrayIterator<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_element = src.m_element;
+		}
+		return *this;
+	}
+
+	T& get_Value() throw()
+	{
+		return m_element.Deref();
+	}
+	void set_Value(T& t)
+	{
+		m_element.Deref() = t;
+	}
+
+	//logical
+	bool operator==(const ArrayIterator<T>& right) const throw()
+	{
+		return m_element == right.m_element;
+	}
+	bool operator!=(const ArrayIterator<T>& right) const throw()
+	{
+		return m_element != right.m_element;
+	}
+
+	//methods
+	void MoveNext() throw()
+	{
+		m_element = &m_element.Deref() + 1;
+	}
+	void MovePrev() throw()
+	{
+		m_element = &m_element.Deref() - 1;
+	}
+
+private:
+	RefPtr<T> m_element;
+};
 
 //------------------------------------------------------------------------------
 // Synchronization

@@ -49,6 +49,31 @@ inline int atomic_compare_exchange(int& v, int oldval, int newval) throw()
 	return (int)::InterlockedCompareExchange((LONG volatile *)(&v), newval, oldval);
 }
 
+//------------------------------------------------------------------------------
+//memory operators
+
+inline void* mem_zero(void* dest, uintptr count) throw()
+{
+	::ZeroMemory(dest, count);
+	return dest;
+}
+inline void* mem_fill(byte ch, void* dest, uintptr count) throw()
+{
+	::FillMemory(dest, count, ch);
+	return dest;
+}
+inline void* mem_copy(const void* src, uintptr count, void* dest) throw()
+{
+	::CopyMemory(dest, src, count);
+	return dest;
+}
+inline void* mem_move(const void* src, uintptr count, void* dest) throw()
+{
+	::MoveMemory(dest, src, count);
+	return dest;
+}
+
+//------------------------------------------------------------------------------
 //error code
 #define CR_FROM_ERROR(err)  ((HRESULT)(((err) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000))
 
@@ -114,6 +139,7 @@ private:
 #define CR_OK                0
 #define CR_OUTOFMEMORY       E_OUTOFMEMORY
 #define CR_OVERFLOW          CR_FROM_ERROR(ERROR_ARITHMETIC_OVERFLOW)
+#define CR_SABAD             CR_FROM_ERROR(ERROR_DLL_INIT_FAILED)
 
 //------------------------------------------------------------------------------
 // Synchronization

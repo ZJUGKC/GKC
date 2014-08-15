@@ -31,16 +31,12 @@ public:
 	{
 		if( bInitOrDump ) {
 			//init
-			GKC::CallResult cr;
-			//spb
-			cr = g_spbMutex.Init();
-			if( cr.IsFailed() )
+			if( !init_globals() )
 				return false;
-			GKC::RefPtr<GKC::IMemoryManager> mgr(GKC::MemoryHelper::GetCrtMemoryManager());
-			g_spbMgr.SetMemoryManager(mgr);
 		}
 		else {
 			//dump
+			dump_globals();
 		}
 		return true;
 	}

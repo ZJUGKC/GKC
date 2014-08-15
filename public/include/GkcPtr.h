@@ -150,7 +150,7 @@ private:
 	T*     m_pT;   //A pointer to object
 
 private:
-	friend class SharedPtrBlockHelper;
+	friend class SharedPtrHelper;
 };
 
 // WeakPtr<T>
@@ -241,6 +241,10 @@ public:
 	{
 		return m_pT == src.m_pT;
 	}
+	bool operator!=(const WeakPtr<T>& src) const throw()
+	{
+		return m_pT != src.m_pT;
+	}
 	bool IsNull() const throw()
 	{
 		return m_pT == NULL;
@@ -251,7 +255,7 @@ private:
 	T*     m_pT;   //A pointer to object
 
 private:
-	friend class SharedPtrBlockHelper;
+	friend class SharedPtrHelper;
 };
 
 // SharedPtrHelper
@@ -259,26 +263,25 @@ private:
 class SharedPtrHelper
 {
 public:
-//shared
+	//make shared
 	template <typename T, typename... Args>
 	static SharedPtr<T> MakeSharedPtr(RefPtr<IMemoryManager>& mgr, RefPtr<ITypeProcess>& tp, Args&&... args)
 	{
 		assert( !mgr.IsNull() );
 		assert( !tp.IsNull() );
 
-		SharedPtr<T> ret;
-
 		//allocate
 		SharedPtrBlock* pB = SharedPtrBlockHelper::Allocate();
 		if( pB == NULL )
 			throw( OutOfMemoryException() );
 
-		T* pT = (T*)mgr.Allocate(sizeof(T));
+		T* pT = (T*)mgr.Deref().Allocate(sizeof(T));
 		if( pT == NULL ) {
 			SharedPtrBlockHelper::Free(pB);
 			throw( OutOfMemoryException() );
 		}
 
+		SharedPtr<T> ret;
 		//constructor
 		try {
 			//may throw

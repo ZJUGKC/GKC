@@ -16,7 +16,17 @@ This file contains global variables.
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// SharedPtrBlock
 extern GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>  g_spbMgr;
 extern GKC::Mutex  g_spbMutex;
+
+// SharedArrayBlock
+extern GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>  g_sabMgr;
+extern GKC::Mutex  g_sabMutex;
+
+//functions
+
+bool init_globals() throw();
+void dump_globals() throw();
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -42,6 +42,21 @@ public:
 	}
 };
 
+// SharedArrayBlockHelper
+
+class SharedArrayBlockHelper
+{
+public:
+	static SharedArrayBlock* Allocate() throw()
+	{
+		return ::SabPool_Allocate();
+	}
+	static void Free(SharedArrayBlock* p) throw()
+	{
+		::SabPool_Free(p);
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

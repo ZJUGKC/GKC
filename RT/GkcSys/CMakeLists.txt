@@ -16,7 +16,7 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/public/include")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/precomp.cpp")
-SET(SRC_LIST "src/main.cpp" "src/globals.cpp" "src/spb_pool.cpp")
+SET(SRC_LIST "src/main.cpp" "src/globals.cpp" "src/sob_pool.cpp")
 ADD_LIBRARY(GkcSys SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcSys "shared" "precomp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")

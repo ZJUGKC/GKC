@@ -50,6 +50,27 @@ inline int atomic_compare_exchange(int& v, int oldval, int newval) throw()
 	return __sync_val_compare_and_swap(&v, oldval, newval);
 }
 
+//------------------------------------------------------------------------------
+//memory operators
+
+inline void* mem_zero(void* dest, uintptr count) throw()
+{
+	return ::memset(dest, 0, count);
+}
+inline void* mem_fill(byte ch, void* dest, uintptr count) throw()
+{
+	return ::memset(dest, (int)ch, count);
+}
+inline void* mem_copy(const void* src, uintptr count, void* dest) throw()
+{
+	return ::memcpy(dest, src, count);
+}
+inline void* mem_move(const void* src, uintptr count, void* dest) throw()
+{
+	return ::memmove(dest, src, count);
+}
+
+//------------------------------------------------------------------------------
 // errno
 #define CR_FROM_ERROR(err)  ((int)(0x80000000 | (err)))
 #define CR_FROM_ERRORNO()   CR_FROM_ERROR(errno)
@@ -116,6 +137,7 @@ private:
 #define CR_OK                0
 #define CR_OUTOFMEMORY       CR_FROM_ERROR(ENOMEM)
 #define CR_OVERFLOW          CR_FROM_ERROR(EOVERFLOW)
+#define CR_SABAD             CR_FROM_ERROR(ELIBBAD)
 
 //------------------------------------------------------------------------------
 // Synchronization

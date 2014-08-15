@@ -26,7 +26,13 @@ This file contains shared-object-header-block pool functions.
 GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>  g_spbMgr;
 GKC::Mutex  g_spbMutex;
 
+GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>  g_sabMgr;
+GKC::Mutex  g_sabMutex;
+
 //functions
+
+//SPB
+
 GKC::SharedPtrBlock* SpbPool_Allocate() throw()
 {
 	GKC::SharedPtrBlock* p = NULL;
@@ -49,6 +55,35 @@ void SpbPool_Free(GKC::SharedPtrBlock* p) throw()
 	try {
 		GKC::SyncLock<GKC::Mutex> lock(g_spbMutex);
 		g_spbMgr.Free(_p);
+	}
+	catch(...) {
+	}
+}
+
+//SAB
+
+GKC::SharedArrayBlock* SabPool_Allocate() throw()
+{
+	GKC::SharedArrayBlock* p = NULL;
+	uintptr _p = 0;
+	try {
+		GKC::SyncLock<GKC::Mutex> lock(g_sabMutex);
+		p = (GKC::SharedArrayBlock*)g_sabMgr.Allocate(_p);
+	}
+	catch(...) {
+		return NULL;
+	}
+	return p;
+}
+
+void SabPool_Free(GKC::SharedArrayBlock* p) throw()
+{
+	if( p == NULL )
+		return ;
+	uintptr _p = (uintptr)p;
+	try {
+		GKC::SyncLock<GKC::Mutex> lock(g_sabMutex);
+		g_sabMgr.Free(_p);
 	}
 	catch(...) {
 	}

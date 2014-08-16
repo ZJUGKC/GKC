@@ -348,13 +348,7 @@ public:
 		uintptr uOldSize = pB->GetLength();
 		if( uCount == 0 ) {
 			// shrink to nothing
-			if( m_pT != NULL ) {
-				call_array_destructors(m_pT, uOldSize );
-				pB->GetMemoryManager().Deref().Free(m_pT);
-				m_pT = NULL;
-			}
-			pB->SetLength(0);
-			pB->SetAllocLength(0);
+			clear_array();
 		}
 		else if( uCount <= pB->GetAllocLength() ) {
 			// it fits
@@ -380,7 +374,8 @@ public:
 	//clear
 	void RemoveAll() throw()
 	{
-		SetCount(0);
+		assert( m_pB != NULL );  //must have a block for free
+		clear_array();
 	}
 	void FreeExtra() throw()
 	{
@@ -497,6 +492,20 @@ public:
 	}
 
 private:
+	//clear
+	void clear_array() throw()
+	{
+		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
+		if( m_pT != NULL ) {
+			pB->DestroyArray(m_pT);
+			m_pT = NULL;
+		}
+		else {
+			pB->SetLength(0);
+			pB->SetAllocLength(0);
+		} //end if
+	}
+
 	//grow
 	void grow_buffer(uintptr uNewSize, uintptr uGrowBy)  //may throw
 	{

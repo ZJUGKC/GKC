@@ -362,6 +362,15 @@ public:
 		}
 		return ret;
 	}
+
+	//clone
+	template <typename T>
+	static SharedPtr<T> Clone(SharedPtr<T>& sp)  //may throw
+	{
+		return ( !sp.IsNull() )
+			? MakeSharedPtr(sp.m_pB->GetMemoryManager(), sp.m_pB->GetTypeProcess(), sp.Deref());
+			: SharedPtr<T>();
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

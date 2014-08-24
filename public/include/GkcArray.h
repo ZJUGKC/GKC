@@ -756,6 +756,18 @@ public:
 		}
 		return ret;
 	}
+
+	//clone
+	template <typename T>
+	static SharedArray<T> Clone(SharedArray<T>& sp)  //may throw
+	{
+		SharedArray<T> ret;
+		if( !sp.IsNull() ) {
+			ret = MakeSharedArray(sp.m_pB->GetMemoryManager());
+			ret.Copy(sp);
+		}
+		return ret;
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

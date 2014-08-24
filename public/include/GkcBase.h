@@ -114,6 +114,9 @@ public:
 
 private:
 	T* m_p;
+
+private:
+	friend class RefPtrHelper;
 };
 
 // IMemoryManager
@@ -253,6 +256,14 @@ public:
 	{
 		assert( !t.IsNull() );
 		return RefPtr<TBase>(static_cast<TBase&>(t.Deref()));
+	}
+	//clone
+	template <class T>
+	static void Clone(RefPtr<T>& tSrc, RefPtr<T>& tDest) //may throw
+	{
+		if( tSrc.m_p != tDest.m_p && !tSrc.IsNull() && !tDest.IsNull() ) {
+			tDest.Deref() = tSrc.Deref();
+		}
 	}
 };
 
@@ -419,6 +430,10 @@ public:
 	void SetMemoryManager(RefPtr<IMemoryManager>& mgr) throw()
 	{
 		m_mgr = mgr;
+	}
+	RefPtr<ITypeProcess>& GetTypeProcess() throw()
+	{
+		return m_type;
 	}
 	void SetTypeProcess(RefPtr<ITypeProcess>& type) throw()
 	{

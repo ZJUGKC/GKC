@@ -23,7 +23,7 @@ typedef CHAR           CharA;  //ANSI or UTF8
 typedef WCHAR          CharH;  //word or UTF16
 typedef unsigned long  CharL;  //long or UTF32
 
-typedef CharH  CharS;  //system type
+typedef CharH  CharS;  //system type, UTF16
 //for const string
 #define _S(x)  L##x
 

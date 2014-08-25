@@ -22,8 +22,8 @@ This file contains global variables.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "GkcDef.cpp"
-#include "GkcBase.cpp"
+#include "base/GkcDef.cpp"
+#include "base/GkcBase.cpp"
 
 //functions
 

@@ -100,7 +100,7 @@ public:
 	Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < t_size );
-		return Iterator(refPtr<T>(m_data + index));
+		return Iterator(RefPtr<T>(m_data + index));
 	}
 	void SetAt(uintptr index, const T& t)
 	{

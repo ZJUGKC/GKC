@@ -16,11 +16,24 @@ This file contains main function for Console Application.
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "_cmdline.h"
+
+////////////////////////////////////////////////////////////////////////////////
+
 //main
 
 int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
 {
+	GKC::ConstArray<GKC::ConstStringS> args, env;
 
+	//memory
+	_auto_mem spArgs, spEnv;
+
+	//convert
+	_cmdline_to_strings(argc, argv, envp, spArgs, spEnv, args, env);  //may throw
+
+	//main
+	return ProgramEntryPoint::ConsoleMain(args, env);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

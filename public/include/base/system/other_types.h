@@ -29,17 +29,17 @@
 //functions
 
 //memory
-inline uintptr crt_alloc(uintptr& uBytes) throw()
+inline uintptr crt_alloc(uintptr&& uBytes) throw()
 {
 	return (uintptr)::malloc(uBytes);
 }
 
-inline uintptr crt_realloc(uintptr& p, uintptr& uBytes) throw()
+inline uintptr crt_realloc(uintptr&& p, uintptr&& uBytes) throw()
 {
 	return (uintptr)::realloc((void*)p, uBytes);
 }
 
-inline void    crt_free(uintptr& p) throw()
+inline void    crt_free(uintptr&& p) throw()
 {
 	::free((void*)p);
 }

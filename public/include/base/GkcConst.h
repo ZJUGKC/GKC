@@ -43,69 +43,150 @@ public:
 	typedef ArrayIterator<T>  Iterator;
 
 public:
-	//count
-	static uintptr GetCount() throw()
+	ConstArray() throw() : m_first(NULL), m_size(0)
 	{
-		return l_size;
+	}
+	ConstArray(const T* p, uintptr size) throw() : m_first(p), m_size(size)
+	{
+	}
+	ConstArray(const ConstArray<T>& src) throw() : m_first(src.m_first), m_size(src.m_size)
+	{
+	}
+	~ConstArray() throw()
+	{
+	}
+
+	//operators
+	ConstArray<T>& operator=(const ConstArray<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_first = src.m_first;
+			m_size  = src.m_size;
+		}
+		return *this;
+	}
+
+	bool operator==(const ConstArray<T>& right) const throw()
+	{
+		return m_first == right.m_first;
+	}
+	bool operator!=(const ConstArray<T>& right) const throw()
+	{
+		return !operator==(right);
+	}
+
+	//methods
+
+	//count
+	uintptr GetCount() const throw()
+	{
+		return m_size;
+	}
+	bool IsNull() const throw()
+	{
+		return m_first == NULL;
+	}
+
+	//assignment, only for special case
+	void SetPointer(const T* p, uintptr size) throw()
+	{
+		m_first = p;
+		m_size  = size;
 	}
 
 	//iterator
-	static const Iterator GetBegin() throw()
+	const Iterator GetBegin() throw()
 	{
-		return Iterator(RefPtr<T>(c_first));
+		return Iterator(RefPtr<T>(m_first));
 	}
-
-	static const Iterator GetEnd() throw()
+	const Iterator GetEnd() throw()
 	{
-		return Iterator(RefPtr<T>(c_first + GetCount()));
+		return Iterator(RefPtr<T>(m_first + GetCount()));
 	}
-	static const ReverseIterator<Iterator> GetReverseBegin() throw()
+	const ReverseIterator<Iterator> GetReverseBegin() throw()
 	{
 		return ReverseIterator<Iterator>(GetEnd());
 	}
-	static const ReverseIterator<Iterator> GetReverseEnd() throw()
+	const ReverseIterator<Iterator> GetReverseEnd() throw()
 	{
 		return ReverseIterator<Iterator>(GetBegin());
 	}
 
-	static const Iterator GetAt(uintptr index) throw()
+	const Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < GetCount() );
-		return Iterator(RefPtr<T>(c_first + index));
-	}
-
-	//assignment, for special case
-	static void SetPointer(const T* p, uintptr size) throw()
-	{
-		c_first = p;
-		l_size  = size;
+		return Iterator(RefPtr<T>(m_first + index));
 	}
 
 private:
-	static const T        c_array[];
-	static const uintptr  c_size;
-	static const T*       c_first;
-	static uintptr        l_size;
+	const T*  m_first;
+	uintptr   m_size;
 };
+
+// macros
+
+// define Static Const Array
+
+#define DECLARE_STATIC_CONST_ARRAY(cls, T)   class cls {  \
+public:  \
+	typedef T  EType;  \
+	static uintptr GetCount() throw() \
+	{ return c_size; } \
+	static const T* GetAddress() throw() \
+	{ return c_array; } \
+public:  \
+	static const T        c_array[]; \
+	static const uintptr  c_size;    \
+};
+
+// ConstString<T>
+//   T : CharA CharH CharL, CharS CharW
+
+template <typename T>
+class ConstString : public ConstArray<T>
+{
+};
+
+// ConstStringX
+typedef ConstString<CharA>  ConstStringA;   //ansi or UTF8
+typedef ConstString<CharH>  ConstStringH;   //UTF16
+typedef ConstString<CharL>  ConstStringL;   //UTF32
+typedef ConstString<CharS>  ConstStringS;   //system
+typedef ConstString<CharW>  ConstStringW;   //wide version
+
+// macros
+
+// define Static Const String
+
+#define DECLARE_STATIC_CONST_STRING(cls)  \
+	DECLARE_STATIC_CONST_ARRAY(cls, typename cls::EType)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
 
-// for definition in cpp
-#define BEGIN_CONST_ARRAY(cls)    const typename GKC::cls::EType GKC::cls::c_array[] = {
+// for definitions in cpp
 
-#define CONST_ARRAY_ENTRY(x)           x,
-#define CONST_ARRAY_ENTRY_LAST(y)      y
+//static const array
+#define BEGIN_STATIC_CONST_ARRAY(cls)    const typename GKC::cls::EType GKC::cls::c_array[] = {
 
-#define BEGIN_CONST_ARRAY_GROUP()      {
-#define END_CONST_ARRAY_GROUP()        },
-#define END_CONST_ARRAY_GROUP_LAST()   }
+#define STATIC_CONST_ARRAY_ENTRY(x)           x,
+#define STATIC_CONST_ARRAY_ENTRY_LAST(y)      y
 
-#define END_CONST_ARRAY(cls)   };  \
-		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;  \
-		const typename GKC::cls::EType* GKC::cls::c_first = GKC::cls::c_array;  \
-		uintptr GKC::cls::l_size = GKC::cls::c_size;
+#define BEGIN_STATIC_CONST_ARRAY_GROUP()      {
+#define END_STATIC_CONST_ARRAY_GROUP()        },
+#define END_STATIC_CONST_ARRAY_GROUP_LAST()   }
+
+#define END_STATIC_CONST_ARRAY(cls)   };  \
+		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;
+
+//static const string
+//  STATIC_CONST_STRING_ENTRY(x) can be used repeatedly with or without CRLF
+//  "some" or L"some" or _S("some")
+#define BEGIN_STATIC_CONST_STRING(cls)   const typename GKC::cls::EType GKC::cls::c_array[] =
+#define STATIC_CONST_STRING_ENTRY(x)     x
+#define END_STATIC_CONST_STRING(cls)     ;  \
+		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__GKC_CONST_H__

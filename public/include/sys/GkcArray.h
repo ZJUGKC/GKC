@@ -713,7 +713,7 @@ class SharedArrayHelper
 public:
 	//make shared
 	template <typename T>
-	static SharedArray<T> MakeSharedArray(RefPtr<IMemoryManager>& mgr)
+	static SharedArray<T> MakeSharedArray(const RefPtr<IMemoryManager>& mgr)
 	{
 		assert( !mgr.IsNull() );
 

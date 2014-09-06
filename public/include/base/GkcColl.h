@@ -119,7 +119,7 @@ public:
 	};
 
 public:
-	SingleList(RefPtr<IMemoryManager>& mgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+	SingleList(const RefPtr<IMemoryManager>& mgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
 			: m_pHead(NULL), m_uElements(0), m_pool(mgr), m_pFree(NULL),
 			m_uMinBlockElements(uMinElements), m_uMaxBlockElements(uMaxElements)
 	{

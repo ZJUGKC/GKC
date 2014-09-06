@@ -11,14 +11,12 @@
 */
 
 /*
-This file contains main functions for SA.
+This file contains main function.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "precomp.h"
-
-#include "globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,23 +25,14 @@ This file contains main functions for SA.
 class ProgramEntryPoint
 {
 public:
-	static bool SAMain(bool bInitOrDump)
+	static int ConsoleMain(GKC::ConstArray<GKC::ConstStringS>& args, GKC::ConstArray<GKC::ConstStringS>& env)
 	{
-		if( bInitOrDump ) {
-			//init
-			if( !init_globals() )
-				return false;
-		}
-		else {
-			//dump
-			dump_globals();
-		}
-		return true;
+		return 0;
 	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "base/GkcSAMain.cpp"
+#include "base/GkcConsoleMain.cpp"
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////

@@ -241,7 +241,7 @@ class SafeOperators
 {
 public:
 	template <typename T>
-	static CallResult Add(IN T& left, IN T& right, OUT T& result) throw()
+	static CallResult Add(IN T&& left, IN T&& right, OUT T& result) throw()
 	{
 		if( Limits<T>::Max - left < right ) {
 			return CallResult(SystemCallResults::Overflow);
@@ -251,7 +251,7 @@ public:
 	}
 
 	template <typename T>
-	static CallResult Multiply(IN T& left, IN T& right, OUT T& result) throw()
+	static CallResult Multiply(IN T&& left, IN T&& right, OUT T& result) throw()
 	{
 		//avoid divide 0
 		if( left == 0 ) {
@@ -267,20 +267,20 @@ public:
 
 	//throw version
 	template <typename T>
-	static T AddThrow(IN T& left, IN T& right)
+	static T AddThrow(IN T&& left, IN T&& right)
 	{
 		T result;
-		CallResult cr = Add(left, right, result);
+		CallResult cr = Add(rv_forward(left), rv_forward(right), result);
 		if( cr.IsFailed() ) {
 			throw( Exception(cr) );
 		}
 		return result;
 	}
 	template <typename T>
-	static T MultiplyThrow(IN T& left, IN T& right)
+	static T MultiplyThrow(IN T&& left, IN T&& right)
 	{
 		T result;
-		CallResult cr = Multiply(left, right, result);
+		CallResult cr = Multiply(rv_forward(left), rv_forward(right), result);
 		if( cr.IsFailed() ) {
 			throw( Exception(cr) );
 		}
@@ -290,7 +290,7 @@ public:
 
 //special
 template <>
-inline CallResult SafeOperators::Multiply<int>(IN int& left, IN int& right, OUT int& result) throw()
+inline CallResult SafeOperators::Multiply<int>(IN int&& left, IN int&& right, OUT int& result) throw()
 {
 	int64 result64 = static_cast<int64>(left) * static_cast<int64>(right);
 	if( result64 > Limits<int>::Max || result64 < Limits<int>::Min ) {
@@ -301,7 +301,7 @@ inline CallResult SafeOperators::Multiply<int>(IN int& left, IN int& right, OUT 
 }
 
 template <>
-inline CallResult SafeOperators::Multiply<uint>(IN uint& left, IN uint& right, OUT uint& result) throw()
+inline CallResult SafeOperators::Multiply<uint>(IN uint&& left, IN uint&& right, OUT uint& result) throw()
 {
 	uint64 result64 = static_cast<uint64>(left) * static_cast<uint64>(right);
 	if( result64 > Limits<uint>::Max ) {

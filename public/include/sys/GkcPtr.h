@@ -265,7 +265,7 @@ class SharedPtrHelper
 public:
 	//make shared
 	template <typename T, typename... Args>
-	static SharedPtr<T> MakeSharedPtr(RefPtr<IMemoryManager>& mgr, RefPtr<ITypeProcess>& tp, Args&&... args)
+	static SharedPtr<T> MakeSharedPtr(const RefPtr<IMemoryManager>& mgr, RefPtr<ITypeProcess>& tp, Args&&... args)
 	{
 		assert( !mgr.IsNull() );
 		assert( !tp.IsNull() );

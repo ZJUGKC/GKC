@@ -36,10 +36,9 @@ GKC::Mutex  g_sabMutex;
 GKC::SharedPtrBlock* SpbPool_Allocate() throw()
 {
 	GKC::SharedPtrBlock* p = NULL;
-	uintptr _p = 0;
 	try {
 		GKC::SyncLock<GKC::Mutex> lock(g_spbMutex);
-		p = (GKC::SharedPtrBlock*)g_spbMgr.Allocate(_p);
+		p = (GKC::SharedPtrBlock*)g_spbMgr.Allocate(0);
 	}
 	catch(...) {
 		return NULL;
@@ -51,10 +50,9 @@ void SpbPool_Free(GKC::SharedPtrBlock* p) throw()
 {
 	if( p == NULL )
 		return ;
-	uintptr _p = (uintptr)p;
 	try {
 		GKC::SyncLock<GKC::Mutex> lock(g_spbMutex);
-		g_spbMgr.Free(_p);
+		g_spbMgr.Free((uintptr)p);
 	}
 	catch(...) {
 	}
@@ -65,10 +63,9 @@ void SpbPool_Free(GKC::SharedPtrBlock* p) throw()
 GKC::SharedArrayBlock* SabPool_Allocate() throw()
 {
 	GKC::SharedArrayBlock* p = NULL;
-	uintptr _p = 0;
 	try {
 		GKC::SyncLock<GKC::Mutex> lock(g_sabMutex);
-		p = (GKC::SharedArrayBlock*)g_sabMgr.Allocate(_p);
+		p = (GKC::SharedArrayBlock*)g_sabMgr.Allocate(0);
 	}
 	catch(...) {
 		return NULL;
@@ -80,10 +77,9 @@ void SabPool_Free(GKC::SharedArrayBlock* p) throw()
 {
 	if( p == NULL )
 		return ;
-	uintptr _p = (uintptr)p;
 	try {
 		GKC::SyncLock<GKC::Mutex> lock(g_sabMutex);
-		g_sabMgr.Free(_p);
+		g_sabMgr.Free((uintptr)p);
 	}
 	catch(...) {
 	}

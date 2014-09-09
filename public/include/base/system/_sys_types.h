@@ -48,7 +48,7 @@ public:
 		return m_p == NULL;
 	}
 
-	void* GetAddress() throw()
+	void* GetAddress() const throw()
 	{
 		return m_p;
 	}
@@ -57,7 +57,7 @@ public:
 	void Allocate(uintptr uSize)  //may throw
 	{
 		assert( m_p == NULL );
-		m_p = (void*)crt_alloc(rv_forward(uSize));
+		m_p = (void*)crt_alloc(uSize);
 		if( m_p == NULL )
 			throw GKC::OutOfMemoryException();
 	}

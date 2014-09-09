@@ -19,8 +19,11 @@ This is pre-compiled header file.
 #define __PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "GkcDef.h"
-#include "GkcBase.h"
+#include "base/GkcDef.h"
+#include "base/GkcBase.h"
+#include "base/GkcConst.h"
+
+#include "base/GkcConsole.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__PRECOMP_H__

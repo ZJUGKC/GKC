@@ -58,6 +58,9 @@ for cross-platform.
 //string types
 #include "system/str_types.h"
 
+//console APIs
+#include "system/console_api.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,6 +129,14 @@ public:
 	OutOfMemoryException() throw() : Exception(CallResult(SystemCallResults::OutOfMemory))
 	{
 	}
+	OutOfMemoryException(const OutOfMemoryException& src) throw() : Exception(static_cast<const Exception&>(src))
+	{
+	}
+	OutOfMemoryException& operator=(const OutOfMemoryException& src) throw()
+	{
+		Exception::operator=(static_cast<const Exception&>(src));
+		return *this;
+	}
 };
 
 // OverflowException
@@ -135,6 +146,14 @@ class OverflowException : public Exception
 public:
 	OverflowException() throw() : Exception(CallResult(SystemCallResults::Overflow))
 	{
+	}
+	OverflowException(const OverflowException& src) throw() : Exception(static_cast<const Exception&>(src))
+	{
+	}
+	OverflowException& operator=(const OverflowException& src) throw()
+	{
+		Exception::operator=(static_cast<const Exception&>(src));
+		return *this;
 	}
 };
 
@@ -241,7 +260,7 @@ class SafeOperators
 {
 public:
 	template <typename T>
-	static CallResult Add(IN T&& left, IN T&& right, OUT T& result) throw()
+	static CallResult Add(IN const T& left, IN const T& right, OUT T& result) throw()
 	{
 		if( Limits<T>::Max - left < right ) {
 			return CallResult(SystemCallResults::Overflow);
@@ -251,7 +270,7 @@ public:
 	}
 
 	template <typename T>
-	static CallResult Multiply(IN T&& left, IN T&& right, OUT T& result) throw()
+	static CallResult Multiply(IN const T& left, IN const T& right, OUT T& result) throw()
 	{
 		//avoid divide 0
 		if( left == 0 ) {
@@ -267,20 +286,20 @@ public:
 
 	//throw version
 	template <typename T>
-	static T AddThrow(IN T&& left, IN T&& right)
+	static T AddThrow(IN const T& left, IN const T& right)
 	{
 		T result;
-		CallResult cr = Add(rv_forward(left), rv_forward(right), result);
+		CallResult cr = Add(left, right, result);
 		if( cr.IsFailed() ) {
 			throw( Exception(cr) );
 		}
 		return result;
 	}
 	template <typename T>
-	static T MultiplyThrow(IN T&& left, IN T&& right)
+	static T MultiplyThrow(IN const T& left, IN const T& right)
 	{
 		T result;
-		CallResult cr = Multiply(rv_forward(left), rv_forward(right), result);
+		CallResult cr = Multiply(left, right, result);
 		if( cr.IsFailed() ) {
 			throw( Exception(cr) );
 		}
@@ -290,7 +309,7 @@ public:
 
 //special
 template <>
-inline CallResult SafeOperators::Multiply<int>(IN int&& left, IN int&& right, OUT int& result) throw()
+inline CallResult SafeOperators::Multiply<int>(IN const int& left, IN const int& right, OUT int& result) throw()
 {
 	int64 result64 = static_cast<int64>(left) * static_cast<int64>(right);
 	if( result64 > Limits<int>::Max || result64 < Limits<int>::Min ) {
@@ -301,7 +320,7 @@ inline CallResult SafeOperators::Multiply<int>(IN int&& left, IN int&& right, OU
 }
 
 template <>
-inline CallResult SafeOperators::Multiply<uint>(IN uint&& left, IN uint&& right, OUT uint& result) throw()
+inline CallResult SafeOperators::Multiply<uint>(IN const uint& left, IN const uint& right, OUT uint& result) throw()
 {
 	uint64 result64 = static_cast<uint64>(left) * static_cast<uint64>(right);
 	if( result64 > Limits<uint>::Max ) {
@@ -429,17 +448,29 @@ public:
 		return m_iter != right.m_iter;
 	}
 
+	const T& get_Value() const throw()
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		return tmp.get_Value();
+	}
 	T& get_Value() throw()
 	{
 		T tmp(m_iter);
 		tmp.MovePrev();
 		return tmp.get_Value();
 	}
-	void set_Value(T& t)
+	void set_Value(const T& t)  //may throw
 	{
 		T tmp(m_iter);
 		tmp.MovePrev();
 		tmp.set_Value(t);
+	}
+	void set_Value(T&& t)  //may throw
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		tmp.set_Value(rv_forward(t));
 	}
 
 	//methods

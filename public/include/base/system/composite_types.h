@@ -34,12 +34,12 @@
 			if(this!=&src) { m_value = src.m_value; } return *this; } \
 		E& operator=(int value) throw() \
 			{ m_value = value; return *this; } \
-		bool operator==(const E& src) const throw() \
-			{ return m_value == src.m_value; } \
+		bool operator==(const E& right) const throw() \
+			{ return m_value == right.m_value; } \
 		bool operator==(int value) const throw() \
 			{ return m_value == value; } \
-		bool operator!=(const E& src) const throw() \
-			{ return !operator==(src); } \
+		bool operator!=(const E& right) const throw() \
+			{ return !operator==(right); } \
 		bool operator!=(int value) const throw() \
 			{ return !operator==(value); } \
 		operator int() const throw() { return m_value; } \

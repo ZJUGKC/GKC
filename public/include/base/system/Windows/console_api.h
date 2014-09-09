@@ -14,36 +14,15 @@
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------------
-//OS
-
-#if defined(OS_WINDOWS)
-	#include "Windows/other_types.h"
-#elif defined(OS_LINUX)
-	#include "Linux/other_types.h"
-#else
-	#error Error OS type!
-#endif
+//Windows
 
 //------------------------------------------------------------------------------
-//functions
+//print
 
-//memory
-inline uintptr crt_alloc(const uintptr& uBytes) throw()
+inline void print_string(const CharS* sz) throw()
 {
-	return (uintptr)::malloc(uBytes);
+	//no check
+	::wprintf_s(L"%s", sz);
 }
-
-inline uintptr crt_realloc(const uintptr& p, const uintptr& uBytes) throw()
-{
-	return (uintptr)::realloc((void*)p, uBytes);
-}
-
-inline void    crt_free(const uintptr& p) throw()
-{
-	::free((void*)p);
-}
-
-//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////

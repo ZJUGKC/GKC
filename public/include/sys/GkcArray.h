@@ -55,7 +55,7 @@ public:
 	{
 		assert( t_size > 0 );
 	}
-	FixedArray(const thisClass& src)
+	FixedArray(const thisClass& src)  //may throw
 	{
 		assert( t_size > 0 );
 		copy_elements(src.m_data, m_data, t_size);
@@ -65,7 +65,7 @@ public:
 	}
 
 	//operators
-	thisClass& operator=(const thisClass& src)
+	thisClass& operator=(const thisClass& src)  //may throw
 	{
 		assert( t_size > 0 );
 		if( this != &src ) {
@@ -74,38 +74,43 @@ public:
 		return *this;
 	}
 
-	Iterator operator[](uintptr index) throw()
+	Iterator operator[](uintptr index) const throw()
 	{
 		return GetAt(index);
 	}
 
-	//methods
-	Iterator GetBegin() throw()
+	//iterator
+	Iterator GetBegin() const throw()
 	{
 		return Iterator(RefPtr<T>(m_data));
 	}
-	Iterator GetEnd() throw()
+	Iterator GetEnd() const throw()
 	{
 		return Iterator(RefPtr<T>(m_data + t_size));
 	}
-	ReverseIterator<Iterator> GetReverseBegin() throw()
+	ReverseIterator<Iterator> GetReverseBegin() const throw()
 	{
 		return ReverseIterator<Iterator>(GetEnd());
 	}
-	ReverseIterator<Iterator> GetReverseEnd() throw()
+	ReverseIterator<Iterator> GetReverseEnd() const throw()
 	{
 		return ReverseIterator<Iterator>(GetBegin());
 	}
 
-	Iterator GetAt(uintptr index) throw()
+	Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < t_size );
 		return Iterator(RefPtr<T>(m_data + index));
 	}
-	void SetAt(uintptr index, const T& t)
+	void SetAt(uintptr index, const T& t)  //may throw
 	{
 		assert( index < t_size );
 		m_data[index] = t;
+	}
+	void SetAt(uintptr index, T&& t)  //may throw
+	{
+		assert( index < t_size );
+		m_data[index] = rv_forward(t);
 	}
 
 	//logical
@@ -127,10 +132,10 @@ public:
 	}
 
 private:
-	static void copy_elements(T* pSrc, T* pDest, uintptr size)
+	static void copy_elements(const T* pSrc, T* pDest, uintptr size)
 	{
 		for( uintptr i = 0; i < size; i ++ ) {
-			pDest[i] = pSrc[i];
+			pDest[i] = pSrc[i];  //may throw
 		}
 	}
 
@@ -151,7 +156,7 @@ public:
 	FixedArrayEndian()
 	{
 	}
-	FixedArrayEndian(const thisClass& src) : baseClass(static_cast<baseClass&>(src))
+	FixedArrayEndian(const thisClass& src) : baseClass(static_cast<const baseClass&>(src))
 	{
 	}
 	~FixedArrayEndian() throw()
@@ -160,7 +165,7 @@ public:
 
 	thisClass& operator=(const thisClass& src)
 	{
-		baseClass::operator=(static_cast<baseClass&>(src));
+		baseClass::operator=(static_cast<const baseClass&>(src));
 		return *this;
 	}
 };
@@ -287,18 +292,18 @@ public:
 		return *this;
 	}
 
-	Iterator operator[](uintptr index) throw()
+	Iterator operator[](uintptr index) const throw()
 	{
 		return GetAt(index);
 	}
 
-	bool operator==(const SharedArray<T>& src) const throw()
+	bool operator==(const SharedArray<T>& right) const throw()
 	{
-		return m_pT == src.m_pT;
+		return m_pT == right.m_pT;
 	}
-	bool operator!=(const SharedArray<T>& src) const throw()
+	bool operator!=(const SharedArray<T>& right) const throw()
 	{
-		return !operator==(src);
+		return !operator==(right);
 	}
 	bool IsNull() const throw()
 	{
@@ -315,23 +320,23 @@ public:
 	}
 
 	//iterator
-	Itertaor GetBegin() throw()
+	Itertaor GetBegin() const throw()
 	{
 		return Iterator(RefPtr<T>(m_pT));
 	}
-	Iterator GetEnd() throw()
+	Iterator GetEnd() const throw()
 	{
 		return Iterator(RefPtr<T>(m_pT + GetCount()));
 	}
-	Iterator GetReverseBegin() throw()
+	Iterator GetReverseBegin() const throw()
 	{
 		return ReverseIterator<Iterator>(GetEnd());
 	}
-	Iterator GetReverseEnd() throw()
+	Iterator GetReverseEnd() const throw()
 	{
 		return ReverseIterator<Iterator>(GetBegin());
 	}
-	Iterator GetAt(uintptr index) throw()
+	Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
 		return Iterator(RefPtr<T>(m_pT + index));
@@ -340,6 +345,11 @@ public:
 	{
 		assert( index < GetCount() );
 		m_pT[index] = t;
+	}
+	void SetAt(uintptr index, T&& t)  //may throw
+	{
+		assert( index < GetCount() );
+		m_pT[index] = rv_forward(t);
 	}
 
 	//size
@@ -578,14 +588,14 @@ private:
 		}
 	}
 	//copy
-	static void copy_elements(T* pSrc, T* pDest, uintptr size)
+	static void copy_elements(const T* pSrc, T* pDest, uintptr size)
 	{
 		for( uintptr i = 0; i < size; i ++ ) {
-			pDest[i] = pSrc[i];
+			pDest[i] = pSrc[i];  //may throw
 		}
 	}
 	//relocate
-	static void relocate_elements(T* pSrc, T* pDest, uintptr size) throw()
+	static void relocate_elements(const T* pSrc, T* pDest, uintptr size) throw()
 	{
 		mem_move(pSrc, size * sizeof(T), pDest);
 	}
@@ -685,13 +695,13 @@ public:
 		return *this;
 	}
 
-	bool operator==(const WeakArray<T>& src) const throw()
+	bool operator==(const WeakArray<T>& right) const throw()
 	{
-		return m_pT == src.m_pT;
+		return m_pT == right.m_pT;
 	}
-	bool operator!=(const WeakArray<T>& src) const throw()
+	bool operator!=(const WeakArray<T>& right) const throw()
 	{
-		return m_pT != src.m_pT;
+		return m_pT != right.m_pT;
 	}
 	bool IsNull() const throw()
 	{
@@ -732,7 +742,7 @@ public:
 
 	//obtain weak array
 	template <typename T>
-	static WeakArray<T> ToWeakArray(SharedArray<T>& sp) throw()
+	static WeakArray<T> ToWeakArray(const SharedArray<T>& sp) throw()
 	{
 		WeakArray<T> ret;
 		ret.m_pT = sp.m_pT;
@@ -746,7 +756,7 @@ public:
 	}
 	//To SharedArray
 	template <typename T>
-	static SharedArray<T> ToSharedArray(WeakArray<T>& sp) throw()
+	static SharedArray<T> ToSharedArray(const WeakArray<T>& sp) throw()
 	{
 		SharedArray<T> ret;
 		ret.m_pT = sp.m_pT;
@@ -763,7 +773,7 @@ public:
 
 	//clone
 	template <typename T>
-	static SharedArray<T> Clone(SharedArray<T>& sp)  //may throw
+	static SharedArray<T> Clone(const SharedArray<T>& sp)  //may throw
 	{
 		SharedArray<T> ret;
 		if( !sp.IsNull() ) {

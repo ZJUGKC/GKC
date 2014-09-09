@@ -13,6 +13,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 INCLUDE("common.cmk")
 PROJECT(GKC)
 ADD_SUBDIRECTORY(RT/GkcSys RT/GkcSys)
+ADD_SUBDIRECTORY(Compiler/wlc Compiler/wlc)
 ADD_SUBDIRECTORY(test/BasicTest test/BasicTest)
 
 #end

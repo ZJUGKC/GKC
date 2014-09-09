@@ -128,7 +128,7 @@ public:
 	{
 		return m_p;
 	}
-	T& operator*() const
+	T& operator*() const throw()
 	{
 		assert( m_p != NULL );
 		return *m_p;
@@ -179,7 +179,7 @@ public:
 		}
 	}
 	// Compare two objects
-	bool IsEqualObject(IN IUnknown* pOther) throw()
+	bool IsEqualObject(IN IUnknown* pOther) const throw()
 	{
 		if( m_p == NULL && pOther == NULL )
 			return true;   // They are both NULL objects

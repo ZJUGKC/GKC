@@ -95,24 +95,24 @@ public:
 	}
 
 	//iterator
-	const Iterator GetBegin() throw()
+	const Iterator GetBegin() const throw()
 	{
 		return Iterator(RefPtr<T>(m_first));
 	}
-	const Iterator GetEnd() throw()
+	const Iterator GetEnd() const throw()
 	{
 		return Iterator(RefPtr<T>(m_first + GetCount()));
 	}
-	const ReverseIterator<Iterator> GetReverseBegin() throw()
+	const ReverseIterator<Iterator> GetReverseBegin() const throw()
 	{
 		return ReverseIterator<Iterator>(GetEnd());
 	}
-	const ReverseIterator<Iterator> GetReverseEnd() throw()
+	const ReverseIterator<Iterator> GetReverseEnd() const throw()
 	{
 		return ReverseIterator<Iterator>(GetBegin());
 	}
 
-	const Iterator GetAt(uintptr index) throw()
+	const Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
 		return Iterator(RefPtr<T>(m_first + index));
@@ -145,6 +145,30 @@ public:  \
 template <typename T>
 class ConstString : public ConstArray<T>
 {
+private:
+	typedef ConstArray<T>   baseClass;
+	typedef ConstString<T>  thisClass;
+
+public:
+	ConstString() throw()
+	{
+	}
+	ConstString(const T* p, uintptr size) throw() : baseClass(p, size)
+	{
+	}
+	ConstString(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	{
+	}
+	~ConstString() throw()
+	{
+	}
+
+	//operators
+	thisClass& operator=(const thisClass& src) throw()
+	{
+		baseClass::operator=(static_cast<const baseClass&>(src));
+		return *this;
+	}
 };
 
 // ConstStringX
@@ -160,6 +184,22 @@ typedef ConstString<CharW>  ConstStringW;   //wide version
 
 #define DECLARE_STATIC_CONST_STRING(cls)  \
 	DECLARE_STATIC_CONST_ARRAY(cls, typename cls::EType)
+
+//------------------------------------------------------------------------------
+// Helper
+
+// ConstHelper
+
+class ConstHelper
+{
+public:
+	//type cast
+	template <class T, class TBase>
+	static const TBase& TypeCast(const T& src) throw()
+	{
+		return static_cast<const TBase&>(src);
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 }

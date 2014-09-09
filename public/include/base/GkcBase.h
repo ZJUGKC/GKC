@@ -60,7 +60,13 @@ public:
 	RefPtr() throw() : m_p(NULL)
 	{
 	}
+	explicit RefPtr(const T& t) throw() : m_p(&(const_cast<T&>(t)))
+	{
+	}
 	explicit RefPtr(T& t) throw() : m_p(&t)
+	{
+	}
+	explicit RefPtr(const T* p) throw() : m_p(const_cast<T*>(p))
 	{
 	}
 	explicit RefPtr(T* p) throw() : m_p(p)
@@ -101,11 +107,18 @@ public:
 	{
 		return !(*this == right);
 	}
+
+	//methods
 	bool IsNull() const throw()
 	{
 		return m_p == NULL;
 	}
 
+	const T& Deref() const throw()
+	{
+		assert( !IsNull() );
+		return *m_p;
+	}
 	T& Deref() throw()
 	{
 		assert( !IsNull() );
@@ -124,12 +137,12 @@ private:
 class NOVTABLE IMemoryManager
 {
 public:
-	virtual uintptr Allocate(uintptr&& uBytes) throw() = 0;
+	virtual uintptr Allocate(const uintptr& uBytes) throw() = 0;
 	// p == NULL : the same as Allocate
 	// uBytes == 0 : free p, return NULL
 	// return NULL, failed, and p unchanged
-	virtual uintptr Reallocate(uintptr&& p, uintptr&& uBytes) throw() = 0;
-	virtual void    Free(uintptr&& p) throw() = 0;
+	virtual uintptr Reallocate(const uintptr& p, const uintptr& uBytes) throw() = 0;
+	virtual void    Free(const uintptr& p) throw() = 0;
 };
 
 // FixedElementMemoryPool
@@ -186,8 +199,8 @@ public:
 		uActElements = uElements;
 		while( uElements >= uMinElements ) {
 			//try
-			if( SafeOperators::Multiply<uintptr>(rv_forward(uElements), rv_forward(uElementSize), uBytes).IsFailed()
-				|| SafeOperators::Add<uintptr>(rv_forward(uBytes), rv_forward(uLinkSize), uBytes).IsFailed() ) {
+			if( SafeOperators::Multiply<uintptr>(uElements, uElementSize, uBytes).IsFailed()
+				|| SafeOperators::Add<uintptr>(uBytes, uLinkSize, uBytes).IsFailed() ) {
 				uElements --;
 				continue;
 			}
@@ -200,7 +213,7 @@ public:
 		while( uElements >= uMinElements ) {
 			//no overflow
 			uBytes = uElements * uElementSize + sizeof(void*);
-			pPlex = (void*)m_mgr.Deref().Allocate(rv_forward(uBytes));
+			pPlex = (void*)m_mgr.Deref().Allocate(uBytes);
 			if( pPlex == NULL ) {
 				uElements --;
 				continue;
@@ -245,20 +258,20 @@ class RefPtrHelper
 {
 public:
 	template <class T>
-	static RefPtr<T> ToRefPtr(T& t) throw()
+	static RefPtr<T> ToRefPtr(const T& t) throw()
 	{
 		return RefPtr<T>(t);
 	}
 	//cast
 	template <class T, class TBase>
-	static RefPtr<TBase> TypeCast(RefPtr<T>&& t) throw()
+	static RefPtr<TBase> TypeCast(const RefPtr<T>& t) throw()
 	{
 		assert( !t.IsNull() );
-		return RefPtr<TBase>(static_cast<TBase&>(t.Deref()));
+		return RefPtr<TBase>(static_cast<const TBase&>(t.Deref()));
 	}
 	//clone
 	template <class T>
-	static void Clone(RefPtr<T>&& tSrc, RefPtr<T>& tDest) //may throw
+	static void Clone(const RefPtr<T>& tSrc, RefPtr<T>& tDest) //may throw
 	{
 		if( tSrc.m_p != tDest.m_p && !tSrc.IsNull() && !tDest.IsNull() ) {
 			tDest.Deref() = tSrc.Deref();
@@ -275,17 +288,17 @@ class CrtMemoryManager : public IMemoryManager
 {
 public:
 	// IMemoryManager methods
-	virtual uintptr Allocate(uintptr&& uBytes) throw()
+	virtual uintptr Allocate(const uintptr& uBytes) throw()
 	{
-		return crt_alloc(rv_forward(uBytes));
+		return crt_alloc(uBytes);
 	}
-	virtual uintptr Reallocate(uintptr&& p, uintptr&& uBytes) throw()
+	virtual uintptr Reallocate(const uintptr& p, const uintptr& uBytes) throw()
 	{
-		return crt_realloc(rv_forward(p), rv_forward(uBytes));
+		return crt_realloc(p, uBytes);
 	}
-	virtual void    Free(uintptr&& p) throw()
+	virtual void    Free(const uintptr& p) throw()
 	{
-		crt_free(rv_forward(p));
+		crt_free(p);
 	}
 };
 
@@ -315,7 +328,7 @@ public:
 	}
 
 	// IMemoryManager methods
-	virtual uintptr Allocate(uintptr&& uBytes) throw()
+	virtual uintptr Allocate(const uintptr& uBytes) throw()
 	{
 		void* p = NULL;
 
@@ -337,11 +350,11 @@ public:
 
 		return (uintptr)p;
 	}
-	virtual uintptr Reallocate(uintptr&& p, uintptr&& uBytes) throw()
+	virtual uintptr Reallocate(const uintptr& p, const uintptr& uBytes) throw()
 	{
 		return 0;
 	}
-	virtual void    Free(uintptr&& p) throw()
+	virtual void    Free(const uintptr& p) throw()
 	{
 		void* pNode = ((void**)p - 1);
 
@@ -358,7 +371,7 @@ public:
 
 private:
 	//tools
-	void get_free_node()
+	void get_free_node()  //may throw
 	{
 		uintptr node_size = t_size + sizeof(void*);
 		if( m_pFree == NULL ) {
@@ -402,8 +415,8 @@ private:
 class NOVTABLE ITypeProcess
 {
 public:
-	virtual uintptr TypeCast(guid&& clsid) throw() = 0;
-	virtual void Destruction(uintptr&& p) throw() = 0;
+	virtual uintptr TypeCast(const guid& clsid) throw() = 0;
+	virtual void Destruction(const uintptr& p) throw() = 0;
 };
 
 // SharedPtrBlock
@@ -433,7 +446,7 @@ public:
 	{
 		return m_type;
 	}
-	void SetTypeProcess(RefPtr<ITypeProcess>& type) throw()
+	void SetTypeProcess(const RefPtr<ITypeProcess>& type) throw()
 	{
 		m_type = type;
 	}
@@ -618,7 +631,7 @@ public:
 	ArrayIterator() throw()
 	{
 	}
-	explicit ArrayIterator(RefPtr<T>& element) throw() : m_element(element)
+	explicit ArrayIterator(const RefPtr<T>& element) throw() : m_element(element)
 	{
 	}
 	ArrayIterator(const ArrayIterator<T>& src) throw() : m_element(src.m_element)
@@ -636,13 +649,21 @@ public:
 		return *this;
 	}
 
+	const T& get_Value() const throw()
+	{
+		return m_element.Deref();
+	}
 	T& get_Value() throw()
 	{
 		return m_element.Deref();
 	}
-	void set_Value(T& t)
+	void set_Value(const T& t)
 	{
 		m_element.Deref() = t;
+	}
+	void set_Value(T&& t)
+	{
+		m_element.Deref() = rv_forward(t);
 	}
 
 	//logical
@@ -684,7 +705,7 @@ public:
 	SyncLock(T& t, bool bInitialLock = true) : m_t(t), m_bLocked(false)
 	{
 		if( bInitialLock )
-			Lock();
+			Lock();  //may throw
 	}
 	~SyncLock() throw()
 	{

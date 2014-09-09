@@ -18,31 +18,12 @@
 //OS
 
 #if defined(OS_WINDOWS)
-	#include "Windows/other_types.h"
+	#include "Windows/console_api.h"
 #elif defined(OS_LINUX)
-	#include "Linux/other_types.h"
+	#include "Linux/console_api.h"
 #else
 	#error Error OS type!
 #endif
-
-//------------------------------------------------------------------------------
-//functions
-
-//memory
-inline uintptr crt_alloc(const uintptr& uBytes) throw()
-{
-	return (uintptr)::malloc(uBytes);
-}
-
-inline uintptr crt_realloc(const uintptr& p, const uintptr& uBytes) throw()
-{
-	return (uintptr)::realloc((void*)p, uBytes);
-}
-
-inline void    crt_free(const uintptr& p) throw()
-{
-	::free((void*)p);
-}
 
 //------------------------------------------------------------------------------
 

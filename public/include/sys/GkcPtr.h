@@ -126,19 +126,24 @@ public:
 		return *this;
 	}
 
-	bool operator==(const SharedPtr<T>& src) const throw()
+	bool operator==(const SharedPtr<T>& right) const throw()
 	{
-		return m_pT == src.m_pT;
+		return m_pT == right.m_pT;
 	}
-	bool operator!=(const SharedPtr<T>& src) const throw()
+	bool operator!=(const SharedPtr<T>& right) const throw()
 	{
-		return !operator==(src);
+		return !operator==(right);
 	}
 	bool IsNull() const throw()
 	{
 		return m_pT == NULL;
 	}
 
+	const T& Deref() const throw()
+	{
+		assert( !IsNull() );
+		return *m_pT;
+	}
 	T& Deref() throw()
 	{
 		assert( !IsNull() );
@@ -237,13 +242,13 @@ public:
 		return *this;
 	}
 
-	bool operator==(const WeakPtr<T>& src) const throw()
+	bool operator==(const WeakPtr<T>& right) const throw()
 	{
-		return m_pT == src.m_pT;
+		return m_pT == right.m_pT;
 	}
-	bool operator!=(const WeakPtr<T>& src) const throw()
+	bool operator!=(const WeakPtr<T>& right) const throw()
 	{
-		return m_pT != src.m_pT;
+		return m_pT != right.m_pT;
 	}
 	bool IsNull() const throw()
 	{
@@ -265,7 +270,7 @@ class SharedPtrHelper
 public:
 	//make shared
 	template <typename T, typename... Args>
-	static SharedPtr<T> MakeSharedPtr(const RefPtr<IMemoryManager>& mgr, RefPtr<ITypeProcess>& tp, Args&&... args)
+	static SharedPtr<T> MakeSharedPtr(const RefPtr<IMemoryManager>& mgr, const RefPtr<ITypeProcess>& tp, Args&&... args)
 	{
 		assert( !mgr.IsNull() );
 		assert( !tp.IsNull() );
@@ -305,7 +310,7 @@ public:
 
 	//obtain weak ptr
 	template <typename T>
-	static WeakPtr<T> ToWeakPtr(SharedPtr<T>& sp) throw()
+	static WeakPtr<T> ToWeakPtr(const SharedPtr<T>& sp) throw()
 	{
 		WeakPtr<T> ret;
 		ret.m_pT = sp.m_pT;
@@ -319,7 +324,7 @@ public:
 	}
 	//To SharedPtr
 	template <typename T>
-	static SharedPtr<T> ToSharedPtr(WeakPtr<T>& sp) throw()
+	static SharedPtr<T> ToSharedPtr(const WeakPtr<T>& sp) throw()
 	{
 		SharedPtr<T> ret;
 		ret.m_pT = sp.m_pT;
@@ -336,7 +341,7 @@ public:
 
 	//type cast
 	template <class T, class TBase>
-	static SharedPtr<TBase> TypeCast(SharedPtr<T>& sp) throw()
+	static SharedPtr<TBase> TypeCast(const SharedPtr<T>& sp) throw()
 	{
 		SharedPtr<TBase> ret;
 		ret.m_pT = sp.m_pT;
@@ -350,7 +355,7 @@ public:
 		return ret;
 	}
 	template <class T, class TBase>
-	static WeakPtr<TBase> TypeCast(WeakPtr<T>& sp) throw()
+	static WeakPtr<TBase> TypeCast(const WeakPtr<T>& sp) throw()
 	{
 		WeakPtr<TBase> ret;
 		ret.m_pT = sp.m_pT;
@@ -365,7 +370,7 @@ public:
 
 	//clone
 	template <typename T>
-	static SharedPtr<T> Clone(SharedPtr<T>& sp)  //may throw
+	static SharedPtr<T> Clone(const SharedPtr<T>& sp)  //may throw
 	{
 		return ( !sp.IsNull() )
 			? MakeSharedPtr(sp.m_pB->GetMemoryManager(), sp.m_pB->GetTypeProcess(), sp.Deref());

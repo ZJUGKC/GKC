@@ -36,7 +36,7 @@ inline void _cmdline_to_strings(int argc, char *argv[], char *envp[],  //in
 	}
 	GKC::ConstStringS* parr2 = NULL;
 	if( env_num > 0 ) {
-		uSize = GKC::SafeOperators::MultiplyThrow<uintptr>(sizeof(GKC::ConstStringS), rv_forward(env_num));
+		uSize = GKC::SafeOperators::MultiplyThrow<uintptr>(sizeof(GKC::ConstStringS), env_num);
 		spEnv.Allocate(uSize);  //may throw
 		parr2 = (GKC::ConstStringS*)spEnv.GetAddress();
 	}

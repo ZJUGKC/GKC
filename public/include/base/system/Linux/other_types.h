@@ -27,7 +27,7 @@ inline void guid_create(guid& id) throw()
 	::uuid_generate(id);
 }
 
-inline bool guid_equal(guid& id1, guid& id2) throw()
+inline bool guid_equal(const guid& id1, const guid& id2) throw()
 {
 	return ::uuid_compare(id1, id2) == 0;
 }
@@ -101,6 +101,15 @@ public:
 			m_result = src.m_result;
 		}
 		return *this;
+	}
+
+	bool operator==(const call_result& right) const throw()
+	{
+		return m_result == right.m_result;
+	}
+	bool operator!=(const call_result& right) const throw()
+	{
+		return !operator==(right);
 	}
 
 	//methods

@@ -46,6 +46,9 @@ private:
 		_Node(const T& t) : m_t(t)
 		{
 		}
+		_Node(T&& t) : m_t(rv_forward(t))
+		{
+		}
 		~_Node() throw()
 		{
 		}
@@ -65,7 +68,7 @@ public:
 		Iterator() throw()
 		{
 		}
-		Iterator(RefPtr<thisClass>& list, RefPtr<_Node>& node) throw() : m_refList(list), m_refNode(node)
+		Iterator(const RefPtr<thisClass>& list, const RefPtr<_Node>& node) throw() : m_refList(list), m_refNode(node)
 		{
 		}
 		Iterator(const Iterator& src) throw() : m_refList(src.m_refList), m_refNode(src.m_refNode)
@@ -87,14 +90,23 @@ public:
 		{
 			return RefPtr<T>(m_refNode.Deref().m_t);
 		}
+		const T& get_Value() const throw()
+		{
+			return m_refNode.Deref().m_t;
+		}
 		T& get_Value() throw()
 		{
 			return m_refNode.Deref().m_t;
 		}
-		void set_Value(T& t)
+		void set_Value(const T& t)  //may throw
 		{
 			//may throw
 			m_refNode.Deref().m_t = t;
+		}
+		void set_Value(T&& t)  //may throw
+		{
+			//may throw
+			m_refNode.Deref().m_t = rv_forward(t);
 		}
 		//compare
 		bool operator==(const Iterator& right) const throw()
@@ -140,11 +152,11 @@ public:
 	}
 
 	//iterator
-	Iterator GetHead() throw()
+	Iterator GetHead() const throw()
 	{
 		return get_iterator(m_pHead);
 	}
-	Iterator GetTail() throw()
+	Iterator GetTail() const throw()
 	{
 		return get_iterator(NULL);
 	}
@@ -165,15 +177,21 @@ public:
 	}
 
 	//Add
-	Iterator AddHead()
+	Iterator AddHead()  //may throw
 	{
 		_Node* pNode = new_node(m_pHead);
 		m_pHead = pNode;
 		return GetHead();
 	}
-	Iterator AddHead(T& t)
+	Iterator AddHead(const T& t)  //may throw
 	{
 		_Node* pNode = new_node(t, m_pHead);
+		m_pHead = pNode;
+		return GetHead();
+	}
+	Iterator AddHead(T&& t)  //may throw
+	{
+		_Node* pNode = new_node(rv_forward(t), m_pHead);
 		m_pHead = pNode;
 		return GetHead();
 	}
@@ -198,7 +216,7 @@ public:
 		} //end for
 		return get_iterator(pNode);
 	}
-	Iterator Find(T& t, Iterator& iterAfter) const throw()
+	Iterator Find(const T& t, const Iterator& iterAfter) const throw()
 	{
 		_Node* pNode = &(iterAfter.m_refNode.Deref());
 		if( pNode == NULL ) {
@@ -216,13 +234,13 @@ public:
 
 private:
 	//tools
-	void get_free_node()
+	void get_free_node()  //may throw
 	{
 		if( m_pFree == NULL ) {
 			uintptr uActElements;
 			//may throw
 			_Node* pNode = (_Node*)m_pool.CreateBlock(m_uMinBlockElements, m_uMaxBlockElements, sizeof(_Node), uActElements);
-			pNode += uActElements - 1;
+			pNode += (uActElements - 1);
 			for( uintptr uBlock = uActElements; uBlock > 0; uBlock -- ) {
 				pNode->m_pNext = m_pFree;
 				m_pFree = pNode;
@@ -231,7 +249,7 @@ private:
 		}
 		assert( m_pFree != NULL );
 	}
-	_Node* new_node(_Node* pNext)
+	_Node* new_node(_Node* pNext)  //may throw
 	{
 		get_free_node();
 
@@ -247,7 +265,7 @@ private:
 
 		return pNewNode;
 	}
-	_Node* new_node(T& t, _Node* pNext)
+	_Node* new_node(const T& t, _Node* pNext)  //may throw
 	{
 		get_free_node();
 
@@ -255,6 +273,22 @@ private:
 		_Node* pNextFree = m_pFree->m_pNext;
 
 		call_constructor(*pNewNode, t);  //may throw
+
+		m_pFree = pNextFree;
+		pNewNode->m_pNext = pNext;
+		m_uElements ++;
+		assert( m_uElements > 0 );
+
+		return pNewNode;
+	}
+	_Node* new_node(T&& t, _Node* pNext)  //may throw
+	{
+		get_free_node();
+
+		_Node* pNewNode = m_pFree;
+		_Node* pNextFree = m_pFree->m_pNext;
+
+		call_constructor(*pNewNode, rv_forward(t));  //may throw
 
 		m_pFree = pNextFree;
 		pNewNode->m_pNext = pNext;
@@ -277,7 +311,7 @@ private:
 	}
 
 	//iterator
-	Iterator get_iterator(_Node* pNode) throw()
+	Iterator get_iterator(_Node* pNode) const throw()
 	{
 		return Iterator(RefPtr<thisClass>(this), RefPtr<_Node>(pNode));
 	}

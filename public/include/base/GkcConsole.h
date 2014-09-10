@@ -35,13 +35,13 @@ class Console
 {
 public:
 	//output
-	static void Write(const ConstStringS& str) throw()
-	{
-		print_string(&(str.GetBegin().get_Value()));
-	}
 	static void WriteLN() throw()
 	{
 		print_string(_S("\n"));
+	}
+	static void Write(const ConstStringS& str) throw()
+	{
+		print_string(&(str.GetBegin().get_Value()));
 	}
 	static void WriteLine(const ConstStringS& str) throw()
 	{

@@ -14,6 +14,9 @@
 //internal header
 ////////////////////////////////////////////////////////////////////////////////
 
+//------------------------------------------------------------------------------
+//classes
+
 // _auto_mem
 
 class _auto_mem
@@ -25,8 +28,10 @@ public:
 	explicit _auto_mem(void* p) throw() : m_p(p)
 	{
 	}
-	_auto_mem(const _auto_mem& src) throw() : m_p(src.m_p)
+	_auto_mem(_auto_mem&& src) throw()
 	{
+		m_p = src.m_p;
+		src.m_p = NULL;
 	}
 	~_auto_mem() throw()
 	{
@@ -34,10 +39,13 @@ public:
 	}
 
 	//operators
-	_auto_mem& operator=(const _auto_mem& src) throw()
+	_auto_mem& operator=(_auto_mem&& src) throw()
 	{
 		if( this != &src ) {
+			assert( m_p != src.m_p );  //unique
+			Free();
 			m_p = src.m_p;
+			src.m_p = NULL;
 		}
 		return *this;
 	}
@@ -72,6 +80,13 @@ public:
 
 private:
 	void* m_p;
+
+private:
+	//noncopyable
+	_auto_mem(const _auto_mem& src) throw();
+	_auto_mem& operator=(const _auto_mem& src) throw();
 };
+
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////

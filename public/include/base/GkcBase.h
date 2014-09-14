@@ -356,7 +356,7 @@ public:
 	}
 	virtual void    Free(const uintptr& p) throw()
 	{
-		void* pNode = ((void**)p - 1);
+		void* pNode = (void*)((void**)p - 1);  //back to first
 
 		*((void**)pNode) = m_pFree;  //next
 		m_pFree = pNode;
@@ -373,7 +373,7 @@ private:
 	//tools
 	void get_free_node()  //may throw
 	{
-		uintptr node_size = t_size + sizeof(void*);
+		uintptr node_size = SafeOperators::AddThrow<uintptr>(t_size, sizeof(void*));  //may throw
 		if( m_pFree == NULL ) {
 			uintptr uActElements;
 			//may throw

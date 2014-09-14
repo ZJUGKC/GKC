@@ -181,7 +181,7 @@ public:
 
 		int res = ::pthread_mutex_init(&m_mtx, NULL);
 		if( res > 0 ) {
-			res = CR_FROM_ERROR(res); 
+			res = CR_FROM_ERROR(res);
 		}
 		else if( res == 0 ) {
 			m_bInitialized = true;

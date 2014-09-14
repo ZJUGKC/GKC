@@ -20,14 +20,9 @@ This file contains shared-object-header-block pool functions.
 
 #include "gkc_sys.h"
 
+#include "globals.h"
+
 ////////////////////////////////////////////////////////////////////////////////
-
-//global variables
-GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>  g_spbMgr;
-GKC::Mutex  g_spbMutex;
-
-GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>  g_sabMgr;
-GKC::Mutex  g_sabMutex;
 
 //functions
 
@@ -37,8 +32,8 @@ GKC::SharedPtrBlock* SpbPool_Allocate() throw()
 {
 	GKC::SharedPtrBlock* p = NULL;
 	try {
-		GKC::SyncLock<GKC::Mutex> lock(g_spbMutex);
-		p = (GKC::SharedPtrBlock*)g_spbMgr.Allocate(0);
+		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(spb_mutex));
+		p = (GKC::SharedPtrBlock*)(GET_SA_GLOBAL_VARIABLE(spb_mgr).Allocate(0));
 	}
 	catch(...) {
 		return NULL;
@@ -51,8 +46,8 @@ void SpbPool_Free(GKC::SharedPtrBlock* p) throw()
 	if( p == NULL )
 		return ;
 	try {
-		GKC::SyncLock<GKC::Mutex> lock(g_spbMutex);
-		g_spbMgr.Free((uintptr)p);
+		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(spb_mutex));
+		GET_SA_GLOBAL_VARIABLE(spb_mgr).Free((uintptr)p);
 	}
 	catch(...) {
 	}
@@ -64,8 +59,8 @@ GKC::SharedArrayBlock* SabPool_Allocate() throw()
 {
 	GKC::SharedArrayBlock* p = NULL;
 	try {
-		GKC::SyncLock<GKC::Mutex> lock(g_sabMutex);
-		p = (GKC::SharedArrayBlock*)g_sabMgr.Allocate(0);
+		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(sab_mutex));
+		p = (GKC::SharedArrayBlock*)(GET_SA_GLOBAL_VARIABLE(sab_mgr).Allocate(0));
 	}
 	catch(...) {
 		return NULL;
@@ -78,8 +73,8 @@ void SabPool_Free(GKC::SharedArrayBlock* p) throw()
 	if( p == NULL )
 		return ;
 	try {
-		GKC::SyncLock<GKC::Mutex> lock(g_sabMutex);
-		g_sabMgr.Free((uintptr)p);
+		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(sab_mutex));
+		GET_SA_GLOBAL_VARIABLE(sab_mgr).Free((uintptr)p);
 	}
 	catch(...) {
 	}

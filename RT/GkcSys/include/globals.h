@@ -17,12 +17,12 @@ This file contains global variables.
 ////////////////////////////////////////////////////////////////////////////////
 
 // SharedPtrBlock
-extern GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>  g_spbMgr;
-extern GKC::Mutex  g_spbMutex;
+DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
+DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
 
 // SharedArrayBlock
-extern GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>  g_sabMgr;
-extern GKC::Mutex  g_sabMutex;
+DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
+DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
 
 //functions
 

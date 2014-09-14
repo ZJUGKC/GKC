@@ -39,4 +39,25 @@
 	#endif
 #endif
 
+//------------------------------------------------------------------------------
+//shared library
+
+//global variables in shared library
+
+//in header file
+#define DECLARE_SA_GLOBAL_VARIABLE(T, x)    extern T g_##x;
+
+//in cpp file
+#define BEGIN_SA_GLOBAL_VARIABLE(T, x)    T g_##x
+
+#define BEGIN_SA_GLOBAL_VARIABLE_CONSTRUCTOR()         (
+#define SA_GLOBAL_VARIABLE_CONSTRUCTOR_PARAM(z)        z,
+#define SA_GLOBAL_VARIABLE_CONSTRUCTOR_PARAM_LAST(z)   z
+#define END_SA_GLOBAL_VARIABLE_CONSTRUCTOR()           )
+
+#define END_SA_GLOBAL_VARIABLE(x)    ;
+
+//in other files
+#define GET_SA_GLOBAL_VARIABLE(x)    g_##x
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -25,6 +25,24 @@ This file contains global variables.
 #include "base/GkcDef.cpp"
 #include "base/GkcBase.cpp"
 
+//------------------------------------------------------------------------------
+//global variables
+
+//SPB
+BEGIN_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
+END_SA_GLOBAL_VARIABLE(spb_mgr)
+
+BEGIN_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+END_SA_GLOBAL_VARIABLE(spb_mutex)
+
+//SAB
+BEGIN_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
+END_SA_GLOBAL_VARIABLE(sab_mgr)
+
+BEGIN_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+END_SA_GLOBAL_VARIABLE(sab_mutex)
+
+//------------------------------------------------------------------------------
 //functions
 
 bool init_globals() throw()
@@ -33,18 +51,18 @@ bool init_globals() throw()
 	GKC::CallResult cr;
 
 	//spb
-	cr = g_spbMutex.Init();
+	cr = GET_SA_GLOBAL_VARIABLE(spb_mutex).Init();
 	if( cr.IsFailed() )
 		return false;
-	g_spbMgr.SetMemoryManager(mgr);
+	GET_SA_GLOBAL_VARIABLE(spb_mgr).SetMemoryManager(mgr);
 
 	//sab
-	cr = g_sabMutex.Init();
+	cr = GET_SA_GLOBAL_VARIABLE(sab_mutex).Init();
 	if( cr.IsFailed() ) {
-		g_spbMutex.Term();
+		GET_SA_GLOBAL_VARIABLE(spb_mutex).Term();
 		return false;
 	}
-	g_sabMgr.SetMemoryManager(mgr);
+	GET_SA_GLOBAL_VARIABLE(sab_mgr).SetMemoryManager(mgr);
 
 	return true;
 }
@@ -52,9 +70,9 @@ bool init_globals() throw()
 void dump_globals() throw()
 {
 	//sab
-	g_sabMutex.Term();
+	GET_SA_GLOBAL_VARIABLE(sab_mutex).Term();
 	//spb
-	g_spbMutex.Term();
+	GET_SA_GLOBAL_VARIABLE(spb_mutex).Term();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

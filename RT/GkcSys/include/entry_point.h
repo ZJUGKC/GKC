@@ -11,17 +11,33 @@
 */
 
 /*
-This file contains main function.
+This file contains entry point function for SA.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "precomp.h"
-
-#include "entry_point.h"
+#include "globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "base/GkcConsoleMain.cpp"
+// ProgramEntryPoint
 
-///////////////////////////////////////////////////////////////////////////////
+class ProgramEntryPoint
+{
+public:
+	static bool SAMain(bool bInitOrDump)
+	{
+		if( bInitOrDump ) {
+			//init
+			if( !init_globals() )
+				return false;
+		}
+		else {
+			//dump
+			dump_globals();
+		}
+		return true;
+	}
+};
+
+////////////////////////////////////////////////////////////////////////////////

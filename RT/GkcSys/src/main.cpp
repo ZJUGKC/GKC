@@ -18,29 +18,7 @@ This file contains main functions for SA.
 
 #include "precomp.h"
 
-#include "globals.h"
-
-////////////////////////////////////////////////////////////////////////////////
-
-// ProgramEntryPoint
-
-class ProgramEntryPoint
-{
-public:
-	static bool SAMain(bool bInitOrDump)
-	{
-		if( bInitOrDump ) {
-			//init
-			if( !init_globals() )
-				return false;
-		}
-		else {
-			//dump
-			dump_globals();
-		}
-		return true;
-	}
-};
+#include "entry_point.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 

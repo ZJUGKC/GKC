@@ -23,7 +23,7 @@ This file contains entry point function.
 class ProgramEntryPoint
 {
 public:
-	static int ConsoleMain(GKC::ConstArray<GKC::ConstStringS>& args, GKC::ConstArray<GKC::ConstStringS>& env)
+	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env)
 	{
 		return 0;
 	}

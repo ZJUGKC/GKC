@@ -43,13 +43,13 @@ inline void _cmdline_to_strings(int argc, wchar_t *argv[], wchar_t *envp[],  //i
 
 	//fill
 	for( uintptr i = 0; i < (uintptr)argc; i ++ ) {
-		parr1[i].SetPointer(argv[i], ::lstrlenW(argv[i]));
+		ConstHelper::SetPointer(argv[i], ::lstrlenW(argv[i]), parr1[i]);
 	}
-	args.SetPointer(parr1, (uintptr)argc);
+	ConstHelper::SetPointer(parr1, (uintptr)argc, args);
 	for( uintptr i = 0; i < env_num; i ++ ) {
-		parr2[i].SetPointer(envp[i], ::lstrlenW(envp[i]));
+		ConstHelper::SetPointer(envp[i], ::lstrlenW(envp[i]), parr2[i]);
 	}
-	env.SetPointer(parr2, env_num);
+	ConstHelper::SetPointer(parr2, env_num, env);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

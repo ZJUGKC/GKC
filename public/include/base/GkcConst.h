@@ -87,13 +87,6 @@ public:
 		return m_first == NULL;
 	}
 
-	//assignment, only for special case
-	void SetPointer(const T* p, uintptr size) throw()
-	{
-		m_first = p;
-		m_size  = size;
-	}
-
 	//iterator
 	const Iterator GetBegin() const throw()
 	{
@@ -121,6 +114,9 @@ public:
 private:
 	const T*  m_first;
 	uintptr   m_size;
+
+private:
+	friend class ConstHelper;
 };
 
 // macros
@@ -193,6 +189,13 @@ typedef ConstString<CharW>  ConstStringW;   //wide version
 class ConstHelper
 {
 public:
+	//set pointer
+	template <typename T>
+	static void SetPointer(const T* p, uintptr size, ConstArray<T>& arr) throw()
+	{
+		arr.m_first = p;
+		arr.m_size  = size;
+	}
 	//type cast
 	template <class T, class TBase>
 	static const TBase& TypeCast(const T& src) throw()

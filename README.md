@@ -12,4 +12,4 @@ Visual Studio Express 2013
 
 ### Linux
 
-g++-4.8
+g++-4.9

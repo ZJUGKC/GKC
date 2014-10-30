@@ -196,4 +196,42 @@ MACRO(SET_PCH targetName targetType pchHeader pchSource SourceList)
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_PCH)
 
+#Set post-building copy command
+#Source : the source string
+#Dest : the dest string
+MACRO(SET_POSTBUILD_COPY targetName Source Dest)
+	IF(WIN32)
+		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
+							COMMAND copy ARGS "/Y" "/L" "${Source}" "${Dest}"
+							VERBATIM)
+	ENDIF(WIN32)
+	IF(CMAKE_COMPILER_IS_GNUCXX)
+		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
+							COMMAND cp ARGS -pdf ${Source} ${Dest}
+							)
+	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+ENDMACRO(SET_POSTBUILD_COPY)
+
+MACRO(SET_POSTBUILD_PATH_COPY targetName SourcePath Source Dest)
+	SET(_source "${SourcePath}")
+	IF(WIN32)
+		SET(_source "${_source}/windows")
+	ENDIF(WIN32)
+	IF(CMAKE_COMPILER_IS_GNUCXX)
+		SET(_source "${_source}/linux")
+	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+	IF(USE_64BITS)
+		SET(_source "${_source}/x64")
+	ELSE(USE_64BITS)
+		SET(_source "${_source}/x86")
+	ENDIF(USE_64BITS)
+	SET(_source "${_source}/${Source}")
+	SET(_dest "${Dest}")
+	IF(WIN32)
+		STRING(REPLACE "/" "\\\\" _source ${_source})
+		STRING(REPLACE "/" "\\\\" _dest ${_dest})
+	ENDIF(WIN32)
+	SET_POSTBUILD_COPY(${targetName} ${_source} ${_dest})
+ENDMACRO(SET_POSTBUILD_PATH_COPY)
+
 #end

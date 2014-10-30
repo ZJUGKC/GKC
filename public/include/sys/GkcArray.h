@@ -395,7 +395,7 @@ public:
 	{
 		assert( m_pB != NULL );
 		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-		assert( !pB->GetMemoryManager().IsNull() );
+		assert( !(pB->GetMemoryManager().IsNull()) );
 		uintptr uSize = pB->GetLength();
 		if( uSize == pB->GetAllocLength() )
 			return ;
@@ -409,7 +409,7 @@ public:
 		}
 		uintptr uBytes;
 		SafeOperators::Multiply(uSize, sizeof(T), uBytes);  //no check
-		T* pNew = (T*)pB->GetMemoryManager().Deref().Reallocate(m_pT, uBytes);
+		T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)m_pT, uBytes));
 		if( pNew == NULL )
 			return ;
 		m_pT = pNew;
@@ -556,7 +556,7 @@ private:
 				throw OverflowException();
 			//reallocate
 			//  because uBytes != 0, m_pT is not freed
-			T* pNew = static_cast<T*>(pB->GetMemoryManager().Deref().Reallocate((uintptr)m_pT, uBytes);
+			T* pNew = static_cast<T*>(pB->GetMemoryManager().Deref().Reallocate((uintptr)m_pT, uBytes));
 			if( pNew == NULL )
 				throw OutOfMemoryException();
 			m_pT = pNew;

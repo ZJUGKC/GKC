@@ -280,7 +280,7 @@ public:
 		if( pB == NULL )
 			throw( OutOfMemoryException() );
 
-		T* pT = (T*)mgr.Deref().Allocate(sizeof(T));
+		T* pT = (T*)(mgr.Deref().Allocate(sizeof(T)));
 		if( pT == NULL ) {
 			SharedPtrBlockHelper::Free(pB);
 			throw( OutOfMemoryException() );
@@ -373,8 +373,20 @@ public:
 	static SharedPtr<T> Clone(const SharedPtr<T>& sp)  //may throw
 	{
 		return ( !sp.IsNull() )
-			? MakeSharedPtr(sp.m_pB->GetMemoryManager(), sp.m_pB->GetTypeProcess(), sp.Deref());
-			: SharedPtr<T>();
+				? MakeSharedPtr(sp.m_pB->GetMemoryManager(), sp.m_pB->GetTypeProcess(), sp.Deref());
+				: SharedPtr<T>();
+	}
+
+	//get internal pointer
+	template <typename T>
+	static const T* GetInternalPointer(const SharedPtr<T>& sp) throw()
+	{
+		return sp.m_pT;
+	}
+	template <typename T>
+	static T* GetInternalPointer(SharedPtr<T>& sp) throw()
+	{
+		return sp.m_pT;
 	}
 };
 

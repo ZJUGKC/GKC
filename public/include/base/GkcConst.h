@@ -189,9 +189,9 @@ typedef ConstString<CharW>  ConstStringW;   //wide version
 class ConstHelper
 {
 public:
-	//set pointer
+	//set internal pointer
 	template <typename T>
-	static void SetPointer(const T* p, uintptr size, ConstArray<T>& arr) throw()
+	static void SetInternalPointer(const T* p, uintptr size, ConstArray<T>& arr) throw()
 	{
 		arr.m_first = p;
 		arr.m_size  = size;

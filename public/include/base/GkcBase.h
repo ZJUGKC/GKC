@@ -213,7 +213,7 @@ public:
 		while( uElements >= uMinElements ) {
 			//no overflow
 			uBytes = uElements * uElementSize + sizeof(void*);
-			pPlex = (void*)m_mgr.Deref().Allocate(uBytes);
+			pPlex = (void*)(m_mgr.Deref().Allocate(uBytes));
 			if( pPlex == NULL ) {
 				uElements --;
 				continue;
@@ -276,6 +276,17 @@ public:
 		if( tSrc.m_p != tDest.m_p && !tSrc.IsNull() && !tDest.IsNull() ) {
 			tDest.Deref() = tSrc.Deref();
 		}
+	}
+	//get internal pointer
+	template <class T>
+	static const T* GetInternalPointer(const RefPtr<T>& t) throw()
+	{
+		return t.m_p;
+	}
+	template <class T>
+	static T* GetInternalPointer(RefPtr<T>& t) throw()
+	{
+		return t.m_p;
 	}
 };
 
@@ -679,11 +690,11 @@ public:
 	//methods
 	void MoveNext() throw()
 	{
-		m_element = &m_element.Deref() + 1;
+		m_element = &(m_element.Deref()) + 1;
 	}
 	void MovePrev() throw()
 	{
-		m_element = &m_element.Deref() - 1;
+		m_element = &(m_element.Deref()) - 1;
 	}
 
 private:

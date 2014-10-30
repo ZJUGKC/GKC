@@ -43,13 +43,13 @@ inline void _cmdline_to_strings(int argc, char *argv[], char *envp[],  //in
 
 	//fill
 	for( uintptr i = 0; i < (uintptr)argc; i ++ ) {
-		ConstHelper::SetPointer(argv[i], ::strlen(argv[i]), parr1[i]);
+		GKC::ConstHelper::SetInternalPointer(argv[i], ::strlen(argv[i]), parr1[i]);
 	}
-	ConstHelper::SetPointer(parr1, (uintptr)argc, args);
+	GKC::ConstHelper::SetInternalPointer(parr1, (uintptr)argc, args);
 	for( uintptr i = 0; i < env_num; i ++ ) {
-		ConstHelper::SetPointer(envp[i], ::strlen(envp[i]), parr2[i]);
+		GKC::ConstHelper::SetInternalPointer(envp[i], ::strlen(envp[i]), parr2[i]);
 	}
-	ConstHelper::SetPointer(parr2, env_num, env);
+	GKC::ConstHelper::SetInternalPointer(parr2, env_num, env);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

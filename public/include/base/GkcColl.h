@@ -31,11 +31,11 @@ namespace GKC {
 
 // SingleList<T>
 
-template <typename T>
+template <typename T, class TCompareTrait = GKC::CompareTrait<T>>
 class SingleList
 {
 private:
-	typedef SingleList<T>  thisClass;
+	typedef SingleList<T, TCompareTrait>  thisClass;
 
 	//internal node
 	struct _Node
@@ -230,7 +230,7 @@ public:
 			pNode = pNode->m_pNext;  // start after the one specified
 		}
 		for( ; pNode != NULL; pNode = pNode->m_pNext ) {
-			if( LogicalOperators::IsEqual(pNode->m_t, t) )
+			if( TCompareTrait::IsEQ(pNode->m_t, t) )
 				return get_iterator(pNode);
 		}
 		return get_iterator(NULL);
@@ -336,11 +336,11 @@ private:
 
 // List<T>
 
-template <typename T>
+template <typename T, class TCompareTrait = GKC::CompareTrait<T>>
 class List
 {
 private:
-	typedef List<T>  thisClass;
+	typedef List<T, TCompareTrait>  thisClass;
 
 	//internal node
 	struct _Node
@@ -898,7 +898,7 @@ public:
 			pNode = pNode->m_pNext;  // start after the one specified
 		}
 		for( ; pNode != NULL; pNode = pNode->m_pNext ) {
-			if( LogicalOperators::IsEqual(pNode->m_t, t) )
+			if( TCompareTrait::IsEQ(pNode->m_t, t) )
 				return get_iterator(pNode);
 		}
 		return get_iterator(NULL);

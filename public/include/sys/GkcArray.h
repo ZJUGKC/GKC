@@ -35,7 +35,7 @@ namespace GKC {
 
 // FixedArray<T, t_size>
 
-template <typename T, uintptr t_size>
+template <typename T, uintptr t_size, class TCompareTrait = GKC::CompareTrait<T>>
 class FixedArray
 {
 public:
@@ -44,7 +44,7 @@ public:
 	typedef T EType;   //element type
 
 private:
-	typedef FixedArray<T, t_size>  thisClass;
+	typedef FixedArray<T, t_size, TCompareTrait>  thisClass;
 
 public:
 	//iterator
@@ -117,7 +117,7 @@ public:
 	bool operator==(const thisClass& right) const throw()
 	{
 		for( uintptr i = 0; i < t_size; i ++ ) {
-			if( LogicalOperators::IsNE(m_data[i], right.m_data[i]) )
+			if( TCompareTrait::IsNE(m_data[i], right.m_data[i]) )
 				return false;
 		}
 		return true;
@@ -125,7 +125,7 @@ public:
 	bool operator!=(const thisClass& right) const throw()
 	{
 		for( uintptr i = 0; i < t_size; i ++ ) {
-			if( LogicalOperators::IsNE(m_data[i], right.m_data[i]) )
+			if( TCompareTrait::IsNE(m_data[i], right.m_data[i]) )
 				return true;
 		}
 		return false;
@@ -145,12 +145,12 @@ private:
 
 // FixedArrayEndian<T, t_size, t_bBigEndian>
 
-template <typename T, uintptr t_size, bool t_bBigEndian>
-class FixedArrayEndian : public FixedArray<T, t_size>
+template <typename T, uintptr t_size, bool t_bBigEndian, class TCompareTrait = GKC::CompareTrait<T>>
+class FixedArrayEndian : public FixedArray<T, t_size, TCompareTrait>
 {
 private:
-	typedef FixedArrayEndian<T, t_size, t_bBigEndian>  thisClass;
-	typedef FixedArray<T, t_size>  baseClass;
+	typedef FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>  thisClass;
+	typedef FixedArray<T, t_size, TCompareTrait>  baseClass;
 
 public:
 	FixedArrayEndian()
@@ -171,22 +171,22 @@ public:
 };
 
 //logical special
-template <typename T, uintptr t_size, bool t_bBigEndian>
-inline bool LogicalOperators::IsLT<FixedArrayEndian<T, t_size, t_bBigEndian>>(const FixedArrayEndian<T, t_size, t_bBigEndian>& t1, const FixedArrayEndian<T, t_size, t_bBigEndian>& t2) throw()
+template <typename T, uintptr t_size, bool t_bBigEndian, class TCompareTrait>
+inline bool LogicalOperators::IsLT<FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>>(const FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>& t1, const FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>& t2) throw()
 {
 	if( t_bBigEndian ) {
 		for( uintptr i = 0; i < t_size; i ++ ) {
-			if( LogicalOperators::IsGT<T>(t1[i].get_Value(), t2[i].get_Value()) )
+			if( TCompareTrait::IsGT(t1[i].get_Value(), t2[i].get_Value()) )
 				return false;
-			if( LogicalOperators::IsLT<T>(t1[i].get_Value(), t2[i].get_Value()) )
+			if( TCompareTrait::IsLT(t1[i].get_Value(), t2[i].get_Value()) )
 				return true;
 		}
 	}
 	else {
 		for( uintptr i = t_size; i > 0; i -- ) {
-			if( LogicalOperators::IsGT<T>(t1[i - 1].get_Value(), t2[i - 1].get_Value()) )
+			if( TCompareTrait::IsGT(t1[i - 1].get_Value(), t2[i - 1].get_Value()) )
 				return false;
-			if( LogicalOperators::IsLT<T>(t1[i - 1].get_Value(), t2[i - 1].get_Value()) )
+			if( TCompareTrait::IsLT(t1[i - 1].get_Value(), t2[i - 1].get_Value()) )
 				return true;
 		}
 	} //end if

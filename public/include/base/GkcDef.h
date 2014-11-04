@@ -408,6 +408,66 @@ inline bool LogicalOperators::IsLT<double>(const double& t1, const double& t2) t
 }
 
 //------------------------------------------------------------------------------
+//Traits
+
+// CompareTrait
+
+template <typename T>
+class CompareTrait
+{
+public:
+	//common versions
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return LogicalOperators::IsEqual(t1, t2);
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return LogicalOperators::IsNE(t1, t2);
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return LogicalOperators::IsGT(t1, t2);
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return LogicalOperators::IsLT(t1, t2);
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return LogicalOperators::IsGE(t1, t2);
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return LogicalOperators::IsLE(t1, t2);
+	}
+};
+
+// OrderTrait
+
+template <typename T>
+class OrderTrait
+{
+public:
+	static int CalcOrder(const T& t1, const T& t2) throw()
+	{
+		if( LogicalOperators::IsLT(t1, t2) )
+			return -1;
+		if( LogicalOperators::IsEqual(t1, t2) )
+			return 0;
+		return 1;
+	}
+};
+
+//special versions
+
+/*
+3 layers:
+native : == != ...
+LogicalOperators
+<Element>Trait
+*/
+//------------------------------------------------------------------------------
 //iterator
 
 // ReverseIterator<T>

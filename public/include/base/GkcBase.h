@@ -107,6 +107,22 @@ public:
 	{
 		return !(*this == right);
 	}
+	bool operator<(const RefPtr<T>& right) const throw()
+	{
+		return m_p < right.m_p;
+	}
+	bool operator>(const RefPtr<T>& right) const throw()
+	{
+		return right < *this;
+	}
+	bool operator<=(const RefPtr<T>& right) const throw()
+	{
+		return !operator>(right);
+	}
+	bool operator>=(const RefPtr<T>& right) const throw()
+	{
+		return !operator<(right);
+	}
 
 	//methods
 	bool IsNull() const throw()
@@ -279,12 +295,7 @@ public:
 	}
 	//get internal pointer
 	template <class T>
-	static const T* GetInternalPointer(const RefPtr<T>& t) throw()
-	{
-		return t.m_p;
-	}
-	template <class T>
-	static T* GetInternalPointer(RefPtr<T>& t) throw()
+	static T* GetInternalPointer(const RefPtr<T>& t) throw()
 	{
 		return t.m_p;
 	}
@@ -686,6 +697,22 @@ public:
 	{
 		return m_element != right.m_element;
 	}
+	bool operator<(const ArrayIterator<T>& right) const throw()
+	{
+		return m_element < right.m_element;
+	}
+	bool operator>(const ArrayIterator<T>& right) const throw()
+	{
+		return right < *this;
+	}
+	bool operator<=(const ArrayIterator<T>& right) const throw()
+	{
+		return !operator>(right);
+	}
+	bool operator>=(const ArrayIterator<T>& right) const throw()
+	{
+		return !operator<(right);
+	}
 
 	//methods
 	void MoveNext() throw()
@@ -695,6 +722,10 @@ public:
 	void MovePrev() throw()
 	{
 		m_element = &(m_element.Deref()) - 1;
+	}
+	void MoveDelta(intptr iDelta) throw()
+	{
+		m_element = &(m_element.Deref()) + iDelta;
 	}
 
 private:

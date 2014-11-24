@@ -379,12 +379,7 @@ public:
 
 	//get internal pointer
 	template <typename T>
-	static const T* GetInternalPointer(const SharedPtr<T>& sp) throw()
-	{
-		return sp.m_pT;
-	}
-	template <typename T>
-	static T* GetInternalPointer(SharedPtr<T>& sp) throw()
+	static T* GetInternalPointer(const SharedPtr<T>& sp) throw()
 	{
 		return sp.m_pT;
 	}

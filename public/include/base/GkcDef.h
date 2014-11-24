@@ -461,6 +461,22 @@ public:
 
 //special versions
 
+
+// HashTrait
+
+template <typename T>
+class HashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		return (uintptr)t;
+	}
+};
+
+//special versions
+
+
 /*
 3 layers:
 native : == != ...
@@ -545,6 +561,157 @@ public:
 
 private:
 	T m_iter;
+};
+
+//------------------------------------------------------------------------------
+//tuple
+
+// Pair<T1, T2>
+
+template <typename T1, typename T2>
+class Pair
+{
+private:
+	typedef Pair<T1, T2>  thisClass;
+
+public:
+	typedef T1  E1;
+	typedef T2  E2;
+
+public:
+	Pair()
+	{
+	}
+	explicit Pair(const T1& t1) : m_t1(t1)
+	{
+	}
+	explicit Pair(T1&& t1) : m_t1(rv_forward(t1))
+	{
+	}
+	Pair(const T1& t1, const T2& t2) : m_t1(t1), m_t2(t2)
+	{
+	}
+	Pair(T1&& t1, T2&& t2) : m_t1(rv_forward(t1)), m_t2(rv_forward(t2))
+	{
+	}
+	Pair(const thisClass& src) : m_t1(src.m_t1), m_t2(src.m_t2)
+	{
+	}
+	Pair(thisClass&& src) : m_t1(rv_forward(src.m_t1)), m_t2(rv_forward(src.m_t2))
+	{
+	}
+	~Pair() throw()
+	{
+	}
+
+	thisClass& operator=(const thisClass& src)
+	{
+		if( this != &src ) {
+			m_t1 = src.m_t1;
+			m_t2 = src.m_t2;
+		}
+		return *this;
+	}
+	thisClass& operator=(thisClass&& src)
+	{
+		if( this != &src ) {
+			m_t1 = rv_forward(src.m_t1);
+			m_t2 = rv_forward(src.m_t2);
+		}
+		return *this;
+	}
+
+	bool operator==(const thisClass& src) const throw()
+	{
+		return m_t1 == src.m_t1 && m_t2 == src.m_t2;
+	}
+	bool operator!=(const thisClass& src) const throw()
+	{
+		return m_t1 != src.m_t1 || m_t2 != src.m_t2;
+	}
+
+	//properties
+	const T1& get_First() const throw()
+	{
+		return m_t1;
+	}
+	T1& get_First() throw()
+	{
+		return m_t1;
+	}
+	void set_First(const T1& t)
+	{
+		m_t1 = t;
+	}
+	void set_First(T1&& t)
+	{
+		m_t1 = rv_forward(t);
+	}
+
+	const T2& get_Second() const throw()
+	{
+		return m_t2;
+	}
+	T2& get_Second() throw()
+	{
+		return m_t2;
+	}
+	void set_Second(const T2& t)
+	{
+		m_t2 = t;
+	}
+	void set_Second(T2&& t)
+	{
+		m_t2 = rv_forward(t);
+	}
+
+private:
+	T1 m_t1;
+	T2 m_t2;
+};
+
+// KeyHelper
+
+class KeyHelper
+{
+public:
+	// T : can be const T
+	template <typename T>
+	static T& GetKey(T& pair) throw()
+	{
+		return pair;
+	}
+	//pair TKey : can be const TKey
+	template <typename TKey, typename TValue>
+	static const TKey& GetKey(const Pair<TKey, TValue>& pair) throw()
+	{
+		return pair.get_First();
+	}
+	template <typename TKey, typename TValue>
+	static TKey& GetKey(Pair<TKey, TValue>& pair) throw()
+	{
+		return pair.get_First();
+	}
+	template <typename TKey, typename TValue>
+	static const TValue& GetValue(const Pair<TKey, TValue>& pair) throw()
+	{
+		return pair.get_Second();
+	}
+	template <typename TKey, typename TValue>
+	static TValue& GetValue(Pair<TKey, TValue>& pair) throw()
+	{
+		return pair.get_Second();
+	}
+	template <typename TKey, typename TValue>
+	void SetValue(Pair<TKey, TValue>& pair, const TValue& t)  //may throw
+	{
+		pair.set_Second(t);
+	}
+	template <typename TKey, typename TValue>
+	void SetValue(Pair<TKey, TValue>& pair, TValue&& t)  //may throw
+	{
+		pair.set_Second(rv_forward(t));
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

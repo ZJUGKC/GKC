@@ -33,7 +33,7 @@ namespace GKC {
 
 // classes
 
-// FixedArray<T, t_size>
+// FixedArray<T, t_size, TCompareTrait>
 
 template <typename T, uintptr t_size, class TCompareTrait = GKC::CompareTrait<T>>
 class FixedArray
@@ -42,6 +42,7 @@ public:
 	static const uintptr c_size = t_size;  //!< The number of elements.
 
 	typedef T EType;   //element type
+	typedef TCompareTrait  ECompareTrait;  //element trait
 
 private:
 	typedef FixedArray<T, t_size, TCompareTrait>  thisClass;
@@ -74,30 +75,55 @@ public:
 		return *this;
 	}
 
-	Iterator operator[](uintptr index) const throw()
+	const Iterator operator[](uintptr index) const throw()
+	{
+		return GetAt(index);
+	}
+	Iterator operator[](uintptr index) throw()
 	{
 		return GetAt(index);
 	}
 
 	//iterator
-	Iterator GetBegin() const throw()
+	const Iterator GetBegin() const throw()
 	{
 		return Iterator(RefPtr<T>(m_data));
 	}
-	Iterator GetEnd() const throw()
+	Iterator GetBegin() throw()
+	{
+		return Iterator(RefPtr<T>(m_data));
+	}
+	const Iterator GetEnd() const throw()
 	{
 		return Iterator(RefPtr<T>(m_data + t_size));
 	}
-	ReverseIterator<Iterator> GetReverseBegin() const throw()
+	Iterator GetEnd() throw()
+	{
+		return Iterator(RefPtr<T>(m_data + t_size));
+	}
+	const ReverseIterator<Iterator> GetReverseBegin() const throw()
 	{
 		return ReverseIterator<Iterator>(GetEnd());
 	}
-	ReverseIterator<Iterator> GetReverseEnd() const throw()
+	ReverseIterator<Iterator> GetReverseBegin() throw()
+	{
+		return ReverseIterator<Iterator>(GetEnd());
+	}
+	const ReverseIterator<Iterator> GetReverseEnd() const throw()
+	{
+		return ReverseIterator<Iterator>(GetBegin());
+	}
+	ReverseIterator<Iterator> GetReverseEnd() throw()
 	{
 		return ReverseIterator<Iterator>(GetBegin());
 	}
 
-	Iterator GetAt(uintptr index) const throw()
+	const Iterator GetAt(uintptr index) const throw()
+	{
+		assert( index < t_size );
+		return Iterator(RefPtr<T>(m_data + index));
+	}
+	Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < t_size );
 		return Iterator(RefPtr<T>(m_data + index));
@@ -130,6 +156,35 @@ public:
 		}
 		return false;
 	}
+	//little endian
+	bool operator<(const thisClass& right) const throw()
+	{
+		for( uintptr i = t_size; i > 0; i -- ) {
+			if( TCompareTrait::IsGT(m_data[i - 1], right.m_data[i - 1]) )
+				return false;
+			if( TCompareTrait::IsLT(m_data[i - 1], right.m_data[i - 1]) )
+				return true;
+		}
+		return false;
+	}
+	bool operator>(const thisClass& right) const throw()
+	{
+		for( uintptr i = t_size; i > 0; i -- ) {
+			if( TCompareTrait::IsGT(m_data[i - 1], right.m_data[i - 1]) )
+				return true;
+			if( TCompareTrait::IsLT(m_data[i - 1], right.m_data[i - 1]) )
+				return false;
+		}
+		return false;
+	}
+	bool operator<=(const thisClass& right) const throw()
+	{
+		return !operator>(right);
+	}
+	bool operator>=(const thisClass& right) const throw()
+	{
+		return !operator<(right);
+	}
 
 private:
 	static void copy_elements(const T* pSrc, T* pDest, uintptr size)
@@ -143,55 +198,46 @@ private:
 	T m_data[t_size];  //array
 };
 
-// FixedArrayEndian<T, t_size, t_bBigEndian>
+// Big Endian
 
-template <typename T, uintptr t_size, bool t_bBigEndian, class TCompareTrait = GKC::CompareTrait<T>>
-class FixedArrayEndian : public FixedArray<T, t_size, TCompareTrait>
+// FixedArrayBigEndianCompareTrait<T>
+//  T: FixedArray<...>
+
+template <class T>
+class FixedArrayBigEndianCompareTrait : public GKC::CompareTrait<T>
 {
-private:
-	typedef FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>  thisClass;
-	typedef FixedArray<T, t_size, TCompareTrait>  baseClass;
-
 public:
-	FixedArrayEndian()
+	//IsEQ
+	//IsNE
+	static bool IsGT(const T& t1, const T& t2) throw()
 	{
+		for( uintptr i = 0; i < T::c_size; i ++ ) {
+			if( T::ECompareTrait::IsGT(t1[i].get_Value(), t2[i].get_Value()) )
+				return true;
+			if( T::ECompareTrait::IsLT(t1[i].get_Value(), t2[i].get_Value()) )
+				return false;
+		}
+		return false;
 	}
-	FixedArrayEndian(const thisClass& src) : baseClass(static_cast<const baseClass&>(src))
+	static bool IsLT(const T& t1, const T& t2) throw()
 	{
+		for( uintptr i = 0; i < T::c_size; i ++ ) {
+			if( T::ECompareTrait::IsGT(t1[i].get_Value(), t2[i].get_Value()) )
+				return false;
+			if( T::ECompareTrait::IsLT(t1[i].get_Value(), t2[i].get_Value()) )
+				return true;
+		}
+		return false;
 	}
-	~FixedArrayEndian() throw()
+	static bool IsGE(const T& t1, const T& t2) throw()
 	{
+		return !IsLT(t1, t2);
 	}
-
-	thisClass& operator=(const thisClass& src)
+	static bool IsLE(const T& t1, const T& t2) throw()
 	{
-		baseClass::operator=(static_cast<const baseClass&>(src));
-		return *this;
+		return !IsGT(t1, t2);
 	}
 };
-
-//logical special
-template <typename T, uintptr t_size, bool t_bBigEndian, class TCompareTrait>
-inline bool LogicalOperators::IsLT<FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>>(const FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>& t1, const FixedArrayEndian<T, t_size, t_bBigEndian, TCompareTrait>& t2) throw()
-{
-	if( t_bBigEndian ) {
-		for( uintptr i = 0; i < t_size; i ++ ) {
-			if( TCompareTrait::IsGT(t1[i].get_Value(), t2[i].get_Value()) )
-				return false;
-			if( TCompareTrait::IsLT(t1[i].get_Value(), t2[i].get_Value()) )
-				return true;
-		}
-	}
-	else {
-		for( uintptr i = t_size; i > 0; i -- ) {
-			if( TCompareTrait::IsGT(t1[i - 1].get_Value(), t2[i - 1].get_Value()) )
-				return false;
-			if( TCompareTrait::IsLT(t1[i - 1].get_Value(), t2[i - 1].get_Value()) )
-				return true;
-		}
-	} //end if
-	return false;
-}
 
 // SharedArray<T>
 
@@ -292,7 +338,11 @@ public:
 		return *this;
 	}
 
-	Iterator operator[](uintptr index) const throw()
+	const Iterator operator[](uintptr index) const throw()
+	{
+		return GetAt(index);
+	}
+	Iterator operator[](uintptr index) throw()
 	{
 		return GetAt(index);
 	}
@@ -320,23 +370,45 @@ public:
 	}
 
 	//iterator
-	Itertaor GetBegin() const throw()
+	const Iterator GetBegin() const throw()
 	{
 		return Iterator(RefPtr<T>(m_pT));
 	}
-	Iterator GetEnd() const throw()
+	Iterator GetBegin() throw()
+	{
+		return Iterator(RefPtr<T>(m_pT));
+	}
+	const Iterator GetEnd() const throw()
 	{
 		return Iterator(RefPtr<T>(m_pT + GetCount()));
 	}
-	Iterator GetReverseBegin() const throw()
+	Iterator GetEnd() throw()
+	{
+		return Iterator(RefPtr<T>(m_pT + GetCount()));
+	}
+	const Iterator GetReverseBegin() const throw()
 	{
 		return ReverseIterator<Iterator>(GetEnd());
 	}
-	Iterator GetReverseEnd() const throw()
+	Iterator GetReverseBegin() throw()
+	{
+		return ReverseIterator<Iterator>(GetEnd());
+	}
+	const Iterator GetReverseEnd() const throw()
 	{
 		return ReverseIterator<Iterator>(GetBegin());
 	}
-	Iterator GetAt(uintptr index) const throw()
+	Iterator GetReverseEnd() throw()
+	{
+		return ReverseIterator<Iterator>(GetBegin());
+	}
+
+	const Iterator GetAt(uintptr index) const throw()
+	{
+		assert( index < GetCount() );
+		return Iterator(RefPtr<T>(m_pT + index));
+	}
+	Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < GetCount() );
 		return Iterator(RefPtr<T>(m_pT + index));

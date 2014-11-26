@@ -1297,7 +1297,55 @@ public:
 		_Node*  pPrev;
 		return get_iterator(find_node(key, uBin, uHash, pPrev));
 	}
+	//find next key
+	Iterator FindNext(const Iterator& iter) const throw()
+	{
+		assert( iter != GetEnd() );
+		_Node*  pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		uintptr uHash = pNode->m_uHashCode;
+		const Tkey& key = KeyHelper::GetKey<const TKey>(pNode->m_t);
+		pNode = pNode->m_pNext;
+		while( pNode != NULL ) {
+			if( (pNode->m_uHashCode == uHash) && TCompareTrait::IsEQ(KeyHelper::GetKey(pNode->m_t), key) ) {
+				return get_iterator(pNode);
+			}
+			pNode = pNode->m_pNext;
+		}
+		return get_iterator(NULL);
+	}
+
 	//add
+	Iterator InsertWithoutFind(const TKey& key)  //may throw
+	{
+		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uBin  = uHash % m_uBins;
+		_Node* pNode = create_node(static_cast<const _Key&>(key), uBin, uHash);  //may throw
+		return get_iterator(pNode);
+	}
+	Iterator InsertWithoutFind(TKey&& key)  //may throw
+	{
+		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uBin  = uHash % m_uBins;
+		_Node* pNode = create_node(rv_forward(static_cast<_Key&>(key)), uBin, uHash);  //may throw
+		return get_iterator(pNode);
+	}
+	template <typename TValue>
+	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	{
+		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uBin  = uHash % m_uBins;
+		_Node* pNode = create_node(key, val, uBin, uHash);  //may throw
+		return get_iterator(pNode);
+	}
+	template <typename TValue>
+	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	{
+		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uBin  = uHash % m_uBins;
+		_Node* pNode = create_node(rv_forward(key), rv_forward(val), uBin, uHash);  //may throw
+		return get_iterator(pNode);
+	}
+
 	Iterator Insert(const TKey& key)  //may throw
 	{
 		uintptr uBin;
@@ -1318,6 +1366,33 @@ public:
 			pNode = create_node(rv_forward(static_cast<_Key&>(key)), uBin, uHash);  //may throw
 		return get_iterator(pNode);
 	}
+	template <typename TValue>
+	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	{
+		uintptr uBin;
+		uintptr uHash;
+		_Node* pPrev;
+		_Node* pNode = find_node(key, uBin, uHash, pPrev);
+		if( pNode == NULL )
+			pNode = create_node(key, val, uBin, uHash);  //may throw
+		else
+			pNode->m_t.set_Second(val);  //may throw
+		return get_iterator(pNode);
+	}
+	template <typename TValue>
+	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	{
+		uintptr uBin;
+		uintptr uHash;
+		_Node* pPrev;
+		_Node* pNode = find_node(key, uBin, uHash, pPrev);
+		if( pNode == NULL )
+			pNode = create_node(rv_forward(key), rv_forward(val), uBin, uHash);  //may throw
+		else
+			pNode->m_t.set_Second(rv_forward(val));  //may throw
+		return get_iterator(pNode);
+	}
+
 	//remove
 	bool Remove(const TKey& key) throw()
 	{
@@ -1648,66 +1723,6 @@ private:
 	_HashTable& operator=(const _HashTable&) throw();
 };
 
-// _HashMultiTable<TKey, TPair, THashTrait, TCompareTrait>
-
-template <typename TKey, class TPair, class THashTrait = GKC::HashTrait<TKey>, class TCompareTrait = GKC::CompareTrait<TKey>>
-class _HashMultiTable : public _HashTable<TKey, TPair, THashTrait, TCompareTrait>
-{
-private:
-	typedef _HashMultiTable<TKey, TPair, THashTrait, TCompareTrait>  thisClass;
-	typedef _HashTable<TKey, TPair, THashTrait, TCompareTrait>  baseClass;
-
-public:
-	_HashMultiTable(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
-					float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
-					uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-					: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
-	{
-	}
-	~_HashMultiTable() throw()
-	{
-	}
-
-	//find next key
-	Iterator FindNext(const Iterator& iter) const throw()
-	{
-		assert( iter != GetEnd() );
-		_Node*  pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
-		uintptr uHash = pNode->m_uHashCode;
-		const Tkey& key = KeyHelper::GetKey<const TKey>(pNode->m_t);
-		pNode = pNode->m_pNext;
-		while( pNode != NULL ) {
-			if( (pNode->m_uHashCode == uHash) && TCompareTrait::IsEQ(KeyHelper::GetKey(pNode->m_t), key) ) {
-				return get_iterator(pNode);
-			}
-			pNode = pNode->m_pNext;
-		}
-		return get_iterator(NULL);
-	}
-	//add
-	Iterator Insert(const TKey& key)  //may throw
-	{
-		uintptr uHash = THashTraits::CalcHash(key);
-		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(static_cast<const _Key&>(key), uBin, uHash);  //may throw
-		return get_iterator(pNode);
-	}
-	Iterator Insert(TKey&& key)  //may throw
-	{
-		uintptr uHash = THashTraits::CalcHash(key);
-		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(rv_forward(static_cast<_Key&>(key)), uBin, uHash);  //may throw
-		return get_iterator(pNode);
-	}
-
-private:
-	bool Remove(const TKey& key) throw();
-
-	//non-copyable
-	_HashMultiTable(const _HashMultiTable&) throw();
-	_HashMultiTable& operator=(const _HashMultiTable&) throw();
-};
-
 // HashList<TKey, THashTrait, TCompareTrait>
 
 template <typename TKey, class THashTrait = GKC::HashTrait<T>, class TCompareTrait = GKC::CompareTrait<T>>
@@ -1728,6 +1743,8 @@ public:
 	}
 
 private:
+	Iterator FindNext(const Iterator& iter) const throw();
+
 	//non-copyable
 	HashList(const HashList&) throw();
 	HashList& operator=(const HashList&) throw();
@@ -1736,10 +1753,10 @@ private:
 // HashMultiList<TKey, THashTrait, TCompareTrait>
 
 template <typename TKey, class THashTrait = GKC::HashTrait<T>, class TCompareTrait = GKC::CompareTrait<T>>
-class HashMultiList : public _HashMultiTable<TKey, const TKey, THashTrait, TCompareTrait>
+class HashMultiList : public _HashTable<TKey, const TKey, THashTrait, TCompareTrait>
 {
 private:
-	typedef _HashMultiTable<TKey, const TKey, THashTrait, TCompareTrait>  baseClass;
+	typedef _HashTable<TKey, const TKey, THashTrait, TCompareTrait>  baseClass;
 
 public:
 	HashMultiList(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
@@ -1752,7 +1769,19 @@ public:
 	{
 	}
 
+	//add
+	Iterator Insert(const TKey& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key);
+	}
+	Iterator Insert(TKey&& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key));
+	}
+
 private:
+	bool Remove(const TKey& key) throw();
+
 	//non-copyable
 	HashMultiList(const HashMultiList&) throw();
 	HashMultiList& operator=(const HashMultiList&) throw();
@@ -1780,32 +1809,26 @@ public:
 	}
 
 	//add
+	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key, val);
+	}
+	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
+	}
 	Iterator Insert(const TKey& key, const TValue& val)  //may throw
 	{
-		uintptr uBin;
-		uintptr uHash;
-		_Node* pPrev;
-		_Node* pNode = find_node(key, uBin, uHash, pPrev);
-		if( pNode == NULL )
-			pNode = create_node(key, val, uBin, uHash);  //may throw
-		else
-			pNode->m_t.set_Second(val);  //may throw
-		return get_iterator(pNode);
+		return baseClass::Insert(key, val);
 	}
 	Iterator Insert(TKey&& key, TValue&& val)  //may throw
 	{
-		uintptr uBin;
-		uintptr uHash;
-		_Node* pPrev;
-		_Node* pNode = find_node(key, uBin, uHash, pPrev);
-		if( pNode == NULL )
-			pNode = create_node(rv_forward(key), rv_forward(val), uBin, uHash);  //may throw
-		else
-			pNode->m_t.set_Second(rv_forward(val));  //may throw
-		return get_iterator(pNode);
+		return baseClass::Insert(rv_forward(key), rv_forward(val));
 	}
 
 private:
+	Iterator FindNext(const Iterator& iter) const throw()
+
 	//non-copyable
 	HashMap(const HashMap&) throw();
 	HashMap& operator=(const HashMap&) throw();
@@ -1814,12 +1837,12 @@ private:
 // HashMultiMap<TKey, TValue, THashTrait, TCompareTrait>
 
 template <typename TKey, typename TValue, class THashTrait = GKC::HashTrait<T>, class TCompareTrait = GKC::CompareTrait<T>>
-class HashMultiMap : public _HashMultiTable<TKey, Pair<const TKey, TValue>, THashTrait, TCompareTrait>
+class HashMultiMap : public _HashTable<TKey, Pair<const TKey, TValue>, THashTrait, TCompareTrait>
 {
 private:
 	typedef HashMultiMap<TKey, TValue, THashTrait, TCompareTrait>  thisClass;
 	typedef Pair<const TKey, TValue>  pairClass;
-	typedef _HashMultiTable<TKey, pairClass, THashTrait, TCompareTrait>  baseClass;
+	typedef _HashTable<TKey, pairClass, THashTrait, TCompareTrait>  baseClass;
 
 public:
 	HashMultiMap(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
@@ -1833,22 +1856,26 @@ public:
 	}
 
 	//add
+	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key, val);
+	}
+	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
+	}
 	Iterator Insert(const TKey& key, const TValue& val)  //may throw
 	{
-		uintptr uHash = THashTraits::CalcHash(key);
-		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(key, val, uBin, uHash);  //may throw
-		return get_iterator(pNode);
+		return baseClass::InsertWithoutFind(key, val);
 	}
 	Iterator Insert(TKey&& key, TValue&& val)  //may throw
 	{
-		uintptr uHash = THashTraits::CalcHash(key);
-		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(rv_forward(key), rv_forward(val), uBin, uHash);  //may throw
-		return get_iterator(pNode);
+		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
 	}
 
 private:
+	bool Remove(const TKey& key) throw();
+
 	//non-copyable
 	HashMultiMap(const HashMultiMap&) throw();
 	HashMultiMap& operator=(const HashMultiMap&) throw();

@@ -35,7 +35,7 @@ namespace GKC {
 
 // FixedArray<T, t_size, TCompareTrait>
 
-template <typename T, uintptr t_size, class TCompareTrait = GKC::CompareTrait<T>>
+template <typename T, uintptr t_size, class TCompareTrait = DefaultCompareTrait<T>>
 class FixedArray
 {
 public:
@@ -204,7 +204,7 @@ private:
 //  T: FixedArray<...>
 
 template <class T>
-class FixedArrayBigEndianCompareTrait : public GKC::CompareTrait<T>
+class FixedArrayBigEndianCompareTrait : public DefaultCompareTrait<T>
 {
 public:
 	//IsEQ

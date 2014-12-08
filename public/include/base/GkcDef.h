@@ -339,7 +339,7 @@ class LogicalOperators
 {
 public:
 	template <class T>
-	static bool IsEqual(const T& t1, const T& t2) throw()
+	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
 		return t1 == t2;
 	}
@@ -356,29 +356,29 @@ public:
 	template <class T>
 	static bool IsGT(const T& t1, const T& t2) throw()
 	{
-		return IsLT<T>(t2, t1);
+		return t1 > t2;
 	}
 	template <class T>
 	static bool IsLE(const T& t1, const T& t2) throw()
 	{
-		return !IsGT<T>(t1, t2);
+		return t1 <= t2;
 	}
 	template <class T>
 	static bool IsGE(const T& t1, const T& t2) throw()
 	{
-		return !IsLT<T>(t1, t2);
+		return t1 >= t2;
 	}
 };
 
 //special
 template <>
-inline bool LogicalOperators::IsEqual<float>(const float& t1, const float& t2) throw()
+inline bool LogicalOperators::IsEQ<float>(const float& t1, const float& t2) throw()
 {
 	return ::fabsf(t1 - t2) < FLT_EPSILON;
 }
 
 template <>
-inline bool LogicalOperators::IsEqual<double>(const double& t1, const double& t2) throw()
+inline bool LogicalOperators::IsEQ<double>(const double& t1, const double& t2) throw()
 {
 	return ::fabs(t1 - t2) < DBL_EPSILON;
 }
@@ -407,19 +407,55 @@ inline bool LogicalOperators::IsLT<double>(const double& t1, const double& t2) t
 	return t1 + DBL_EPSILON <= t2;
 }
 
+template <>
+inline bool LogicalOperators::IsGT<float>(const float& t1, const float& t2) throw()
+{
+	return IsLT<float>(t2, t1);
+}
+
+template <>
+inline bool LogicalOperators::IsGT<double>(const double& t1, const double& t2) throw()
+{
+	return IsLT<double>(t2, t1);
+}
+
+template <>
+inline bool LogicalOperators::IsLE<float>(const float& t1, const float& t2) throw()
+{
+	return !IsGT<float>(t1, t2);
+}
+
+template <>
+inline bool LogicalOperators::IsLE<double>(const double& t1, const double& t2) throw()
+{
+	return !IsGT<double>(t1, t2);
+}
+
+template <>
+inline bool LogicalOperators::IsGE<float>(const float& t1, const float& t2) throw()
+{
+	return !IsLT<float>(t1, t2);
+}
+
+template <>
+inline bool LogicalOperators::IsGE<double>(const double& t1, const double& t2) throw()
+{
+	return !IsLT<double>(t1, t2);
+}
+
 //------------------------------------------------------------------------------
 //Traits
 
-// CompareTrait
+// DefaultCompareTrait<T>
 
 template <typename T>
-class CompareTrait
+class DefaultCompareTrait
 {
 public:
 	//common versions
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
-		return LogicalOperators::IsEqual(t1, t2);
+		return LogicalOperators::IsEQ(t1, t2);
 	}
 	static bool IsNE(const T& t1, const T& t2) throw()
 	{
@@ -443,29 +479,13 @@ public:
 	}
 };
 
-// OrderTrait
-
-template <typename T>
-class OrderTrait
-{
-public:
-	static int CalcOrder(const T& t1, const T& t2) throw()
-	{
-		if( LogicalOperators::IsLT(t1, t2) )
-			return -1;
-		if( LogicalOperators::IsEqual(t1, t2) )
-			return 0;
-		return 1;
-	}
-};
-
 //special versions
 
 
-// HashTrait
+// DefaultHashTrait<T>
 
 template <typename T>
-class HashTrait
+class DefaultHashTrait
 {
 public:
 	static uintptr CalcHash(const T& t) throw()

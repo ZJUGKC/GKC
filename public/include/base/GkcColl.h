@@ -29,6 +29,9 @@ namespace GKC {
 
 // classes
 
+//------------------------------------------------------------------------------
+// TOOLS
+
 // FreeList<TNode>
 //  TNode : has a member named m_pNext (TNode*)
 
@@ -91,9 +94,82 @@ private:
 	FreeList& operator=(const FreeList&) throw();
 };
 
+// PairHelper<TNode, TPair>
+
+template <typename TNode, typename TPair>
+class PairHelper
+{
+public:
+	//tools
+	static TNode* ConstructNode(FreeList<TNode>& freelist)  //may throw
+	{
+		TNode* pNewNode = freelist.GetFreeNode();
+		call_constructor(*pNewNode);  //may throw
+		freelist.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey>
+	static TNode* ConstructNode(FreeList<TNode>& freelist, const TKey& key)  //may throw
+	{
+		TNode* pNewNode = freelist.GetFreeNode();
+		call_constructor(*pNewNode, key);  //may throw
+		freelist.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey>
+	static TNode* ConstructNode(FreeList<TNode>& freelist, TKey&& key)  //may throw
+	{
+		TNode* pNewNode = freelist.GetFreeNode();
+		call_constructor(*pNewNode, rv_forward(key));  //may throw
+		freelist.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey, typename TValue>
+	static TNode* ConstructNode(FreeList<TNode>& freelist, const TKey& key, const TValue& val)  //may throw
+	{
+		TNode* pNewNode = freelist.GetFreeNode();
+		call_constructor(*pNewNode, key, val);  //may throw
+		freelist.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey, typename TValue>
+	static TNode* ConstructNode(FreeList<TNode>& freelist, TKey&& key, TValue&& val)  //may throw
+	{
+		TNode* pNewNode = freelist.GetFreeNode();
+		call_constructor(*pNewNode, rv_forward(key), rv_forward(val));  //may throw
+		freelist.PickFreeNode();
+		return pNewNode;
+	}
+	static TNode* ConstructNode(FreeList<TNode>& freelist, const TPair& pair)  //may throw
+	{
+		TNode* pNewNode = freelist.GetFreeNode();
+		call_constructor(*pNewNode, pair);  //may throw
+		freelist.PickFreeNode();
+		return pNewNode;
+	}
+	static TNode* ConstructNode(FreeList<TNode>& freelist, TPair&& pair)  //may throw
+	{
+		TNode* pNewNode = freelist.GetFreeNode();
+		call_constructor(*pNewNode, rv_forward(pair));  //may throw
+		freelist.PickFreeNode();
+		return pNewNode;
+	}
+	static void DestructNode(FreeList<TNode>& freelist, TNode* pNode, uintptr& uElements) throw()
+	{
+		assert( pNode != NULL );
+		pNode->~TNode();
+		freelist.PutFreeNode(pNode);
+		assert( uElements > 0 );
+		uElements --;
+		if( uElements == 0 )
+			freelist.Clear();
+	}
+};
+
+//------------------------------------------------------------------------------
 // SingleList<T, TCompareTrait>
 
-template <typename T, class TCompareTrait = GKC::CompareTrait<T>>
+template <typename T, class TCompareTrait = DefaultCompareTrait<T>>
 class SingleList
 {
 private:
@@ -247,7 +323,7 @@ public:
 			free_node(pKill);
 		}
 		assert( m_uElements == 0 );
-		m_pHead = NULL;
+		assert( m_pHead == NULL );
 		m_freelist.Clear();
 	}
 
@@ -309,27 +385,6 @@ public:
 
 private:
 	//tools
-	_Node* pick_free_node()  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode);  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	_Node* pick_free_node(const T& t)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, t);  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	_Node* pick_free_node(T&& t)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(t));  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
 	void fill_new_node(_Node* pNewNode, _Node* pNext) throw()
 	{
 		pNewNode->m_pNext = pNext;
@@ -340,32 +395,26 @@ private:
 	// nodes
 	_Node* new_node(_Node* pNext)  //may throw
 	{
-		_Node* pNewNode = pick_free_node();
+		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist);
 		fill_new_node(pNewNode, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(const T& t, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = pick_free_node(t);
+		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, t);
 		fill_new_node(pNewNode, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(T&& t, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = pick_free_node(rv_forward(t));
+		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
 		fill_new_node(pNewNode, pNext);
 		return pNewNode;
 	}
-
+	// free
 	void free_node(_Node* pNode) throw()
 	{
-		pNode->~_Node();
-		m_freelist.PutFreeNode(pNode);
-		assert( m_uElements > 0 );
-		m_uElements --;
-		if( m_uElements == 0 ) {
-			RemoveAll();
-		}
+		PairHelper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 
 	//iterator
@@ -390,7 +439,7 @@ private:
 
 // List<T, TCompareTrait>
 
-template <typename T, class TCompareTrait = GKC::CompareTrait<T>>
+template <typename T, class TCompareTrait = DefaultCompareTrait<T>>
 class List
 {
 private:
@@ -578,7 +627,7 @@ public:
 			free_node(pKill);
 		}
 		assert( m_uElements == 0 );
-		m_pHead = NULL;
+		assert( m_pHead == NULL );
 		m_pTail = NULL;
 		m_freelist.Clear();
 	}
@@ -983,27 +1032,6 @@ public:
 
 private:
 	//tools
-	_Node* pick_free_node()  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode);  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	_Node* pick_free_node(const T& t)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, t);  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	_Node* pick_free_node(T&& t)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(t));  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
 	void fill_new_node(_Node* pNewNode, _Node* pPrev, _Node* pNext) throw()
 	{
 		pNewNode->m_pPrev = pPrev;
@@ -1015,32 +1043,26 @@ private:
 	//nodes
 	_Node* new_node(_Node* pPrev, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = pick_free_node();
+		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist);
 		fill_new_node(pNewNode, pPrev, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(const T& t, _Node* pPrev, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = pick_free_node(t);
+		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, t);
 		fill_new_node(pNewNode, pPrev, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(T&& t, _Node* pPrev, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = pick_free_node(rv_forward(t));
+		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
 		fill_new_node(pNewNode, pPrev, pNext);
 		return pNewNode;
 	}
-
+	//free
 	void free_node(_Node* pNode) throw()
 	{
-		pNode->~_Node();
-		m_freelist.PutFreeNode(pNode);
-		assert( m_uElements > 0 );
-		m_uElements --;
-		if( m_uElements == 0 ) {
-			RemoveAll();
-		}
+		PairHelper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 
 	//iterator
@@ -1071,7 +1093,7 @@ private:
 //internal
 // _HashTable<TKey, TPair, THashTrait, TCompareTrait>
 
-template <typename TKey, class TPair, class THashTrait = GKC::HashTrait<TKey>, class TCompareTrait = GKC::CompareTrait<TKey>>
+template <typename TKey, class TPair, class THashTrait = DefaultHashTrait<TKey>, class TCompareTrait = DefaultCompareTrait<TKey>>
 class _HashTable
 {
 private:
@@ -1519,50 +1541,6 @@ protected:
 
 	//nodes
 	// tools
-	_Node* pick_free_node(const _Key& key)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, key);  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	_Node* pick_free_node(_Key&& key)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(key));  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename V>
-	_Node* pick_free_node(const TKey& key, const V& v)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, key, v);  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename V>
-	_Node* pick_free_node(TKey&& key, V&& v)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(key), rv_forward(v));  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	_Node* pick_free_node(const TPair& pair)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, pair);  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
-	_Node* pick_free_node(TPair&& pair)  //may throw
-	{
-		_Node* pNewNode = m_freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(pair));  //may throw
-		m_freelist.PickFreeNode();
-		return pNewNode;
-	}
 	void fill_new_node(_Node* pNewNode, uintptr uBin, uintptr uHash)  //may throw
 	{
 		pNewNode->m_uHashCode = uHash;
@@ -1586,14 +1564,14 @@ protected:
 	_Node* create_node(const _Key& key, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = pick_free_node(key);
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, key);
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
 	_Node* create_node(_Key&& key, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = pick_free_node(rv_forward(key));
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, rv_forward(key));
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
@@ -1601,7 +1579,7 @@ protected:
 	_Node* create_node(const TKey& key, const V& v, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = pick_free_node(key, v);
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key, v);
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
@@ -1609,21 +1587,21 @@ protected:
 	_Node* create_node(TKey&& key, V&& v, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = pick_free_node(rv_forward(key), rv_forward(v));
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
 	_Node* create_node(const TPair& pair, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = pick_free_node(pair);
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, pair);
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
 	_Node* create_node(TPair&& pair, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = pick_free_node(rv_forward(pair));
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
@@ -1631,15 +1609,7 @@ protected:
 	// free
 	void free_node(_Node* pNode) throw()
 	{
-		assert( pNode != NULL );
-		pNode->~_Node();
-		m_freelist.PutFreeNode(pNode);
-
-		assert( m_uElements > 0 );
-		m_uElements --;
-
-		if( m_uElements == 0 )
-			m_freelist.Clear();
+		PairHelper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 	void remove_node(_Node* pNode, _Node* pPrev) throw()
 	{
@@ -1725,7 +1695,7 @@ private:
 
 // HashList<TKey, THashTrait, TCompareTrait>
 
-template <typename TKey, class THashTrait = GKC::HashTrait<T>, class TCompareTrait = GKC::CompareTrait<T>>
+template <typename TKey, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
 class HashList : public _HashTable<TKey, const TKey, THashTrait, TCompareTrait>
 {
 private:
@@ -1752,7 +1722,7 @@ private:
 
 // HashMultiList<TKey, THashTrait, TCompareTrait>
 
-template <typename TKey, class THashTrait = GKC::HashTrait<T>, class TCompareTrait = GKC::CompareTrait<T>>
+template <typename TKey, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
 class HashMultiList : public _HashTable<TKey, const TKey, THashTrait, TCompareTrait>
 {
 private:
@@ -1789,7 +1759,7 @@ private:
 
 // HashMap<TKey, TValue, THashTrait, TCompareTrait>
 
-template <typename TKey, typename TValue, class THashTrait = GKC::HashTrait<T>, class TCompareTrait = GKC::CompareTrait<T>>
+template <typename TKey, typename TValue, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
 class HashMap : public _HashTable<TKey, Pair<const TKey, TValue>, THashTrait, TCompareTrait>
 {
 private:
@@ -1836,7 +1806,7 @@ private:
 
 // HashMultiMap<TKey, TValue, THashTrait, TCompareTrait>
 
-template <typename TKey, typename TValue, class THashTrait = GKC::HashTrait<T>, class TCompareTrait = GKC::CompareTrait<T>>
+template <typename TKey, typename TValue, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
 class HashMultiMap : public _HashTable<TKey, Pair<const TKey, TValue>, THashTrait, TCompareTrait>
 {
 private:
@@ -1879,6 +1849,939 @@ private:
 	//non-copyable
 	HashMultiMap(const HashMultiMap&) throw();
 	HashMultiMap& operator=(const HashMultiMap&) throw();
+};
+
+//------------------------------------------------------------------------------
+//RB Tree (Red-Black Tree)
+
+//internal
+// _RBTree<TKey, TPair, TCompareTrait>
+//
+//   The red-black tree code is based on the the descriptions in
+//   "Introduction to Algorithms", by Cormen, Leiserson, and Rivest
+
+template <typename TKey, class TPair, class TCompareTrait = DefaultCompareTrait<TKey>>
+class _RBTree
+{
+private:
+	typedef _RBTree<TKey, TPair, TCompareTrait>  thisClass;
+
+	//special usage
+	class _Key : public TKey
+	{
+	};
+
+private:
+	//internal node
+	struct _Node
+	{
+		_Node()
+		{
+		}
+		explicit _Node(const _Key& key) : m_t(static_cast<const TKey&>(key))
+		{
+		}
+		explicit _Node(_Key&& key) : m_t(rv_forward(static_cast<TKey&>(key)))
+		{
+		}
+		template <typename V>
+		_Node(const TKey& key, const V& v) : m_t(key, v)
+		{
+		}
+		template <typename V>
+		_Node(TKey&& key, V&& v) : m_t(rv_forward(key), rv_forward(v))
+		{
+		}
+		_Node(const TPair& t) : m_t(t)
+		{
+		}
+		_Node(TPair&& t) : m_t(rv_forward(t))
+		{
+		}
+		~_Node() throw()
+		{
+		}
+
+		//parent
+		const _Node*& get_Parent() const throw()
+		{
+			return m_pNext;
+		}
+		_Node*& get_Parent() throw()
+		{
+			return m_pNext;
+		}
+
+		enum {
+			RB_RED = 0,  RB_BLACK;
+		};
+		int    m_iColor;  //color, RB_*
+		_Node* m_pNext;   //used as parent
+		_Node* m_pLeft;
+		_Node* m_pRight;
+		TPair  m_t;
+
+	private:
+		_Node(const _Node&) throw();
+	};
+
+public:
+	//iterator
+	class Iterator
+	{
+	public:
+		Iterator() throw()
+		{
+		}
+		Iterator(const Iterator& src) throw() : m_refTree(src.m_refTree), m_refNode(src.m_refNode)
+		{
+		}
+		~Iterator() throw()
+		{
+		}
+		Itertaor& operator=(const Iterator& src) throw()
+		{
+			if( &src != this ) {
+				m_refTree = src.m_refTree;
+				m_refNode = src.m_refNode;
+			}
+			return *this;
+		}
+		//properties
+		const RefPtr<TPair> get_Ref() const throw()
+		{
+			return RefPtr<TPair>(m_refNode.Deref().m_t);
+		}
+		RefPtr<TPair> get_Ref() throw()
+		{
+			return RefPtr<TPair>(m_refNode.Deref().m_t);
+		}
+		const TPair& get_Value() const throw()
+		{
+			return m_refNode.Deref().m_t;
+		}
+		TPair& get_Value() throw()
+		{
+			return m_refNode.Deref().m_t;
+		}
+		//compare
+		bool operator==(const Iterator& right) const throw()
+		{
+			return m_refTree == right.m_refTree && m_refNode == right.m_refNode;
+		}
+		bool operator!=(const Iterator& right) const throw()
+		{
+			return m_refTree != right.m_refTree || m_refNode != right.m_refNode;
+		}
+		//next
+		void MoveNext() throw()
+		{
+			m_refNode = m_refTree.Deref().to_successor_node(RefPtrHelper::GetInternalPointer(m_refNode));
+		}
+		//prev
+		void MovePrev() throw()
+		{
+			//NULL node -> Tail
+			m_refNode = ( m_refNode.IsNull() ) ? m_refTree.Deref().GetTail().m_refNode
+												: m_refTree.Deref().to_predecessor_node(RefPtrHelper::GetInternalPointer(m_refNode));
+		}
+
+	private:
+		RefPtr<thisClass>  m_refTree;
+		RefPtr<_Node>      m_refNode;
+
+		friend class thisClass;
+	};
+
+public:
+	_RBTree(const RefPtr<IMemoryManager>& mgr,
+			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+			: m_mgr(mgr), m_pRoot(NULL), m_uElements(0), m_pNil(NULL),
+			m_freelist(mgr, uMinElements, uMaxElements)
+	{
+	}
+	~_RBTree() throw()
+	{
+		RemoveAll();
+		if( m_pNil != NULL )
+			m_mgr.Deref().Free(m_pNil);
+	}
+
+	uintptr GetCount() const throw()
+	{
+		return m_uElements;
+	}
+	bool IsEmpty() const throw()
+	{
+		return m_uElements == 0;
+	}
+
+	//iterator
+	const Iterator GetHead() const throw()
+	{
+		return to_minimum_node(m_pRoot);
+	}
+	Iterator GetHead() throw()
+	{
+		return to_minimum_node(m_pRoot);
+	}
+	const Iterator GetTail() const throw()
+	{
+		return to_maximum_node(m_pRoot);
+	}
+	Iterator GetTail() throw()
+	{
+		return to_maximum_node(m_pRoot);
+	}
+	const Iterator GetBegin() const throw()
+	{
+		return GetHead();
+	}
+	Iterator GetBegin() throw()
+	{
+		return GetHead();
+	}
+	const Iterator GetEnd() const throw()
+	{
+		return get_iterator(NULL);
+	}
+	Iterator GetEnd() throw()
+	{
+		return get_iterator(NULL);
+	}
+	const ReverseIterator<Iterator> GetReverseBegin() const throw()
+	{
+		return ReverseIterator<Iterator>(GetEnd());
+	}
+	ReverseIterator<Iterator> GetReverseBegin() throw()
+	{
+		return ReverseIterator<Iterator>(GetEnd());
+	}
+	const ReverseIterator<Iterator> GetReverseEnd() const throw()
+	{
+		return ReverseIterator<Iterator>(GetBegin());
+	}
+	ReverseIterator<Iterator> GetReverseEnd() throw()
+	{
+		return ReverseIterator<Iterator>(GetBegin());
+	}
+
+	//methods
+	void RemoveAll() throw()
+	{
+		if( !is_node_nil(m_pRoot) )
+			remove_by_post_order(m_pRoot);
+		m_uElements = 0;
+		//free list
+		m_freelist.Clear();
+		//root
+		m_pRoot = m_pNil;
+	}
+
+	//find
+	Iterator Find(const TKey& key) const throw()
+	{
+		_Node* pKey = find_node(key);
+		return get_iterator(pKey);
+	}
+	Iterator FindFirstKeyAfter(const TKey& key) const throw()
+	{
+		_Node* pParent;
+		_Node* pKey = find_node_from_root(key, pParent);
+		if( pKey != NULL ) {
+			// We found a node with the exact key, so find the first node after
+			// this one with a different key
+			while( 1 ) {
+				_Node* pNext = to_successor_node(pKey);
+				pKey = pNext;
+				if( (pNext != NULL) && TCompareTrait::IsEQ(key, KeyHelper::GetKey(pNext->m_t)) ) {
+					;  //nothing
+				}
+				else {
+					break;
+				}
+			}
+		}
+		else if( pParent != NULL ) {
+			// No node matched the key exactly, so pick the first node with
+			// a key greater than the given key
+			if( TCompareTrait::IsLT(key, KeyHelper::GetKey(pParent->m_t)) )
+				pKey = pParent;
+			else //key must not be the same as the key of pParent->m_t
+				pKey = to_successor_node(pParent);
+		}
+		return get_iterator(pKey);
+	}
+	//find next key
+	Iterator FindNext(const Iterator& iter) const throw()
+	{
+		assert( iter != GetEnd() );
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		const TKey& key = KeyHelper::GetKey<const TKey>(pNode->m_t);
+		pNode = to_successor_node(pNode);
+		if( pNode == NULL || !TCompareTrait::IsEQ(key, KeyHelper::GetKey(pNode->m_t)) )
+			return get_iterator(NULL);
+		return get_iterator(pNode);
+	}
+
+	//add
+	Iterator InsertWithoutFind(const TKey& key)  //may throw
+	{
+		_Node* pNewNode = create_node(static_cast<const _Key&>(key));
+		return get_iterator(pNewNode);
+	}
+	Iterator InsertWithoutFind(TKey&& key)  //may throw
+	{
+		_Node* pNewNode = create_node(rv_forward(static_cast<_Key&>(key)));
+		return get_iterator(pNewNode);
+	}
+	template <typename TValue>
+	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	{
+		_Node* pNewNode = create_node(key, val);
+		return get_iterator(pNewNode);
+	}
+	template <typename TValue>
+	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	{
+		_Node* pNewNode = create_node(rv_forward(key), rv_forward(val));
+		return get_iterator(pNewNode);
+	}
+
+	Iterator Insert(const TKey& key)  //may throw
+	{
+		_Node* pNode = find_node(key);
+		if( pNode == NULL )
+			pNode = create_node(static_cast<const _Key&>(key));
+		return get_iterator(pNode);
+	}
+	Iterator Insert(TKey&& key)  //may throw
+	{
+		_Node* pNode = find_node(key);
+		if( pNode == NULL )
+			pNode = create_node(rv_forward(static_cast<_Key&>(key)));
+		return get_iterator(pNode);
+	}
+	template <typename TValue>
+	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	{
+		_Node* pNode = find_node(key);
+		if( pNode == NULL )
+			pNode = create_node(key, val);
+		else
+			pNode->m_t.set_Second(val);
+		return get_iterator(pNode);
+	}
+	template <typename TValue>
+	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	{
+		_Node* pNode = find_node(key);
+		if( pNode == NULL )
+			pNode = create_node(rv_forward(key), rv_forward(val));
+		else
+			pNode->m_t.set_Second(rv_forward(val));
+		return get_iterator(pNode);
+	}
+
+	//remove
+	bool Remove(const TKey& key) throw()
+	{
+		_Node* pNode = find_node(key);
+		if( pNode == NULL )
+			return false;
+		delete_node(pNode);
+		return true;
+	}
+	void RemoveAt(const Iterator& iter) throw()
+	{
+		assert( iter != GetEnd() );
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		delete_node(pNode);
+	}
+
+protected:
+	//sentinel node
+	bool is_node_nil(_Node* p) const throw()
+	{
+		return p == m_pNil;
+	}
+	void set_node_nil(_Node*& p) const throw()
+	{
+		p = m_pNil;
+	}
+
+	//tools
+	void fill_new_node(_Node* pNewNode) throw()
+	{
+		pNewNode->m_iColor = _Node::RB_RED;
+		set_node_nil(pNewNode->m_pLeft);
+		set_node_nil(pNewNode->m_pRight);
+		set_node_nil(pNewNode->get_Parent());
+		m_uElements ++;
+		assert( m_uElements > 0 );
+	}
+	void nil_node_allocate()  //may throw
+	{
+		assert( !m_mgr.IsNull() );
+		if( m_pNil == NULL ) {
+			m_pNil = (_Node*)(m_mgr.Deref().Allocate(sizeof(_Node)));
+			if( m_pNil == NULL )
+				throw OutOfMemoryException();
+			mem_zero(m_pNil, sizeof(_Node));
+			m_pNil->m_iColor = _Node::RB_BLACK;
+			m_pNil->get_Parent() = m_pNil->m_pLeft = m_pNil->m_pRight = m_pNil;
+			m_pRoot = m_pNil;
+		}
+	}
+	void insert_impl(_Node* pNewNode) throw()
+	{
+		const TKey& key = KeyHelper::GetKey(pNewNode->m_t);
+		_Node* pY = NULL;
+		_Node* pX = m_pRoot;
+		while( !is_node_nil(pX) ) {
+			pY = pX;
+			if( TCompareTrait::IsLE(key, KeyHelper::GetKey(pX->m_t)) )
+				pX = pX->m_pLeft;
+			else
+				pX = pX->m_pRight;
+		}
+		pNewNode->get_Parent() = pY;
+		if( pY == NULL )
+			m_pRoot = pNewNode;
+		else if( TCompareTrait::IsLE(key, KeyHelper::GetKey(pY->m_t)) )
+			pY->m_pLeft = pNewNode;
+		else
+			pY->m_pRight = pNewNode;
+	}
+	void insert_impl2(_Node* pNewNode) throw()
+	{
+		_Node* pX = pNewNode;
+		pX->m_iColor = _Node::RB_RED;
+		_Node* pY = NULL;
+		while( pX != m_pRoot && pX->get_Parent()->m_iColor == _Node::RB_RED ) {
+			if( pX->get_Parent() == pX->get_Parent()->get_Parent()->m_pLeft ) {
+				pY = pX->get_Parent()->get_Parent()->m_pRight;
+				if( pY != NULL && pY->m_iColor == _Node::RB_RED ) {
+					pX->get_Parent()->m_iColor = _Node::RB_BLACK;
+					pY->m_iColor = _Node::RB_BLACK;
+					pX->get_Parent()->get_Parent()->m_iColor = _Node::RB_RED;
+					pX = pX->get_Parent()->get_Parent();
+				}
+				else {
+					if( pX == pX->get_Parent()->m_pRight ) {
+						pX = pX->get_Parent();
+						left_rotate(pX);
+					}
+					pX->get_Parent()->m_iColor = _Node::RB_BLACK;
+					pX->get_Parent()->get_Parent()->m_iColor = _Node::RB_RED;
+					right_rotate(pX->get_Parent()->get_Parent());
+				}
+			}
+			else {
+				pY = pX->get_Parent()->get_Parent()->m_pLeft;
+				if( pY != NULL && pY->m_iColor == CNode::RB_RED ) {
+					pX->get_Parent()->m_iColor = _Node::RB_BLACK;
+					pY->m_iColor = _Node::RB_BLACK;
+					pX->get_Parent()->get_Parent()->m_iColor = _Node::RB_RED;
+					pX = pX->get_Parent()->get_Parent();
+				}
+				else {
+					if( pX == pX->get_Parent()->m_pLeft ) {
+						pX = pX->get_Parent();
+						right_rotate(pX);
+					}
+					pX->get_Parent()->m_iColor = _Node::RB_BLACK;
+					pX->get_Parent()->get_Parent()->m_iColor = _Node::RB_RED;
+					left_rotate(pX->get_Parent()->get_Parent());
+				}
+			}
+		} //end while
+		m_pRoot->m_iColor = _Node::RB_BLACK;
+		set_node_nil(m_pRoot->get_Parent());
+	}
+
+	//nodes
+	_Node* create_node(const _Key& key)  //may throw
+	{
+		nil_node_allocate();
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, key);
+		fill_new_node(pNewNode);
+		insert_impl(pNewNode);
+		insert_impl2(pNewNode);
+		return pNewNode;
+	}
+	_Node* create_node(_Key&& key)  //may throw
+	{
+		nil_node_allocate();
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, rv_forward(key));
+		fill_new_node(pNewNode);
+		insert_impl(pNewNode);
+		insert_impl2(pNewNode);
+		return pNewNode;
+	}
+	template <typename V>
+	_Node* create_node(const TKey& key, const V& v)
+	{
+		nil_node_allocate();
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key, v);
+		fill_new_node(pNewNode);
+		insert_impl(pNewNode);
+		insert_impl2(pNewNode);
+		return pNewNode;
+	}
+	template <typename V>
+	_Node* create_node(TKey&& key, V&& v)
+	{
+		nil_node_allocate();
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
+		fill_new_node(pNewNode);
+		insert_impl(pNewNode);
+		insert_impl2(pNewNode);
+		return pNewNode;
+	}
+	_Node* create_node(const TPair& pair)
+	{
+		nil_node_allocate();
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, pair);
+		fill_new_node(pNewNode);
+		insert_impl(pNewNode);
+		insert_impl2(pNewNode);
+		return pNewNode;
+	}
+	_Node* create_node(TPair&& pair)
+	{
+		nil_node_allocate();
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
+		fill_new_node(pNewNode);
+		insert_impl(pNewNode);
+		insert_impl2(pNewNode);
+		return pNewNode;
+	}
+
+	//free
+	void free_node(_Node* pNode) throw()
+	{
+		PairHelper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
+	}
+	void remove_by_post_order(_Node* pNode) throw()
+	{
+		if( is_node_nil(pNode) )
+			return ;
+		//recursion
+		remove_by_post_order(pNode->m_pLeft);
+		remove_by_post_order(pNode->m_pRight);
+		free_node(pNode);
+	}
+	void delete_node_with_fixup(_Node* pNode) throw()
+	{
+		assert( pNode != NULL );
+		_Node* pX = pNode;
+		_Node* pW = NULL;
+		while( (pX != m_pRoot) && (pX->m_iColor == _Node::RB_BLACK) ) {
+			if( pX == pX->get_Parent()->m_pLeft ) {
+				pW = pX->get_Parent()->m_pRight;
+				if( pW->m_iColor == _Node::RB_RED ) {
+					pW->m_iColor = _Node::RB_BLACK;
+					pW->get_Parent()->m_iColor = _Node::RB_RED;
+					left_rotate(pX->get_Parent());
+					pW = pX->get_Parent()->m_pRight;
+				}
+				if( pW->m_pLeft->m_iColor == _Node::RB_BLACK && pW->m_pRight->m_iColor == _Node::RB_BLACK ) {
+					pW->m_iColor = _Node::RB_RED;
+					pX = pX->get_Parent();
+				}
+				else {
+					if( pW->m_pRight->m_iColor == _Node::RB_BLACK) {
+						pW->m_pLeft->m_iColor = _Node::RB_BLACK;
+						pW->m_iColor = _Node::RB_RED;
+						right_rotate(pW);
+						pW = pX->get_Parent()->m_pRight;
+					}
+					pW->m_iColor = pX->get_Parent()->m_iColor;
+					pX->get_Parent()->m_iColor = _Node::RB_BLACK;
+					pW->m_pRight->m_iColor = _Node::RB_BLACK;
+					left_rotate(pX->get_Parent());
+					pX = m_pRoot;
+				}
+			}
+			else {
+				pW = pX->get_Parent()->m_pLeft;
+				if( pW->m_iColor == _Node::RB_RED ) {
+					pW->m_iColor = _Node::RB_BLACK;
+					pW->get_Parent()->m_iColor = _Node::RB_RED;
+					right_rotate(pX->get_Parent());
+					pW = pX->get_Parent()->m_pLeft;
+				}
+				if( pW->m_pRight->m_iColor == _Node::RB_BLACK && pW->m_pLeft->m_iColor == _Node::RB_BLACK ) {
+					pW->m_iColor = _Node::RB_RED;
+					pX = pX->get_Parent();
+				}
+				else {
+					if( pW->m_pLeft->m_iColor == _Node::RB_BLACK ) {
+						pW->m_pRight->m_iColor = _Node::RB_BLACK;
+						pW->m_iColor = _Node::RB_RED;
+						left_rotate(pW);
+						pW = pX->get_Parent()->m_pLeft;
+					}
+					pW->m_iColor = pX->get_Parent()->m_iColor;
+					pX->get_Parent()->m_iColor = _Node::RB_BLACK;
+					pW->m_pLeft->m_iColor = _Node::RB_BLACK;
+					right_rotate(pX->get_Parent());
+					pX = m_pRoot;
+				}
+			}
+		} //end while
+		pX->m_iColor = _Node::RB_BLACK;
+	}
+	bool delete_node(_Node* pNode) throw()
+	{
+		if( pNode == NULL )
+			return false;
+		_Node* pY = NULL;
+		_Node* pX = NULL;
+		if( is_node_nil(pNode->m_pLeft) || is_node_nil(pNode->m_pRight) )
+			pY = pNode;
+		else
+			pY = to_successor_node(pNode);
+		if( !is_node_nil(pY->m_pLeft) )
+			pX = pY->m_pLeft;
+		else
+			pX = pY->m_pRight;
+		pX->get_Parent() = pY->get_Parent();
+		if( is_node_nil(pY->get_Parent()) )
+			m_pRoot = pX;
+		else if( pY == pY->get_Parent()->m_pLeft )
+			pY->get_Parent()->m_pLeft = pX;
+		else
+			pY->get_Parent()->m_pRight = pX;
+		if( pY->m_iColor == _Node::RB_BLACK )
+			delete_node_with_fixup(pX);
+		if( pY != pNode )
+			replace_node(pY, pNode);
+		if( m_pRoot != NULL )
+			set_node_nil(m_pRoot->get_Parent());
+		free_node(pNode);
+		return true;
+	}
+
+	//replace
+	void replace_node(_Node* pDest, _Node* pSrc) throw()
+	{
+		assert( pDest != NULL );
+		assert( pSrc != NULL );
+		pDest->get_Parent() = pSrc->get_Parent();
+		if( pSrc->get_Parent()->m_pLeft == pSrc )
+			pSrc->get_Parent()->m_pLeft = pDest;
+		else
+			pSrc->get_Parent()->m_pRight = pDest;
+		pDest->m_pRight = pSrc->m_pRight;
+		pDest->m_pLeft = pSrc->m_pLeft;
+		pDest->m_iColor = pSrc->m_iColor;
+		pDest->m_pRight->get_Parent() = pDest;
+		pDest->m_pLeft->get_Parent() = pDest;
+		if( m_pRoot == pSrc )
+			m_pRoot = pDest;
+	}
+	//rotate
+	_Node* left_rotate(_Node* pNode) throw()
+	{
+		assert( pNode != NULL );
+		_Node* pRight = pNode->m_pRight;
+		pNode->m_pRight = pRight->m_pLeft;
+		if( !is_node_nil(pRight->m_pLeft) )
+			pRight->m_pLeft->get_Parent() = pNode;
+		pRight->get_Parent() = pNode->get_Parent();
+		if( is_node_nil(pNode->get_Parent()) )
+			m_pRoot = pRight;
+		else if( pNode == pNode->get_Parent()->m_pLeft )
+			pNode->get_Parent()->m_pLeft = pRight;
+		else
+			pNode->get_Parent()->m_pRight = pRight;
+		pRight->m_pLeft = pNode;
+		pNode->get_Parent() = pRight;
+		return pNode;
+	}
+	_Node* right_rotate(_Node* pNode) throw()
+	{
+		assert( pNode != NULL );
+		_Node* pLeft = pNode->m_pLeft;
+		pNode->m_pLeft = pLeft->m_pRight;
+		if( !is_node_nil(pLeft->m_pRight) )
+			pLeft->m_pRight->get_Parent() = pNode;
+		pLeft->get_Parent() = pNode->get_Parent();
+		if( is_node_nil(pNode->get_Parent()) )
+			m_pRoot = pLeft;
+		else if( pNode == pNode->get_Parent()->m_pRight )
+			pNode->get_Parent()->m_pRight = pLeft;
+		else
+			pNode->get_Parent()->m_pLeft = pLeft;
+		pLeft->m_pRight = pNode;
+		pNode->get_Parent() = pLeft;
+		return pNode;
+	}
+
+	//find
+	_Node* find_node_from_root(const TKey& key, _Node*& pParent) const throw()
+	{
+		//attempt to find a node that matches the key exactly
+		pParent = NULL;
+		_Node* pKey = NULL;
+		_Node* pNode = m_pRoot;
+		while( !is_node_nil(pNode) && (pKey == NULL) ) {
+			pParent = pNode;
+			if( TCompareTrait::IsEQ(key, KeyHelper::GetKey(pNode->m_t)) )
+				pKey = pNode;
+			else if( TCompareTrait::IsLT(key, KeyHelper::GetKey(pNode->m_t)) )
+				pNode = pNode->m_pLeft;
+			else
+				pNode = pNode->m_pRight;
+		} //end while
+		return pKey;
+	}
+	_Node* to_minimum_node(_Node* pNode) const throw()
+	{
+		if( pNode == NULL || is_node_nil(pNode) )
+			return NULL;
+		_Node* pMin = pNode;
+		while( !is_node_nil(pMin->m_pLeft) )
+			pMin = pMin->m_pLeft;
+		return pMin;
+	}
+	_Node* to_maximum_node(_Node* pNode) const throw()
+	{
+		if( pNode == NULL || is_node_nil(pNode) )
+			return NULL;
+		_Node* pMax = pNode;
+		while( !is_node_nil(pMax->m_pRight) )
+			pMax = pMax->m_pRight;
+		return pMax;
+	}
+	_Node* to_predecessor_node(_Node* pNode) const throw()
+	{
+		if( pNode == NULL )
+			return NULL;
+		if( !is_node_nil(pNode->m_pLeft) )
+			return to_maximum_node(pNode->m_pLeft);
+		_Node* pParent = pNode->get_Parent();
+		_Node* pLeft   = pNode;
+		while( !is_node_nil(pParent) && (pLeft == pParent->m_pLeft) ) {
+			pLeft   = pParent;
+			pParent = pParent->get_Parent();
+		}
+		if( is_node_nil(pParent) )
+			pParent = NULL;
+		return pParent;
+	}
+	_Node* to_successor_node(_Node* pNode) const throw()
+	{
+		if( pNode == NULL )
+			return NULL;
+		if( !is_node_nil(pNode->m_pRight) )
+			return to_minimum_node(pNode->m_pRight);
+		_Node* pParent = pNode->get_Parent();
+		_Node* pRight  = pNode;
+		while( !is_node_nil(pParent) && (pRight == pParent->m_pRight) ) {
+			pRight  = pParent;
+			pParent = pParent->get_Parent();
+		}
+		if( is_node_nil(pParent) )
+			pParent = NULL;
+		return pParent;
+	}
+	_Node* find_node(const TKey& key) const throw()
+	{
+		_Node* pParent;
+		_Node* pKey = find_node_from_root(key, pParent);
+		if( pKey == NULL )
+			return NULL;
+		//find first
+		while( 1 ) {
+			_Node* pPrev = to_predecessor_node(pKey);
+			if( (pPrev != NULL) && TCompareTrait::IsEQ(key, KeyHelper::GetKey(pPrev->m_t)) )
+				pKey = pPrev;
+			else
+				break;
+		} //end while
+		return pKey;
+	}
+
+	//iterator
+	Iterator get_iterator(_Node* pNode) const throw()
+	{
+		Iterator iter;
+		iter.m_refTree = this;
+		iter.m_refNode = pNode;
+		return iter;
+	}
+
+private:
+	RefPtr<IMemoryManager>  m_mgr;
+	//tree
+	_Node*   m_pRoot;
+	uintptr  m_uElements;
+	//sentinel node
+	_Node*   m_pNil;
+	//free list
+	FreeList<_Node>  m_freelist;
+
+private:
+	//non-copyable
+	_RBTree(const _RBTree&) throw();
+	_RBTree& operator=(const _RBTree&) throw();
+};
+
+// RBList<TKey, TCompareTrait>
+
+template <typename TKey, class TCompareTrait = DefaultCompareTrait<T>>
+class RBList : public _RBTree<TKey, const TKey, TCompareTrait>
+{
+private:
+	typedef _RBTree<TKey, const TKey, TCompareTrait>  baseClass;
+
+public:
+	RBList(const RefPtr<IMemoryManager>& mgr,
+			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+			: baseClass(mgr, uMinElements, uMaxElements)
+	{
+	}
+	~RBList() throw()
+	{
+	}
+
+private:
+	Iterator FindNext(const Iterator& iter) const throw();
+
+	//non-copyable
+	RBList(const RBList&) throw();
+	RBList& operator=(const RBList&) throw();
+};
+
+// RBMultiList<TKey, TCompareTrait>
+
+template <typename TKey, class TCompareTrait = DefaultCompareTrait<T>>
+class RBMultiList : public _RBTree<TKey, const TKey, TCompareTrait>
+{
+private:
+	typedef _RBTree<TKey, const TKey, TCompareTrait>  baseClass;
+
+public:
+	RBMultiList(const RefPtr<IMemoryManager>& mgr,
+				uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+				: baseClass(mgr, uMinElements, uMaxElements)
+	{
+	}
+	~RBMultiList() throw()
+	{
+	}
+
+	//add
+	Iterator Insert(const TKey& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key);
+	}
+	Iterator Insert(TKey&& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key));
+	}
+
+private:
+	bool Remove(const TKey& key) throw();
+
+	//non-copyable
+	RBMultiList(const RBMultiList&) throw();
+	RBMultiList& operator=(const RBMultiList&) throw();
+};
+
+// RBMap<TKey, TValue, TCompareTrait>
+
+template <typename TKey, typename TValue, class TCompareTrait = DefaultCompareTrait<T>>
+class RBMap : public _RBTree<TKey, Pair<const TKey, TValue>, TCompareTrait>
+{
+private:
+	typedef RBMap<TKey, TValue, TCompareTrait>  thisClass;
+	typedef Pair<const TKey, TValue>  pairClass;
+	typedef _RBTree<TKey, pairClass, TCompareTrait>  baseClass;
+
+public:
+	RBMap(const RefPtr<IMemoryManager>& mgr,
+		uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+		: baseClass(mgr, uMinElements, uMaxElements)
+	{
+	}
+	~RBMap() throw()
+	{
+	}
+
+	//add
+	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key, val);
+	}
+	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
+	}
+	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	{
+		return baseClass::Insert(key, val);
+	}
+	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	{
+		return baseClass::Insert(rv_forward(key), rv_forward(val));
+	}
+
+private:
+	Iterator FindNext(const Iterator& iter) const throw()
+
+	//non-copyable
+	RBMap(const RBMap&) throw();
+	RBMap& operator=(const RBMap&) throw();
+};
+
+// RBMultiMap<TKey, TValue, TCompareTrait>
+
+template <typename TKey, typename TValue, class TCompareTrait = DefaultCompareTrait<T>>
+class RBMultiMap : public _RBTree<TKey, Pair<const TKey, TValue>, TCompareTrait>
+{
+private:
+	typedef RBMultiMap<TKey, TValue, TCompareTrait>  thisClass;
+	typedef Pair<const TKey, TValue>  pairClass;
+	typedef _RBTree<TKey, pairClass, TCompareTrait>  baseClass;
+
+public:
+	RBMultiMap(const RefPtr<IMemoryManager>& mgr,
+			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+			: baseClass(mgr, uMinElements, uMaxElements)
+	{
+	}
+	~RBMultiMap() throw()
+	{
+	}
+
+	//add
+	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key, val);
+	}
+	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
+	}
+	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key, val);
+	}
+	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
+	}
+
+private:
+	bool Remove(const TKey& key) throw();
+
+	//non-copyable
+	RBMultiMap(const RBMultiMap&) throw();
+	RBMultiMap& operator=(const RBMultiMap&) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////

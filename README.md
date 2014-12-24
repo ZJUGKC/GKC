@@ -18,6 +18,22 @@ Install the necessary softwares in the production machine.
 
 ### Windows
 
+1. CMake:
+	* x86 machine:
+	```
+cmake ../GKC -G"Visual Studio 12"
+```
+
+	* x64 machine:
+	```
+cmake ../GKC -G"Visual Studio 12 Win64"
+```
+
+2. make
+	```
+MSBuild ALL_BUILD.vcxproj /t:build /p:Configuration=Release
+```
+
 ### Linux
 
 1. Install libuuid:

@@ -36,6 +36,11 @@
 
 #if defined(OS_WINDOWS)
 	#include <tchar.h>
+	#include <mbstring.h>
+#elif defined(OS_LINUX)
+	#include <wchar.h>
+#else
+	#error Error OS type!
 #endif
 
 #include <math.h>

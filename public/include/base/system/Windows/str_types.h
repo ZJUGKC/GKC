@@ -29,4 +29,35 @@ typedef CharH  CharS;  //system type, UTF16
 
 typedef CharH  CharW;  //for wide type, L"..."
 
+//------------------------------------------------------------------------------
+//tools
+
+// calc_string_length
+
+inline uintptr calc_string_length(const CharH* s) throw()
+{
+	return ::wcslen(s);
+}
+
+inline uintptr calc_string_length(const CharL* s) throw()
+{
+	const CharL* p = s;
+	while( *p != 0 ) p ++;
+	return p - s;
+}
+
+// calc_char_length
+//   in current locale
+inline uintptr calc_char_length(const CharA* s) throw()
+{
+	return ::_mbclen((const unsigned char*)s);
+}
+
+// calc_string_char_length
+//   in current locale
+inline uintptr calc_string_char_length(const CharA* s) throw()
+{
+	return ::_mbslen((const unsigned char*)s);
+}
+
 ////////////////////////////////////////////////////////////////////////////////

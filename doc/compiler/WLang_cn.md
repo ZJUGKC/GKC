@@ -1,3 +1,16 @@
+<!--
+#
+# Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the 2-Clause BSD License.
+#
+# Author contact information:
+#   yxxinyuan@zju.edu.cn
+#
+-->
+
 # WLang语言
 
 WLang语言是根据C++语言来设计的，吸收了C#、Java等语言的优点，专注于高层概念的构建，

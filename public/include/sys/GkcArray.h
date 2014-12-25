@@ -160,9 +160,10 @@ public:
 	bool operator<(const thisClass& right) const throw()
 	{
 		for( uintptr i = t_size; i > 0; i -- ) {
-			if( TCompareTrait::IsGT(m_data[i - 1], right.m_data[i - 1]) )
+			int res = TCompareTrait::Compare(m_data[i - 1], right.m_data[i - 1]);
+			if( res > 0 )
 				return false;
-			if( TCompareTrait::IsLT(m_data[i - 1], right.m_data[i - 1]) )
+			if( res < 0 )
 				return true;
 		}
 		return false;
@@ -170,9 +171,10 @@ public:
 	bool operator>(const thisClass& right) const throw()
 	{
 		for( uintptr i = t_size; i > 0; i -- ) {
-			if( TCompareTrait::IsGT(m_data[i - 1], right.m_data[i - 1]) )
+			int res = TCompareTrait::Compare(m_data[i - 1], right.m_data[i - 1]);
+			if( res > 0 )
 				return true;
-			if( TCompareTrait::IsLT(m_data[i - 1], right.m_data[i - 1]) )
+			if( res < 0 )
 				return false;
 		}
 		return false;
@@ -194,7 +196,7 @@ private:
 		}
 	}
 
-private:
+protected:
 	T m_data[t_size];  //array
 };
 
@@ -212,9 +214,10 @@ public:
 	static bool IsGT(const T& t1, const T& t2) throw()
 	{
 		for( uintptr i = 0; i < T::c_size; i ++ ) {
-			if( T::ECompareTrait::IsGT(t1[i].get_Value(), t2[i].get_Value()) )
+			int res = T::ECompareTrait::Compare(t1[i].get_Value(), t2[i].get_Value());
+			if( res > 0 )
 				return true;
-			if( T::ECompareTrait::IsLT(t1[i].get_Value(), t2[i].get_Value()) )
+			if( res < 0 )
 				return false;
 		}
 		return false;
@@ -222,9 +225,10 @@ public:
 	static bool IsLT(const T& t1, const T& t2) throw()
 	{
 		for( uintptr i = 0; i < T::c_size; i ++ ) {
-			if( T::ECompareTrait::IsGT(t1[i].get_Value(), t2[i].get_Value()) )
+			int res = T::ECompareTrait::Compare(t1[i].get_Value(), t2[i].get_Value());
+			if( res > 0 )
 				return false;
-			if( T::ECompareTrait::IsLT(t1[i].get_Value(), t2[i].get_Value()) )
+			if( res < 0 )
 				return true;
 		}
 		return false;
@@ -236,6 +240,16 @@ public:
 	static bool IsLE(const T& t1, const T& t2) throw()
 	{
 		return !IsGT(t1, t2);
+	}
+	//Compare
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		if( IsLT(t1, t2 ) )
+			return -1;
+		if( IsEQ(t1, t2) )
+			return 0;
+		assert( IsGT(t1, t2) );
+		return 1;
 	}
 };
 

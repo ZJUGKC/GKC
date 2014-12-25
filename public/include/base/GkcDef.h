@@ -477,6 +477,15 @@ public:
 	{
 		return LogicalOperators::IsLE(t1, t2);
 	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		if( IsLT(t1, t2 ) )
+			return -1;
+		if( IsEQ(t1, t2) )
+			return 0;
+		assert( IsGT(t1, t2) );
+		return 1;
+	}
 };
 
 //special versions

@@ -2529,9 +2529,10 @@ protected:
 		_Node* pNode = m_pRoot;
 		while( !is_node_nil(pNode) && (pKey == NULL) ) {
 			pParent = pNode;
-			if( TCompareTrait::IsEQ(key, KeyHelper::GetKey(pNode->m_t)) )
+			int res = TCompareTrait::Compare(key, KeyHelper::GetKey(pNode->m_t));
+			if( res == 0 )
 				pKey = pNode;
-			else if( TCompareTrait::IsLT(key, KeyHelper::GetKey(pNode->m_t)) )
+			else if( res < 0 )
 				pNode = pNode->m_pLeft;
 			else
 				pNode = pNode->m_pRight;

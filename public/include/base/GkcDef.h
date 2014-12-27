@@ -55,8 +55,8 @@ for cross-platform.
 //other types
 #include "system/other_types.h"
 
-//string types
-#include "system/str_types.h"
+//string APIs
+#include "system/str_api.h"
 
 //console APIs
 #include "system/console_api.h"

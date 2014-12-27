@@ -17,19 +17,6 @@
 //Linux
 
 //------------------------------------------------------------------------------
-//character
-
-typedef char            CharA;  //ANSI or UTF8
-typedef unsigned short  CharH;  //word or UTF16
-typedef wchar_t         CharL;  //long or UTF32
-
-typedef CharA  CharS;  //system type, UTF8
-//for const string
-#define _S(x)  x
-
-typedef CharL  CharW;  //for wide type, L"..."
-
-//------------------------------------------------------------------------------
 //tools
 
 // calc_string_length
@@ -65,6 +52,56 @@ inline uintptr calc_string_char_length(const CharA* s) throw()
 		p += len;
 	}
 	return n;
+}
+
+// compare_string
+
+inline int compare_string(const CharH* s1, const CharH* s2) throw()
+{
+	const CharH* p1 = s1;
+	const CharH* p2 = s2;
+	int n = 0;
+	do {
+		n = (int)(*p1) - (int)(*p2);
+		if( n != 0 )
+			break;
+		if( (*p1 == 0) || (*p2 == 0) )
+			break;
+		++ p1;  ++ p2;
+	} while( 1 );
+	return n;
+}
+inline int compare_string(const CharL* s1, const CharL* s2) throw()
+{
+	return ::wcscmp(s1, s2);
+}
+
+// compare_string_case_insensitive
+
+inline int compare_string_case_insensitive(const CharA* s1, const CharA* s2) throw()
+{
+	return ::strcasecmp(s1, s2);
+}
+
+inline int compare_string_case_insensitive(const CharH* s1, const CharH* s2) throw()
+{
+	const CharH* p1 = s1;
+	const CharH* p2 = s2;
+	int n = 0;
+	do {
+		n = (int)char_lower(*p1) - (int)char_lower(*p2);
+		if( n != 0 )
+			break;
+		if( (*p1 == 0) || (*p2 == 0) )
+			break;
+		++ p1;  ++ p2;
+	} while( 1 );
+	return n;
+}
+
+inline int compare_string_case_insensitive(const CharL* s1, const CharL* s2) throw()
+{
+	return ::wcscasecmp(s1, s2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

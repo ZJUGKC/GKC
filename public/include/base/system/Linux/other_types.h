@@ -33,6 +33,19 @@ inline bool guid_equal(const guid& id1, const guid& id2) throw()
 }
 
 //------------------------------------------------------------------------------
+//character
+
+typedef char            CharA;  //ANSI or UTF8
+typedef unsigned short  CharH;  //word or UTF16
+typedef wchar_t         CharL;  //long or UTF32
+
+typedef CharA  CharS;  //system type, UTF8
+//for const string
+#define _S(x)  x
+
+typedef CharL  CharW;  //for wide type, L"..."
+
+//------------------------------------------------------------------------------
 //atomic
 
 inline int atomic_increment(int& v) throw()

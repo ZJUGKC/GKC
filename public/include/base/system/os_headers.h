@@ -39,6 +39,8 @@
 	#include <mbstring.h>
 #elif defined(OS_LINUX)
 	#include <wchar.h>
+	#include <ctype.h>
+	#include <wctype.h>
 #else
 	#error Error OS type!
 #endif

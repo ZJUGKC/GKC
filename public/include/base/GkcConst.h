@@ -75,6 +75,11 @@ public:
 		return !operator==(right);
 	}
 
+	const Iterator operator[](uintptr index) const throw()
+	{
+		return GetAt(index);
+	}
+
 	//methods
 
 	//count
@@ -180,6 +185,78 @@ typedef ConstString<CharW>  ConstStringW;   //wide version
 
 #define DECLARE_STATIC_CONST_STRING(cls)  \
 	DECLARE_STATIC_CONST_ARRAY(cls, typename cls::EType)
+
+// ConstStringCompareTrait<T>
+
+template <class T>
+class ConstStringCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value()));
+	}
+};
+
+// ConstStringCaseIgnoreCompareTrait<T>
+
+template <class T>
+class ConstStringCaseIgnoreCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value())) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value()));
+	}
+};
 
 //------------------------------------------------------------------------------
 // Helper

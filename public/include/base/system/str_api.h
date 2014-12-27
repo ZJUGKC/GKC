@@ -15,25 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
-//OS
-
-#if defined(OS_WINDOWS)
-	#include "Windows/str_types.h"
-#elif defined(OS_LINUX)
-	#include "Linux/str_types.h"
-#else
-	#error Error OS type!
-#endif
-
-//------------------------------------------------------------------------------
 //tools
-
-// calc_string_length
-
-inline uintptr calc_string_length(const CharA* s) throw()
-{
-	return ::strlen(s);
-}
 
 // char_lower
 inline CharA char_lower(CharA c) throw()
@@ -60,6 +42,27 @@ inline CharH char_upper(CharH c) throw()
 inline CharL char_upper(CharL c) throw()
 {
 	return (CharL)::towupper((wint_t)c);
+}
+
+//------------------------------------------------------------------------------
+//OS
+
+#if defined(OS_WINDOWS)
+	#include "Windows/str_api.h"
+#elif defined(OS_LINUX)
+	#include "Linux/str_api.h"
+#else
+	#error Error OS type!
+#endif
+
+//------------------------------------------------------------------------------
+//tools
+
+// calc_string_length
+
+inline uintptr calc_string_length(const CharA* s) throw()
+{
+	return ::strlen(s);
 }
 
 // compare_string

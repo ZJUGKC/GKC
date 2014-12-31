@@ -140,21 +140,21 @@ public:  \
 	static const uintptr  c_size;    \
 };
 
-// ConstString<T>
-//   T : CharA CharH CharL, CharS CharW
+// ConstString<Tchar>
+//   Tchar : CharA CharH CharL, CharS CharW
 
-template <typename T>
-class ConstString : public ConstArray<T>
+template <typename Tchar>
+class ConstString : public ConstArray<Tchar>
 {
 private:
-	typedef ConstArray<T>   baseClass;
-	typedef ConstString<T>  thisClass;
+	typedef ConstArray<Tchar>   baseClass;
+	typedef ConstString<Tchar>  thisClass;
 
 public:
 	ConstString() throw()
 	{
 	}
-	ConstString(const T* p, uintptr size) throw() : baseClass(p, size)
+	ConstString(const Tchar* p, uintptr size) throw() : baseClass(p, size)
 	{
 	}
 	ConstString(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))

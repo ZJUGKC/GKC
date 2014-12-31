@@ -686,7 +686,7 @@ private:
 		mem_move(pSrc, size * sizeof(T), pDest);
 	}
 
-private:
+protected:
 	void* m_pB;  //to array block
 	T*    m_pT;  //first address of array
 

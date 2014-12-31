@@ -21,13 +21,14 @@ General Kind C++
 
 	Visual Studio Express 2013
 
-2. Linux
+1. Linux
 
 	g++-4.9
 
 ## Building
 
 Install the necessary softwares in the production machine.
+Assume the building directory has the same level of directory GKC.
 
 ### Windows
 
@@ -42,7 +43,7 @@ cmake ../GKC -G"Visual Studio 12"
 cmake ../GKC -G"Visual Studio 12 Win64"
 ```
 
-2. make
+1. make
 	```
 MSBuild ALL_BUILD.vcxproj /t:build /p:Configuration=Release
 ```
@@ -54,7 +55,7 @@ MSBuild ALL_BUILD.vcxproj /t:build /p:Configuration=Release
 sudo apt-get install uuid-dev
 ```
 
-2. CMake:
+1. CMake:
 	* x86 machine:
 	```
 cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
@@ -65,7 +66,7 @@ cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
 cmake ../GKC -DCMAKE_BUILD_TYPE=Release -DUSE_64BITS=1 -G"Unix Makefiles"
 ```
 
-3. make
+1. make
 	```
 make
 ```

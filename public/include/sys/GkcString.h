@@ -264,6 +264,13 @@ public:
 		assert( index < GetLength() );
 		m_pT[index] = rv_forward(t);
 	}
+
+	//methods
+	void SetLength(uintptr uLength)
+	{
+		SetCount(uLength + 1);
+		GetAt(uLength).get_Value() = 0;
+	}
 };
 
 // StringX
@@ -370,23 +377,21 @@ public:
 	{
 		assert( !strSrc.IsNull() );
 		uintptr uCount = strSrc.GetCount();
-		strDest.SetCount(uCount + 1);
+		strDest.SetLength(uCount);
 		if( uCount == 0 ) {
-			strDest[0] = 0;
 			return ;
 		}
-		mem_copy(&(strSrc.GetBegin().get_Value()), (uCount + 1) * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
 	}
 	template <typename Tchar, uintptr t_size>
 	static void MakeString(const FixedString<Tchar, t_size>& strSrc, StringT<Tchar>& strDest)
 	{
 		uintptr uCount = strSrc.GetLength();
-		strDest.SetCount(uCount + 1);
+		strDest.SetLength(uCount);
 		if( uCount == 0 ) {
-			strDest[0] = 0;
 			return ;
 		}
-		mem_copy(&(strSrc.GetBegin().get_Value()), (uCount + 1) * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
 	}
 	template <typename Tchar, uintptr t_size>
 	static void MakeString(const StringT<Tchar>& strSrc, FixedString<Tchar, t_size>& strDest) throw()
@@ -408,12 +413,11 @@ public:
 	{
 		StringT<Tchar> ret;
 		uintptr uCount = str.GetLength();
-		ret.SetCount(uCount + 1);
+		ret.SetLength(uCount);
 		if( uCount == 0 ) {
-			ret[0] = 0;
 			return ret;
 		}
-		mem_copy(&(str.GetBegin().get_Value()), (uCount + 1) * sizeof(Tchar), &(ret.GetBegin().get_Value()));
+		mem_copy(&(str.GetBegin().get_Value()), uCount * sizeof(Tchar), &(ret.GetBegin().get_Value()));
 		return ret;
 	}
 };

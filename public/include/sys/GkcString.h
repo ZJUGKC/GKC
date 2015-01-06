@@ -271,6 +271,9 @@ public:
 		SetCount(uLength + 1);
 		GetAt(uLength).get_Value() = 0;
 	}
+
+private:
+	friend class StringHelper;
 };
 
 // StringX
@@ -359,18 +362,19 @@ class StringHelper
 public:
 	//make string
 	template <typename Tchar, uintptr t_size>
-	static void MakeString(const ConstString<Tchar>& strSrc, FixedString<Tchar, t_size>& strDest) throw()
+	static uintptr MakeString(const ConstString<Tchar>& strSrc, FixedString<Tchar, t_size>& strDest) throw()
 	{
 		assert( !strSrc.IsNull() );
 		uintptr uCount = strSrc.GetCount();
 		if( uCount == 0 ) {
 			strDest.SetLength(0);
-			return ;
+			return 0;
 		}
 		if( uCount > t_size - 1 )
 			uCount = t_size - 1;
 		strDest.SetLength(uCount);
 		mem_copy(&(strSrc.GetBegin().get_Value()), uCount * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
+		return uCount;
 	}
 	template <typename Tchar>
 	static void MakeString(const ConstString<Tchar>& strSrc, StringT<Tchar>& strDest)
@@ -383,6 +387,22 @@ public:
 		}
 		mem_copy(&(strSrc.GetBegin().get_Value()), uCount * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
 	}
+
+	template <typename Tchar, uintptr t_sizeS, uintptr t_sizeD>
+	static uintptr MakeString(const FixedString<Tchar, t_sizeS>& strSrc, FixedString<Tchar, t_sizeD>& strDest) throw()
+	{
+		assert( t_sizeS != t_sizeD );
+		uintptr uCount = strSrc.GetLength();
+		if( uCount == 0 ) {
+			strDest.SetLength(0);
+			return 0;
+		}
+		if( uCount > t_sizeD - 1 )
+			uCount = t_sizeD - 1;
+		strDest.SetLength(uCount);
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
+		return uCount;
+	}
 	template <typename Tchar, uintptr t_size>
 	static void MakeString(const FixedString<Tchar, t_size>& strSrc, StringT<Tchar>& strDest)
 	{
@@ -393,18 +413,20 @@ public:
 		}
 		mem_copy(&(strSrc.GetBegin().get_Value()), uCount * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
 	}
+
 	template <typename Tchar, uintptr t_size>
-	static void MakeString(const StringT<Tchar>& strSrc, FixedString<Tchar, t_size>& strDest) throw()
+	static uintptr MakeString(const StringT<Tchar>& strSrc, FixedString<Tchar, t_size>& strDest) throw()
 	{
 		uintptr uCount = strSrc.GetLength();
 		if( uCount == 0 ) {
 			strDest.SetLength(0);
-			return ;
+			return 0;
 		}
 		if( uCount > t_size - 1 )
 			uCount = t_size - 1;
 		strDest.SetLength(uCount);
 		mem_copy(&(strSrc.GetBegin().get_Value()), uCount * sizeof(Tchar), &(strDest.GetBegin().get_Value()));
+		return uCount;
 	}
 
 	//clone
@@ -419,6 +441,96 @@ public:
 		}
 		mem_copy(&(str.GetBegin().get_Value()), uCount * sizeof(Tchar), &(ret.GetBegin().get_Value()));
 		return ret;
+	}
+
+	//append
+	//  return: the characters of strSrc are copied
+	template <typename Tchar, uintptr t_size>
+	static uintptr Append(const ConstString<Tchar>& strSrc, INOUT FixedString<Tchar, t_size>& strDest) throw()
+	{
+		assert( !strSrc.IsNull() );
+		uintptr uCount1 = strSrc.GetCount();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount;
+		CallResult cr = SafeOperators::Add(uCount1, uCount2, uCount);
+		if( cr.IsFailed() || uCount > t_size - 1 )
+			uCount = t_size - 1;
+		strDest.SetLength(uCount);
+		uCount1 = uCount - uCount2;
+		if( uCount1 == 0 )
+			return 0;
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
+		return uCount1;
+	}
+	template <typename Tchar>
+	static void Append(const ConstString<Tchar>& strSrc, INOUT StringT<Tchar>& strDest)
+	{
+		assert( !strSrc.IsNull() );
+		uintptr uCount1 = strSrc.GetCount();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount = SafeOperators::AddThrow(uCount1, uCount2);
+		strDest.SetLength(uCount);
+		if( uCount1 == 0 )
+			return ;
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
+	}
+
+	template <typename Tchar, uintptr t_sizeS, uintptr t_sizeD>
+	static uintptr Append(const FixedString<Tchar, t_sizeS>& strSrc, INOUT FixedString<Tchar, t_sizeD>& strDest) throw()
+	{
+		assert( &strSrc != &strDest );
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount;
+		CallResult cr = SafeOperators::Add(uCount1, uCount2, uCount);
+		if( cr.IsFailed() || uCount > t_sizeD - 1 )
+			uCount = t_sizeD - 1;
+		strDest.SetLength(uCount);
+		uCount1 = uCount - uCount2;
+		if( uCount1 == 0 )
+			return 0;
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
+		return uCount1;
+	}
+	template <typename Tchar, uintptr t_size>
+	static void Append(const FixedString<Tchar, t_size>& strSrc, INOUT StringT<Tchar>& strDest)
+	{
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount = SafeOperators::AddThrow(uCount1, uCount2);
+		strDest.SetLength(uCount);
+		if( uCount1 == 0 )
+			return ;
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
+	}
+
+	template <typename Tchar, uintptr t_size>
+	static uintptr Append(const StringT<Tchar>& strSrc, INOUT FixedString<Tchar, t_size>& strDest) throw()
+	{
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount;
+		CallResult cr = SafeOperators::Add(uCount1, uCount2, uCount);
+		if( cr.IsFailed() || uCount > t_size - 1 )
+			uCount = t_size - 1;
+		strDest.SetLength(uCount);
+		uCount1 = uCount - uCount2;
+		if( uCount1 == 0 )
+			return 0;
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
+		return uCount1;
+	}
+	template <typename Tchar>
+	static void Append(const StringT<Tchar>& strSrc, INOUT StringT<Tchar>& strDest)
+	{
+		assert( (&strSrc != &strDest) && (strSrc.m_pT != strDest.m_pT) );
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount = SafeOperators::AddThrow(uCount1, uCount2);
+		strDest.SetLength(uCount);
+		if( uCount1 == 0 )
+			return ;
+		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
 	}
 };
 

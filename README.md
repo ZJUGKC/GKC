@@ -95,7 +95,10 @@ fc-list
 ```
 
 1. Install TexStudio:
-	Install TexStudio. Select the menu `Options->Configure Texstudio->Commands`,
+
+	Install TexStudio.
+
+	Select the menu `Options->Configure Texstudio->Commands`,
 change the item `XeLaTeX` to:
 	```
 xelatex -synctex=1 -interaction=nonstopmode %.tex

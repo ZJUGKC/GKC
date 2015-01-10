@@ -33,6 +33,8 @@ namespace GKC {
 
 //classes
 
+//------------------------------------------------------------------------------
+
 // ConstArray<T>
 
 template <typename T>
@@ -140,6 +142,8 @@ public:  \
 	static const uintptr  c_size;    \
 };
 
+//------------------------------------------------------------------------------
+
 // ConstString<Tchar>
 //   Tchar : CharA CharH CharL, CharS CharW
 
@@ -185,6 +189,38 @@ typedef ConstString<CharW>  ConstStringW;   //wide version
 
 #define DECLARE_STATIC_CONST_STRING(cls)  \
 	DECLARE_STATIC_CONST_ARRAY(cls, typename cls::EType)
+
+//------------------------------------------------------------------------------
+// Helper
+
+// ConstHelper
+
+class ConstHelper
+{
+public:
+	//set internal pointer
+	template <typename T>
+	static void SetInternalPointer(const T* p, uintptr size, ConstArray<T>& arr) throw()
+	{
+		arr.m_first = p;
+		arr.m_size  = size;
+	}
+	//get internal pointer
+	template <typename T>
+	static const T* GetInternalPointer(const ConstArray<T>& arr) throw()
+	{
+		return arr.m_first;
+	}
+	//type cast
+	template <class T, class TBase>
+	static const TBase& TypeCast(const T& src) throw()
+	{
+		return static_cast<const TBase&>(src);
+	}
+};
+
+//------------------------------------------------------------------------------
+// Traits
 
 // ConstStringCompareTrait<T>
 
@@ -258,26 +294,41 @@ public:
 	}
 };
 
-//------------------------------------------------------------------------------
-// Helper
+// ConstStringHashTrait<T>
 
-// ConstHelper
-
-class ConstHelper
+template <class T>
+class ConstStringHashTrait
 {
 public:
-	//set internal pointer
-	template <typename T>
-	static void SetInternalPointer(const T* p, uintptr size, ConstArray<T>& arr) throw()
+	static uintptr CalcHash(const T& t) throw()
 	{
-		arr.m_first = p;
-		arr.m_size  = size;
+		uintptr uHash = 0;
+		const typename T::EType* pch = ConstHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
+			pch ++;
+		}
+		return uHash;
 	}
-	//type cast
-	template <class T, class TBase>
-	static const TBase& TypeCast(const T& src) throw()
+};
+
+// ConstStringCaseIgnoreHashTrait<T>
+
+template <class T>
+class ConstStringCaseIgnoreHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
 	{
-		return static_cast<const TBase&>(src);
+		uintptr uHash = 0;
+		const typename T::EType* pch = ConstHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
+			pch ++;
+		}
+		return uHash;
 	}
 };
 

@@ -29,6 +29,8 @@ namespace GKC {
 
 // classes
 
+//------------------------------------------------------------------------------
+
 // FixedStringT<Tchar, t_size>
 //   Tchar: CharA CharH CharL, CharS CharW
 
@@ -110,6 +112,22 @@ private:
 	bool operator>(const thisClass& right) const throw();
 	bool operator<=(const thisClass& right) const throw();
 	bool operator>=(const thisClass& right) const throw();
+
+private:
+	friend class FixedStringHelper;
+};
+
+// FixedStringHelper
+
+class FixedStringHelper
+{
+public:
+	//internal pointer
+	template <typename Tchar, uintptr t_size>
+	static Tchar* GetInternalPointer(const FixedString<Tchar, t_size>& str) throw()
+	{
+		return str.m_data;
+	}
 };
 
 // FixedStringCompareTrait<T>
@@ -183,6 +201,46 @@ public:
 		return compare_string_case_insensitive(&(t1.GetBegin().get_Value()), &(t2.GetBegin().get_Value()));
 	}
 };
+
+// FixedStringHashTrait<T>
+
+template <class T>
+class FixedStringHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = FixedStringHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// FixedStringCaseIgnoreHashTrait<T>
+
+template <class T>
+class FixedStringCaseIgnoreHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = FixedStringHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+//------------------------------------------------------------------------------
 
 // StringT<Tchar>
 //   Tchar: CharA CharH CharL, CharS CharW
@@ -283,6 +341,19 @@ typedef StringT<CharL>  StringL;
 typedef StringT<CharS>  StringS;
 typedef StringT<CharW>  StringW;
 
+// StringHelper
+
+class StringHelper
+{
+public:
+	//internal pointer
+	template <typename Tchar>
+	static Tchar* GetInternalPointer(const StringT<Tchar>& str) throw()
+	{
+		return str.m_pT;
+	}
+};
+
 // StringCompareTrait<T>
 
 template <class T>
@@ -355,9 +426,49 @@ public:
 	}
 };
 
-// StringHelper
+// StringHashTrait<T>
 
-class StringHelper
+template <class T>
+class StringHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = StringHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// StringCaseIgnoreHashTrait<T>
+
+template <class T>
+class StringCaseIgnoreHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = StringHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+//------------------------------------------------------------------------------
+
+// StringUtilHelper
+
+class StringUtilHelper
 {
 public:
 	//make string

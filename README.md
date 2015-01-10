@@ -43,7 +43,7 @@ cmake ../GKC -G"Visual Studio 12"
 cmake ../GKC -G"Visual Studio 12 Win64"
 ```
 
-1. make
+1. make:
 	```
 MSBuild ALL_BUILD.vcxproj /t:build /p:Configuration=Release
 ```
@@ -66,7 +66,40 @@ cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
 cmake ../GKC -DCMAKE_BUILD_TYPE=Release -DUSE_64BITS=1 -G"Unix Makefiles"
 ```
 
-1. make
+1. make:
 	```
 make
 ```
+
+## Latex
+
+### Windows
+
+Install MikTex, and use TexWorks. Install other packages through Maintenance UI such as CJK packages.
+Two patterns, pdfLaTeX+MakeIndex+BibTeX and XeLaTeX+MakeIndex+BibTeX can be used for composing
+papers, books and slides.
+
+### Linux
+
+1. Install TexLive:
+	```
+sudo apt-get install texlive-full
+```
+
+1. Install fonts:
+	```
+sudo apt-get install ttf-mscorefonts-installer
+sudo apt-get install xfonts-wqy ttf-wqy-microhei ttf-wqy-zenhei
+fc-cache
+fc-list
+```
+
+1. Install TexStudio:
+	Install TexStudio. Select the menu `Options->Configure Texstudio->Commands`,
+change the item `XeLaTeX` to:
+	```
+xelatex -synctex=1 -interaction=nonstopmode %.tex
+```
+
+	Select the menu `Options->Configure Texstudio->Build`,
+change the item `Default Compiler` to `XeLaTeX`.

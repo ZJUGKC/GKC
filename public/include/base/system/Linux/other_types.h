@@ -157,67 +157,13 @@ private:
 // call_result constants
 
 #define CR_OK                0
+#define CR_FAIL              CR_FROM_ERROR(EFAULT)
 #define CR_OUTOFMEMORY       CR_FROM_ERROR(ENOMEM)
 #define CR_OVERFLOW          CR_FROM_ERROR(EOVERFLOW)
 #define CR_SABAD             CR_FROM_ERROR(ELIBBAD)
+#define CR_INVALID           CR_FROM_ERROR(EINVAL)
+#define CR_NOTIMPL           CR_FROM_ERROR(ENOSYS)
 
 //------------------------------------------------------------------------------
-// Synchronization
-
-// inp_mutex
-
-class inp_mutex
-{
-public:
-	inp_mutex() throw() : m_bInitialized(false)
-	{
-	}
-	~inp_mutex() throw()
-	{
-		Term();
-	}
-
-	void Lock() throw()
-	{
-		assert( m_bInitialized );
-		::pthread_mutex_lock(&m_mtx);
-	}
-	void Unlock() throw()
-	{
-		::pthread_mutex_unlock(&m_mtx);
-	}
-
-	//methods
-	call_result Init() throw()
-	{
-		assert( !m_bInitialized );
-
-		int res = ::pthread_mutex_init(&m_mtx, NULL);
-		if( res > 0 ) {
-			res = CR_FROM_ERROR(res);
-		}
-		else if( res == 0 ) {
-			m_bInitialized = true;
-		}
-
-		return call_result(res);
-	}
-	void Term() throw()
-	{
-		if( m_bInitialized ) {
-			::pthread_mutex_destroy(&m_mtx);
-			m_bInitialized = false;
-		}
-	}
-
-private:
-	pthread_mutex_t m_mtx;
-	bool m_bInitialized;
-
-private:
-	//noncopyable
-	inp_mutex(const inp_mutex&) throw();
-	inp_mutex& operator=(const inp_mutex&) throw();
-};
 
 ////////////////////////////////////////////////////////////////////////////////

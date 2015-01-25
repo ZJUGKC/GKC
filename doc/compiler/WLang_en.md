@@ -114,7 +114,10 @@ The constants must be defined in class or method body similar to static variable
 
 ### Namespace
 
+The namespace organizes the classes to a hierarchical structure according to conceptions.
+The namespace can be defined recursively. A namespace can be considered as a degraded class.
 The definitions of WLang classes must locate in a namespace.
+
 A namespace can be defined as follows:
 
 ```
@@ -122,8 +125,6 @@ namespace UI {
 ...
 }
 ```
-
-Namespace can be defined recursively.
 
 ### Class and Object
 

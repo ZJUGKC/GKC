@@ -159,69 +159,13 @@ private:
 // call_result constants
 
 #define CR_OK                0
+#define CR_FAIL              E_FAIL
 #define CR_OUTOFMEMORY       E_OUTOFMEMORY
 #define CR_OVERFLOW          CR_FROM_ERROR(ERROR_ARITHMETIC_OVERFLOW)
 #define CR_SABAD             CR_FROM_ERROR(ERROR_DLL_INIT_FAILED)
+#define CR_INVALID           E_INVALIDARG
+#define CR_NOTIMPL           E_NOTIMPL
 
 //------------------------------------------------------------------------------
-// Synchronization
-
-// inp_mutex
-
-class inp_mutex
-{
-public:
-	inp_mutex() throw() : m_bInitialized(false)
-	{
-		::ZeroMemory(&m_sec, sizeof(CRITICAL_SECTION));
-	}
-	~inp_mutex() throw()
-	{
-		Term();
-	}
-
-	void Lock() throw()
-	{
-		assert( m_bInitialized );
-		::EnterCriticalSection(&m_sec);
-	}
-	void Unlock() throw()
-	{
-		::LeaveCriticalSection(&m_sec);
-	}
-
-	//methods
-	call_result Init() throw()
-	{
-		assert( !m_bInitialized );
-
-		HRESULT hRes = S_OK;
-
-		if( !::InitializeCriticalSectionAndSpinCount(&m_sec, 0) ) {
-			hRes = HRESULT_FROM_WIN32(::GetLastError());
-		}
-
-		if( SUCCEEDED(hRes) )
-			m_bInitialized = true;
-
-		return call_result((int)hRes);
-	}
-	void Term() throw()
-	{
-		if( m_bInitialized ) {
-			::DeleteCriticalSection(&m_sec);
-			m_bInitialized = false;
-		}
-	}
-
-private:
-	CRITICAL_SECTION m_sec;
-	bool m_bInitialized;
-
-private:
-	//noncopyable
-	inp_mutex(const inp_mutex&) throw();
-	inp_mutex& operator=(const inp_mutex&) throw();
-};
 
 ////////////////////////////////////////////////////////////////////////////////

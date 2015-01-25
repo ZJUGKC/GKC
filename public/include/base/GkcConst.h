@@ -211,6 +211,7 @@ public:
 	{
 		return arr.m_first;
 	}
+
 	//type cast
 	template <class T, class TBase>
 	static const TBase& TypeCast(const T& src) throw()

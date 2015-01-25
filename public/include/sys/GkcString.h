@@ -112,22 +112,6 @@ private:
 	bool operator>(const thisClass& right) const throw();
 	bool operator<=(const thisClass& right) const throw();
 	bool operator>=(const thisClass& right) const throw();
-
-private:
-	friend class FixedStringHelper;
-};
-
-// FixedStringHelper
-
-class FixedStringHelper
-{
-public:
-	//internal pointer
-	template <typename Tchar, uintptr t_size>
-	static Tchar* GetInternalPointer(const FixedString<Tchar, t_size>& str) throw()
-	{
-		return str.m_data;
-	}
 };
 
 // FixedStringCompareTrait<T>
@@ -211,7 +195,7 @@ public:
 	static uintptr CalcHash(const T& t) throw()
 	{
 		uintptr uHash = 0;
-		const typename T::EType* pch = FixedStringHelper::GetInternalPointer(t);
+		const typename T::EType* pch = FixedArrayHelper::GetInternalPointer(t);
 		assert( pch != NULL );
 		while( *pch != 0 ) {
 			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
@@ -230,7 +214,7 @@ public:
 	static uintptr CalcHash(const T& t) throw()
 	{
 		uintptr uHash = 0;
-		const typename T::EType* pch = FixedStringHelper::GetInternalPointer(t);
+		const typename T::EType* pch = FixedArrayHelper::GetInternalPointer(t);
 		assert( pch != NULL );
 		while( *pch != 0 ) {
 			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
@@ -329,9 +313,6 @@ public:
 		SetCount(uLength + 1);
 		GetAt(uLength).get_Value() = 0;
 	}
-
-private:
-	friend class StringHelper;
 };
 
 // StringX
@@ -340,19 +321,6 @@ typedef StringT<CharH>  StringH;
 typedef StringT<CharL>  StringL;
 typedef StringT<CharS>  StringS;
 typedef StringT<CharW>  StringW;
-
-// StringHelper
-
-class StringHelper
-{
-public:
-	//internal pointer
-	template <typename Tchar>
-	static Tchar* GetInternalPointer(const StringT<Tchar>& str) throw()
-	{
-		return str.m_pT;
-	}
-};
 
 // StringCompareTrait<T>
 
@@ -435,7 +403,7 @@ public:
 	static uintptr CalcHash(const T& t) throw()
 	{
 		uintptr uHash = 0;
-		const typename T::EType* pch = StringHelper::GetInternalPointer(t);
+		const typename T::EType* pch = SharedArrayHelper::GetInternalPointer(t);
 		assert( pch != NULL );
 		while( *pch != 0 ) {
 			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
@@ -454,7 +422,7 @@ public:
 	static uintptr CalcHash(const T& t) throw()
 	{
 		uintptr uHash = 0;
-		const typename T::EType* pch = StringHelper::GetInternalPointer(t);
+		const typename T::EType* pch = SharedArrayHelper::GetInternalPointer(t);
 		assert( pch != NULL );
 		while( *pch != 0 ) {
 			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
@@ -471,6 +439,23 @@ public:
 class StringUtilHelper
 {
 public:
+	//To C-style string
+	template <typename Tchar>
+	static RefPtr<Tchar> To_C_Style(const ConstString<Tchar>& str) throw()
+	{
+		return RefPtr<Tchar>(ConstHelper::GetInternalPointer(str));
+	}
+	template <typename Tchar, uintptr t_size>
+	static RefPtr<Tchar> To_C_Style(const FixedString<Tchar, t_size>& str) throw()
+	{
+		return RefPtr<Tchar>(FixedArrayHelper::GetInternalPointer(str));
+	}
+	template <typename Tchar>
+	static RefPtr<Tchar> To_C_Style(const StringT<Tchar>& str) throw()
+	{
+		return RefPtr<Tchar>(SharedArrayHelper::GetInternalPointer(str));
+	}
+
 	//make string
 	template <typename Tchar, uintptr t_size>
 	static uintptr MakeString(const ConstString<Tchar>& strSrc, FixedString<Tchar, t_size>& strDest) throw()

@@ -33,6 +33,8 @@ namespace GKC {
 
 // classes
 
+//------------------------------------------------------------------------------
+
 // FixedArray<T, t_size, TCompareTrait>
 
 template <typename T, uintptr t_size, class TCompareTrait = DefaultCompareTrait<T>>
@@ -198,6 +200,23 @@ private:
 
 protected:
 	T m_data[t_size];  //array
+
+private:
+	friend class FixedArrayHelper;
+};
+
+// FixedArrayHelper
+
+class FixedArrayHelper
+{
+public:
+	//internal pointer
+	//  T: FixedArray<...>
+	template <class T>
+	static typename T::EType* GetInternalPointer(const T& arr) throw()
+	{
+		return arr.m_data;
+	}
 };
 
 // Big Endian
@@ -252,6 +271,8 @@ public:
 		return 1;
 	}
 };
+
+//------------------------------------------------------------------------------
 
 // SharedArray<T>
 
@@ -807,6 +828,18 @@ private:
 class SharedArrayHelper
 {
 public:
+	//internal pointer
+	template <typename T>
+	static T* GetInternalPointer(const SharedArray<T>& sp) throw()
+	{
+		return sp.m_pT;
+	}
+	template <typename T>
+	static T* GetInternalPointer(const WeakArray<T>& sp) throw()
+	{
+		return sp.m_pT;
+	}
+
 	//make shared
 	template <typename T>
 	static SharedArray<T> MakeSharedArray(const RefPtr<IMemoryManager>& mgr)

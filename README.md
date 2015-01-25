@@ -15,7 +15,7 @@
 
 General Kind C++
 
-## Compiler:
+## Compiler
 
 1. Windows
 
@@ -40,7 +40,7 @@ cmake ../GKC -G"Visual Studio 12"
 
 	* x64 machine:
 	```
-cmake ../GKC -G"Visual Studio 12 Win64"
+cmake ../GKC -DUSE_64BITS=1 -G"Visual Studio 12 Win64"
 ```
 
 1. make:
@@ -106,3 +106,60 @@ xelatex -synctex=1 -interaction=nonstopmode %.tex
 
 	Select the menu `Options->Configure Texstudio->Build`,
 change the item `Default Compiler` to `XeLaTeX`.
+
+## Test
+
+```
+cd test
+ctest -C "Release"
+```
+
+## Pack
+
+### Windows
+
+```
+cpack -D CPACK_GENERATOR="ZIP;TGZ"
+```
+
+Compress the files, setup-gkc.vbs, uninstall-gkc.vbs and GKC-1.0.1-win32.zip (or GKC-1.0.1-win64.zip),
+into a zip file and redistribute it.
+
+### Linux
+
+```
+cpack
+```
+
+Compress the files, setup-gkc.sh, uninstall-gkc.sh, GKC-1.0.1-Linux.sh and GKC-1.0.1-Linux.tar.gz,
+into a zip file and redistribute it.
+
+## Install
+
+Install GKC in the computers on client end or server end for production and running infrastructure.
+
+### Windows
+
+```
+cscript setup-gkc.vbs
+```
+
+### Linux
+
+```
+sudo sh setup-gkc.sh
+```
+
+## Uninstall
+
+### Windows
+
+```
+cscript uninstall-gkc.vbs
+```
+
+### Linux
+
+```
+sudo sh uninstall-gkc.sh
+```

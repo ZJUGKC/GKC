@@ -73,8 +73,12 @@ typedef call_result  CallResult;
 
 BEGIN_ENUM(SystemCallResults)
 	ENUM_VALUE_ENTRY(OK, CR_OK)
+	ENUM_VALUE_ENTRY(Fail, CR_FAIL)
 	ENUM_VALUE_ENTRY(OutOfMemory, CR_OUTOFMEMORY)
 	ENUM_VALUE_ENTRY(Overflow, CR_OVERFLOW)
+	ENUM_VALUE_ENTRY(SABad, CR_SABAD)
+	ENUM_VALUE_ENTRY(Invalid, CR_INVALID)
+	ENUM_VALUE_ENTRY(NotImpl, CR_NOTIMPL)
 END_ENUM()
 
 //------------------------------------------------------------------------------
@@ -740,6 +744,140 @@ public:
 	void SetValue(Pair<TKey, TValue>& pair, TValue&& t)  //may throw
 	{
 		pair.set_Second(rv_forward(t));
+	}
+};
+
+//------------------------------------------------------------------------------
+// Pointers
+
+// RefPtr<T>
+
+template <class T>
+class RefPtr
+{
+public:
+	RefPtr() throw() : m_p(NULL)
+	{
+	}
+	explicit RefPtr(const T& t) throw() : m_p(&(const_cast<T&>(t)))
+	{
+	}
+	explicit RefPtr(T& t) throw() : m_p(&t)
+	{
+	}
+	explicit RefPtr(const T* p) throw() : m_p(const_cast<T*>(p))
+	{
+	}
+	explicit RefPtr(T* p) throw() : m_p(p)
+	{
+	}
+	RefPtr(const RefPtr<T>& src) throw() : m_p(src.m_p)
+	{
+	}
+	~RefPtr() throw()
+	{
+	}
+
+	void Release() throw()
+	{
+		m_p = NULL;
+	}
+
+	//operators
+	RefPtr<T>& operator=(const RefPtr<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_p = src.m_p;
+		}
+		return *this;
+	}
+	RefPtr<T>& operator=(T* p) throw()
+	{
+		m_p = p;
+		return *this;
+	}
+
+	//logical
+	bool operator==(const RefPtr<T>& right) const throw()
+	{
+		return m_p == right.m_p;
+	}
+	bool operator!=(const RefPtr<T>& right) const throw()
+	{
+		return !(*this == right);
+	}
+	bool operator<(const RefPtr<T>& right) const throw()
+	{
+		return m_p < right.m_p;
+	}
+	bool operator>(const RefPtr<T>& right) const throw()
+	{
+		return right < *this;
+	}
+	bool operator<=(const RefPtr<T>& right) const throw()
+	{
+		return !operator>(right);
+	}
+	bool operator>=(const RefPtr<T>& right) const throw()
+	{
+		return !operator<(right);
+	}
+
+	//methods
+	bool IsNull() const throw()
+	{
+		return m_p == NULL;
+	}
+
+	const T& Deref() const throw()
+	{
+		assert( !IsNull() );
+		return *m_p;
+	}
+	T& Deref() throw()
+	{
+		assert( !IsNull() );
+		return *m_p;
+	}
+
+private:
+	T* m_p;
+
+private:
+	friend class RefPtrHelper;
+};
+
+// RefPtrHelper
+
+class RefPtrHelper
+{
+public:
+	template <class T>
+	static RefPtr<T> ToRefPtr(const T& t) throw()
+	{
+		return RefPtr<T>(t);
+	}
+	//cast
+	template <class T, class TBase>
+	static RefPtr<TBase> TypeCast(const RefPtr<T>& t) throw()
+	{
+		assert( !t.IsNull() );
+		return RefPtr<TBase>(static_cast<const TBase&>(t.Deref()));
+	}
+	//clone
+	template <class T>
+	static void Clone(const RefPtr<T>& tSrc, RefPtr<T>& tDest) //may throw
+	{
+		if( tSrc.m_p != tDest.m_p && !tSrc.IsNull() && !tDest.IsNull() ) {
+			tDest.Deref() = tSrc.Deref();
+		}
+	}
+
+	//get internal pointer
+	template <class T>
+	static T* GetInternalPointer(const RefPtr<T>& t) throw()
+	{
+		return t.m_p;
 	}
 };
 

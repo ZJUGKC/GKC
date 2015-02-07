@@ -302,6 +302,9 @@ private:
 	bool m_bInitialized;
 
 private:
+	friend class inprocess_condition;
+
+private:
 	//noncopyable
 	inprocess_mutex(const inprocess_mutex&) throw();
 	inprocess_mutex& operator=(const inprocess_mutex&) throw();
@@ -354,6 +357,77 @@ private:
 	//noncopyable
 	interprocess_mutex(const interprocess_mutex&) throw();
 	interprocess_mutex& operator=(const interprocess_mutex&) throw();
+};
+
+//Condition
+
+// inprocess_condition
+
+class inprocess_condition
+{
+public:
+	inprocess_condition() throw() : m_bInitialized(false)
+	{
+	}
+	~inprocess_condition() throw()
+	{
+		Term();
+	}
+
+	void Wait(inprocess_mutex& mtx) throw()
+	{
+		assert( m_bInitialized );
+		::pthread_cond_wait(&m_cv, &mtx.m_mtx);
+	}
+	// uTimeout: 0 or number (ms)
+	bool TryWait(inprocess_mutex& mtx, uint uTimeout) throw()
+	{
+		assert( m_bInitialized );
+		timeval now;
+		::gettimeofday(&now);  //no check
+		uint uSecond = uTimeout / 1000;
+		uint uRest = uTimeout % 1000;
+		timespec to;
+		to.tv_sec = now.tv_sec + uSecond;
+		to.tv_nsec = (now.tv_usec + uRest * 1000) * 1000;
+		return ::pthread_cond_timedwait(&m_cv, &mtx.m_mtx, &to) == 0;
+	}
+	void Signal() throw()
+	{
+		assert( m_bInitialized );
+		::pthread_cond_signal(&m_cv);
+	}
+	void SignalAll() throw()
+	{
+		assert( m_bInitialized );
+		::pthread_cond_broadcast(&m_cv);
+	}
+
+	void Init() throw()
+	{
+		assert( !m_bInitialized );
+		::pthread_cond_init(&m_cv, NULL);
+		m_bInitialized = true;
+	}
+	void Term() throw()
+	{
+		if( m_bInitialized ) {
+#ifdef DEBUG
+			int res =
+#endif
+			::pthread_cond_destroy(&m_cv);
+			assert( res == 0 );
+			m_bInitialized = false;
+		}
+	}
+
+private:
+	pthread_cond_t  m_cv;
+	bool  m_bInitialized;
+
+private:
+	inprocess_condition(const inprocess_condition&) throw();
+	inprocess_condition& operator=(const inprocess_condition&) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////

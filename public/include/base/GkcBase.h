@@ -610,6 +610,9 @@ typedef interprocess_semaphore   ProcessSemaphore;
 typedef inprocess_mutex      Mutex;
 typedef interprocess_mutex   ProcessMutex;
 
+// Condition
+typedef inprocess_condition  Condition;
+
 // SyncLock<T>
 
 template <class T>

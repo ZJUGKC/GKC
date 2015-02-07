@@ -272,6 +272,9 @@ private:
 	bool m_bInitialized;
 
 private:
+	friend class inprocess_condition;
+
+private:
 	//noncopyable
 	inprocess_mutex(const inprocess_mutex&) throw();
 	inprocess_mutex& operator=(const inprocess_mutex&) throw();
@@ -366,7 +369,59 @@ private:
 
 // inprocess_condition
 
-// interprocess_condition
+class inprocess_condition
+{
+public:
+	inprocess_condition() throw() : m_bInitialized(false)
+	{
+	}
+	~inprocess_condition() throw()
+	{
+		Term();
+	}
+
+	void Wait(inprocess_mutex& mtx) throw()
+	{
+		assert( m_bInitialized );
+		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &mtx.m_sec, INFINITE);
+		assert( bRet );
+	}
+	// uTimeout: 0 or number (ms)
+	bool TryWait(inprocess_mutex& mtx, uint uTimeout) throw()
+	{
+		assert( m_bInitialized );
+		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &mtx.m_sec, uTimeout);
+		return bRet ? true : false;
+	}
+	void Signal() throw()
+	{
+		assert( m_bInitialized );
+		::WakeConditionVariable(&m_cv);
+	}
+	void SignalAll() throw()
+	{
+		assert( m_bInitialized );
+		::WakeAllConditionVariable(&m_cv);
+	}
+
+	void Init() throw()
+	{
+		assert( !m_bInitialized );
+		::InitializeConditionVariable(&m_cv);
+		m_bInitialized = true;
+	}
+	void Term() throw()
+	{
+	}
+
+private:
+	CONDITION_VARIABLE  m_cv;
+	bool  m_bInitialized;
+
+private:
+	inprocess_condition(const inprocess_condition&) throw();
+	inprocess_condition& operator=(const inprocess_condition&) throw();
+};
 
 //RWLock
 

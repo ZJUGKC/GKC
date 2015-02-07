@@ -48,12 +48,12 @@ sudo apt-get install uuid-dev
 * Latex
 
 	1. Install TexLive:
-		```
+	```
 sudo apt-get install texlive-full
 ```
 
 	1. Install fonts:
-		```
+	```
 sudo apt-get install ttf-mscorefonts-installer
 sudo apt-get install xfonts-wqy ttf-wqy-microhei ttf-wqy-zenhei
 fc-cache

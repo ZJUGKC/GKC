@@ -19,7 +19,7 @@ with the typical folder
 C:\Users\<USER>\AppData\Local\GitHub
 ```
 
-noted as <GitHubInstallDir>.
+noted as `<GitHubInstallDir>`.
 
 1. GIT BASH
 
@@ -30,7 +30,7 @@ then edit the destination as:
 "<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\bin\sh.exe" --login –i
 ```
 
-	The <LatestVersionNumber> should be found in <GitHubInstallDir>.
+	The `<LatestVersionNumber>` should be found in `<GitHubInstallDir>`.
 
 	The start location should be written as:
 	```

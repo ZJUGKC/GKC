@@ -384,7 +384,7 @@ public:
 	{
 		assert( m_bInitialized );
 		timeval now;
-		::gettimeofday(&now);  //no check
+		::gettimeofday(&now, NULL);  //no check
 		uint uSecond = uTimeout / 1000;
 		uint uRest = uTimeout % 1000;
 		timespec to;

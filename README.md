@@ -46,7 +46,6 @@ sudo apt-get install uuid-dev
 ```
 
 * Latex
-
 	1. Install TexLive:
 	```
 sudo apt-get install texlive-full

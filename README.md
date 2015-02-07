@@ -61,15 +61,15 @@ fc-list
 
 	+ Install TexStudio:
 
-		Install TexStudio.
+	Install TexStudio.
 
-		Select the menu `Options->Configure Texstudio->Commands`,
+	Select the menu `Options->Configure Texstudio->Commands`,
 change the item `XeLaTeX` to:
-		```
+	```
 xelatex -synctex=1 -interaction=nonstopmode %.tex
 ```
 
-		Select the menu `Options->Configure Texstudio->Build`,
+	Select the menu `Options->Configure Texstudio->Build`,
 change the item `Default Compiler` to `XeLaTeX`.
 
 ### Testing

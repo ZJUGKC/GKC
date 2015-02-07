@@ -24,34 +24,34 @@ Assume the building directory has the same level of directory GKC.
 
 #### Windows
 
-* Compiler
+##### Compiler
 
-	Visual Studio Express 2013
+Visual Studio Express 2013
 
-* Latex
+##### Latex
 
-	Install MikTex, and use TexWorks. Install other packages through Maintenance UI such as CJK packages.
+Install MikTex, and use TexWorks. Install other packages through Maintenance UI such as CJK packages.
 Two patterns, `pdfLaTeX+MakeIndex+BibTeX` and `XeLaTeX+MakeIndex+BibTeX` can be used for composing
 papers, books and slides.
 
 #### Linux
 
-* Compiler
+##### Compiler
 
-	g++-4.9
+g++-4.9
 
-	Install libuuid:
-	```
+Install libuuid:
+```
 sudo apt-get install uuid-dev
 ```
 
-* Latex
-	+ Install TexLive:
+##### Latex
+1. Install TexLive:
 	```
 sudo apt-get install texlive-full
 ```
 
-	+ Install fonts:
+1. Install fonts:
 	```
 sudo apt-get install ttf-mscorefonts-installer
 sudo apt-get install xfonts-wqy ttf-wqy-microhei ttf-wqy-zenhei
@@ -59,7 +59,7 @@ fc-cache
 fc-list
 ```
 
-	+ Install TexStudio:
+1. Install TexStudio:
 
 	Install TexStudio.
 

@@ -613,6 +613,9 @@ typedef interprocess_mutex   ProcessMutex;
 // Condition
 typedef inprocess_condition  Condition;
 
+// RWLock
+typedef inprocess_rwlock  RWLock;
+
 // SyncLock<T>
 
 template <class T>
@@ -659,6 +662,100 @@ private:
 	//noncopyable
 	SyncLock(const SyncLock<T>&) throw();
 	SyncLock<T>& operator=(const SyncLock<T>&) throw();
+};
+
+// RWLockShared
+
+class RWLockShared
+{
+public:
+	RWLockShared(RWLock& rw, bool bInitialLock = true) throw() : m_rw(rw), m_bLocked(false)
+	{
+		if( bInitialLock )
+			Lock();
+	}
+	~RWLockShared() throw()
+	{
+		if( m_bLocked )
+			Unlock();
+	}
+
+	void Lock() throw()
+	{
+		assert( !m_bLocked );
+		m_rw.Deref().LockShared();
+		m_bLocked = true;
+	}
+	void Unlock() throw()
+	{
+		assert( m_bLocked );
+		m_rw.Deref().UnlockShared();
+		m_bLocked = false;
+	}
+	bool TryLock() throw()
+	{
+		assert( !m_bLocked );
+		bool bRet = m_rw.Deref().TryLockShared();
+		if( bRet )
+			m_bLocked = true;
+		return bRet;
+	}
+
+private:
+	RefPtr<RWLock>  m_rw;
+	bool            m_bLocked;
+
+private:
+	//noncopyable
+	RWLockShared(const RWLockShared&) throw();
+	RWLockShared& operator=(const RWLockShared&) throw();
+};
+
+// RWLockExclusive
+
+class RWLockExclusive
+{
+public:
+	RWLockExclusive(RWLock& rw, bool bInitialLock = true) throw() : m_rw(rw), m_bLocked(false)
+	{
+		if( bInitialLock )
+			Lock();
+	}
+	~RWLockExclusive() throw()
+	{
+		if( m_bLocked )
+			Unlock();
+	}
+
+	void Lock() throw()
+	{
+		assert( !m_bLocked );
+		m_rw.Deref().LockExclusive();
+		m_bLocked = true;
+	}
+	void Unlock() throw()
+	{
+		assert( m_bLocked );
+		m_rw.Deref().UnlockExclusive();
+		m_bLocked = false;
+	}
+	bool TryLock() throw()
+	{
+		assert( !m_bLocked );
+		bool bRet = m_rw.Deref().TryLockExclusive();
+		if( bRet )
+			m_bLocked = true;
+		return bRet;
+	}
+
+private:
+	RefPtr<RWLock>  m_rw;
+	bool            m_bLocked;
+
+private:
+	//noncopyable
+	RWLockExclusive(const RWLockExclusive&) throw();
+	RWLockExclusive& operator=(const RWLockExclusive&) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////

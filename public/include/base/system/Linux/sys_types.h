@@ -426,8 +426,118 @@ private:
 	bool  m_bInitialized;
 
 private:
+	//noncopyable
 	inprocess_condition(const inprocess_condition&) throw();
 	inprocess_condition& operator=(const inprocess_condition&) throw();
 };
+
+//RWLock
+
+// inprocess_rwlock
+
+class inprocess_rwlock
+{
+public:
+	inprocess_rwlock() throw() : m_bInitialized(false)
+	{
+	}
+	~inprocess_rwlock() throw()
+	{
+		Term();
+	}
+
+	void LockShared() throw()
+	{
+		assert( m_bInitialized );
+#ifdef DEBUG
+		int res =
+#endif
+		::pthread_rwlock_rdlock(&m_rw);
+		assert( res == 0 );
+	}
+	void LockExclusive() throw()
+	{
+		assert( m_bInitialized );
+#ifdef DEBUG
+		int res =
+#endif
+		::pthread_rwlock_wrlock(&m_rw);
+		assert( res == 0 );
+	}
+	void UnlockShared() throw()
+	{
+		assert( m_bInitialized );
+#ifdef DEBUG
+		int res =
+#endif
+		::pthread_rwlock_unlock(&m_rw);
+		assert( res == 0 );
+	}
+	void UnlockExclusive() throw()
+	{
+		assert( m_bInitialized );
+#ifdef DEBUG
+		int res =
+#endif
+		::pthread_rwlock_unlock(&m_rw);
+		assert( res == 0 );
+	}
+	bool TryLockShared() throw()
+	{
+		assert( m_bInitialized );
+		return ::pthread_rwlock_tryrdlock(&m_rw) == 0;
+	}
+	bool TryLockExclusive() throw()
+	{
+		assert( m_bInitialized );
+		return ::pthread_rwlock_trywrlock(&m_rw) == 0;
+	}
+
+	void Init() throw()
+	{
+		assert( !m_bInitialized );
+#ifdef DEBUG
+		int res =
+#endif
+		::pthread_rwlock_init(&m_rw, NULL);
+		assert( res == 0 );
+		m_bInitialized = true;
+	}
+	void Term() throw()
+	{
+		if( m_bInitialized ) {
+#ifdef DEBUG
+			int res =
+#endif
+			::pthread_rwlock_destroy(&m_rw);
+			assert( res == 0 );
+			m_bInitialized = false;
+		}
+	}
+
+private:
+	pthread_rwlock_t  m_rw;
+	bool  m_bInitialized;
+
+private:
+	//noncopyable
+	inprocess_rwlock(const inprocess_rwlock&) throw();
+	inprocess_rwlock& operator=(const inprocess_rwlock&) throw();
+};
+
+//------------------------------------------------------------------------------
+// Thread
+
+// thread_sleep
+//  uTimeout: ms
+inline void thread_sleep(uint uTimeout) throw()
+{
+	uint uSecond = uTimeout / 1000;
+	uint uRest = uTimeout % 1000;
+	//no check
+	if( uSecond != 0 )
+		::sleep(uSecond);
+	::usleep(uRest * 1000);
+}
 
 ////////////////////////////////////////////////////////////////////////////////

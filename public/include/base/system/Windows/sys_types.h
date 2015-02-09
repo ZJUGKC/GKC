@@ -419,15 +419,85 @@ private:
 	bool  m_bInitialized;
 
 private:
+	//noncopyable
 	inprocess_condition(const inprocess_condition&) throw();
 	inprocess_condition& operator=(const inprocess_condition&) throw();
 };
 
 //RWLock
 
+// inprocess_rwlock
+
+class inprocess_rwlock
+{
+public:
+	inprocess_rwlock() throw() : m_bInitialized(false)
+	{
+	}
+	~inprocess_rwlock() throw()
+	{
+		Term();
+	}
+
+	void LockShared() throw()
+	{
+		assert( m_bInitialized );
+		::AcquireSRWLockShared(&m_rw);
+	}
+	void LockExclusive() throw()
+	{
+		assert( m_bInitialized );
+		::AcquireSRWLockExclusive(&m_rw);
+	}
+	void UnlockShared() throw()
+	{
+		assert( m_bInitialized );
+		::ReleaseSRWLockShared(&m_rw);
+	}
+	void UnlockExclusive() throw()
+	{
+		assert( m_bInitialized );
+		::ReleaseSRWLockExclusive(&m_rw);
+	}
+	bool TryLockShared() throw()
+	{
+		assert( m_bInitialized );
+		return ::TryAcquireSRWLockShared(&m_rw) ? true: false;
+	}
+	bool TryLockExclusive() throw()
+	{
+		assert( m_bInitialized );
+		return ::TryAcquireSRWLockExclusive(&m_rw) ? true : false;
+	}
+
+	void Init() throw()
+	{
+		assert( !m_bInitialized );
+		::InitializeSRWLock(&m_rw);
+		m_bInitialized = true;
+	}
+	void Term() throw()
+	{
+	}
+
+private:
+	SRWLOCK  m_rw;
+	bool  m_bInitialized;
+
+private:
+	//noncopyable
+	inprocess_rwlock(const inprocess_rwlock&) throw();
+	inprocess_rwlock& operator=(const inprocess_rwlock&) throw();
+};
+
 //------------------------------------------------------------------------------
 // Thread
 
 // thread_sleep
+//  uTimeout: ms
+inline void thread_sleep(uint uTimeout) throw()
+{
+	::Sleep(uTimeout);
+}
 
 ////////////////////////////////////////////////////////////////////////////////

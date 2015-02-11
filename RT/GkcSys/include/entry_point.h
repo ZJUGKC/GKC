@@ -11,22 +11,33 @@
 */
 
 /*
-This file contains global variables.
+This file contains entry point function for SA.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+#include "globals.h"
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// ProgramEntryPoint
 
-bool init_globals() throw();
-void dump_globals() throw();
+class ProgramEntryPoint
+{
+public:
+	static bool SAMain(bool bInitOrDump)
+	{
+		if( bInitOrDump ) {
+			//init
+			if( !init_globals() )
+				return false;
+		}
+		else {
+			//dump
+			dump_globals();
+		}
+		return true;
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,22 +11,19 @@
 */
 
 /*
-This file contains global variables.
+This file contains main function for console application.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+////////////////////////////////////////////////////////////////////////////////
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
-
-//functions
-
-bool init_globals() throw();
-void dump_globals() throw();
+#if defined(OS_WINDOWS)
+	#include "Windows/console_main.cpp"
+#elif defined(OS_LINUX)
+	#include "Linux/console_main.cpp"
+#else
+	#error Error OS type!
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////

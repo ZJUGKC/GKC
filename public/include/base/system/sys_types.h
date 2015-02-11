@@ -10,21 +10,29 @@
 **
 */
 
-/*
-This is pre-compiled header file.
-*/
-
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __PRECOMP_H__
-#define __PRECOMP_H__
+//internal header
+//
+//This file can use exceptions
+//
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "base/GkcDef.h"
-#include "base/GkcBase.h"
-#include "base/GkcConst.h"
+//------------------------------------------------------------------------------
+//internal headers
 
-#include "base/GkcConsole.h"
+#include "_sys_types.h"
 
-////////////////////////////////////////////////////////////////////////////////
-#endif //__PRECOMP_H__
+//------------------------------------------------------------------------------
+//OS
+
+#if defined(OS_WINDOWS)
+	#include "Windows/sys_types.h"
+#elif defined(OS_LINUX)
+	#include "Linux/sys_types.h"
+#else
+	#error Error OS type!
+#endif
+
+//------------------------------------------------------------------------------
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -10,23 +10,21 @@
 **
 */
 
-/*
-This file contains global variables.
-*/
-
+////////////////////////////////////////////////////////////////////////////////
+// internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+//------------------------------------------------------------------------------
+//OS
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+#if defined(OS_WINDOWS)
+	#include "Windows/console_api.h"
+#elif defined(OS_LINUX)
+	#include "Linux/console_api.h"
+#else
+	#error Error OS type!
+#endif
 
-//functions
-
-bool init_globals() throw();
-void dump_globals() throw();
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////

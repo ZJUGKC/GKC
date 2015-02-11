@@ -11,22 +11,25 @@
 */
 
 /*
-This file contains global variables.
+This file contains main function for console program.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+#ifndef __GKC_CONST_H__
+	#error GkcConsoleMain.cpp requires GkcConst.h to be included first.
+#endif
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+////////////////////////////////////////////////////////////////////////////////
 
-//functions
+/*
+class ProgramEntryPoint
+{
+public:
+	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env);
+};
+*/
 
-bool init_globals() throw();
-void dump_globals() throw();
+#include "system/console_main.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

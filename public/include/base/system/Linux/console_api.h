@@ -10,23 +10,19 @@
 **
 */
 
-/*
-This file contains global variables.
-*/
-
+////////////////////////////////////////////////////////////////////////////////
+// internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+//Linux
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+//------------------------------------------------------------------------------
+//print
 
-//functions
-
-bool init_globals() throw();
-void dump_globals() throw();
+inline void print_string(const CharS* sz) throw()
+{
+	//no check
+	::printf("%s", sz);
+}
 
 ////////////////////////////////////////////////////////////////////////////////

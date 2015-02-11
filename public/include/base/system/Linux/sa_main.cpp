@@ -11,22 +11,23 @@
 */
 
 /*
-This file contains global variables.
+This file contains main function for Shared Assembly.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+// so init functions
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+__attribute__((constructor)) void my_init()
+{
+	if( !ProgramEntryPoint::SAMain(true) ) {
+		throw GKC::Exception(GKC::CallResult(CR_SABAD));  //throw
+	}
+}
 
-//functions
-
-bool init_globals() throw();
-void dump_globals() throw();
+__attribute__((destructor)) void my_fini()
+{
+	ProgramEntryPoint::SAMain(false);
+}
 
 ////////////////////////////////////////////////////////////////////////////////

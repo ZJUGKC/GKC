@@ -11,22 +11,29 @@
 */
 
 /*
-This file contains global variables.
+This file contains main function for Console Application.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+#include "_cmdline.h"
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+////////////////////////////////////////////////////////////////////////////////
 
-//functions
+//main
 
-bool init_globals() throw();
-void dump_globals() throw();
+int main(int argc, char *argv[], char *envp[])
+{
+	GKC::ConstArray<GKC::ConstStringS> args, env;
+
+	//memory
+	_auto_mem spArgs, spEnv;
+
+	//convert
+	_cmdline_to_strings(argc, argv, envp, spArgs, spEnv, args, env);  //may throw
+
+	//main
+	return ProgramEntryPoint::ConsoleMain(args, env);
+}
 
 ////////////////////////////////////////////////////////////////////////////////

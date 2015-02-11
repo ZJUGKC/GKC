@@ -11,22 +11,22 @@
 */
 
 /*
-This file contains global variables.
+This file contains entry point function.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+////////////////////////////////////////////////////////////////////////////////
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+// ProgramEntryPoint
 
-//functions
-
-bool init_globals() throw();
-void dump_globals() throw();
+class ProgramEntryPoint
+{
+public:
+	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env)
+	{
+		return 0;
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////

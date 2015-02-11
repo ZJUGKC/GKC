@@ -12,7 +12,7 @@
 #string of compile flags
 
 #all warnings
-SET(STRING_CXX_FLAGS "-Wall")
+SET(STRING_CXX_FLAGS "")
 
 IF(WIN32)
 	#Windows, Unicode and disable RTTI
@@ -20,7 +20,7 @@ IF(WIN32)
 ELSE(WIN32)
 	#Linux, hide all functions and disable RTTI
 	SET(STRING_CXX_FLAGS
-		"${STRING_CXX_FLAGS} -fvisibility=hidden -fno-rtti -std=c++11")
+		"${STRING_CXX_FLAGS} -Wall -D_FILE_OFFSET_BITS=64 -fvisibility=hidden -fno-rtti -std=c++11")
 ENDIF(WIN32)
 
 ADD_DEFINITIONS(${STRING_CXX_FLAGS})
@@ -195,5 +195,61 @@ MACRO(SET_PCH targetName targetType pchHeader pchSource SourceList)
 			${pchHeader} ${pchSource})
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_PCH)
+
+#Set post-building copy command
+#Source : the source string
+#Dest : the dest string
+MACRO(SET_POSTBUILD_COPY targetName Source Dest)
+	IF(WIN32)
+		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
+							COMMAND copy ARGS "/Y" "/L" "${Source}" "${Dest}"
+							VERBATIM)
+	ENDIF(WIN32)
+	IF(CMAKE_COMPILER_IS_GNUCXX)
+		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
+							COMMAND cp ARGS -pdf ${Source} ${Dest}
+							)
+	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+ENDMACRO(SET_POSTBUILD_COPY)
+
+# strNeedPlatform: "platform" or "no-platform"
+# strNeedMachine:  "machine" or "no-machine"
+# output: POSTBUILD_SRC_PATH
+MACRO(SET_POSTBUILD_SRC_PATH strNeedPlatform strNeedMachine SourcePath)
+	STRING(COMPARE EQUAL ${strNeedPlatform} "platform" IsPlatform)
+	STRING(COMPARE EQUAL ${strNeedMachine} "machine" IsMachine)
+	SET(POSTBUILD_SRC_PATH "${SourcePath}")
+	IF(IsPlatform)
+		IF(WIN32)
+			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/windows")
+		ENDIF(WIN32)
+		IF(CMAKE_COMPILER_IS_GNUCXX)
+			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/linux")
+		ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+	ENDIF(IsPlatform)
+	IF(IsMachine)
+		IF(USE_64BITS)
+			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/x64")
+		ELSE(USE_64BITS)
+			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/x86")
+		ENDIF(USE_64BITS)
+	ENDIF(IsMachine)
+ENDMACRO(SET_POSTBUILD_SRC_PATH)
+
+# strNeedConfig: "config" or "no-config"
+MACRO(SET_POSTBUILD_PATH_COPY targetName strNeedPlatform strNeedMachine strNeedConfig SourcePath Source Dest)
+	STRING(COMPARE EQUAL ${strNeedConfig} "config" IsConfig)
+	SET_POSTBUILD_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${SourcePath})
+	SET(_source "${POSTBUILD_SRC_PATH}/${Source}")
+	SET(_dest "${Dest}")
+	IF(WIN32)
+		IF(IsConfig)
+			SET(_dest "${_dest}/$<CONFIG>")
+		ENDIF(IsConfig)
+		STRING(REPLACE "/" "\\\\" _source ${_source})
+		STRING(REPLACE "/" "\\\\" _dest ${_dest})
+	ENDIF(WIN32)
+	SET_POSTBUILD_COPY(${targetName} ${_source} ${_dest})
+ENDMACRO(SET_POSTBUILD_PATH_COPY)
 
 #end

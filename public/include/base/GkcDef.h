@@ -886,6 +886,11 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
+// The macro of SERVICE:
+// User must define a macro: GKC_SERVICE_NAME
+//   e.g., #define GKC_SERVICE_NAME  _S("Host Server")
+
+//------------------------------------------------------------------------------
 //system types which can use exceptions
 
 #include "system/sys_types.h"

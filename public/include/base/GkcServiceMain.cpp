@@ -18,12 +18,19 @@ This file contains main function for Service program.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(OS_WINDOWS)
+/*
+#define GKC_SERVICE_NAME   _S("XXXXXX")
 
-#elif defined(OS_LINUX)
+class ServiceMainLoop
+{
+public:
+	bool Prepare(const GKC::ConstArray<GKC::ConstStringS>& args) throw();
+	// return value : to be continued
+	bool OneLoop() throw();
+	int Cleanup() throw();
+};
+*/
 
-#else
-	#error Error OS type!
-#endif
+#include "system/service_main.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

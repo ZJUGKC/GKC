@@ -18,6 +18,26 @@ WLang focuses on the high-level conceptions of programming,
 and is suitable for cooperation. WLang keeps the high efficiency of executive
 comapred with C++.
 
+## Unified Programming Model
+
+The computer techniques have changed the world with the development in recent years.
+The computer program is the basic element of computation.
+The essence of program is communicating with computer, i.e., requiring the computing resources
+and representing the results.
+The computing resources is a kind of service, including data and algorithms,
+corresponding to the memory/disk (data storage) and CPU instruction flow (algorithms).
+Data and algorithms are all computing resource services.
+Using classes to describe the computing resources is reasonable
+because the class includes data and algorithms.
+A class can contain data or algorithms only and be defined recursively.
+WLang is designed on the basis of classes.
+
+Because the computing resource services are designed as classes and objects,
+the global objects and the single functions are not necessary and replaced by
+the static members and the static methods of classes.
+This design can classify the global objects and the single functions
+according to their conceptions.
+
 ## Grammar
 
 ### Comment
@@ -235,6 +255,8 @@ Components support `as` operator to obtain other interfaces.
 
 Implement several kinds of event sets, i.e., connection points.
 This is a knid of observer pattern.
+
+Marshal and Unmarshal.
 
 Implement the plug-in system.
 

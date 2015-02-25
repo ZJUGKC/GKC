@@ -16,6 +16,20 @@ This file contains main function for UI program.
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// tools
+
+class _auto_com_final
+{
+public:
+	_auto_com_final() throw()
+	{
+	}
+	~_auto_com_final() throw()
+	{
+		::CoUninitialize();
+	}
+};
+
 //wWinMain
 
 int APIENTRY wWinMain(IN HINSTANCE hInstance,
@@ -23,27 +37,45 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 	IN LPWSTR    lpCmdLine,
 	IN int       nCmdShow)
 {
+//command
+	_auto_local_mem spLocal;
+	GKC::ConstArray<GKC::ConstStringS> args;
+	_auto_mem spArgs;
+	{
+		LPWSTR lpszCommandLine = ::GetCommandLineW();
+		LPWSTR* szArgList = NULL;
+		int     iArgs = 0;
+		szArgList = ::CommandLineToArgvW(lpszCommandLine, &iArgs);
+		if( szArgList == NULL ) {
+			::MessageBoxW(NULL, L"Cannot initialize command line!", L"Error", MB_OK);
+			return -1;
+		}
+		spLocal.SetAddress(szArgList);
+		//convert
+		_cmdline_to_strings(iArgs, szArgList, spArgs, args);  //may throw
+	} //end block
+
+//COM
 	HRESULT hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 	if( FAILED(hr) ) {
 		::MessageBoxW(NULL, L"Cannot initialize STA!", L"Error", MB_OK);
 		return -1;
 	}
+	_auto_com_final _ac_final;  //auto call CoUninitialize
 	// this statement solves a problem from ATL thunk technique which is not used in this library.
 	::DefWindowProcW(NULL, 0, 0, 0);
 	{
 		INITCOMMONCONTROLSEX iccx = { sizeof(INITCOMMONCONTROLSEX), ICC_COOL_CLASSES | ICC_BAR_CLASSES };
 		BOOL bRet = ::InitCommonControlsEx(&iccx);
 		if( !bRet ) {
-			::CoUninitialize();
 			::MessageBoxW(NULL, L"Cannot initialize common controls!", L"Error", MB_OK);
 			return -1;
 		}
 	} //end block
 
-//command and ShowFlag
-	int ret = ProgramEntryPoint::UIMain();
+//Show Flag is unuseful
 
-	::CoUninitialize();
+	int ret = ProgramEntryPoint::UIMain(args);
 
 	return ret;
 }

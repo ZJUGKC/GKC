@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,19 +11,19 @@
 */
 
 /*
-This file contains main function for UI program.
+This file contains main function for Service program.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
-class ProgramEntryPoint
-{
-public:
-	static int UIMain(const GKC::ConstArray<GKC::ConstStringS>& args);
-};
-*/
+////////////////////////////////////////////////////////////////////////////////
 
-#include "system/ui_main.cpp"
+#if defined(OS_WINDOWS)
+	#include "Windows/service_main.cpp"
+#elif defined(OS_LINUX)
+	#include "Linux/service_main.cpp"
+#else
+	#error Error OS type!
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////

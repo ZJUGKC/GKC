@@ -165,5 +165,21 @@ private:
 #define CR_NOTIMPL           CR_FROM_ERROR(ENOSYS)
 
 //------------------------------------------------------------------------------
+// Service
+
+// log types
+#define SERVICE_LOG_SUCCESS           LOG_NOTICE
+#define SERVICE_LOG_ERROR             LOG_ERR
+#define SERVICE_LOG_INFORMATION       LOG_INFO
+#define SERVICE_LOG_WARNING           LOG_WARNING
+
+// report_service_log
+//  type: SERVICE_LOG_*
+inline void report_service_log(const CharS* szService, uint type, const CharS* szMsg) throw()
+{
+	::openlog(szService, LOG_PID | LOG_NDELAY, LOG_USER);
+	::syslog(LOG_USER | type, "%s", szMsg);
+	::closelog();
+}
 
 ////////////////////////////////////////////////////////////////////////////////

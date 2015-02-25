@@ -15,8 +15,30 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //convert
+
+inline void _cmdline_to_strings(int argc, char *argv[],  //in
+								_auto_mem& spArgs,  //out
+								GKC::ConstArray<GKC::ConstStringS>& args)  //out
+{
+	assert( argc > 0 );
+
+	spArgs.Free();
+
+	//alloc
+	uintptr uSize;
+	uSize = GKC::SafeOperators::MultiplyThrow<uintptr>(sizeof(GKC::ConstStringS), (uintptr)argc);
+	spArgs.Allocate(uSize);  //may throw
+	GKC::ConstStringS* parr1 = (GKC::ConstStringS*)spArgs.GetAddress();
+
+	//fill
+	for( uintptr i = 0; i < (uintptr)argc; i ++ ) {
+		GKC::ConstHelper::SetInternalPointer(argv[i], calc_string_length(argv[i]), parr1[i]);
+	}
+	GKC::ConstHelper::SetInternalPointer(parr1, (uintptr)argc, args);
+}
+
 inline void _cmdline_to_strings(int argc, char *argv[], char *envp[],  //in
-								_auto_mem& spArgs, _auto_mem& spEnv,   //out
+								_auto_mem& spArgs, _auto_mem& spEnv,  //out
 								GKC::ConstArray<GKC::ConstStringS>& args, GKC::ConstArray<GKC::ConstStringS>& env)  //out
 {
 	assert( argc > 0 );

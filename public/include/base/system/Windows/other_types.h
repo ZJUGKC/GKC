@@ -165,6 +165,7 @@ private:
 #define CR_SABAD             CR_FROM_ERROR(ERROR_DLL_INIT_FAILED)
 #define CR_INVALID           E_INVALIDARG
 #define CR_NOTIMPL           E_NOTIMPL
+#define CR_NAMETOOLONG       CO_E_PATHTOOLONG
 
 //------------------------------------------------------------------------------
 // Service

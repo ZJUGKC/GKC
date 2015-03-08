@@ -103,7 +103,7 @@ VOID WINAPI _ServiceMain(
 	}
 
 //loop
-	create_thread_message_queue();  //message queue
+	_create_thread_message_queue();  //message queue
 
 	_set_service_status(SERVICE_RUNNING);
 	report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_SUCCESS, _S("Service started/resumed"));

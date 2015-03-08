@@ -21,6 +21,195 @@
 //Windows
 
 //------------------------------------------------------------------------------
+// IO
+
+#define IO_SEEK_BEGIN        FILE_BEGIN
+#define IO_SEEK_CURRENT      FILE_CURRENT
+#define IO_SEEK_END          FILE_END
+
+// io_handle
+
+class io_handle
+{
+public:
+	io_handle() throw() : m_h(NULL)
+	{
+	}
+	io_handle(io_handle&& src) throw()
+	{
+		m_h = src.m_h;
+		src.m_h = NULL;
+	}
+	~io_handle() throw()
+	{
+		Close();
+	}
+
+	io_handle& operator=(io_handle&& src) throw()
+	{
+		if( &src != this ) {
+			if( src.m_h != m_h ) {
+				Close();
+				m_h = src.m_h;
+				src.m_h = NULL;
+			}
+		}
+		return *this;
+	}
+
+	bool IsValid() const throw()
+	{
+		return m_h != NULL;
+	}
+
+	//close
+	void Close() throw()
+	{
+		if( IsValid() ) {
+			BOOL bRet = ::CloseHandle(m_h);
+			assert( bRet );
+			m_h = NULL;
+		}
+	}
+
+	//read
+	call_result Read(GKC::RefPtr<byte>& buffer, uint uBytes, uint& uRead) throw()
+	{
+		assert( IsValid() );
+		HRESULT hr = S_OK;
+		if( !::ReadFile(m_h, (void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), uBytes, (LPDWORD)&uRead, NULL) )
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+		return call_result((int)hr);
+	}
+	//write
+	call_result Write(const GKC::RefPtr<byte>& buffer, uint uBytes, uint& uWritten) throw()
+	{
+		assert( IsValid() );
+		HRESULT hr = S_OK;
+		if( !::WriteFile(m_h, (const void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), uBytes, (LPDWORD)&uWritten, NULL) )
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+		return call_result((int)hr);
+	}
+
+protected:
+	HANDLE  m_h;
+
+private:
+	io_handle(const io_handle&) throw();
+	io_handle& operator=(const io_handle&) throw();
+
+private:
+	friend class io_handle_helper;
+};
+
+// io_handle_helper
+
+class io_handle_helper
+{
+public:
+	//open
+	//  iOpenType   : FileOpenTypes::*
+	//  iShareMode  : FileShareModes::*
+	//  iCreateType : FileCreationTypes::*
+	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iShareMode, int iCreateType, io_handle& hd) throw()
+	{
+		assert( !hd.IsValid() );
+
+		// access
+		DWORD dwAccess = 0;
+		switch( iOpenType & 3 ) {
+		case GKC::FileOpenTypes::Read:
+			dwAccess = GENERIC_READ;
+			break;
+		case GKC::FileOpenTypes::Write:
+			dwAccess = GENERIC_WRITE;
+			break;
+		case GKC::FileOpenTypes::ReadWrite:
+			dwAccess = GENERIC_READ | GENERIC_WRITE;
+			break;
+		default:
+			assert( false );  // invalid access mode
+			break;
+		}
+		// map share mode
+		DWORD dwShareMode = 0;
+		switch( iShareMode & 0x70) { // map compatibility mode to exclusive
+		case GKC::FileShareModes::Exclusive:
+			dwShareMode = 0;
+			break;
+		case GKC::FileShareModes::DenyWrite:
+			dwShareMode = FILE_SHARE_READ;
+			break;
+		case GKC::FileShareModes::DenyRead:
+			dwShareMode = FILE_SHARE_WRITE;
+			break;
+		case GKC::FileShareModes::DenyNone:
+			dwShareMode = FILE_SHARE_WRITE | FILE_SHARE_READ;
+			break;
+		default:
+			assert( false );  // invalid share mode
+			break;
+		}
+		// set NoInherit, default is inherited.
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(sa);
+		sa.lpSecurityDescriptor = NULL;
+		sa.bInheritHandle = TRUE;  //inherited
+		// map creation flags
+		DWORD dwCreateFlag = OPEN_EXISTING;
+		if( iCreateType & GKC::FileCreationTypes::Create ) {
+			if( iCreateType & GKC::FileCreationTypes::NoTruncate )
+				dwCreateFlag = OPEN_ALWAYS;
+			else
+				dwCreateFlag = CREATE_ALWAYS;
+		}
+
+		// special system-level access flags
+		DWORD dwFlags = FILE_ATTRIBUTE_NORMAL;
+		// Random access and sequential scan should be mutually exclusive
+		//   FILE_FLAG_RANDOM_ACCESS and FILE_FLAG_SEQUENTIAL_SCAN
+		//   no set : FILE_FLAG_NO_BUFFERING FILE_FLAG_WRITE_THROUGH
+
+		HRESULT hRes = S_OK;
+
+		// attempt file creation
+		HANDLE hFile = ::CreateFileW(GKC::RefPtrHelper::GetInternalPointer(szFile),
+									dwAccess, dwShareMode, &sa, dwCreateFlag, dwFlags, NULL);
+		if( hFile == INVALID_HANDLE_VALUE )
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		else
+			hd.m_h = hFile;
+
+		return call_result((int)hRes);
+	}
+	//seek
+	//  uMethod: IO_SEEK_*
+	//  If uMethod = IO_SEEK_BEGIN, iOffset is regarded as an unsigned value.
+	static call_result Seek(io_handle& hd, int64 iOffset, int64& iNewPos, uint uMethod) throw()
+	{
+		assert( hd.IsValid() );
+		LARGE_INTEGER liMove;
+		liMove.QuadPart = iOffset;
+		LARGE_INTEGER liNew;
+		HRESULT hr = S_OK;
+		if( !::SetFilePointerEx(hd.m_h, liMove, &liNew, uMethod) ) {
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+		}
+		else {
+			iNewPos = liNew.QuadPart;
+		}
+		return call_result((int)hr);
+	}
+	//flush
+	void Flush(io_handle& hd) throw()
+	{
+		assert( hd.IsValid() );
+		BOOL bRet = ::FlushFileBuffers(hd.m_h);
+		assert( bRet );
+	}
+};
+
+//------------------------------------------------------------------------------
 // Synchronization
 
 // helper

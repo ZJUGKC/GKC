@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2014, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -15,6 +15,174 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //Linux
+
+//------------------------------------------------------------------------------
+// IO
+#define IO_SEEK_BEGIN        SEEK_SET
+#define IO_SEEK_CURRENT      SEEK_CUR
+#define IO_SEEK_END          SEEK_END
+
+// io_handle
+
+class io_handle
+{
+public:
+	io_handle() throw() : m_fd(-1)
+	{
+	}
+	io_handle(io_handle&& src) throw()
+	{
+		m_fd = src.m_fd;
+		src.m_fd = -1;
+	}
+	~io_handle() throw()
+	{
+		Close();
+	}
+
+	io_handle& operator=(io_handle&& src) throw()
+	{
+		if( &src != this ) {
+			if( src.m_fd != m_fd ) {
+				Close();
+				m_fd = src.m_fd;
+				src.m_fd = -1;
+			}
+		}
+		return *this;
+	}
+
+	bool IsValid() const throw()
+	{
+		return m_fd >= 0;
+	}
+
+	//close
+	void Close() throw()
+	{
+		if( IsValid() ) {
+#ifdef DEBUG
+			int res =
+#endif
+			::close(m_fd);
+			assert( res == 0 );
+			m_fd = -1;
+		}
+	}
+
+	//read
+	call_result Read(GKC::RefPtr<byte>& buffer, uint uBytes, uint& uRead) throw()
+	{
+		assert( IsValid() );
+		assert( uBytes <= SSIZE_MAX );
+		ssize_t uRet = ::read(m_fd, (void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), (size_t)uBytes);
+		int res = 0;
+		if( uRet < 0 )
+			res = CR_FROM_ERRORNO();
+		else
+			uRead = (uint)uRet;
+		return call_result(res);
+	}
+	//write
+	call_result Write(const GKC::RefPtr<byte>& buffer, uint uBytes, uint& uWritten) throw()
+	{
+		assert( IsValid() );
+		ssize_t uRet = ::write(m_fd, (const void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), (size_t)uBytes);
+		int res = 0;
+		if( uRet < 0 )
+			res = CR_FROM_ERRORNO();
+		else
+			uWritten = (uint)uRet;
+		return call_result(res);
+	}
+
+protected:
+	int m_fd;
+
+private:
+	io_handle(const io_handle&) throw();
+	io_handle& operator=(const io_handle&) throw();
+
+private:
+	friend class io_handle_helper;
+};
+
+// io_handle_helper
+
+class io_handle_helper
+{
+public:
+	//open
+	//  iOpenType   : FileOpenTypes::*
+	//  iShareMode  : FileShareModes::*
+	//  iCreateType : FileCreationTypes::*
+	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iShareMode, int iCreateType, io_handle& hd) throw()
+	{
+		assert( !hd.IsValid() );
+
+		// flags
+		int flags = 0;
+		// access
+		switch( iOpenType ) {
+		case GKC::FileOpenTypes::Read:
+			flags |= O_RDONLY;
+			break;
+		case GKC::FileOpenTypes::Write:
+			flags |= O_WRONLY;
+			break;
+		case GKC::FileOpenTypes::ReadWrite:
+			flags |= O_RDWR;
+			break;
+		default:
+			assert( false );
+			break;
+		}
+		// share mode
+		//   ignore. The default behavior is GKC::FileShareModes::DenyNone.
+		// creation type
+		if( iCreateType & GKC::FileCreationTypes::Create ) {
+			flags |= O_CREAT;
+			if( !(iCreateType & GKC::FileCreationTypes::NoTruncate) )
+				flags |= O_TRUNC;
+		}
+
+		//open
+		int res = 0;
+		int fd = ::open(GKC::RefPtrHelper::GetInternalPointer(szFile),
+						flags, S_IRWXU | S_IRWXG | S_IRWXO);
+		if( fd < 0 )
+			res = CR_FROM_ERRORNO();
+		else
+			hd.m_fd = fd;
+
+		return call_result(res);
+	}
+	//seek
+	//  uMethod: IO_SEEK_*
+	//  If uMethod = IO_SEEK_BEGIN, iOffset is regarded as an unsigned value.
+	static call_result Seek(io_handle& hd, int64 iOffset, int64& iNewPos, uint uMethod) throw()
+	{
+		assert( hd.IsValid() );
+		assert( sizeof(off_t) == 8 );
+		off_t npos = ::lseek(hd.m_fd, (off_t)iOffset, (int)uMethod);  //64 bits
+		int res = 0;
+		if( npos < 0 )
+			res = CR_FROM_ERRORNO();
+		else
+			iNewPos = npos;
+		return call_result(res);
+	}
+	//flush
+	void Flush(io_handle& hd) throw()
+	{
+		assert( hd.IsValid() );
+#ifdef DEBUG
+		int res =
+#endif
+		::fsync(hd.m_fd);
+		assert( res == 0 );
+	}
+};
 
 //------------------------------------------------------------------------------
 // Synchronization

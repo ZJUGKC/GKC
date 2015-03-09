@@ -79,6 +79,7 @@ BEGIN_ENUM(SystemCallResults)
 	ENUM_VALUE_ENTRY(SABad, CR_SABAD)
 	ENUM_VALUE_ENTRY(Invalid, CR_INVALID)
 	ENUM_VALUE_ENTRY(NotImpl, CR_NOTIMPL)
+	ENUM_VALUE_ENTRY(NameTooLong, CR_NAMETOOLONG)
 END_ENUM()
 
 //------------------------------------------------------------------------------
@@ -881,6 +882,32 @@ public:
 	}
 };
 
+//------------------------------------------------------------------------------
+// File
+
+// file open types
+BEGIN_ENUM(FileOpenTypes)
+	ENUM_VALUE_ENTRY(Read,       0x00000000)
+	ENUM_VALUE_ENTRY(Write,      0x00000001)
+	ENUM_VALUE_ENTRY(ReadWrite,  0x00000002)
+END_ENUM()
+
+// file share modes
+BEGIN_ENUM(FileShareModes)
+	ENUM_VALUE_ENTRY(Exclusive,  0x00000010)
+	ENUM_VALUE_ENTRY(DenyWrite,  0x00000020)
+	ENUM_VALUE_ENTRY(DenyRead,   0x00000030)
+	ENUM_VALUE_ENTRY(DenyNone,   0x00000040)
+END_ENUM()
+
+// file creation types (can combine with <or> operation)
+BEGIN_ENUM(FileCreationTypes)
+	ENUM_VALUE_ENTRY(Create,     0x00001000)
+	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
+END_ENUM()
+
+//------------------------------------------------------------------------------
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -896,6 +923,25 @@ public:
 #include "system/sys_types.h"
 
 //------------------------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
+
+//------------------------------------------------------------------------------
+// IO
+
+// IoHandle
+
+typedef io_handle  IoHandle;
+
+// IoHandleHelper
+
+typedef io_handle_helper  IoHandleHelper;
+
+////////////////////////////////////////////////////////////////////////////////
+}
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__GKC_DEF_H__

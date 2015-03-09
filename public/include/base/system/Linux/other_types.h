@@ -163,6 +163,7 @@ private:
 #define CR_SABAD             CR_FROM_ERROR(ELIBBAD)
 #define CR_INVALID           CR_FROM_ERROR(EINVAL)
 #define CR_NOTIMPL           CR_FROM_ERROR(ENOSYS)
+#define CR_NAMETOOLONG       CR_FROM_ERROR(ENAMETOOLONG)
 
 //------------------------------------------------------------------------------
 // Service

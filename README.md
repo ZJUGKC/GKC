@@ -45,6 +45,11 @@ Install libuuid:
 sudo apt-get install uuid-dev
 ```
 
+Install X11:
+```
+sudo apt-get install libx11-dev
+```
+
 ##### Latex
 1. Install TexLive:
 	```

@@ -163,6 +163,22 @@ public:
 };
 
 //------------------------------------------------------------------------------
+// Time
+
+// SystemTime
+struct SystemTime
+{
+	ushort uYear;
+	ushort uMonth;         //1--12
+	ushort uDayOfWeek;     //0--6, since Sunday
+	ushort uDay;           //1--31
+	ushort uHour;          //0--23
+	ushort uMinute;        //0--59
+	ushort uSecond;        //0--59/60
+	ushort uMilliseconds;  //0--999
+};
+
+//------------------------------------------------------------------------------
 // number
 
 // Limits<T>
@@ -905,6 +921,16 @@ BEGIN_ENUM(FileCreationTypes)
 	ENUM_VALUE_ENTRY(Create,     0x00001000)
 	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
 END_ENUM()
+
+// FileStatus
+
+struct FileStatus
+{
+	int64       iSize;     //file size in bytes
+	SystemTime  tmAccess;  //time of last access
+	SystemTime  tmModify;  //time of last modification
+	SystemTime  tmCreate;  //time of creation
+};
 
 //------------------------------------------------------------------------------
 

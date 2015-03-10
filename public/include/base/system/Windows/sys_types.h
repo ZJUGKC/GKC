@@ -207,6 +207,93 @@ public:
 		BOOL bRet = ::FlushFileBuffers(hd.m_h);
 		assert( bRet );
 	}
+	//set size
+	static call_result SetSize(io_handle& hd, int64 iSize) throw()
+	{
+		assert( hd.IsValid() );
+		int64 iNewPos;
+		call_result cr = Seek(hd, iSize, iNewPos, IO_SEEK_BEGIN);
+		if( cr.IsFailed() )
+			return cr;
+		if( !::SetEndOfFile(hd.m_h) )
+			cr.SetResult((int)(HRESULT_FROM_WIN32(::GetLastError())));
+		return cr;
+	}
+	//get status
+	static call_result GetStatus(io_handle& hd, GKC::FileStatus& status) throw()
+	{
+		assert( hd.IsValid() );
+
+		HRESULT hRes = S_OK;
+		//size
+		LARGE_INTEGER li;
+		if( !::GetFileSizeEx(hd.m_h, &li) ) {
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+			return call_result((int)hRes);
+		}
+		status.iSize = li.QuadPart;  //64 bits
+
+		FILETIME   ftA, ftM, ftC;
+		SYSTEMTIME st;
+		if( !::GetFileTime(hd.m_h, &ftC, &ftA, &ftM) ) {
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+			return call_result((int)hRes);
+		}
+		//access
+		if( !::FileTimeToSystemTime(&ftA, &st) ) {
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+			return call_result((int)hRes);
+		}
+		_cvt_system_time(&st, status.tmAccess);
+		//modify
+		if( !::FileTimeToSystemTime(&ftM, &st) ) {
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+			return call_result((int)hRes);
+		}
+		_cvt_system_time(&st, status.tmModify);
+		//create
+		if( !::FileTimeToSystemTime(&ftC, &st) ) {
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+			return call_result((int)hRes);
+		}
+		_cvt_system_time(&st, status.tmCreate);
+
+		return call_result((int)hRes);
+	}
+	//lock
+	//  bShare : true for shared lock, false for exclusive lock
+	//  bBlock : true for blocking, false for nonblocking
+	//  if iLen = 0, lock all bytes from iOffset to the end of file
+	static call_result Lock(io_handle& hd, int64 iOffset, int64 iLen, bool bShare = false, bool bBlock = false) throw()
+	{
+		assert( hd.IsValid() );
+		HRESULT hRes = S_OK;
+		OVERLAPPED ov;
+		mem_zero(&ov, sizeof(OVERLAPPED));
+		LARGE_INTEGER li;
+		li.QuadPart = iOffset;
+		ov.Offset     = li.LowPart;
+		ov.OffsetHigh = li.HighPart;
+		li.QuadPart = iLen;
+		if( !::LockFileEx(hd.m_h, ((!bShare) ? LOCKFILE_EXCLUSIVE_LOCK : 0) | ((!bBlock) ? LOCKFILE_FAIL_IMMEDIATELY : 0),
+							0, li.LowPart, li.HighPart, &ov) )
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		return call_result((int)hRes);
+	}
+	//unlock
+	static void Unlock(io_handle& hd, int64 iOffset, int64 iLen) throw()
+	{
+		assert( hd.IsValid() );
+		OVERLAPPED ov;
+		mem_zero(&ov, sizeof(OVERLAPPED));
+		LARGE_INTEGER li;
+		li.QuadPart = iOffset;
+		ov.Offset     = li.LowPart;
+		ov.OffsetHigh = li.HighPart;
+		li.QuadPart = iLen;
+		BOOL bRet = ::UnlockFileEx(hd.m_h, 0, li.LowPart, li.HighPart, &ov);
+		assert( bRet );
+	}
 };
 
 //------------------------------------------------------------------------------

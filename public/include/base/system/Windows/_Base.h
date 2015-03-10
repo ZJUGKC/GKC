@@ -20,6 +20,41 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
+// Time
+
+// _cvt_system_time
+
+inline void _cvt_system_time(SYSTEMTIME* pST, GKC::SystemTime& tm) throw()
+{
+	tm.uYear         = pST->wYear;
+	tm.uMonth        = pST->wMonth;
+	tm.uDayOfWeek    = pST->wDayOfWeek;
+	tm.uDay          = pST->wDay;
+	tm.uHour         = pST->wHour;
+	tm.uMinute       = pST->wMinute;
+	tm.uSecond       = pST->wSecond;
+	tm.uMilliseconds = pST->wMilliseconds;
+}
+
+// _filetime_to_ns_value
+//   unit: 100ns
+inline void _filetime_to_ns_value(FILETIME* pFT, uint64& v) throw()
+{
+	ULARGE_INTEGER uli;
+	uli.LowPart  = pFT->dwLowDateTime;
+	uli.HighPart = pFT->dwHighDateTime;
+	v = uli.QuadPart;
+}
+// _ns_value_to_filetime
+inline void _ns_value_to_filetime(uint64 v, FILETIME& ft) throw()
+{
+	ULARGE_INTEGER uli;
+	uli.QuadPart = v;
+	ft.dwLowDateTime  = uli.LowPart;
+	ft.dwHighDateTime = uli.HighPart;
+}
+
+//------------------------------------------------------------------------------
 // Memory
 
 // _auto_local_mem

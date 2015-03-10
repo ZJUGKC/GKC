@@ -14,6 +14,10 @@
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "_Base.h"
+
+////////////////////////////////////////////////////////////////////////////////
+
 //Linux
 
 //------------------------------------------------------------------------------
@@ -84,6 +88,7 @@ public:
 		return call_result(res);
 	}
 	//write
+	//  may have a bug in 32-bit system: uWritten may be overflow.
 	call_result Write(const GKC::RefPtr<byte>& buffer, uint uBytes, uint& uWritten) throw()
 	{
 		assert( IsValid() );
@@ -181,6 +186,91 @@ public:
 #endif
 		::fsync(hd.m_fd);
 		assert( res == 0 );
+	}
+	//set size
+	static call_result SetSize(io_handle& hd, int64 iSize) throw()
+	{
+		assert( hd.IsValid() );
+		int res = 0;
+		if( ::ftruncate(hd.m_fd, iSize) < 0 )
+			res = CR_FROM_ERRORNO();
+		return call_result(res);
+	}
+	//get status
+	static call_result GetStatus(io_handle& hd, GKC::FileStatus& status) throw()
+	{
+		assert( hd.IsValid() );
+
+		int res = 0;
+		//stat
+		struct stat st;
+		if( ::fstat(hd.m_fd, &st) < 0 ) {
+			res = CR_FROM_ERRORNO();
+			return call_result(res);
+		}
+		//size
+		status.iSize = st.st_size;  //64 bits
+
+		struct tm tmz;
+		struct tm* ptm;
+		//access
+		ptm = ::gmtime_r(&st.st_atime, &tmz);
+		if( ptm == NULL ) {
+			res = CR_FAIL;
+			return call_result(res);
+		}
+		_tm_to_system_time(&tmz, status.tmAccess);
+		status.tmAccess.uMilliseconds = (ushort)(st.st_atim.tv_nsec / 1000000);
+		//modify
+		ptm = ::gmtime_r(&st.st_mtime, &tmz);
+		if( ptm == NULL ) {
+			res = CR_FAIL;
+			return call_result(res);
+		}
+		_tm_to_system_time(&tmz, status.tmModify);
+		status.tmModify.uMilliseconds = (ushort)(st.st_mtim.tv_nsec / 1000000);
+		//create
+		ptm = ::gmtime_r(&st.st_ctime, &tmz);
+		if( ptm == NULL ) {
+			res = CR_FAIL;
+			return call_result(res);
+		}
+		_tm_to_system_time(&tmz, status.tmCreate);
+		status.tmCreate.uMilliseconds = (ushort)(st.st_ctim.tv_nsec / 1000000);
+
+		return call_result(res);
+	}
+	//lock
+	//  bShare : true for shared lock, false for exclusive lock
+	//  bBlock : true for blocking, false for nonblocking
+	//  if iLen = 0, lock all bytes from iOffset to the end of file
+	static call_result Lock(io_handle& hd, int64 iOffset, int64 iLen, bool bShare = false, bool bBlock = false) throw()
+	{
+		assert( hd.IsValid() );
+		int res = 0;
+		struct flock fl;
+		fl.l_type   = bShare ? F_RDLCK : F_WRLCK;
+		fl.l_whence = SEEK_SET;
+		fl.l_start  = iOffset;
+		fl.l_len    = iLen;
+		if( ::fcntl(hd.m_fd, bBlock ? F_SETLKW : F_SETLK, &fl) < 0 )
+			res = CR_FROM_ERRORNO();
+		return call_result(res);
+	}
+	//unlock
+	static void Unlock(io_handle& hd, int64 iOffset, int64 iLen) throw()
+	{
+		assert( hd.IsValid() );
+		struct flock fl;
+		fl.l_type   = F_UNLCK;
+		fl.l_whence = SEEK_SET;
+		fl.l_start  = iOffset;
+		fl.l_len    = iLen;
+#ifdef DEBUG
+		int rv =
+#endif
+		::fcntl(hd.m_fd, F_SETLK, &fl);  //nonblocking
+		assert( rv >= 0 );
 	}
 };
 

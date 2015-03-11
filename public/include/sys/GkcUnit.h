@@ -81,6 +81,62 @@ GKC_END_TEST
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+// This is the max buffer length for the message assigned to an assert exception.
+#define GKC_MAX_ASSERT_MESSAGE_LENGTH  (1024)
+
+// UnitTestMessgeBuffer
+
+typedef FixedStringT<CharS, GKC_MAX_ASSERT_MESSAGE_LENGTH>  UnitTestMessageBuffer;
+
+// unit test function prototype
+
+typedef bool (*UnitTestFunc)(UnitTestMessageBuffer& buffer);
+
+// UnitTestMap
+
+class UnitTestMap
+{
+public:
+	UnitTestMap() throw()
+	{
+	}
+
+//methods
+	void AddUnitTest(const ConstStringS& strName, UnitTestFunc pFunc)
+	{
+		StringS strM;
+		StringUtilHelper::MakeString(strName, strM);
+		m_map.Insert(strM, pFunc);
+	}
+
+private:
+	HashMap<StringS, UnitTestFunc, StringHashTrait<StringS>, StringCompareTrait<StringS>>  m_map;
+};
+
+// UnitTestMapHelper
+
+class UnitTestMapHelper
+{
+public:
+	//get map
+	static UnitTestMap* GetUnitTestMap()
+	{
+		if( l_unit_test_map == NULL )
+			l_unit_test_map = new UnitTestMap;
+		return l_unit_test_map;
+	}
+	//free
+	static void FreeUnitTestMap() throw()
+	{
+		if( l_unit_test_map != NULL ) {
+			delete l_unit_test_map;
+			l_unit_test_map = NULL;
+		}
+	}
+
+private:
+	static UnitTestMap* l_unit_test_map;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 }

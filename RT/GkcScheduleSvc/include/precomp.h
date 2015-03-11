@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -10,18 +10,19 @@
 **
 */
 
+/*
+This is pre-compiled header file.
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
-// internal header
+#ifndef __PRECOMP_H__
+#define __PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-//Windows
+#include "base/GkcDef.h"
+#include "base/GkcBase.h"
+#include "base/GkcConst.h"
 
-#include <SDKDDKVer.h>
-
-#define WIN32_LEAN_AND_MEAN  // Exclude rarely-used stuff from Windows headers
-#include <windows.h>
-
-#include <ole2.h>
-#include <Shellapi.h>
-
+////////////////////////////////////////////////////////////////////////////////
+#endif //__PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////

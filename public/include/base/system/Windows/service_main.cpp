@@ -16,7 +16,10 @@ This file contains main function for Service program.
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "_Module.h"
 #include "_Window.h"
+
+#include "_cmdline.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -110,7 +113,7 @@ VOID WINAPI _ServiceMain(
 
 	ServiceMainLoop sml;
 	if( !sml.Prepare(args) ) {
-		::CoUninitalize();
+		::CoUninitialize();
 		_set_service_status(SERVICE_STOPPED);
 		report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_ERROR, _S("Initialize loop failed!"));
 		return ;
@@ -136,9 +139,9 @@ VOID WINAPI _ServiceMain(
 	} //end while
 
 //final
-	m_status.dwWin32ExitCode = sml.Cleanup();
+	g_status.dwWin32ExitCode = sml.Cleanup();
 
-	::CoUninitalize();
+	::CoUninitialize();
 	_set_service_status(SERVICE_STOPPED);
 	report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_SUCCESS, _S("Service stopped!"));
 }

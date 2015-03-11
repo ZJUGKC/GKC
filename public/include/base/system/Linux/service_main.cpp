@@ -16,6 +16,10 @@ This file contains main function for Service program.
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "_cmdline.h"
+
+////////////////////////////////////////////////////////////////////////////////
+
 // tools
 
 int g_ExitFlag = 0;
@@ -69,8 +73,8 @@ int main(int argc, char *argv[], char *envp[])
 	for( int i = 0; i < c_MAXFILE; i ++ )
 		::close(i);  //no check
 	//::open("/dev/null", O_RDONLY);
-    //::open("/dev/null", O_RDWR);
-    //::open("/dev/null", O_RDWR);
+	//::open("/dev/null", O_RDWR);
+	//::open("/dev/null", O_RDWR);
 	//mask
 	::umask(0);
 	//signal

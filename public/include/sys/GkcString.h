@@ -42,7 +42,7 @@ private:
 	typedef FixedArray<Tchar, t_size, DefaultCompareTrait<Tchar>>  baseClass;
 
 public:
-	FixStringT() throw() : m_uLength(0)
+	FixedStringT() throw() : m_uLength(0)
 	{
 		m_data[0] = 0;
 	}

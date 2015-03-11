@@ -1695,7 +1695,7 @@ private:
 
 // HashList<TKey, THashTrait, TCompareTrait>
 
-template <typename TKey, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, class THashTrait = DefaultHashTrait<TKey>, class TCompareTrait = DefaultCompareTrait<TKey>>
 class HashList : public _HashTable<TKey, const TKey, THashTrait, TCompareTrait>
 {
 private:
@@ -1722,7 +1722,7 @@ private:
 
 // HashMultiList<TKey, THashTrait, TCompareTrait>
 
-template <typename TKey, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, class THashTrait = DefaultHashTrait<TKey>, class TCompareTrait = DefaultCompareTrait<TKey>>
 class HashMultiList : public _HashTable<TKey, const TKey, THashTrait, TCompareTrait>
 {
 private:
@@ -1759,7 +1759,7 @@ private:
 
 // HashMap<TKey, TValue, THashTrait, TCompareTrait>
 
-template <typename TKey, typename TValue, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, typename TValue, class THashTrait = DefaultHashTrait<TKey>, class TCompareTrait = DefaultCompareTrait<TKey>>
 class HashMap : public _HashTable<TKey, Pair<const TKey, TValue>, THashTrait, TCompareTrait>
 {
 private:
@@ -1806,7 +1806,7 @@ private:
 
 // HashMultiMap<TKey, TValue, THashTrait, TCompareTrait>
 
-template <typename TKey, typename TValue, class THashTrait = DefaultHashTrait<T>, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, typename TValue, class THashTrait = DefaultHashTrait<TKey>, class TCompareTrait = DefaultCompareTrait<TKey>>
 class HashMultiMap : public _HashTable<TKey, Pair<const TKey, TValue>, THashTrait, TCompareTrait>
 {
 private:
@@ -2633,7 +2633,7 @@ private:
 
 // RBList<TKey, TCompareTrait>
 
-template <typename TKey, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, class TCompareTrait = DefaultCompareTrait<TKey>>
 class RBList : public _RBTree<TKey, const TKey, TCompareTrait>
 {
 private:
@@ -2659,7 +2659,7 @@ private:
 
 // RBMultiList<TKey, TCompareTrait>
 
-template <typename TKey, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, class TCompareTrait = DefaultCompareTrait<TKey>>
 class RBMultiList : public _RBTree<TKey, const TKey, TCompareTrait>
 {
 private:
@@ -2695,7 +2695,7 @@ private:
 
 // RBMap<TKey, TValue, TCompareTrait>
 
-template <typename TKey, typename TValue, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, typename TValue, class TCompareTrait = DefaultCompareTrait<TKey>>
 class RBMap : public _RBTree<TKey, Pair<const TKey, TValue>, TCompareTrait>
 {
 private:
@@ -2741,7 +2741,7 @@ private:
 
 // RBMultiMap<TKey, TValue, TCompareTrait>
 
-template <typename TKey, typename TValue, class TCompareTrait = DefaultCompareTrait<T>>
+template <typename TKey, typename TValue, class TCompareTrait = DefaultCompareTrait<TKey>>
 class RBMultiMap : public _RBTree<TKey, Pair<const TKey, TValue>, TCompareTrait>
 {
 private:

@@ -1,0 +1,103 @@
+#!/bin/sh
+#
+# chkconfig: 2345 85 15
+# description: GkcScheduleSvc is a scheduler service
+#
+# processname: GkcScheduleSvc
+# pidfile: /var/run/GkcScheduleSvc.pid
+#
+
+#
+# Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the 2-Clause BSD License.
+#
+# Author contact information:
+#   yxxinyuan@zju.edu.cn
+#
+
+NAME=GkcScheduleSvc
+BINPATH=/usr/.GKC/public/assemblies/GkcScheduleSvc-1-0
+PIDFILE=/var/run/$NAME.pid
+
+RETVAL=0
+
+# Check executable file
+test -f $BINPATH || exit 0
+
+if [ -f /etc/init.d/functions ]
+then
+	. /etc/init.d/functions
+else
+	. /lib/lsb/init-functions
+fi
+
+#start function
+start(){
+	if [ -e $PIDFILE ]; then
+		echo "$NAME already running ..."
+		exit 1
+	fi
+	echo -n "Starting daemon: "$NAME
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $BINPATH
+	RETVAL=$?
+	echo "."
+	[ $RETVAL = 0 ]
+	return $RETVAL
+}
+
+#stop function
+stop(){
+	echo "Stopping $NAME ..."
+	if pidof $BINPATH > /dev/null; then
+		#start-stop-daemon --stop --retry TERM/1/TERM/1/TERM/4/KILL --quiet --oknodo --exec $BINPATH
+		#killproc $BINPATH
+		killall -9 $BINPATH > /dev/null
+		RETVAL=$?
+		echo
+		[ $RETVAL = 0 ]
+		rm -rf $PIDFILE
+		#rm -f /var/lock/subsys/$NAME
+		echo "Stop $NAME Success..."
+	fi
+}
+
+#status function
+status(){
+	if pidof -o %PPID $BINPATH > /dev/null; then
+		echo $NAME" is running..."
+		exit 0
+	else
+		echo $NAME" is not running..."
+		exit 1
+	fi
+}
+
+# See how we were called.
+case "$1" in
+start)
+	start
+	;;
+stop)
+	stop
+	;;
+reload|restart)
+	stop
+	sleep 1
+	start
+	;;
+status)
+	status
+	RETVAL=$?
+	;;
+*)
+	echo $"Usage: $0 {start|stop|restart|status}"
+	exit 1
+	;;
+esac
+
+exit $RETVAL
+
+#end

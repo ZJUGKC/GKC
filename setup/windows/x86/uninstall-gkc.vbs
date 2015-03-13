@@ -15,16 +15,21 @@ strTitle = "GKC-1.0.1-win32"
 
 WScript.Echo "Uninstall..."
 
-Dim strDest, strEnv
+Dim strDest, strEnv, strAsm
 strDest = "C:\program files\.GKC"
-strEnv = Chr(34) & strDest & "\" & strTitle & "\public\assemblies" & Chr(34)
+strAsm = strDest & "\" & strTitle & "\public\assemblies"
+strEnv = Chr(34) & strAsm & Chr(34)
+
+'services
+Set objWsh = WScript.CreateObject("WScript.Shell")
+objWsh.Run Chr(34) & strAsm & "\gss-uninstall.bat" & Chr(34), 0, true
+Wscript.Sleep 500
 
 Dim fso
 Set fso = WScript.CreateObject("Scripting.FileSystemObject")
 fso.DeleteFolder strDest, True
 
 'environment
-Set objWsh = WScript.CreateObject("WScript.Shell")
 Set objEnv = objWsh.Environment("SYSTEM")
 Dim strPath, iEnvLen, iLen
 strPath = CStr(objEnv("PATH"))

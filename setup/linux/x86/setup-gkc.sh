@@ -17,3 +17,8 @@ mkdir /usr/.GKC
 #path
 echo "/usr/.GKC/public/assemblies" > /etc/ld.so.conf.d/GKC.conf
 ldconfig
+#services
+chmod ugoa+x /usr/.GKC/public/assemblies/gss-setup.sh
+/usr/.GKC/public/assemblies/gss-setup.sh
+
+#end

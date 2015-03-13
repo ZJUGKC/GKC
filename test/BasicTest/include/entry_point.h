@@ -36,6 +36,9 @@ public:
 			GKC::Console::WriteLine(iter.get_Value());
 		}
 
+		//unit test
+		UNIT_TEST_MAIN_PROCESS(args);
+
 		return 0;
 	}
 };

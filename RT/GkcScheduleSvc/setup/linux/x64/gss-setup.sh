@@ -11,14 +11,16 @@
 #   yxxinyuan@zju.edu.cn
 #
 
-#install
-mkdir /usr/.GKC
-./GKC-1.0.1-Linux.sh --prefix=/usr/.GKC --exclude-subdir
-#path
-echo "/usr/.GKC/public/assemblies" > /etc/ld.so.conf.d/GKC.conf
-ldconfig
-#services
-chmod ugoa+x /usr/.GKC/public/assemblies/gss-setup.sh
-/usr/.GKC/public/assemblies/gss-setup.sh
+#copy
+cp /usr/.GKC/public/assemblies/GkcScheduleSvc /etc/init.d/GkcScheduleSvc
+#right
+chmod ugoa+x /etc/init.d/GkcScheduleSvc
+#runlevels
+update-rc.d GkcScheduleSvc defaults
+#/sbin/chkconfig --add GkcScheduleSvc
+#start
+service GkcScheduleSvc start
+#status
+service GkcScheduleSvc status
 
 #end

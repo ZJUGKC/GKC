@@ -26,7 +26,13 @@ SET_TARGET_PROPERTIES(GkcScheduleSvc PROPERTIES OUTPUT_NAME "GkcScheduleSvc-1-0"
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
 TARGET_LINK_LIBRARIES(GkcScheduleSvc GkcSys)
 
+#copy
+SET_POSTBUILD_PATH_COPY(GkcScheduleSvc "platform" "machine" "config" "${PROJECT_SOURCE_DIR}/RT/GkcScheduleSvc/setup" "*" "${EXECUTABLE_OUTPUT_PATH}")
+
 INSTALL(TARGETS GkcScheduleSvc
 	RUNTIME DESTINATION public/assemblies COMPONENT runtime)
+SET_POSTBUILD_SRC_PATH("platform" "machine" "${PROJECT_SOURCE_DIR}/RT/GkcScheduleSvc/setup")
+INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
+	DESTINATION public/assemblies COMPONENT runtime)
 
 #end

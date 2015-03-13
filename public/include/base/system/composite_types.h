@@ -66,6 +66,11 @@ inline T&& rv_forward(T& t) throw()
 
 //constructor
 template <class T, class... Args>
+inline void call_constructor(T& t, const Args&... args)
+{
+	::new(&t) T(args...);
+}
+template <class T, class... Args>
 inline void call_constructor(T& t, Args&&... args)
 {
 	::new(&t) T(rv_forward<Args>(args)...);

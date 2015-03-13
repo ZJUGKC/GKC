@@ -19,7 +19,7 @@ Dim fso
 Set fso = WScript.CreateObject("Scripting.FileSystemObject")
 Dim objShell
 Set objShell = WScript.CreateObject("Shell.Application")
-Dim strSrc, strDest
+Dim strSrc, strDest, strAsm
 strSrc = strTitle & ".zip"
 strDest = "C:\program files\.GKC"
 If Not fso.FileExists(strSrc) Then
@@ -40,7 +40,8 @@ Set objEnv = objWsh.Environment("SYSTEM")
 Dim strPath, iLen
 strPath = CStr(objEnv("PATH"))
 iLen = Len(strPath)
-strDest = Chr(34) & strDest & "\" & strTitle & "\public\assemblies" & Chr(34)
+strAsm = strDest & "\" & strTitle & "\public\assemblies"
+strDest = Chr(34) & strAsm & Chr(34)
 Dim pos
 pos = InStr(1, strPath, strDest, 1)
 If pos = 0 Then
@@ -54,6 +55,10 @@ If pos = 0 Then
 	End If
 	objEnv("PATH") = strPath
 End If
+
+'services
+objWsh.Run Chr(34) & strAsm & "\gss-setup.bat" & Chr(34), 0, true
+Wscript.Sleep 500
 
 Set objEnv = Nothing
 Set objWsh = Nothing

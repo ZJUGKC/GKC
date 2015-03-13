@@ -11,8 +11,15 @@
 #   yxxinyuan@zju.edu.cn
 #
 
+#services
+chmod ugoa+x /usr/.GKC/public/assemblies/gss-uninstall.sh
+/usr/.GKC/public/assemblies/gss-uninstall.sh
 #uninstall
 rm -r /usr/.GKC
 #path
 rm /etc/ld.so.conf.d/GKC.conf
 ldconfig
+
+echo "uninstall done."
+
+#end

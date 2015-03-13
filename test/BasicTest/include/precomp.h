@@ -25,6 +25,13 @@ This is pre-compiled header file.
 
 #include "base/GkcConsole.h"
 
+#include "base/GkcColl.h"
+
+#include "sys/GkcSys.h"
+#include "sys/GkcArray.h"
+#include "sys/GkcString.h"
+#include "sys/GkcUnit.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////

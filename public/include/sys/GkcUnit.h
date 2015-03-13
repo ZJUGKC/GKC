@@ -18,7 +18,9 @@ Author: Lijuan Mei
 
 /*
 These are the basic macros you will use for creating tests and doing setup/teardown.
- 
+
+The base/GkcBase.cpp must be included in cpp file.
+
 Example:
 
 In unit test cpp file:
@@ -82,61 +84,152 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 // This is the max buffer length for the message assigned to an assert exception.
-#define GKC_MAX_ASSERT_MESSAGE_LENGTH  (1024)
+#define _GKC_MAX_ASSERT_MESSAGE_LENGTH  (1024)
 
-// UnitTestMessgeBuffer
+// _UnitTestMessgeBuffer
 
-typedef FixedStringT<CharS, GKC_MAX_ASSERT_MESSAGE_LENGTH>  UnitTestMessageBuffer;
+typedef FixedStringT<CharS, _GKC_MAX_ASSERT_MESSAGE_LENGTH>  _UnitTestMessageBuffer;
 
 // unit test function prototype
 
-typedef bool (*UnitTestFunc)(UnitTestMessageBuffer& buffer);
+typedef bool (*_UnitTestFunc)(_UnitTestMessageBuffer& buffer);
 
-// UnitTestMap
+// _UnitTestMap
 
-class UnitTestMap
+class _UnitTestMap
 {
+private:
+	typedef HashMap<StringS, _UnitTestFunc, StringHashTrait<StringS>, StringCompareTrait<StringS>>  mapClass;
+
 public:
-	UnitTestMap() throw()
+	struct ItemInfo
+	{
+		StringS             strName;  //test name
+		_UnitTestFunc       pFunc;    //function
+		mapClass::Iterator  iter;
+	};
+
+public:
+	_UnitTestMap() throw() : m_map(MemoryHelper::GetCrtMemoryManager())
 	{
 	}
 
 //methods
-	void AddUnitTest(const ConstStringS& strName, UnitTestFunc pFunc)
+	void AddUnitTest(const ConstStringS& strName, _UnitTestFunc pFunc)
 	{
 		StringS strM;
 		StringUtilHelper::MakeString(strName, strM);
 		m_map.Insert(strM, pFunc);
 	}
 
+	uintptr GetCount() const throw()
+	{
+		return m_map.GetCount();
+	}
+
+	//enum
+	bool EnumFirst(ItemInfo& info) const throw()
+	{
+		info.iter = m_map.GetBegin();
+		return EnumNext(info);
+	}
+	bool EnumNext(ItemInfo& info) const throw()
+	{
+		if( info.iter == m_map.GetEnd() )
+			return false;
+		info.strName = info.iter.get_Value().get_First();
+		info.pFunc   = info.iter.get_Value().get_Second();
+		info.iter.MoveNext();
+		return true;
+	}
+
+	//find
+	_UnitTestFunc Find(const ConstStringS& strName) const
+	{
+		StringS strM;
+		StringUtilHelper::MakeString(strName, strM);
+		auto iter = m_map.Find(strM);
+		if( iter == m_map.GetEnd() )
+			return NULL;
+		return iter.get_Value().get_Second();
+	}
+
 private:
-	HashMap<StringS, UnitTestFunc, StringHashTrait<StringS>, StringCompareTrait<StringS>>  m_map;
+	mapClass  m_map;
 };
 
-// UnitTestMapHelper
+// _UnitTestMapHelper
 
-class UnitTestMapHelper
+class _UnitTestMapHelper
 {
 public:
 	//get map
-	static UnitTestMap* GetUnitTestMap()
+	BEGIN_NOINLINE
+	static _UnitTestMap*& GetUnitTestMap()
+	END_NOINLINE
 	{
+		static _UnitTestMap* l_unit_test_map = NULL;
+
 		if( l_unit_test_map == NULL )
-			l_unit_test_map = new UnitTestMap;
+			l_unit_test_map = new _UnitTestMap;
 		return l_unit_test_map;
 	}
 	//free
-	static void FreeUnitTestMap() throw()
+	static void FreeUnitTestMap()
 	{
-		if( l_unit_test_map != NULL ) {
-			delete l_unit_test_map;
-			l_unit_test_map = NULL;
+		_UnitTestMap*& map = GetUnitTestMap();
+		if( map != NULL ) {
+			delete map;
+			map = NULL;
 		}
 	}
-
-private:
-	static UnitTestMap* l_unit_test_map;
 };
+
+// _UnitTestMainHelper
+
+class _UnitTestMainHelper
+{
+public:
+	static int MainProcess(const GKC::ConstArray<GKC::ConstStringS>& args)
+	{
+		_UnitTestMessageBuffer buffer;
+
+		_UnitTestMap* pMap = _UnitTestMapHelper::GetUnitTestMap();
+
+		if( args.GetCount() <= 1 ) {
+			//all tests
+			_UnitTestMap::ItemInfo info;
+			bool bContinue = pMap->EnumFirst(info);
+			while( bContinue ) {
+				if( !info.pFunc(buffer) ) {
+
+				}
+				bContinue = pMap->EnumNext(info);
+			}
+		}
+		else {
+			//specified tests
+			for( auto iter = args.GetBegin(); iter != args.GetEnd(); iter.MoveNext() ) {
+				_UnitTestFunc pFunc = pMap->Find(iter.get_Value());
+				if( pFunc == NULL ) {
+				}
+				else {
+					if( !pFunc(buffer) ) {
+
+					}
+				}
+			}
+		} //end if
+
+		//free map
+		_UnitTestMapHelper::FreeUnitTestMap();
+
+		return 0;
+	}
+};
+
+// for main function
+#define UNIT_TEST_MAIN_PROCESS(args)  GKC::_UnitTestMainHelper::MainProcess(args)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

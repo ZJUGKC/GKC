@@ -212,7 +212,7 @@ public:
 		~Iterator() throw()
 		{
 		}
-		Itertaor& operator=(const Iterator& src) throw()
+		Iterator& operator=(const Iterator& src) throw()
 		{
 			if( &src != this ) {
 				m_refNode = src.m_refNode;
@@ -483,7 +483,7 @@ public:
 		~Iterator() throw()
 		{
 		}
-		Itertaor& operator=(const Iterator& src) throw()
+		Iterator& operator=(const Iterator& src) throw()
 		{
 			if( &src != this ) {
 				m_refList = src.m_refList;
@@ -1157,7 +1157,7 @@ public:
 		~Iterator() throw()
 		{
 		}
-		Itertaor& operator=(const Iterator& src) throw()
+		Iterator& operator=(const Iterator& src) throw()
 		{
 			if( &src != this ) {
 				m_refTable = src.m_refTable;
@@ -1476,17 +1476,17 @@ protected:
 	{
 		assert( !m_mgr.IsNull() );
 		if( m_ppBins != NULL ) {
-			m_mgr.Deref().Free(m_ppBins);
+			m_mgr.Deref().Free((uintptr)m_ppBins);
 			m_ppBins = NULL;
 		}
 	}
-	static void alloc_bucket(_Node**& ppBins, uintptr uBins)  //may throw
+	void alloc_bucket(_Node**& ppBins, uintptr uBins)  //may throw
 	{
 		assert( !m_mgr.IsNull() );
 		assert( ppBins == NULL );
 		//check overflow
-		uintptr uBytes = SafeOperators::Multiply(uBins, sizeof(_Node*));  //may throw
-		ppBins = m_mgr.Deref().Allocate(uBytes);
+		uintptr uBytes = SafeOperators::MultiplyThrow(uBins, sizeof(_Node*));  //may throw
+		ppBins = (_Node**)(m_mgr.Deref().Allocate(uBytes));
 		if( ppBins == NULL )
 			throw OutOfMemoryException();
 		mem_zero(ppBins, uBytes);
@@ -1529,7 +1529,7 @@ protected:
 				pNext = pNode->m_pNext;  //save the next node
 				uDestBin = pNode->m_uHashCode % uBins;
 				pNode->m_pNext = ppBins[uDestBin];
-				ppBins[iDestBin] = pNode;
+				ppBins[uDestBin] = pNode;
 				pNode = pNext;
 			}
 		} //end for
@@ -1629,7 +1629,7 @@ protected:
 	//find
 	_Node* find_node(const TKey& key, uintptr& uBin, uintptr& uHash, _Node*& pPrev) const throw()
 	{
-		uHash = THashTraits::CalcHash(key);
+		uHash = THashTrait::CalcHash(key);
 		uBin  = uHash % m_uBins;
 		if( m_ppBins == NULL )
 			return NULL;
@@ -1666,7 +1666,7 @@ protected:
 	Iterator get_iterator(_Node* pNode) const throw()
 	{
 		Iterator iter;
-		iter.m_refTable = this;
+		iter.m_refTable = const_cast<thisClass*>(this);
 		iter.m_refNode  = pNode;
 		return iter;
 	}
@@ -1708,7 +1708,7 @@ public:
 			: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
 	{
 	}
-	~_HashList() throw()
+	~HashList() throw()
 	{
 	}
 
@@ -1735,7 +1735,7 @@ public:
 				: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
 	{
 	}
-	~_HashMultiList() throw()
+	~HashMultiList() throw()
 	{
 	}
 
@@ -1797,7 +1797,7 @@ public:
 	}
 
 private:
-	Iterator FindNext(const Iterator& iter) const throw()
+	Iterator FindNext(const Iterator& iter) const throw();
 
 	//non-copyable
 	HashMap(const HashMap&) throw();
@@ -1913,7 +1913,7 @@ private:
 		}
 
 		enum {
-			RB_RED = 0,  RB_BLACK;
+			RB_RED = 0,  RB_BLACK
 		};
 		int    m_iColor;  //color, RB_*
 		_Node* m_pNext;   //used as parent
@@ -1939,7 +1939,7 @@ public:
 		~Iterator() throw()
 		{
 		}
-		Itertaor& operator=(const Iterator& src) throw()
+		Iterator& operator=(const Iterator& src) throw()
 		{
 			if( &src != this ) {
 				m_refTree = src.m_refTree;
@@ -2732,7 +2732,7 @@ public:
 	}
 
 private:
-	Iterator FindNext(const Iterator& iter) const throw()
+	Iterator FindNext(const Iterator& iter) const throw();
 
 	//non-copyable
 	RBMap(const RBMap&) throw();

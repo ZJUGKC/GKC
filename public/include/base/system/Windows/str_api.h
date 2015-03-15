@@ -97,4 +97,24 @@ inline int compare_string_case_insensitive(const CharL* s1, const CharL* s2) thr
 	return n;
 }
 
+// value_to_string
+//   uSize : buffer size in typed characters.
+//   return value : the number of typed characters, -1 means fail.
+inline int value_to_string(CharA* szBuffer, uintptr uSize, const CharA* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::_vsnprintf_s(szBuffer, uSize, _TRUNCATE, szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+inline int value_to_string(CharH* szBuffer, uintptr uSize, const CharH* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::_vsnwprintf_s(szBuffer, uSize, _TRUNCATE, szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -19,7 +19,32 @@
 //------------------------------------------------------------------------------
 //print
 
-inline void print_string(const CharS* sz) throw()
+// print_format
+//   return value: the number of typed characters, -1 means fail.
+inline int print_format(const CharA* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vprintf_s(szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+inline int print_format(const CharH* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vwprintf_s(szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+
+// print string
+inline void print_string(const CharA* sz) throw()
+{
+	//no check
+	::printf_s("%s", sz);
+}
+inline void print_string(const CharH* sz) throw()
 {
 	//no check
 	::wprintf_s(L"%s", sz);

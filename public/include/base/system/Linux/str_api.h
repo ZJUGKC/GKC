@@ -104,4 +104,24 @@ inline int compare_string_case_insensitive(const CharL* s1, const CharL* s2) thr
 	return ::wcscasecmp(s1, s2);
 }
 
+// value_to_string
+//   uSize : buffer size in typed characters.
+//   return value : the number of typed characters, -1 means fail.
+inline int value_to_string(CharA* szBuffer, uintptr uSize, const CharA* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vsnprintf(szBuffer, uSize, szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+inline int value_to_string(CharL* szBuffer, uintptr uSize, const CharL* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vswprintf(szBuffer, uSize, szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

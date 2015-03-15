@@ -44,12 +44,12 @@ private:
 public:
 	FixedStringT() throw() : m_uLength(0)
 	{
-		m_data[0] = 0;
+		baseClass::m_data[0] = 0;
 	}
 	FixedStringT(const thisClass& src) throw() : m_uLength(src.m_uLength)
 	{
 		assert( m_uLength < t_size );
-		mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), m_data);
+		mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
 	}
 	~FixedStringT() throw()
 	{
@@ -61,7 +61,7 @@ public:
 		if( this != &src ) {
 			m_uLength = src.m_uLength;
 			assert( m_uLength < t_size );
-			mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), m_data);
+			mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
 		}
 		return *this;
 	}
@@ -74,31 +74,31 @@ public:
 	{
 		assert( uLength < t_size );
 		m_uLength = uLength;
-		m_data[m_uLength] = 0;
+		baseClass::m_data[m_uLength] = 0;
 	}
 
 	//iterators
-	const Iterator GetEnd() const throw()
+	const typename thisClass::Iterator GetEnd() const throw()
 	{
-		return Iterator(RefPtr<Tchar>(m_data + m_uLength));
+		return Iterator(RefPtr<Tchar>(baseClass::m_data + m_uLength));
 	}
-	Iterator GetEnd() throw()
+	typename thisClass::Iterator GetEnd() throw()
 	{
-		return Iterator(RefPtr<Tchar>(m_data + m_uLength));
+		return Iterator(RefPtr<Tchar>(baseClass::m_data + m_uLength));
 	}
-	const ReverseIterator<Iterator> GetReverseBegin() const throw()
+	const ReverseIterator<typename thisClass::Iterator> GetReverseBegin() const throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
 	}
-	ReverseIterator<Iterator> GetReverseBegin() throw()
+	ReverseIterator<typename thisClass::Iterator> GetReverseBegin() throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
 	}
 
 	//methods
 	void RecalcLength() throw()
 	{
-		m_uLength = calc_string_length(m_data);
+		m_uLength = calc_string_length(baseClass::m_data);
 	}
 
 private:
@@ -261,7 +261,7 @@ public:
 
 	uintptr GetLength() const throw()
 	{
-		return (m_pB == NULL) ? 0 : ((SharedArrayBlock*)m_pB)->GetLength() - 1;
+		return (baseClass::m_pB == NULL) ? 0 : ((SharedArrayBlock*)(baseClass::m_pB))->GetLength() - 1;
 	}
 	bool IsEmpty() const throw()
 	{
@@ -269,48 +269,48 @@ public:
 	}
 
 	//iterators
-	const Iterator GetEnd() const throw()
+	const typename thisClass::Iterator GetEnd() const throw()
 	{
-		return Iterator(RefPtr<T>(m_pT + GetLength()));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + GetLength()));
 	}
-	Iterator GetEnd() throw()
+	typename thisClass::Iterator GetEnd() throw()
 	{
-		return Iterator(RefPtr<T>(m_pT + GetLength()));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + GetLength()));
 	}
-	const Iterator GetReverseBegin() const throw()
+	const typename thisClass::Iterator GetReverseBegin() const throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
 	}
-	Iterator GetReverseBegin() throw()
+	typename thisClass::Iterator GetReverseBegin() throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
 	}
 
-	const Iterator GetAt(uintptr index) const throw()
+	const typename thisClass::Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetLength() );
-		return Iterator(RefPtr<T>(m_pT + index));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + index));
 	}
-	Iterator GetAt(uintptr index) throw()
+	typename thisClass::Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < GetLength() );
-		return Iterator(RefPtr<Tchar>(m_pT + index));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + index));
 	}
 	void SetAt(uintptr index, const Tchar& t)  //may throw
 	{
 		assert( index < GetLength() );
-		m_pT[index] = t;
+		baseClass::m_pT[index] = t;
 	}
 	void SetAt(uintptr index, Tchar&& t)  //may throw
 	{
 		assert( index < GetLength() );
-		m_pT[index] = rv_forward(t);
+		baseClass::m_pT[index] = rv_forward(t);
 	}
 
 	//methods
 	void SetLength(uintptr uLength)
 	{
-		SetCount(uLength + 1);
+		baseClass::SetCount(uLength + 1, 0);
 		GetAt(uLength).get_Value() = 0;
 	}
 };

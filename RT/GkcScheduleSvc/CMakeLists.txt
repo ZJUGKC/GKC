@@ -24,7 +24,7 @@ SET_PCH(GkcScheduleSvc "exe" "precomp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")
 SET_TARGET_PROPERTIES(GkcScheduleSvc PROPERTIES OUTPUT_NAME "GkcScheduleSvc-1-0"
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
-TARGET_LINK_LIBRARIES(GkcScheduleSvc GkcSys)
+TARGET_LINK_LIBRARIES(GkcScheduleSvc GkcSys ${STRING_LINK_EXTRA_LIBS})
 
 #copy
 SET_POSTBUILD_PATH_COPY(GkcScheduleSvc "platform" "machine" "config" "${PROJECT_SOURCE_DIR}/RT/GkcScheduleSvc/setup" "*" "${EXECUTABLE_OUTPUT_PATH}")

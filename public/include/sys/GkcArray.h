@@ -460,8 +460,9 @@ public:
 	}
 
 	//size
+	//  uGrowBy: the default value is 0.
 	template <typename... Args>
-	void SetCount(uintptr uCount, uintptr uGrowBy = 0, Args&&... args)  //may throw
+	void SetCount(uintptr uCount, uintptr uGrowBy, Args&&... args)  //may throw
 	{
 		assert( m_pB != NULL );  //must have a block for allocation
 		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
@@ -515,7 +516,7 @@ public:
 			return ;
 		}
 		uintptr uBytes;
-		SafeOperators::Multiply(uSize, sizeof(T), uBytes);  //no check
+		SafeOperators::Multiply(uSize, (uintptr)(sizeof(T)), uBytes);  //no check
 		T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)m_pT, uBytes));
 		if( pNew == NULL )
 			return ;
@@ -539,19 +540,20 @@ public:
 		assert( m_pB != NULL );
 		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
 		uintptr uOldSize = pB->GetLength();
-		SetCount(uOldSize + src.GetCount());
+		SetCount(uOldSize + src.GetCount(), 0);
 		copy_elements(src.m_pT, m_pT + uOldSize, src.GetCount());
 	}
 	void Copy(const SharedArray<T>& src)  //may throw
 	{
 		assert( this != &src );  // cannot append to itself
 		uintptr uSize = src.GetCount();
-		SetCount(uSize);
+		SetCount(uSize, 0);
 		copy_elements(src.m_pT, m_pT, uSize);
 	}
 
+	// count: the default value is 1.
 	template <typename... Args>
-	void InsertAt(uintptr index, uintptr count = 1, Args&&... args)  //may throw
+	void InsertAt(uintptr index, uintptr count, Args&&... args)  //may throw
 	{
 		assert( count > 0 );  // zero size not allowed
 		assert( m_pB != NULL );
@@ -638,7 +640,7 @@ private:
 			uAllocSize = (uGrowBy > uNewSize) ? uGrowBy : uNewSize;
 			uintptr uBytes = 0;
 			//overflow
-			if( SafeOperators::Multiply(uAllocSize, sizeof(T), uBytes).IsFailed() )
+			if( SafeOperators::Multiply(uAllocSize, (uintptr)(sizeof(T)), uBytes).IsFailed() )
 				throw OverflowException();
 			//allocate
 			m_pT = (T*)(pB->GetMemoryManager().Deref().Allocate(uBytes));
@@ -659,7 +661,7 @@ private:
 				uAllocSize = uNewSize;  //no extra
 			uintptr uBytes = 0;
 			//overflow
-			if( SafeOperators::Multiply(uAllocSize, sizeof(T), uBytes).IsFailed() )
+			if( SafeOperators::Multiply(uAllocSize, (uintptr)(sizeof(T)), uBytes).IsFailed() )
 				throw OverflowException();
 			//reallocate
 			//  because uBytes != 0, m_pT is not freed

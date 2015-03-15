@@ -185,6 +185,20 @@ public:
 	}
 };
 
+//_UnitTestReg
+
+class _UnitTestReg
+{
+public:
+	_UnitTestReg(const CharS* szName, _UnitTestFunc pFunc)
+	{
+		ConstStringS strName;
+		ConstHelper::SetInternalPointer(szName, calc_string_length(szName), strName);
+		_UnitTestMap* pMap = _UnitTestMapHelper::GetUnitTestMap();
+		pMap->AddUnitTest(strName, pFunc);
+	}
+};
+
 // _UnitTestMainHelper
 
 class _UnitTestMainHelper
@@ -209,7 +223,10 @@ public:
 		}
 		else {
 			//specified tests
-			for( auto iter = args.GetBegin(); iter != args.GetEnd(); iter.MoveNext() ) {
+			auto iter = args.GetBegin();
+			assert( iter != args.GetEnd() );
+			iter.MoveNext();  //from 1
+			for( ; iter != args.GetEnd(); iter.MoveNext() ) {
 				_UnitTestFunc pFunc = pMap->Find(iter.get_Value());
 				if( pFunc == NULL ) {
 				}
@@ -230,6 +247,33 @@ public:
 
 // for main function
 #define UNIT_TEST_MAIN_PROCESS(args)  GKC::_UnitTestMainHelper::MainProcess(args)
+
+// in cpp file
+
+// define error message
+#define _GKC_FORMAT_ERROR(...)  \
+	value_to_string(FixedArrayHelper::GetInternalPointer(buffer), _UnitTestMessageBuffer::c_size,  \
+					__VA_ARGS__);
+
+// define function
+#define _GKC_BEGIN_TEST_FUNC(x)  \
+	bool _GKC_TEST_##x(_UnitTestMessageBuffer& buffer);	\
+	_UnitTestReg g_gkc_test_##x(_S(#x), &GKC_TEST_##x);	\
+	bool GKC_TEST_##x(_UnitTestMessageBuffer& buffer) {
+
+#define _GKC_END_TEST_FUNC    return true; }
+
+// define block
+#define _GKC_BEGIN_TEST_BLOCK  try {
+
+/*
+#define _GKC_END_TEST_BLOCK  \
+        catch(GkcUnit::AssertException& e)                          \
+	    {                                                           \
+			_GKC_FORMAT_ERROR(L"%s", e.Message());                  \
+			return false;
+		}                                                           \
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 }

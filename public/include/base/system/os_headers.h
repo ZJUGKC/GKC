@@ -32,6 +32,7 @@
 #include <malloc.h>
 #include <memory.h>
 
+#include <stdarg.h>
 #include <errno.h>
 
 #if defined(OS_WINDOWS)

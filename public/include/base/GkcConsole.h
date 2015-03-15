@@ -41,11 +41,11 @@ public:
 	}
 	static void Write(const ConstStringS& str) throw()
 	{
-		print_string(&(str.GetBegin().get_Value()));
+		print_string(ConstHelper::GetInternalPointer(str));
 	}
 	static void WriteLine(const ConstStringS& str) throw()
 	{
-		print_string(&(str.GetBegin().get_Value()));
+		print_string(ConstHelper::GetInternalPointer(str));
 		WriteLN();
 	}
 };

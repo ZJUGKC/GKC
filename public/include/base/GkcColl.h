@@ -264,7 +264,7 @@ public:
 	private:
 		RefPtr<_Node>  m_refNode;
 
-		friend class thisClass;
+		friend thisClass;
 	};
 
 public:
@@ -544,7 +544,7 @@ public:
 		RefPtr<thisClass>  m_refList;
 		RefPtr<_Node>      m_refNode;
 
-		friend class thisClass;
+		friend thisClass;
 	};
 
 public:
@@ -1201,7 +1201,7 @@ public:
 		RefPtr<thisClass>  m_refTable;
 		RefPtr<_Node>      m_refNode;
 
-		friend class thisClass;
+		friend thisClass;
 	};
 
 public:
@@ -1325,7 +1325,7 @@ public:
 		assert( iter != GetEnd() );
 		_Node*  pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
 		uintptr uHash = pNode->m_uHashCode;
-		const Tkey& key = KeyHelper::GetKey<const TKey>(pNode->m_t);
+		const TKey& key = KeyHelper::GetKey<const TKey>(pNode->m_t);
 		pNode = pNode->m_pNext;
 		while( pNode != NULL ) {
 			if( (pNode->m_uHashCode == uHash) && TCompareTrait::IsEQ(KeyHelper::GetKey(pNode->m_t), key) ) {
@@ -1339,14 +1339,14 @@ public:
 	//add
 	Iterator InsertWithoutFind(const TKey& key)  //may throw
 	{
-		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
 		_Node* pNode = create_node(static_cast<const _Key&>(key), uBin, uHash);  //may throw
 		return get_iterator(pNode);
 	}
 	Iterator InsertWithoutFind(TKey&& key)  //may throw
 	{
-		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
 		_Node* pNode = create_node(rv_forward(static_cast<_Key&>(key)), uBin, uHash);  //may throw
 		return get_iterator(pNode);
@@ -1354,7 +1354,7 @@ public:
 	template <typename TValue>
 	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
-		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
 		_Node* pNode = create_node(key, val, uBin, uHash);  //may throw
 		return get_iterator(pNode);
@@ -1362,7 +1362,7 @@ public:
 	template <typename TValue>
 	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
 	{
-		uintptr uHash = THashTraits::CalcHash(key);
+		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
 		_Node* pNode = create_node(rv_forward(key), rv_forward(val), uBin, uHash);  //may throw
 		return get_iterator(pNode);
@@ -1485,7 +1485,7 @@ protected:
 		assert( !m_mgr.IsNull() );
 		assert( ppBins == NULL );
 		//check overflow
-		uintptr uBytes = SafeOperators::MultiplyThrow(uBins, sizeof(_Node*));  //may throw
+		uintptr uBytes = SafeOperators::MultiplyThrow(uBins, (uintptr)(sizeof(_Node*)));  //may throw
 		ppBins = (_Node**)(m_mgr.Deref().Allocate(uBytes));
 		if( ppBins == NULL )
 			throw OutOfMemoryException();
@@ -1564,14 +1564,14 @@ protected:
 	_Node* create_node(const _Key& key, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, key);
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key);
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
 	_Node* create_node(_Key&& key, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, rv_forward(key));
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
@@ -1700,6 +1700,7 @@ class HashList : public _HashTable<TKey, const TKey, THashTrait, TCompareTrait>
 {
 private:
 	typedef _HashTable<TKey, const TKey, THashTrait, TCompareTrait>  baseClass;
+	typedef HashList<TKey, THashTrait, TCompareTrait>  thisClass;
 
 public:
 	HashList(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
@@ -1713,7 +1714,7 @@ public:
 	}
 
 private:
-	Iterator FindNext(const Iterator& iter) const throw();
+	typename thisClass::Iterator FindNext(const typename thisClass::Iterator& iter) const throw();
 
 	//non-copyable
 	HashList(const HashList&) throw();
@@ -1727,6 +1728,7 @@ class HashMultiList : public _HashTable<TKey, const TKey, THashTrait, TCompareTr
 {
 private:
 	typedef _HashTable<TKey, const TKey, THashTrait, TCompareTrait>  baseClass;
+	typedef HashMultiList<TKey, THashTrait, TCompareTrait>  thisClass;
 
 public:
 	HashMultiList(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
@@ -1740,11 +1742,11 @@ public:
 	}
 
 	//add
-	Iterator Insert(const TKey& key)  //may throw
+	typename thisClass::Iterator Insert(const TKey& key)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key);
 	}
-	Iterator Insert(TKey&& key)  //may throw
+	typename thisClass::Iterator Insert(TKey&& key)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key));
 	}
@@ -1779,25 +1781,25 @@ public:
 	}
 
 	//add
-	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
 	}
-	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
 	}
-	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator Insert(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::Insert(key, val);
 	}
-	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator Insert(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::Insert(rv_forward(key), rv_forward(val));
 	}
 
 private:
-	Iterator FindNext(const Iterator& iter) const throw();
+	typename thisClass::Iterator FindNext(const typename thisClass::Iterator& iter) const throw();
 
 	//non-copyable
 	HashMap(const HashMap&) throw();
@@ -1826,19 +1828,19 @@ public:
 	}
 
 	//add
-	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
 	}
-	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
 	}
-	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator Insert(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
 	}
-	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator Insert(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
 	}
@@ -1990,7 +1992,7 @@ public:
 		RefPtr<thisClass>  m_refTree;
 		RefPtr<_Node>      m_refNode;
 
-		friend class thisClass;
+		friend thisClass;
 	};
 
 public:
@@ -2279,7 +2281,7 @@ protected:
 			}
 			else {
 				pY = pX->get_Parent()->get_Parent()->m_pLeft;
-				if( pY != NULL && pY->m_iColor == CNode::RB_RED ) {
+				if( pY != NULL && pY->m_iColor == _Node::RB_RED ) {
 					pX->get_Parent()->m_iColor = _Node::RB_BLACK;
 					pY->m_iColor = _Node::RB_BLACK;
 					pX->get_Parent()->get_Parent()->m_iColor = _Node::RB_RED;
@@ -2304,7 +2306,7 @@ protected:
 	_Node* create_node(const _Key& key)  //may throw
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, key);
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key);
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2313,7 +2315,7 @@ protected:
 	_Node* create_node(_Key&& key)  //may throw
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode<_Key>(m_freelist, rv_forward(key));
+		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2638,6 +2640,7 @@ class RBList : public _RBTree<TKey, const TKey, TCompareTrait>
 {
 private:
 	typedef _RBTree<TKey, const TKey, TCompareTrait>  baseClass;
+	typedef RBList<TKey, TCompareTrait>  thisClass;
 
 public:
 	RBList(const RefPtr<IMemoryManager>& mgr,
@@ -2650,7 +2653,7 @@ public:
 	}
 
 private:
-	Iterator FindNext(const Iterator& iter) const throw();
+	typename thisClass::Iterator FindNext(const typename thisClass::Iterator& iter) const throw();
 
 	//non-copyable
 	RBList(const RBList&) throw();
@@ -2664,6 +2667,7 @@ class RBMultiList : public _RBTree<TKey, const TKey, TCompareTrait>
 {
 private:
 	typedef _RBTree<TKey, const TKey, TCompareTrait>  baseClass;
+	typedef RBMultiList<TKey, TCompareTrait>  thisClass;
 
 public:
 	RBMultiList(const RefPtr<IMemoryManager>& mgr,
@@ -2676,11 +2680,11 @@ public:
 	}
 
 	//add
-	Iterator Insert(const TKey& key)  //may throw
+	typename thisClass::Iterator Insert(const TKey& key)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key);
 	}
-	Iterator Insert(TKey&& key)  //may throw
+	typename thisClass::Iterator Insert(TKey&& key)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key));
 	}
@@ -2714,25 +2718,25 @@ public:
 	}
 
 	//add
-	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
 	}
-	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
 	}
-	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator Insert(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::Insert(key, val);
 	}
-	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator Insert(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::Insert(rv_forward(key), rv_forward(val));
 	}
 
 private:
-	Iterator FindNext(const Iterator& iter) const throw();
+	typename thisClass::Iterator FindNext(const typename thisClass::Iterator& iter) const throw();
 
 	//non-copyable
 	RBMap(const RBMap&) throw();
@@ -2760,19 +2764,19 @@ public:
 	}
 
 	//add
-	Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
 	}
-	Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
 	}
-	Iterator Insert(const TKey& key, const TValue& val)  //may throw
+	typename thisClass::Iterator Insert(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
 	}
-	Iterator Insert(TKey&& key, TValue&& val)  //may throw
+	typename thisClass::Iterator Insert(TKey&& key, TValue&& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(rv_forward(key), rv_forward(val));
 	}

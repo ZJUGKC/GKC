@@ -51,18 +51,15 @@ GKC_TEARDOWN(MyFixture)
 // This test uses a fixture (the second argument).
 // Setup and Teardown will be run before and after the body of the test, respectively.
 GKC_BEGIN_TESTF(MyTestWithFixture, MyFixture)
-{
     // Do some tests.
 	// You can assume l_myNumber is 5.
-    GKC_ASSERT(5 == XXXTest::l_myNumber);
-}
+	bool bCheck = (5 == XXXTest::l_myNumber);
+    GKC_ASSERT_TRUE(bCheck);
 GKC_END_TESTF
 
 GKC_BEGIN_TEST(MyTestWithoutFixtures)
-{
     // Do some tests.
 	// Do not rely on any variables set in the setup or teardown.
-}
 GKC_END_TEST
 */
 
@@ -75,8 +72,8 @@ GKC_END_TEST
 	#error GkcUnit.h requires GkcColl.h to be included first.
 #endif
 
-#ifndef __GKC_STRING_H__
-	#error GkcUnit.h requires GkcString.h to be included first.
+#ifndef __GKC_CONSOLE_H__
+	#error GkcUnit.h requires GkcConsole.h to be included first.
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,11 +81,25 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 // This is the max buffer length for the message assigned to an assert exception.
-#define _GKC_MAX_ASSERT_MESSAGE_LENGTH  (1024)
+#define _GKC_MAX_ASSERT_MESSAGE_LENGTH  (16*1024)
 
 // _UnitTestMessgeBuffer
 
 typedef FixedStringT<CharS, _GKC_MAX_ASSERT_MESSAGE_LENGTH>  _UnitTestMessageBuffer;
+
+// _UnitTestAssertException
+
+class _UnitTestAssertException
+{
+public:
+	_UnitTestMessageBuffer& GetMessageBuffer() throw()
+	{
+		return m_buffer;
+	}
+
+private:
+	_UnitTestMessageBuffer  m_buffer;
+};
 
 // unit test function prototype
 
@@ -206,18 +217,33 @@ class _UnitTestMainHelper
 public:
 	static int MainProcess(const GKC::ConstArray<GKC::ConstStringS>& args)
 	{
+		const CharS* l_szSep1   = _S("==========================");
+		const CharS* l_szSep2   = _S("**************************");
+		const CharS* l_szColon  = _S(":");
+		const CharS* l_szNoTest = _S("ERROR: NO SUCH TEST!");
+
 		_UnitTestMessageBuffer buffer;
 
+		//map
 		_UnitTestMap* pMap = _UnitTestMapHelper::GetUnitTestMap();
+		uintptr uTotal  = 0;
+		uintptr uFailed = 0;
 
 		if( args.GetCount() <= 1 ) {
 			//all tests
 			_UnitTestMap::ItemInfo info;
 			bool bContinue = pMap->EnumFirst(info);
 			while( bContinue ) {
+				//current test
+				Console::WriteLine(ConstStringS(l_szSep1, 0));
+				Console::Write(info.strName);
+				Console::WriteLine(ConstStringS(l_szColon, 0));
 				if( !info.pFunc(buffer) ) {
-
+					Console::WriteLine(buffer);
+					uFailed ++;
 				}
+				Console::WriteLine(ConstStringS(l_szSep2, 0));
+				uTotal ++;
 				bContinue = pMap->EnumNext(info);
 			}
 		}
@@ -227,16 +253,27 @@ public:
 			assert( iter != args.GetEnd() );
 			iter.MoveNext();  //from 1
 			for( ; iter != args.GetEnd(); iter.MoveNext() ) {
+				//current test
+				Console::WriteLine(ConstStringS(l_szSep1, 0));
+				Console::Write(iter.get_Value());
+				Console::WriteLine(ConstStringS(l_szColon, 0));
 				_UnitTestFunc pFunc = pMap->Find(iter.get_Value());
 				if( pFunc == NULL ) {
+					Console::WriteLine(ConstStringS(l_szNoTest, 0));
+					uFailed ++;
 				}
 				else {
 					if( !pFunc(buffer) ) {
-
+						Console::WriteLine(buffer);
+						uFailed ++;
 					}
 				}
+				Console::WriteLine(ConstStringS(l_szSep2, 0));
+				uTotal ++;
 			}
 		} //end if
+
+		//total information
 
 		//free map
 		_UnitTestMapHelper::FreeUnitTestMap();
@@ -249,6 +286,29 @@ public:
 #define UNIT_TEST_MAIN_PROCESS(args)  GKC::_UnitTestMainHelper::MainProcess(args)
 
 // in cpp file
+
+// _UnitTestBodyHelper
+
+class _UnitTestBodyHelper
+{
+public:
+	static void FormatFixtureErrorByCallResult(const CallResult& cr, _UnitTestMessageBuffer& buffer) throw()
+	{
+		const CharS*  l_szFixture   = _S("[fixture]");
+		const uintptr l_iFixtureLen = calc_string_length(l_szFixture);
+		result_to_string(cr, FixedArrayHelper::GetInternalPointer(buffer), _UnitTestMessageBuffer::c_size);
+		StringUtilHelper::Append(ConstStringS(l_szFixture, l_iFixtureLen), buffer);
+	}
+	static void IsTrue(bool bExpressionValue, const CharS* szFileName, int iLineNumber)
+	{
+		if( bExpressionValue )
+			return ;
+		_UnitTestAssertException exception;
+		value_to_string(FixedArrayHelper::GetInternalPointer(exception.GetMessageBuffer()), _UnitTestMessageBuffer::c_size,
+						_S("%s(%d): error : ASSERT_TRUE failed."), szFileName, iLineNumber);
+		throw exception;
+	}
+};
 
 // define error message
 #define _GKC_FORMAT_ERROR(...)  \
@@ -266,14 +326,31 @@ public:
 // define block
 #define _GKC_BEGIN_TEST_BLOCK  try {
 
-/*
 #define _GKC_END_TEST_BLOCK  \
-        catch(GkcUnit::AssertException& e)                          \
-	    {                                                           \
-			_GKC_FORMAT_ERROR(L"%s", e.Message());                  \
-			return false;
-		}                                                           \
-*/
+	} catch(_UnitTestAssertException& e) {  \
+		_GKC_FORMAT_ERROR(_S("%s"), FixedArrayHelper::GetInternalPointer(e.GetMessageBuffer()));  \
+		return false; }
+
+// define fixture block
+#define _GKC_BEGIN_FIXTURE_BLOCK(fixtureName)  \
+	try { _GKC_FIXTURE_##fixtureName __fixture_##fixtureName;
+
+#define _GKC_END_FIXTURE_BLOCK  \
+	} catch(Exception& e) {  \
+		_UnitTestBodyHelper::FormatFixtureErrorByCallResult(e.GetResult(), buffer);  \
+		return false; }
+
+// define TEST
+
+#define GKC_BEGIN_TEST(x)      _GKC_BEGIN_TEST_FUNC(x)  _GKC_BEGIN_TEST_BLOCK
+#define GKC_END_TEST           _GKC_END_TEST_BLOCK      _GKC_END_TEST_FUNC
+#define GKC_BEGIN_TESTF(x, f)  _GKC_BEGIN_TEST_FUNC(x)  _GKC_BEGIN_FIXTURE_BLOCK(f)  _GKC_BEGIN_TEST_BLOCK
+#define GKC_END_TESTF          _GKC_END_TEST_BLOCK      _GKC_END_FIXTURE_BLOCK       _GKC_END_TEST_FUNC
+
+// GKC_ASSERT_TRUE
+
+#define GKC_ASSERT_TRUE(expression)  \
+	_UnitTestBodyHelper::IsTrue(((expression) ? true : false), __SFILE__, __LINE__)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

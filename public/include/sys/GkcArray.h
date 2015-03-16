@@ -215,7 +215,7 @@ public:
 	template <class T>
 	static typename T::EType* GetInternalPointer(const T& arr) throw()
 	{
-		return arr.m_data;
+		return const_cast<T::EType*>(arr.m_data);
 	}
 };
 
@@ -840,6 +840,16 @@ public:
 	static T* GetInternalPointer(const WeakArray<T>& sp) throw()
 	{
 		return sp.m_pT;
+	}
+	template <typename T>
+	static SharedArrayBlock* GetBlockPointer(const SharedArray<T>& sp) throw()
+	{
+		return (SharedArrayBlock*)(sp.m_pB);
+	}
+	template <typename T>
+	static SharedArrayBlock* GetBlockPointer(const WeakArray<T>& sp) throw()
+	{
+		return (SharedArrayBlock*)(sp.m_pB);
 	}
 
 	//make shared

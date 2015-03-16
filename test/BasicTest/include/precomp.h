@@ -23,13 +23,12 @@ This is pre-compiled header file.
 #include "base/GkcBase.h"
 #include "base/GkcConst.h"
 
-#include "base/GkcConsole.h"
-
 #include "base/GkcColl.h"
 
 #include "sys/GkcSys.h"
 #include "sys/GkcArray.h"
 #include "sys/GkcString.h"
+#include "sys/GkcConsole.h"
 #include "sys/GkcUnit.h"
 
 ////////////////////////////////////////////////////////////////////////////////

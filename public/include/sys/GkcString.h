@@ -441,7 +441,7 @@ class StringUtilHelper
 public:
 	//To C-style string
 	template <typename Tchar>
-	static RefPtr<Tchar> To_C_Style(const ConstString<Tchar>& str) throw()
+	static RefPtr<Tchar> To_C_Style(const ConstStringT<Tchar>& str) throw()
 	{
 		return RefPtr<Tchar>(ConstHelper::GetInternalPointer(str));
 	}
@@ -458,7 +458,7 @@ public:
 
 	//make string
 	template <typename Tchar, uintptr t_size>
-	static uintptr MakeString(const ConstString<Tchar>& strSrc, FixedStringT<Tchar, t_size>& strDest) throw()
+	static uintptr MakeString(const ConstStringT<Tchar>& strSrc, FixedStringT<Tchar, t_size>& strDest) throw()
 	{
 		assert( !strSrc.IsNull() );
 		uintptr uCount = strSrc.GetCount();
@@ -473,7 +473,7 @@ public:
 		return uCount;
 	}
 	template <typename Tchar>
-	static void MakeString(const ConstString<Tchar>& strSrc, StringT<Tchar>& strDest)
+	static void MakeString(const ConstStringT<Tchar>& strSrc, StringT<Tchar>& strDest)
 	{
 		assert( !strSrc.IsNull() );
 		uintptr uCount = strSrc.GetCount();
@@ -542,7 +542,7 @@ public:
 	//append
 	//  return: the characters of strSrc are copied
 	template <typename Tchar, uintptr t_size>
-	static uintptr Append(const ConstString<Tchar>& strSrc, INOUT FixedStringT<Tchar, t_size>& strDest) throw()
+	static uintptr Append(const ConstStringT<Tchar>& strSrc, INOUT FixedStringT<Tchar, t_size>& strDest) throw()
 	{
 		assert( !strSrc.IsNull() );
 		uintptr uCount1 = strSrc.GetCount();
@@ -559,7 +559,7 @@ public:
 		return uCount1;
 	}
 	template <typename Tchar>
-	static void Append(const ConstString<Tchar>& strSrc, INOUT StringT<Tchar>& strDest)
+	static void Append(const ConstStringT<Tchar>& strSrc, INOUT StringT<Tchar>& strDest)
 	{
 		assert( !strSrc.IsNull() );
 		uintptr uCount1 = strSrc.GetCount();

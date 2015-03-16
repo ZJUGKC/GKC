@@ -383,6 +383,21 @@ public:
 	{
 		return sp.m_pT;
 	}
+	template <typename T>
+	static T* GetInternalPointer(const WeakPtr<T>& sp) throw()
+	{
+		return sp.m_pT;
+	}
+	template <typename T>
+	static SharedPtrBlock* GetBlockPointer(const SharedPtr<T>& sp) throw()
+	{
+		return (SharedPtrBlock*)(sp.m_pB);
+	}
+	template <typename T>
+	static SharedPtrBlock* GetBlockPointer(const WeakPtr<T>& sp) throw()
+	{
+		return (SharedPtrBlock*)(sp.m_pB);
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

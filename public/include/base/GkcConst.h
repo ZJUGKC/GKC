@@ -144,27 +144,27 @@ public:  \
 
 //------------------------------------------------------------------------------
 
-// ConstString<Tchar>
+// ConstStringT<Tchar>
 //   Tchar : CharA CharH CharL, CharS CharW
 
 template <typename Tchar>
-class ConstString : public ConstArray<Tchar>
+class ConstStringT : public ConstArray<Tchar>
 {
 private:
-	typedef ConstArray<Tchar>   baseClass;
-	typedef ConstString<Tchar>  thisClass;
+	typedef ConstArray<Tchar>    baseClass;
+	typedef ConstStringT<Tchar>  thisClass;
 
 public:
-	ConstString() throw()
+	ConstStringT() throw()
 	{
 	}
-	ConstString(const Tchar* p, uintptr size) throw() : baseClass(p, size)
+	ConstStringT(const Tchar* p, uintptr size) throw() : baseClass(p, size)
 	{
 	}
-	ConstString(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	ConstStringT(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))
 	{
 	}
-	~ConstString() throw()
+	~ConstStringT() throw()
 	{
 	}
 
@@ -177,11 +177,11 @@ public:
 };
 
 // ConstStringX
-typedef ConstString<CharA>  ConstStringA;   //ansi or UTF8
-typedef ConstString<CharH>  ConstStringH;   //UTF16
-typedef ConstString<CharL>  ConstStringL;   //UTF32
-typedef ConstString<CharS>  ConstStringS;   //system
-typedef ConstString<CharW>  ConstStringW;   //wide version
+typedef ConstStringT<CharA>  ConstStringA;   //ansi or UTF8
+typedef ConstStringT<CharH>  ConstStringH;   //UTF16
+typedef ConstStringT<CharL>  ConstStringL;   //UTF32
+typedef ConstStringT<CharS>  ConstStringS;   //system
+typedef ConstStringT<CharW>  ConstStringW;   //wide version
 
 // macros
 

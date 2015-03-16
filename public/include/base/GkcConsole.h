@@ -23,6 +23,10 @@ This file contains console classes.
 	#error GkcConsole.h requires GkcConst.h to be included first.
 #endif
 
+#ifndef __GKC_STRING_H__
+	#error GkcConsole.h requires GkcString.h to be included first.
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,18 +38,43 @@ namespace GKC {
 class Console
 {
 public:
-	//output
+//output
+	//write LF
 	static void WriteLN() throw()
 	{
 		print_string(_S("\n"));
 	}
+
+	//write string
 	static void Write(const ConstStringS& str) throw()
 	{
 		print_string(ConstHelper::GetInternalPointer(str));
 	}
+	template <uintptr t_size>
+	static void Write(const FixedStringT<CharS, t_size>& str) throw()
+	{
+		print_string(FixedArrayHelper::GetInternalPointer(str));
+	}
+	static void Write(const StringS& str) throw()
+	{
+		print_string(SharedArrayHelper::GetInternalPointer(str));
+	}
+
+	//write with LF
 	static void WriteLine(const ConstStringS& str) throw()
 	{
-		print_string(ConstHelper::GetInternalPointer(str));
+		Write(str);
+		WriteLN();
+	}
+	template <uintptr t_size>
+	static void WriteLine(const FixedStringT<CharS, t_size>& str) throw()
+	{
+		Write(str);
+		WriteLN();
+	}
+	static void WriteLine(const StringS& str) throw()
+	{
+		Write(str);
 		WriteLN();
 	}
 };

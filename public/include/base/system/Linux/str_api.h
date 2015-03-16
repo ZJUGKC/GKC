@@ -19,6 +19,9 @@
 //------------------------------------------------------------------------------
 //tools
 
+// __SFILE__
+#define __SFILE__   __FILE__
+
 // calc_string_length
 
 inline uintptr calc_string_length(const CharH* s) throw()
@@ -122,6 +125,16 @@ inline int value_to_string(CharL* szBuffer, uintptr uSize, const CharL* szFormat
 	int ret = ::vswprintf(szBuffer, uSize, szFormat, ap);
 	va_end(ap);
 	return ret;
+}
+
+//------------------------------------------------------------------------------
+// result_to_string
+//   uSize : buffer size in typed characters. It must be large than 0.
+inline void result_to_string(const call_result& cr, CharA* szBuffer, uintptr uSize) throw()
+{
+	szBuffer[0] = 0;
+	//no check
+	::strerror_r(cr.GetResult() & (~0x10000000), szBuffer, uSize);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -19,6 +19,9 @@
 //------------------------------------------------------------------------------
 //tools
 
+// __SFILE__
+#define __SFILE__   __WFILE__
+
 // calc_string_length
 
 inline uintptr calc_string_length(const CharH* s) throw()
@@ -115,6 +118,24 @@ inline int value_to_string(CharH* szBuffer, uintptr uSize, const CharH* szFormat
 	int ret = ::_vsnwprintf_s(szBuffer, uSize, _TRUNCATE, szFormat, ap);
 	va_end(ap);
 	return ret;
+}
+
+//------------------------------------------------------------------------------
+// result_to_string
+//   uSize : buffer size in typed characters. It must be large than 0.
+inline void result_to_string(const call_result& cr, CharA* szBuffer, uintptr uSize) throw()
+{
+	szBuffer[0] = 0;
+	//no check
+	::FormatMessageA(0, NULL, cr.GetResult(), MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
+					szBuffer, (DWORD)uSize, NULL);
+}
+inline void result_to_string(const call_result& cr, CharH* szBuffer, uintptr uSize) throw()
+{
+	szBuffer[0] = 0;
+	//no check
+	::FormatMessageW(0, NULL, cr.GetResult(), MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
+					szBuffer, (DWORD)uSize, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

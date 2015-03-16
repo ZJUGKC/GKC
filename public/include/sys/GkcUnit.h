@@ -51,15 +51,19 @@ GKC_TEARDOWN(MyFixture)
 // This test uses a fixture (the second argument).
 // Setup and Teardown will be run before and after the body of the test, respectively.
 GKC_BEGIN_TESTF(MyTestWithFixture, MyFixture)
+{
     // Do some tests.
 	// You can assume l_myNumber is 5.
 	bool bCheck = (5 == XXXTest::l_myNumber);
     GKC_ASSERT_TRUE(bCheck);
+}
 GKC_END_TESTF
 
 GKC_BEGIN_TEST(MyTestWithoutFixtures)
+{
     // Do some tests.
 	// Do not rely on any variables set in the setup or teardown.
+}
 GKC_END_TEST
 */
 
@@ -310,6 +314,18 @@ public:
 	}
 };
 
+// define Fixture
+#define GKC_FIXTURE(x)  \
+	class GKC_FIXTURE_##x { public: \
+	void Setup(); void Teardown() throw();  \
+	public:  \
+	GKC_FIXTURE_##x() { Setup(); } \
+	~GKC_FIXTURE_##x() throw() { Teardown(); }  \
+	};
+
+#define GKC_SETUP(x)      void GKC_FIXTURE_##x::Setup()
+#define GKC_TEARDOWN(x)   void GKC_FIXTURE_##x::Teardown() throw()
+
 // define error message
 #define _GKC_FORMAT_ERROR(...)  \
 	value_to_string(FixedArrayHelper::GetInternalPointer(buffer), _UnitTestMessageBuffer::c_size,  \
@@ -324,10 +340,10 @@ public:
 #define _GKC_END_TEST_FUNC    return true; }
 
 // define block
-#define _GKC_BEGIN_TEST_BLOCK  try {
+#define _GKC_BEGIN_TEST_BLOCK  try
 
 #define _GKC_END_TEST_BLOCK  \
-	} catch(_UnitTestAssertException& e) {  \
+	catch(_UnitTestAssertException& e) {  \
 		_GKC_FORMAT_ERROR(_S("%s"), FixedArrayHelper::GetInternalPointer(e.GetMessageBuffer()));  \
 		return false; }
 

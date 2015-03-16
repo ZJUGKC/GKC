@@ -215,7 +215,7 @@ public:
 	template <class T>
 	static typename T::EType* GetInternalPointer(const T& arr) throw()
 	{
-		return arr.m_data;
+		return const_cast<T::EType*>(arr.m_data);
 	}
 };
 

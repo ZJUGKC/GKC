@@ -295,7 +295,7 @@ public:
 		//add ref
 		if( m_pB != NULL ) {
 			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-			assert( pB->m_shareCount > 0 );  //must have shared array
+			assert( pB->GetShareCount() > 0 );  //must have shared array
 			pB->AddRefCopy();
 		}
 	}
@@ -316,20 +316,21 @@ public:
 	{
 		if( m_pB != NULL ) {
 			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-			assert( pB->m_shareCount > 0 );  //must have shared array
+			assert( pB->GetShareCount() > 0 );  //must have shared array
 			if( pB->Release() <= 0 ) {
-				//free
+				//free array
 				if( m_pT != NULL ) {
 					pB->DestroyArray(m_pT);
 					m_pT = NULL;
 				}
-			}
-			assert( pB->m_weakCount > 0 );  //must have weak object
-			if( pB->WeakRelease() <= 0 ) {
-				//free block
-				pB->~SharedArrayBlock();
-				SharedArrayBlockHelper::Free(pB);
-				m_pB = NULL;
+				//weak
+				assert( pB->GetWeakCount() > 0 );  //must have weak object
+				if( pB->WeakRelease() <= 0 ) {
+					//free block
+					pB->~SharedArrayBlock();
+					SharedArrayBlockHelper::Free(pB);
+					m_pB = NULL;
+				}
 			}
 		}
 		else {
@@ -341,7 +342,7 @@ public:
 	SharedArray<T>& operator=(const SharedArray<T>& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -350,7 +351,7 @@ public:
 				//add ref
 				if( m_pB != NULL ) {
 					SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-					assert( pB->m_shareCount > 0 );  //must have shared array
+					assert( pB->GetShareCount() > 0 );  //must have shared array
 					pB->AddRefCopy();
 				}
 			}
@@ -360,7 +361,7 @@ public:
 	SharedArray<T>& operator=(SharedArray<T>&& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -734,7 +735,7 @@ public:
 		//add ref
 		if( m_pB != NULL ) {
 			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-			assert( pB->m_weakCount > 0 );  //must have weak object
+			assert( pB->GetWeakCount() > 0 );  //must have weak object
 			pB->WeakAddRef();
 		}
 	}
@@ -755,7 +756,7 @@ public:
 	{
 		if( m_pB != NULL ) {
 			SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-			assert( pB->m_weakCount > 0 );  //must have weak object
+			assert( pB->GetWeakCount() > 0 );  //must have weak object
 			if( pB->WeakRelease() <= 0 ) {
 				//free block
 				pB->~SharedArrayBlock();
@@ -772,7 +773,7 @@ public:
 	WeakArray<T>& operator=(const WeakArray<T>& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -781,7 +782,7 @@ public:
 				if( m_pB != NULL ) {
 					//add ref
 					SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-					assert( pB->m_weakCount > 0 );  //must have weak object
+					assert( pB->GetWeakCount() > 0 );  //must have weak object
 					pB->WeakAddRef();
 				}
 			}
@@ -791,7 +792,7 @@ public:
 	WeakArray<T>& operator=(WeakArray<T>&& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -880,7 +881,7 @@ public:
 		ret.m_pB = sp.m_pB;
 		if( ret.m_pB != NULL ) {
 			SharedArrayBlock* pB = (SharedArrayBlock*)ret.m_pB;
-			assert( pB->m_weakCount > 0 );  //must have weak object
+			assert( pB->GetWeakCount() > 0 );  //must have weak object
 			pB->WeakAddRef();
 		}
 		return ret;

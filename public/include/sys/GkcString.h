@@ -311,7 +311,7 @@ public:
 	void SetLength(uintptr uLength)
 	{
 		baseClass::SetCount(uLength + 1, 0);
-		GetAt(uLength).get_Value() = 0;
+		m_pT[uLength] = 0;
 	}
 };
 
@@ -454,6 +454,15 @@ public:
 	static RefPtr<Tchar> To_C_Style(const StringT<Tchar>& str) throw()
 	{
 		return RefPtr<Tchar>(SharedArrayHelper::GetInternalPointer(str));
+	}
+
+	//make empty string
+	template <typename Tchar>
+	static StringT<Tchar> MakeEmptyString(const RefPtr<IMemoryManager>& mgr)
+	{
+		StringT<Tchar>  ret;
+		static_cast<SharedArray<Tchar>&>(ret) = SharedArrayHelper::MakeSharedArray<Tchar>(mgr);
+		return ret;
 	}
 
 	//make string

@@ -20,6 +20,8 @@
 //tools
 
 // __SFILE__
+#define __WFILE__   _WIDEN(__FILE__)
+
 #define __SFILE__   __WFILE__
 
 // calc_string_length

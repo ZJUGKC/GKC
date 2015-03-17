@@ -376,6 +376,11 @@ public:
 		return m_weakCount;
 	}
 
+	//object pointer
+	void SetObject(void* p) throw()
+	{
+		m_p = p;
+	}
 	//destroy
 	void DestroyObject() throw()
 	{

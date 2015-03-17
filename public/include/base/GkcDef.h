@@ -779,13 +779,7 @@ public:
 	explicit RefPtr(const T& t) throw() : m_p(&(const_cast<T&>(t)))
 	{
 	}
-	explicit RefPtr(T& t) throw() : m_p(&t)
-	{
-	}
 	explicit RefPtr(const T* p) throw() : m_p(const_cast<T*>(p))
-	{
-	}
-	explicit RefPtr(T* p) throw() : m_p(p)
 	{
 	}
 	RefPtr(const RefPtr<T>& src) throw() : m_p(src.m_p)

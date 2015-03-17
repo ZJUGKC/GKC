@@ -50,7 +50,7 @@ public:
 		//add ref
 		if( m_pB != NULL ) {
 			SharedPtrBlock* pB = (SharedPtrBlock*)m_pB;
-			assert( pB->m_shareCount > 0 );  //must have shared object
+			assert( pB->GetShareCount() > 0 );  //must have shared object
 			pB->AddRefCopy();
 		}
 	}
@@ -71,18 +71,19 @@ public:
 	{
 		if( m_pB != NULL ) {
 			SharedPtrBlock* pB = (SharedPtrBlock*)m_pB;
-			assert( pB->m_shareCount > 0 );  //must have shared object
+			assert( pB->GetShareCount() > 0 );  //must have shared object
 			if( pB->Release() <= 0 ) {
-				//free
+				//free object
 				pB->DestroyObject();
 				m_pT = NULL;
-			}
-			assert( pB->m_weakCount > 0 );  //must have weak object
-			if( pB->WeakRelease() <= 0 ) {
-				//free block
-				pB->~SharedPtrBlock();
-				SharedPtrBlockHelper::Free(pB);
-				m_pB = NULL;
+				//weak
+				assert( pB->GetWeakCount() > 0 );  //must have weak object
+				if( pB->WeakRelease() <= 0 ) {
+					//free block
+					pB->~SharedPtrBlock();
+					SharedPtrBlockHelper::Free(pB);
+					m_pB = NULL;
+				}
 			}
 		}
 		else {
@@ -94,7 +95,7 @@ public:
 	SharedPtr<T>& operator=(const SharedPtr<T>& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -103,7 +104,7 @@ public:
 				//add ref
 				if( m_pB != NULL ) {
 					SharedPtrBlock* pB = (SharedPtrBlock*)m_pB;
-					assert( pB->m_shareCount > 0 );  //must have shared object
+					assert( pB->GetShareCount() > 0 );  //must have shared object
 					pB->AddRefCopy();
 				}
 			}
@@ -113,7 +114,7 @@ public:
 	SharedPtr<T>& operator=(SharedPtr<T>&& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -172,7 +173,7 @@ public:
 		//add ref
 		if( m_pB != NULL ) {
 			SharedPtrBlock* pB = (SharedPtrBlock*)m_pB;
-			assert( pB->m_weakCount > 0 );  //must have weak object
+			assert( pB->GetWeakCount() > 0 );  //must have weak object
 			pB->WeakAddRef();
 		}
 	}
@@ -193,7 +194,7 @@ public:
 	{
 		if( m_pB != NULL ) {
 			SharedPtrBlock* pB = (SharedPtrBlock*)m_pB;
-			assert( pB->m_weakCount > 0 );  //must have weak object
+			assert( pB->GetWeakCount() > 0 );  //must have weak object
 			if( pB->WeakRelease() <= 0 ) {
 				//free block
 				pB->~SharedPtrBlock();
@@ -210,7 +211,7 @@ public:
 	WeakPtr<T>& operator=(const WeakPtr<T>& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -219,7 +220,7 @@ public:
 				if( m_pB != NULL ) {
 					//add ref
 					SharedPtrBlock* pB = (SharedPtrBlock*)m_pB;
-					assert( pB->m_weakCount > 0 );  //must have weak object
+					assert( pB->GetWeakCount() > 0 );  //must have weak object
 					pB->WeakAddRef();
 				}
 			}
@@ -229,7 +230,7 @@ public:
 	WeakPtr<T>& operator=(WeakPtr<T>&& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pT != m_pT ) {
+			if( src.m_pB != m_pB ) {
 				//release
 				Release();
 				//assign
@@ -280,7 +281,7 @@ public:
 		if( pB == NULL )
 			throw( OutOfMemoryException() );
 
-		T* pT = (T*)(mgr.Deref().Allocate(sizeof(T)));
+		T* pT = (T*)((const_cast<RefPtr<IMemoryManager>&>(mgr)).Deref().Allocate(sizeof(T)));
 		if( pT == NULL ) {
 			SharedPtrBlockHelper::Free(pB);
 			throw( OutOfMemoryException() );
@@ -295,12 +296,12 @@ public:
 			call_constructor(*pB);  //no throw
 			pB->SetMemoryManager(mgr);
 			pB->SetTypeProcess(tp);
-			pB->m_p = pT;
+			pB->SetObject(pT);
 			ret.m_pB = pB;
 			ret.m_pT = pT;
 		}
 		catch(...) {
-			mgr.Deref().Free(pT);
+			(const_cast<RefPtr<IMemoryManager>&>(mgr)).Deref().Free((uintptr)pT);
 			SharedPtrBlockHelper::Free(pB);
 			throw;  //re-throw
 		}
@@ -317,7 +318,7 @@ public:
 		ret.m_pB = sp.m_pB;
 		if( ret.m_pB != NULL ) {
 			SharedPtrBlock* pB = (SharedPtrBlock*)ret.m_pB;
-			assert( pB->m_weakCount > 0 );  //must have weak object
+			assert( pB->GetWeakCount() > 0 );  //must have weak object
 			pB->WeakAddRef();
 		}
 		return ret;

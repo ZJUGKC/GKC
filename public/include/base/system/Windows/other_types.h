@@ -40,7 +40,10 @@ typedef unsigned long  CharL;  //long or UTF32
 
 typedef CharH  CharS;  //system type, UTF16
 //for const string
-#define _S(x)  L##x
+#define _WIDEN2(x)  L##x
+#define _WIDEN(x)   _WIDEN2(x)
+
+#define _S(x)  _WIDEN(x)
 
 typedef CharH  CharW;  //for wide type, L"..."
 

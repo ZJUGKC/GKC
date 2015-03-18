@@ -128,16 +128,30 @@ inline int value_to_string(CharH* szBuffer, uintptr uSize, const CharH* szFormat
 inline void result_to_string(const call_result& cr, CharA* szBuffer, uintptr uSize) throw()
 {
 	szBuffer[0] = 0;
-	//no check
-	::FormatMessageA(0, NULL, cr.GetResult(), MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
-					szBuffer, (DWORD)uSize, NULL);
+	DWORD dwRet = 0;
+	dwRet = ::FormatMessageA(FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, cr.GetResult(),
+							MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+							szBuffer, (DWORD)uSize, NULL);
+	if( dwRet == 0 ) {
+		//no check
+		::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, cr.GetResult(),
+							MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+							szBuffer, (DWORD)uSize, NULL);
+	}
 }
 inline void result_to_string(const call_result& cr, CharH* szBuffer, uintptr uSize) throw()
 {
 	szBuffer[0] = 0;
-	//no check
-	::FormatMessageW(0, NULL, cr.GetResult(), MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
-					szBuffer, (DWORD)uSize, NULL);
+	DWORD dwRet = 0;
+	dwRet = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, cr.GetResult(),
+							MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+							szBuffer, (DWORD)uSize, NULL);
+	if( dwRet == 0 ) {
+		//no check
+		::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, cr.GetResult(),
+							MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+							szBuffer, (DWORD)uSize, NULL);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

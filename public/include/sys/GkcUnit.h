@@ -33,16 +33,16 @@ public:
 };
 int XXXTest::l_myNumber = 0;
 
-GKC_FIXTURE(MyFixture);  // declares a fixture
+GKC_TEST_FIXTURE(MyFixture);  // declares a fixture
 
-GKC_SETUP(MyFixture)
+GKC_TEST_SETUP(MyFixture)
 {
     // Do some stuff here that you want done before a test starts. It can include accessing static variables.
 	// An example would be creating a file (and then deleting it in TEARDOWN)
     XXXTest::l_myNumber = 5;
 }
 
-GKC_TEARDOWN(MyFixture)
+GKC_TEST_TEARDOWN(MyFixture)
 {
     // Undo whatever you did in the SETUP.
     XXXTest::l_myNumber = 0;
@@ -55,7 +55,7 @@ GKC_BEGIN_TESTF(MyTestWithFixture, MyFixture)
     // Do some tests.
 	// You can assume l_myNumber is 5.
 	bool bCheck = (5 == XXXTest::l_myNumber);
-    GKC_ASSERT_TRUE(bCheck);
+    GKC_TEST_ASSERT_TRUE(bCheck);
 }
 GKC_END_TESTF
 
@@ -65,6 +65,12 @@ GKC_BEGIN_TEST(MyTestWithoutFixtures)
 	// Do not rely on any variables set in the setup or teardown.
 }
 GKC_END_TEST
+
+These are macros which can be used in test body.
+
+The GKC_TEST_ASSERT_TRUE macro can be used to verify condition which, if not true, indicates a test failure.
+The GKC_BEGIN_TEST_BLOCK and GKC_END_TEST_BLOCK macros can be used to verify that no exceptions are thrown.
+The GKC_BEGIN_TEST_EXCEPTION and GKC_END_TEST_EXCEPTION macros can be used to verify that some exceptions are thrown.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,11 +91,11 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 // This is the max buffer length for the message assigned to an assert exception.
-#define _GKC_MAX_ASSERT_MESSAGE_LENGTH  (16*1024)
+#define _GKC_TEST_MAX_ASSERT_MESSAGE_LENGTH  (16*1024)
 
 // _UnitTestMessgeBuffer
 
-typedef FixedStringT<CharS, _GKC_MAX_ASSERT_MESSAGE_LENGTH>  _UnitTestMessageBuffer;
+typedef FixedStringT<CharS, _GKC_TEST_MAX_ASSERT_MESSAGE_LENGTH>  _UnitTestMessageBuffer;
 
 // _UnitTestAssertException
 
@@ -307,6 +313,7 @@ public:
 		_UnitTestMessageBuffer bufTemp;
 		value_to_string(FixedArrayHelper::GetInternalPointer(bufTemp), _UnitTestMessageBuffer::c_size,
 						_S("%s(%d) "), szFileName, iLineNumber);
+		bufTemp.RecalcLength();
 		buffer.SetLength(0);
 		StringUtilHelper::Append(bufTemp, buffer);
 		if( bFixture ) {
@@ -318,6 +325,7 @@ public:
 		else
 			StringUtilHelper::Append(ConstStringS(l_szCorrect, l_iCorrectLen), buffer);
 		result_to_string(cr, FixedArrayHelper::GetInternalPointer(bufTemp), _UnitTestMessageBuffer::c_size);
+		bufTemp.RecalcLength();
 		StringUtilHelper::Append(bufTemp, buffer);
 	}
 	static void IsTrue(bool bExpressionValue, const CharS* szFileName, int iLineNumber)
@@ -325,47 +333,54 @@ public:
 		if( bExpressionValue )
 			return ;
 		_UnitTestAssertException exception;
-		value_to_string(FixedArrayHelper::GetInternalPointer(exception.GetMessageBuffer()), _UnitTestMessageBuffer::c_size,
+		_UnitTestMessageBuffer&  buf = exception.GetMessageBuffer();
+		value_to_string(FixedArrayHelper::GetInternalPointer(buf), _UnitTestMessageBuffer::c_size,
 						_S("%s(%d): error : ASSERT_TRUE failed."), szFileName, iLineNumber);
+		buf.RecalcLength();
 		throw exception;
 	}
 };
 
 // define Fixture
-#define GKC_FIXTURE(x)  \
-	class GKC_FIXTURE_##x { public: \
-	void Setup(); void Teardown() throw();  \
+#define GKC_TEST_FIXTURE(x)  \
+	class GKC_TEST_FIXTURE_##x { public: \
+	void Setup(); void Teardown();  \
 	public:  \
-	GKC_FIXTURE_##x() { Setup(); } \
-	~GKC_FIXTURE_##x() throw() { Teardown(); }  \
+	GKC_TEST_FIXTURE_##x() { Setup(); }      \
+	~GKC_TEST_FIXTURE_##x() { Teardown(); }  \
 	};
 
-#define GKC_SETUP(x)      void GKC_FIXTURE_##x::Setup()
-#define GKC_TEARDOWN(x)   void GKC_FIXTURE_##x::Teardown() throw()
+#define GKC_TEST_SETUP(x)      void GKC_TEST_FIXTURE_##x::Setup()
+#define GKC_TEST_TEARDOWN(x)   void GKC_TEST_FIXTURE_##x::Teardown()
 
 // define string
-#define _GKC_TO_STRING(x)  #x
+#define _GKC_TEST_TO_STRING(x)  #x
 
 // define error message
-#define _GKC_FORMAT_ERROR(...)  \
-	value_to_string(GKC::FixedArrayHelper::GetInternalPointer(buffer), GKC::_UnitTestMessageBuffer::c_size,  \
-					__VA_ARGS__);
+#define _GKC_TEST_FORMAT_ERROR(...)  \
+	value_to_string(GKC::FixedArrayHelper::GetInternalPointer(_gkc_utm_buffer), GKC::_UnitTestMessageBuffer::c_size, __VA_ARGS__);  \
+	_gkc_utm_buffer.RecalcLength();
 
 // define function
 #define _GKC_BEGIN_TEST_FUNC(x)  \
-	bool _GKC_TEST_##x(GKC::_UnitTestMessageBuffer& buffer);	\
-	GKC::_UnitTestReg g_gkc_test_##x(_S(_GKC_TO_STRING(x)), &_GKC_TEST_##x);	\
-	bool _GKC_TEST_##x(GKC::_UnitTestMessageBuffer& buffer) {
+	bool _GKC_TEST_##x(GKC::_UnitTestMessageBuffer& _gkc_utm_buffer);	        \
+	GKC::_UnitTestReg g_gkc_test_##x(_S(_GKC_TEST_TO_STRING(x)), &_GKC_TEST_##x);	\
+	bool _GKC_TEST_##x(GKC::_UnitTestMessageBuffer& _gkc_utm_buffer) {
 
 #define _GKC_END_TEST_FUNC    return true; }
 
 // define fixture block
+//   Teardown, i.e., the destructor of the "fixture object", may throw exceptions.
+//   This could be a problem.
 #define _GKC_BEGIN_FIXTURE_BLOCK(fixtureName)  \
-	try { _GKC_FIXTURE_##fixtureName __fixture_##fixtureName;
+	try { _GKC_TEST_FIXTURE_##fixtureName __fixture_##fixtureName;
 
-#define _GKC_END_FIXTURE_BLOCK  \
+#define _GKC_END_FIXTURE_BLOCK    \
 	} catch(GKC::Exception& e) {  \
-		GKC::_UnitTestBodyHelper::FormatErrorByCallResult(e.GetResult(), __SFILE__, __LINE__, true, true, buffer);  \
+		GKC::_UnitTestBodyHelper::FormatErrorByCallResult(e.GetResult(), __SFILE__, __LINE__, true, true, _gkc_utm_buffer);  \
+		return false; }  \
+	catch(...) {  \
+		_GKC_TEST_FORMAT_ERROR(_S("%s(%d) Other exception thrown in fixture."), __SFILE__, __LINE__);  \
 		return false; }
 
 // define block
@@ -374,10 +389,13 @@ public:
 
 #define GKC_END_TEST_BLOCK  \
 	catch(GKC::_UnitTestAssertException& e) {  \
-		_GKC_FORMAT_ERROR(_S("%s"), GKC::FixedArrayHelper::GetInternalPointer(e.GetMessageBuffer()));  \
+		_GKC_TEST_FORMAT_ERROR(_S("%s"), GKC::FixedArrayHelper::GetInternalPointer(e.GetMessageBuffer()));  \
 		return false; }    \
 	catch(GKC::Exception& e) {  \
-		GKC::_UnitTestBodyHelper::FormatErrorByCallResult(e.GetResult(), __SFILE__, __LINE__, false, true, buffer);  \
+		GKC::_UnitTestBodyHelper::FormatErrorByCallResult(e.GetResult(), __SFILE__, __LINE__, false, true, _gkc_utm_buffer);  \
+		return false; }  \
+	catch(...) {  \
+		_GKC_TEST_FORMAT_ERROR(_S("%s(%d) Other exception thrown in block."), __SFILE__, __LINE__);  \
 		return false; }
 
 // define TEST
@@ -387,9 +405,9 @@ public:
 #define GKC_BEGIN_TESTF(x, f)  _GKC_BEGIN_TEST_FUNC(x)  _GKC_BEGIN_FIXTURE_BLOCK(f)  GKC_BEGIN_TEST_BLOCK
 #define GKC_END_TESTF          GKC_END_TEST_BLOCK       _GKC_END_FIXTURE_BLOCK       _GKC_END_TEST_FUNC
 
-// GKC_ASSERT_TRUE
+// GKC_TEST_ASSERT_TRUE
 
-#define GKC_ASSERT_TRUE(expression)  \
+#define GKC_TEST_ASSERT_TRUE(expression)  \
 	GKC::_UnitTestBodyHelper::IsTrue(((expression) ? true : false), __SFILE__, __LINE__)
 
 // define Exception Test (The GKC_ASSERT_TRUE should not be called in this body)
@@ -399,10 +417,12 @@ public:
 #define GKC_END_TEST_EXCEPTION  \
 	catch(GKC::Exception& e) {  \
 		__bException = true;  __cr = e.GetResult(); }  \
+	catch(...) {  \
+		__bException = true;  __cr.SetResult(0); }  \
 	if( __bException ) {  \
-		GKC::_UnitTestBodyHelper::FormatErrorByCallResult(__cr, __SFILE__, __LINE__, false, false, buffer);  \
-		GKC::Console::WriteLine(buffer); }  \
-	else { GKC_ASSERT_TRUE(false); } }
+		GKC::_UnitTestBodyHelper::FormatErrorByCallResult(__cr, __SFILE__, __LINE__, false, false, _gkc_utm_buffer);  \
+		GKC::Console::WriteLine(_gkc_utm_buffer); }  \
+	else { GKC_TEST_ASSERT_TRUE(false); } }
 
 ////////////////////////////////////////////////////////////////////////////////
 }

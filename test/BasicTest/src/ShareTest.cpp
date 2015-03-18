@@ -61,16 +61,24 @@ GKC_BEGIN_TEST(SharedPtrTest)
 	GKC::SharedPtrBlock* spb = GKC::SharedPtrHelper::GetBlockPointer(spTest);
 	iShareCount = spb->GetShareCount();
 	iWeakCount  = spb->GetWeakCount();
-	GKC_ASSERT_TRUE( iShareCount == 1 );
-	GKC_ASSERT_TRUE( iWeakCount == 1 );
+	GKC_TEST_ASSERT_TRUE( iShareCount == 1 );
+	GKC_TEST_ASSERT_TRUE( iWeakCount == 1 );
 
 	//case 2
 	GKC::SharedPtr<_Inner> spTest1(spTest);
 	GKC::SharedPtrBlock* spb1 = GKC::SharedPtrHelper::GetBlockPointer(spTest1);
 	iShareCount = spb1->GetShareCount();
 	iWeakCount  = spb1->GetWeakCount();
-	GKC_ASSERT_TRUE( iShareCount == 2 );
-	GKC_ASSERT_TRUE( iWeakCount == 1 );
+	GKC_TEST_ASSERT_TRUE( iShareCount == 2 );
+	GKC_TEST_ASSERT_TRUE( iWeakCount == 1 );
+
+	//case 3
+	GKC::WeakPtr<_Inner> wpTest = GKC::SharedPtrHelper::ToWeakPtr(spTest);
+	GKC::SharedPtrBlock* spb2 = GKC::SharedPtrHelper::GetBlockPointer(wpTest);
+	iShareCount = spb2->GetShareCount();
+	iWeakCount = spb2->GetWeakCount();
+	GKC_TEST_ASSERT_TRUE( iShareCount == 2 );
+	GKC_TEST_ASSERT_TRUE( iWeakCount == 2 );
 }
 GKC_END_TEST
 
@@ -91,19 +99,36 @@ GKC_BEGIN_TEST(SharedArrayTest)
 	GKC_END_TEST_BLOCK
 
 	//case 2
+	GKC_BEGIN_TEST_EXCEPTION
+	{
+		//1T memory
+		uintptr uElements = 1000ULL* 1000ULL * 1000ULL * 1000ULL;
+		arrTest.SetCount(uElements, 0);
+	}
+	GKC_END_TEST_EXCEPTION
+
+	//case 3
 	GKC::SharedArrayBlock* sab = GKC::SharedArrayHelper::GetBlockPointer(arrTest);
 	iShareCount = sab->GetShareCount();
 	iWeakCount  = sab->GetWeakCount();
-	GKC_ASSERT_TRUE( iShareCount == 1 );
-	GKC_ASSERT_TRUE( iWeakCount == 1 );
+	GKC_TEST_ASSERT_TRUE( iShareCount == 1 );
+	GKC_TEST_ASSERT_TRUE( iWeakCount == 1 );
 
-	//case 3
+	//case 4
 	GKC::SharedArray<uintptr> arrTest1 = arrTest;
 	GKC::SharedArrayBlock* sab1 = GKC::SharedArrayHelper::GetBlockPointer(arrTest1);
 	iShareCount = sab1->GetShareCount();
 	iWeakCount  = sab1->GetWeakCount();
-	GKC_ASSERT_TRUE( iShareCount == 2 );
-	GKC_ASSERT_TRUE( iWeakCount == 1 );
+	GKC_TEST_ASSERT_TRUE( iShareCount == 2 );
+	GKC_TEST_ASSERT_TRUE( iWeakCount == 1 );
+
+	//case 5
+	GKC::WeakArray<uintptr> warrTest = GKC::SharedArrayHelper::ToWeakArray(arrTest);
+	GKC::SharedArrayBlock* sab2 = GKC::SharedArrayHelper::GetBlockPointer(warrTest);
+	iShareCount = sab2->GetShareCount();
+	iWeakCount = sab2->GetWeakCount();
+	GKC_TEST_ASSERT_TRUE( iShareCount == 2 );
+	GKC_TEST_ASSERT_TRUE( iWeakCount == 2 );
 }
 GKC_END_TEST
 

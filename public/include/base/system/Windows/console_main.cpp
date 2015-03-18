@@ -32,6 +32,9 @@ int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
 	//convert
 	_cmdline_to_strings(argc, argv, envp, spArgs, spEnv, args, env);  //may throw
 
+	//locale
+	set_default_locale();
+
 	//main
 	return ProgramEntryPoint::ConsoleMain(args, env);
 }

@@ -17,6 +17,16 @@
 //Linux
 
 //------------------------------------------------------------------------------
+//locale
+
+// set_default_locale
+inline void set_default_locale() throw()
+{
+	//no check
+	::setlocale(LC_ALL, "");
+}
+
+//------------------------------------------------------------------------------
 //print
 
 // print_format

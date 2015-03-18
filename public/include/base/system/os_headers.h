@@ -46,6 +46,8 @@
 	#error Error OS type!
 #endif
 
+#include <locale.h>
+
 #include <math.h>
 #include <limits.h>
 #if defined(OS_WINDOWS)

@@ -17,6 +17,16 @@
 //Windows
 
 //------------------------------------------------------------------------------
+//locale
+
+// set_default_locale
+inline void set_default_locale() throw()
+{
+	//no check
+	::_wsetlocale(LC_ALL, L"");
+}
+
+//------------------------------------------------------------------------------
 //print
 
 // print_format

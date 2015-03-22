@@ -10,6 +10,6 @@
 #
 
 ADD_SUBDIRECTORY(GkcSys GkcSys)
-ADD_SUBDIRECTORY(GkcScheduleSvc GkcScheduleSvc)
+ADD_SUBDIRECTORY(GkcHostSvc GkcHostSvc)
 
 #end

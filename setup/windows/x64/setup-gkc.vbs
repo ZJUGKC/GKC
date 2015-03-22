@@ -57,7 +57,7 @@ If pos = 0 Then
 End If
 
 'services
-objWsh.Run Chr(34) & strAsm & "\gss-setup.bat" & Chr(34), 0, true
+objWsh.Run Chr(34) & strAsm & "\ghs-setup.bat" & Chr(34), 0, true
 Wscript.Sleep 500
 
 Set objEnv = Nothing

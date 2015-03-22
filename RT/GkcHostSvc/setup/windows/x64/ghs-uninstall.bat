@@ -9,5 +9,5 @@ rem Author contact information:
 rem   yxxinyuan@zju.edu.cn
 rem
 rem delete service
-sc stop GkcScheduleSvc
-sc delete GkcScheduleSvc
+sc stop GkcHostSvc
+sc delete GkcHostSvc

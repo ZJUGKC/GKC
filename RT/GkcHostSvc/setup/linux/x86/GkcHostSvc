@@ -1,10 +1,10 @@
 #!/bin/sh
 #
 # chkconfig: 2345 85 15
-# description: GkcScheduleSvc is a scheduler service
+# description: GkcHostSvc is a host master service
 #
-# processname: GkcScheduleSvc
-# pidfile: /var/run/GkcScheduleSvc.pid
+# processname: GkcHostSvc
+# pidfile: /var/run/GkcHostSvc.pid
 #
 
 #
@@ -18,8 +18,8 @@
 #   yxxinyuan@zju.edu.cn
 #
 
-NAME=GkcScheduleSvc
-BINPATH=/usr/.GKC/public/assemblies/GkcScheduleSvc-1-0
+NAME=GkcHostSvc
+BINPATH=/usr/.GKC/public/assemblies/GkcHostSvc-1-0
 PIDFILE=/var/run/$NAME.pid
 
 RETVAL=0

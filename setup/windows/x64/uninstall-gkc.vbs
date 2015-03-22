@@ -22,7 +22,7 @@ strEnv = Chr(34) & strAsm & Chr(34)
 
 'services
 Set objWsh = WScript.CreateObject("WScript.Shell")
-objWsh.Run Chr(34) & strAsm & "\gss-uninstall.bat" & Chr(34), 0, true
+objWsh.Run Chr(34) & strAsm & "\ghs-uninstall.bat" & Chr(34), 0, true
 Wscript.Sleep 500
 
 Dim fso

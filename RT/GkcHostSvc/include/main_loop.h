@@ -21,7 +21,7 @@ This file contains main loop class for service.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#define GKC_SERVICE_NAME   _S("GkcScheduleSvc")
+#define GKC_SERVICE_NAME   _S("GkcHostSvc")
 
 class ServiceMainLoop
 {

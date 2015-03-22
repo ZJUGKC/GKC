@@ -1,3 +1,4 @@
+﻿<!--
 #
 # Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
 # All rights reserved.
@@ -8,8 +9,11 @@
 # Author contact information:
 #   yxxinyuan@zju.edu.cn
 #
+-->
 
-ADD_SUBDIRECTORY(GkcSys GkcSys)
-ADD_SUBDIRECTORY(GkcHostSvc GkcHostSvc)
+# The development process
 
-#end
+## Finite State Automata (FSA)
+
+Implement a finite state automata named FiniteStateAutomata.
+It uses the matching algorithm of maximum length.

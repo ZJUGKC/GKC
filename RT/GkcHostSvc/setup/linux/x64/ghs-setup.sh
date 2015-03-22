@@ -12,15 +12,15 @@
 #
 
 #copy
-cp /usr/.GKC/public/assemblies/GkcScheduleSvc /etc/init.d/GkcScheduleSvc
+cp /usr/.GKC/public/assemblies/GkcHostSvc /etc/init.d/GkcHostSvc
 #right
-chmod ugoa+x /etc/init.d/GkcScheduleSvc
+chmod ugoa+x /etc/init.d/GkcHostSvc
 #runlevels
-update-rc.d GkcScheduleSvc defaults
-#/sbin/chkconfig --add GkcScheduleSvc
+update-rc.d GkcHostSvc defaults
+#/sbin/chkconfig --add GkcHostSvc
 #start
-service GkcScheduleSvc start
+service GkcHostSvc start
 #status
-service GkcScheduleSvc status
+service GkcHostSvc status
 
 #end

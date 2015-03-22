@@ -118,10 +118,10 @@ class io_handle_helper
 {
 public:
 	//open
+	//  The default behavior is sharing between processes and threads.
 	//  iOpenType   : FileOpenTypes::*
-	//  iShareMode  : FileShareModes::*
 	//  iCreateType : FileCreationTypes::*
-	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iShareMode, int iCreateType, io_handle& hd) throw()
+	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iCreateType, io_handle& hd) throw()
 	{
 		assert( !hd.IsValid() );
 
@@ -142,8 +142,6 @@ public:
 			assert( false );
 			break;
 		}
-		// share mode
-		//   ignore. The default behavior is GKC::FileShareModes::DenyNone.
 		// creation type
 		if( iCreateType & GKC::FileCreationTypes::Create ) {
 			flags |= O_CREAT;

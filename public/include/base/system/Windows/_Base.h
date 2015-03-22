@@ -354,6 +354,89 @@ private:
 };
 
 //------------------------------------------------------------------------------
+// file
+
+// file share modes
+BEGIN_ENUM(_FileShareModes)
+	ENUM_VALUE_ENTRY(Exclusive,  0x00000010)
+	ENUM_VALUE_ENTRY(DenyWrite,  0x00000020)
+	ENUM_VALUE_ENTRY(DenyRead,   0x00000030)
+	ENUM_VALUE_ENTRY(DenyNone,   0x00000040)
+END_ENUM()
+
+//open file
+//  iOpenType   : FileOpenTypes::*
+//  iShareMode  : _FileShareModes::*
+//  iCreateType : FileCreationTypes::*
+inline HRESULT _open_file(const CharS* szFile, int iOpenType, int iShareMode, int iCreateType, HANDLE& hd) throw()
+{
+	// access
+	DWORD dwAccess = 0;
+	switch( iOpenType & 3 ) {
+	case GKC::FileOpenTypes::Read:
+		dwAccess = GENERIC_READ;
+		break;
+	case GKC::FileOpenTypes::Write:
+		dwAccess = GENERIC_WRITE;
+		break;
+	case GKC::FileOpenTypes::ReadWrite:
+		dwAccess = GENERIC_READ | GENERIC_WRITE;
+		break;
+	default:
+		assert( false );  // invalid access mode
+		break;
+	}
+	// map share mode
+	DWORD dwShareMode = 0;
+	switch( iShareMode & 0x70) { // map compatibility mode to exclusive
+	case _FileShareModes::Exclusive:
+		dwShareMode = 0;
+		break;
+	case _FileShareModes::DenyWrite:
+		dwShareMode = FILE_SHARE_READ;
+		break;
+	case _FileShareModes::DenyRead:
+		dwShareMode = FILE_SHARE_WRITE;
+		break;
+	case _FileShareModes::DenyNone:
+		dwShareMode = FILE_SHARE_WRITE | FILE_SHARE_READ;
+		break;
+	default:
+		assert( false );  // invalid share mode
+		break;
+	}
+	// set NoInherit, default is inherited.
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof(sa);
+	sa.lpSecurityDescriptor = NULL;
+	sa.bInheritHandle = TRUE;  //inherited
+	// map creation flags
+	DWORD dwCreateFlag = OPEN_EXISTING;
+	if( iCreateType & GKC::FileCreationTypes::Create ) {
+		if( iCreateType & GKC::FileCreationTypes::NoTruncate )
+			dwCreateFlag = OPEN_ALWAYS;
+		else
+			dwCreateFlag = CREATE_ALWAYS;
+	}
+
+	// special system-level access flags
+	DWORD dwFlags = FILE_ATTRIBUTE_NORMAL;
+	// Random access and sequential scan should be mutually exclusive
+	//   FILE_FLAG_RANDOM_ACCESS and FILE_FLAG_SEQUENTIAL_SCAN
+	//   no set : FILE_FLAG_NO_BUFFERING FILE_FLAG_WRITE_THROUGH
+
+	HRESULT hRes = S_OK;
+
+	// attempt file creation
+	HANDLE hFile = ::CreateFileW(szFile, dwAccess, dwShareMode, &sa, dwCreateFlag, dwFlags, NULL);
+	if( hFile == INVALID_HANDLE_VALUE ) {
+		hRes  = HRESULT_FROM_WIN32(::GetLastError());
+		hFile = NULL;
+	}
+	hd = hFile;
+
+	return hRes;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif  //__IWIN_BASE_H__

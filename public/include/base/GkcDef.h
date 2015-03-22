@@ -902,14 +902,6 @@ BEGIN_ENUM(FileOpenTypes)
 	ENUM_VALUE_ENTRY(ReadWrite,  0x00000002)
 END_ENUM()
 
-// file share modes
-BEGIN_ENUM(FileShareModes)
-	ENUM_VALUE_ENTRY(Exclusive,  0x00000010)
-	ENUM_VALUE_ENTRY(DenyWrite,  0x00000020)
-	ENUM_VALUE_ENTRY(DenyRead,   0x00000030)
-	ENUM_VALUE_ENTRY(DenyNone,   0x00000040)
-END_ENUM()
-
 // file creation types (can combine with <or> operation)
 BEGIN_ENUM(FileCreationTypes)
 	ENUM_VALUE_ENTRY(Create,     0x00001000)

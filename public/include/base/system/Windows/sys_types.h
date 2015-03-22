@@ -108,78 +108,16 @@ class io_handle_helper
 {
 public:
 	//open
+	//  The default behavior is sharing between processes and threads.
 	//  iOpenType   : FileOpenTypes::*
-	//  iShareMode  : FileShareModes::*
 	//  iCreateType : FileCreationTypes::*
-	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iShareMode, int iCreateType, io_handle& hd) throw()
+	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iCreateType, io_handle& hd) throw()
 	{
 		assert( !hd.IsValid() );
-
-		// access
-		DWORD dwAccess = 0;
-		switch( iOpenType & 3 ) {
-		case GKC::FileOpenTypes::Read:
-			dwAccess = GENERIC_READ;
-			break;
-		case GKC::FileOpenTypes::Write:
-			dwAccess = GENERIC_WRITE;
-			break;
-		case GKC::FileOpenTypes::ReadWrite:
-			dwAccess = GENERIC_READ | GENERIC_WRITE;
-			break;
-		default:
-			assert( false );  // invalid access mode
-			break;
-		}
-		// map share mode
-		DWORD dwShareMode = 0;
-		switch( iShareMode & 0x70) { // map compatibility mode to exclusive
-		case GKC::FileShareModes::Exclusive:
-			dwShareMode = 0;
-			break;
-		case GKC::FileShareModes::DenyWrite:
-			dwShareMode = FILE_SHARE_READ;
-			break;
-		case GKC::FileShareModes::DenyRead:
-			dwShareMode = FILE_SHARE_WRITE;
-			break;
-		case GKC::FileShareModes::DenyNone:
-			dwShareMode = FILE_SHARE_WRITE | FILE_SHARE_READ;
-			break;
-		default:
-			assert( false );  // invalid share mode
-			break;
-		}
-		// set NoInherit, default is inherited.
-		SECURITY_ATTRIBUTES sa;
-		sa.nLength = sizeof(sa);
-		sa.lpSecurityDescriptor = NULL;
-		sa.bInheritHandle = TRUE;  //inherited
-		// map creation flags
-		DWORD dwCreateFlag = OPEN_EXISTING;
-		if( iCreateType & GKC::FileCreationTypes::Create ) {
-			if( iCreateType & GKC::FileCreationTypes::NoTruncate )
-				dwCreateFlag = OPEN_ALWAYS;
-			else
-				dwCreateFlag = CREATE_ALWAYS;
-		}
-
-		// special system-level access flags
-		DWORD dwFlags = FILE_ATTRIBUTE_NORMAL;
-		// Random access and sequential scan should be mutually exclusive
-		//   FILE_FLAG_RANDOM_ACCESS and FILE_FLAG_SEQUENTIAL_SCAN
-		//   no set : FILE_FLAG_NO_BUFFERING FILE_FLAG_WRITE_THROUGH
-
-		HRESULT hRes = S_OK;
-
-		// attempt file creation
-		HANDLE hFile = ::CreateFileW(GKC::RefPtrHelper::GetInternalPointer(szFile),
-									dwAccess, dwShareMode, &sa, dwCreateFlag, dwFlags, NULL);
-		if( hFile == INVALID_HANDLE_VALUE )
-			hRes = HRESULT_FROM_WIN32(::GetLastError());
-		else
-			hd.m_h = hFile;
-
+		HANDLE  hFile;
+		HRESULT hRes = _open_file(GKC::RefPtrHelper::GetInternalPointer(szFile),
+								iOpenType, _FileShareModes::DenyNone, iCreateType, hFile);
+		hd.m_h = hFile;
 		return call_result((int)hRes);
 	}
 	//seek

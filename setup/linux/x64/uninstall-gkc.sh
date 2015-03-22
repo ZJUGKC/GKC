@@ -12,8 +12,8 @@
 #
 
 #services
-chmod ugoa+x /usr/.GKC/public/assemblies/gss-uninstall.sh
-/usr/.GKC/public/assemblies/gss-uninstall.sh
+chmod ugoa+x /usr/.GKC/public/assemblies/ghs-uninstall.sh
+/usr/.GKC/public/assemblies/ghs-uninstall.sh
 #uninstall
 rm -r /usr/.GKC
 #path

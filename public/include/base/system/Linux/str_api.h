@@ -133,8 +133,15 @@ inline int value_to_string(CharL* szBuffer, uintptr uSize, const CharL* szFormat
 inline void result_to_string(const call_result& cr, CharA* szBuffer, uintptr uSize) throw()
 {
 	szBuffer[0] = 0;
-	//no check
-	::strerror_r(cr.GetResult() & (~0x10000000), szBuffer, uSize);
+	char* szRet = ::strerror_r(cr.GetResult() & (~0x10000000), szBuffer, uSize);
+	if( szRet != szBuffer ) {
+		//copy
+		uintptr uLen = ::strlen(szRet);
+		if( uLen > uSize - 1 )
+			uLen = uSize - 1;
+		mem_copy(szRet, uLen * sizeof(CharA), szBuffer);
+		szBuffer[uLen] = 0;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

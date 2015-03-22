@@ -12,15 +12,15 @@
 #
 
 #stop
-service GkcScheduleSvc stop
+service GkcHostSvc stop
 #delete
-rm /etc/init.d/GkcScheduleSvc
-rm /etc/rc0.d/K20GkcScheduleSvc
-rm /etc/rc1.d/K20GkcScheduleSvc
-rm /etc/rc2.d/S20GkcScheduleSvc
-rm /etc/rc3.d/S20GkcScheduleSvc
-rm /etc/rc4.d/S20GkcScheduleSvc
-rm /etc/rc5.d/S20GkcScheduleSvc
-rm /etc/rc6.d/K20GkcScheduleSvc
+rm /etc/init.d/GkcHostSvc
+rm /etc/rc0.d/K20GkcHostSvc
+rm /etc/rc1.d/K20GkcHostSvc
+rm /etc/rc2.d/S20GkcHostSvc
+rm /etc/rc3.d/S20GkcHostSvc
+rm /etc/rc4.d/S20GkcHostSvc
+rm /etc/rc5.d/S20GkcHostSvc
+rm /etc/rc6.d/K20GkcHostSvc
 
 #end

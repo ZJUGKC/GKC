@@ -1,6 +1,6 @@
 ﻿<!--
 #
-# Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+# Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
 # All rights reserved.
 #
 # This program is free software; you can redistribute it and/or

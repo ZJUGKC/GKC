@@ -311,7 +311,7 @@ public:
 	void SetLength(uintptr uLength)
 	{
 		baseClass::SetCount(uLength + 1, 0);
-		m_pT[uLength] = 0;
+		baseClass::m_pT[uLength] = 0;
 	}
 };
 

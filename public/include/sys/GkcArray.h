@@ -321,7 +321,6 @@ public:
 				//free array
 				if( m_pT != NULL ) {
 					pB->DestroyArray(m_pT);
-					m_pT = NULL;
 				}
 				//weak
 				assert( pB->GetWeakCount() > 0 );  //must have weak object
@@ -329,9 +328,10 @@ public:
 					//free block
 					pB->~SharedArrayBlock();
 					SharedArrayBlockHelper::Free(pB);
-					m_pB = NULL;
 				}
 			}
+			m_pB = NULL;
+			m_pT = NULL;
 		}
 		else {
 			assert( m_pT == NULL );
@@ -761,8 +761,9 @@ public:
 				//free block
 				pB->~SharedArrayBlock();
 				SharedArrayBlockHelper::Free(pB);
-				m_pB = NULL;
 			}
+			m_pB = NULL;
+			m_pT = NULL;
 		}
 		else {
 			assert( m_pT == NULL );

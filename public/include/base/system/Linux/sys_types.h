@@ -176,7 +176,7 @@ public:
 		return call_result(res);
 	}
 	//flush
-	void Flush(io_handle& hd) throw()
+	static void Flush(io_handle& hd) throw()
 	{
 		assert( hd.IsValid() );
 #ifdef DEBUG

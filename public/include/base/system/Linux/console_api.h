@@ -33,18 +33,26 @@ inline void set_default_locale() throw()
 //   return value: the number of typed characters, -1 means fail.
 inline int print_format(const CharA* szFormat, ...) throw()
 {
+	CharA* szV = _convert_unified_format_string(szFormat);
+	if( szV == NULL )
+		return -1;
 	va_list ap;
 	va_start(ap, szFormat);
-	int ret = ::vprintf(szFormat, ap);
+	int ret = ::vprintf(szV, ap);
 	va_end(ap);
+	_free_unified_format_convert_string(szV);
 	return ret;
 }
 inline int print_format(const CharL* szFormat, ...) throw()
 {
+	CharL* szV = _convert_unified_format_string(szFormat);
+	if( szV == NULL )
+		return -1;
 	va_list ap;
 	va_start(ap, szFormat);
-	int ret = ::vwprintf(szFormat, ap);
+	int ret = ::vwprintf(szV, ap);
 	va_end(ap);
+	_free_unified_format_convert_string(szV);
 	return ret;
 }
 
@@ -57,7 +65,7 @@ inline void print_string(const CharA* sz) throw()
 inline void print_string(const CharL* sz) throw()
 {
 	//no check
-	::wprintf(L"%s", sz);
+	::wprintf(L"%ls", sz);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

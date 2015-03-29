@@ -75,16 +75,16 @@ public:
 			if( pB->Release() <= 0 ) {
 				//free object
 				pB->DestroyObject();
-				m_pT = NULL;
 				//weak
 				assert( pB->GetWeakCount() > 0 );  //must have weak object
 				if( pB->WeakRelease() <= 0 ) {
 					//free block
 					pB->~SharedPtrBlock();
 					SharedPtrBlockHelper::Free(pB);
-					m_pB = NULL;
 				}
 			}
+			m_pB = NULL;
+			m_pT = NULL;
 		}
 		else {
 			assert( m_pT == NULL );
@@ -199,8 +199,9 @@ public:
 				//free block
 				pB->~SharedPtrBlock();
 				SharedPtrBlockHelper::Free(pB);
-				m_pB = NULL;
 			}
+			m_pB = NULL;
+			m_pT = NULL;
 		}
 		else {
 			assert( m_pT == NULL );

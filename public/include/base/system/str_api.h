@@ -115,6 +115,36 @@ s        String. hs for CharA string, ls for CharW string, s for CharS string.
 %        "%%", print a '%'.
 */
 
+// Unified Format String for input
+/*
+%[*][width][modifier]type
+
+An asterisk (*) following the percent sign suppresses assignment of the next input field, which is interpreted as a field of the specified type.
+The field is scanned but not stored.
+
+width:
+A positive decimal integer controlling the maximum number of characters to be read for that field.
+
+modifier:
+h        short (d, o, x) or ushort (u)
+l        double (e, f, g)
+I64      int64 (d, o, u, x)
+h        CharA (c, s, [])
+l        CharW (c, s, [])
+
+type:
+d         (int*)      Decimal integer.
+o         (int*)      Octal integer.
+u         (uint*)     Unsigned decimal integer.
+x         (int*)      Hexadecimal integer.
+e, f, g   (float*)    Floating-point value.
+s                     String (CharS). Use [width] option without including the terminator.
+c                     Character (CharS). Use [width] option without including the terminator.
+[ccc]                 Matches a nonempty sequence of characters from the specified set of accepted characters. Use [width] option without including the terminator.
+or [c-c]
+or [^ccc]             NOT in a set of characters.
+%                     "%%", Matches a literal '%'.
+*/
 //------------------------------------------------------------------------------
 //OS
 

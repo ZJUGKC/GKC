@@ -162,11 +162,12 @@ GKC_BEGIN_TEST(SharedArrayTest)
 	GKC_BEGIN_TEST_BLOCK
 	{
 		GKC::SharedArray<uintptr> arrR(GKC::SharedArrayHelper::MakeSharedArray<uintptr>(GKC::MemoryHelper::GetCrtMemoryManager()));
-		arrTest.SetCount(2000, 0);
+		arrR.SetCount(2000, 0);
 		GKC::SharedArray<uintptr> arrR1 = arrR;
 		GKC::WeakArray<uintptr> warrR = GKC::SharedArrayHelper::ToWeakArray(arrR);
 		GKC::SharedArray<uintptr> arrR2 = GKC::SharedArrayHelper::ToSharedArray(warrR);
 		arrR1.Release();
+		arrR2.RemoveAll();
 		arrR.Release();
 	}
 	GKC_END_TEST_BLOCK

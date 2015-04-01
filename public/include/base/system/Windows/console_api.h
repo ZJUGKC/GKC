@@ -60,4 +60,26 @@ inline void print_string(const CharH* sz) throw()
 	::wprintf_s(L"%s", sz);
 }
 
+//------------------------------------------------------------------------------
+//input
+
+// scan_format
+//  return value: the number of input items successfully matched and assigned. <0 means fail.
+inline int scan_format(const CharA* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vscanf(szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+inline int scan_format(const CharH* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vwscanf(szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

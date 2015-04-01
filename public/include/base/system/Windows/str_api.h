@@ -122,6 +122,25 @@ inline int value_to_string(CharH* szBuffer, uintptr uSize, const CharH* szFormat
 	return ret;
 }
 
+// string_to_value
+//   return value: the number of input items successfully matched and assigned. <0 means fail.
+inline int string_to_value(const CharA* szString, const CharA* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vsscanf(szString, szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+inline int string_to_value(const CharH* szString, const CharH* szFormat, ...) throw()
+{
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vswscanf(szString, szFormat, ap);
+	va_end(ap);
+	return ret;
+}
+
 //------------------------------------------------------------------------------
 // result_to_string
 //   uSize : buffer size in typed characters. It must be large than 0.

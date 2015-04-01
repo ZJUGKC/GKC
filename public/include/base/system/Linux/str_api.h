@@ -150,6 +150,7 @@ inline CharA* _convert_unified_format_string(const CharA* szFormat) throw()
 			break;
 		case 'c':
 		case 's':
+		case '[':
 			{
 			assert( len == 1 );
 			if( state == 2 )
@@ -261,6 +262,7 @@ inline CharL* _convert_unified_format_string(const CharL* szFormat) throw()
 			break;
 		case L'c':
 		case L's':
+		case L'[':
 			{
 			if( state == 2 )
 				pd --;
@@ -364,6 +366,33 @@ inline int value_to_string(CharL* szBuffer, uintptr uSize, const CharL* szFormat
 	va_list ap;
 	va_start(ap, szFormat);
 	int ret = ::vswprintf(szBuffer, uSize, szV, ap);
+	va_end(ap);
+	_free_unified_format_convert_string(szV);
+	return ret;
+}
+
+// string_to_value
+//   return value: the number of input items successfully matched and assigned. <0 means fail.
+inline int string_to_value(const CharA* szString, const CharA* szFormat, ...) throw()
+{
+	CharA* szV = _convert_unified_format_string(szFormat);
+	if( szV == NULL )
+		return -1;
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vsscanf(szString, szV, ap);
+	va_end(ap);
+	_free_unified_format_convert_string(szV);
+	return ret;
+}
+inline int string_to_value(const CharL* szString, const CharL* szFormat, ...) throw()
+{
+	CharL* szV = _convert_unified_format_string(szFormat);
+	if( szV == NULL )
+		return -1;
+	va_list ap;
+	va_start(ap, szFormat);
+	int ret = ::vswscanf(szString, szV, ap);
 	va_end(ap);
 	_free_unified_format_convert_string(szV);
 	return ret;

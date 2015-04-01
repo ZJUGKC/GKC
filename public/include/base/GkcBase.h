@@ -411,7 +411,7 @@ private:
 struct SharedArrayBlock
 {
 public:
-	SharedArrayBlock() throw() : m_uLength(0), m_uAllocLength(0), m_shareCount(1), m_weakCount(1)
+	SharedArrayBlock() throw() : m_p(NULL), m_uLength(0), m_uAllocLength(0), m_shareCount(1), m_weakCount(1)
 	{
 	}
 	~SharedArrayBlock() throw()
@@ -426,6 +426,14 @@ public:
 	void SetMemoryManager(const RefPtr<IMemoryManager>& mgr) throw()
 	{
 		m_mgr = mgr;
+	}
+	void* GetAddress() const throw()
+	{
+		return m_p;
+	}
+	void SetAddress(void* p) throw()
+	{
+		m_p = p;
 	}
 	uintptr GetLength() const throw()
 	{
@@ -483,23 +491,29 @@ public:
 
 	//destroy
 	template <typename T>
-	void DestroyArray(T* p) throw()
+	void DestroyArray() throw()
 	{
 		assert( !m_mgr.IsNull() );
+		if( m_p == NULL ) {
+			assert( m_uLength == 0 && m_uAllocLength == 0 );
+			return ;
+		}
 		//destruction
-		T* pt = p;
+		T* pt = (T*)m_p;
 		for( uintptr i = 0; i < m_uLength; i ++ ) {
 			pt->~T();
 			++ pt;
 		}
 		//free
-		m_mgr.Deref().Free((uintptr)p);
+		m_mgr.Deref().Free((uintptr)m_p);
+		m_p = NULL;
 		m_uLength = 0;
 		m_uAllocLength = 0;
 	}
 
 private:
 	RefPtr<IMemoryManager> m_mgr;
+	void*    m_p;  //first address of array
 	uintptr  m_uLength;
 	uintptr  m_uAllocLength;
 	volatile int   m_shareCount;

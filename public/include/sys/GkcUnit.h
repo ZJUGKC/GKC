@@ -286,7 +286,7 @@ public:
 		{
 			buffer.SetLength(0);
 			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(buffer), _UnitTestMessageBuffer::c_size,
-									_S("Total (%Id), Failed (%Id)"), uTotal, uFailed);
+									_S("Total (%Iu), Failed (%Iu)"), uTotal, uFailed);
 			if( ret >= 0 )
 				buffer.SetLength(ret);
 			Console::WriteLine(ConstStringS(l_szSep3, 0));

@@ -77,6 +77,34 @@ public:
 		Write(str);
 		WriteLN();
 	}
+
+//input
+	template <uintptr t_size>
+	static void Read(FixedStringT<CharS, t_size>& str) throw()
+	{
+		assert( t_size > 0 );
+		str.SetLength(0);
+		CharS szFormat[256];
+		szFormat[0] = 0;
+		int ret = value_to_string(szFormat, sizeof(szFormat) / sizeof(CharS), _S("%%%Ius"), t_size - 1);
+		if( ret >= 0 )
+			szFormat[ret] = 0;
+		//no check
+		scan_format(szFormat, FixedArrayHelper::GetInternalPointer(str));
+	}
+	template <uintptr t_size>
+	static void ReadLine(FixedStringT<CharS, t_size>& str) throw()
+	{
+		assert( t_size > 0 );
+		str.SetLength(0);
+		CharS szFormat[256];
+		szFormat[0] = 0;
+		int ret = value_to_string(szFormat, sizeof(szFormat) / sizeof(CharS), _S("%%%Iu[^\n]"), t_size - 1);
+		if( ret >= 0 )
+			szFormat[ret] = 0;
+		//no check
+		scan_format(szFormat, FixedArrayHelper::GetInternalPointer(str));
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

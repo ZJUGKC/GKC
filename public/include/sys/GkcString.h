@@ -261,7 +261,10 @@ public:
 
 	uintptr GetLength() const throw()
 	{
-		return (baseClass::m_pB == NULL) ? 0 : ((SharedArrayBlock*)(baseClass::m_pB))->GetLength() - 1;
+		uintptr uCount;
+		return (baseClass::IsNull()) ? 0 :
+				( (uCount = ((SharedArrayBlock*)(baseClass::m_pB))->GetLength(), uCount == 0) ? 0 : uCount - 1 )
+				;
 	}
 	bool IsEmpty() const throw()
 	{
@@ -271,11 +274,11 @@ public:
 	//iterators
 	const typename thisClass::Iterator GetEnd() const throw()
 	{
-		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + GetLength()));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
 	}
 	typename thisClass::Iterator GetEnd() throw()
 	{
-		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + GetLength()));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
 	}
 	const typename thisClass::Iterator GetReverseBegin() const throw()
 	{
@@ -289,29 +292,29 @@ public:
 	const typename thisClass::Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetLength() );
-		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + index));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::get_array_address() + index));
 	}
 	typename thisClass::Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < GetLength() );
-		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::m_pT + index));
+		return typename thisClass::Iterator(RefPtr<Tchar>(baseClass::get_array_address() + index));
 	}
 	void SetAt(uintptr index, const Tchar& t)  //may throw
 	{
 		assert( index < GetLength() );
-		baseClass::m_pT[index] = t;
+		baseClass::get_array_address()[index] = t;
 	}
 	void SetAt(uintptr index, Tchar&& t)  //may throw
 	{
 		assert( index < GetLength() );
-		baseClass::m_pT[index] = rv_forward(t);
+		baseClass::get_array_address()[index] = rv_forward(t);
 	}
 
 	//methods
 	void SetLength(uintptr uLength)
 	{
 		baseClass::SetCount(uLength + 1, 0);
-		baseClass::m_pT[uLength] = 0;
+		baseClass::get_array_address()[uLength] = 0;
 	}
 };
 
@@ -460,7 +463,7 @@ public:
 	template <typename Tchar>
 	static StringT<Tchar> MakeEmptyString(const RefPtr<IMemoryManager>& mgr)
 	{
-		StringT<Tchar>  ret;
+		StringT<Tchar> ret;
 		static_cast<SharedArray<Tchar>&>(ret) = SharedArrayHelper::MakeSharedArray<Tchar>(mgr);
 		return ret;
 	}

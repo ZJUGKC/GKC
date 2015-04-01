@@ -36,7 +36,7 @@ BEGIN_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
 END_SA_GLOBAL_VARIABLE(spb_mutex)
 
 //SAB
-BEGIN_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
+BEGIN_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>, sab_mgr)
 END_SA_GLOBAL_VARIABLE(sab_mgr)
 
 BEGIN_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)

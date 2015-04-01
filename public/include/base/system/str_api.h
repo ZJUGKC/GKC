@@ -52,7 +52,7 @@ inline uintptr calc_string_length(const CharA* s) throw()
 }
 
 //------------------------------------------------------------------------------
-// Unified Format String
+// Unified Format String for output
 /*
 %[flags][width][.precision][modifier]type
 
@@ -112,7 +112,7 @@ G        Identical to the g format, except that E, rather than e, introduces the
 p        Displays the argument as an address in hexadecimal digits.
 c        Character. hc for CharA character, lc for CharW character, c for CharS character.
 s        String. hs for CharA string, ls for CharW string, s for CharS string.
-%        Print a '%'.
+%        "%%", print a '%'.
 */
 
 //------------------------------------------------------------------------------

@@ -156,6 +156,8 @@ private:
 //------------------------------------------------------------------------------
 // call_result constants
 
+#define CR_S_EOF             38
+#define CR_S_FALSE           1
 #define CR_OK                0
 #define CR_FAIL              CR_FROM_ERROR(EFAULT)
 #define CR_OUTOFMEMORY       CR_FROM_ERROR(ENOMEM)

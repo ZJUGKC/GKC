@@ -72,6 +72,8 @@ typedef call_result  CallResult;
 // CallResult constants
 
 BEGIN_ENUM(SystemCallResults)
+	ENUM_VALUE_ENTRY(S_EOF, CR_S_EOF)
+	ENUM_VALUE_ENTRY(S_False, CR_S_FALSE)
 	ENUM_VALUE_ENTRY(OK, CR_OK)
 	ENUM_VALUE_ENTRY(Fail, CR_FAIL)
 	ENUM_VALUE_ENTRY(OutOfMemory, CR_OUTOFMEMORY)

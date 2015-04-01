@@ -229,6 +229,7 @@ public:
 	{
 		const CharS* l_szSep1   = _S("==========================");
 		const CharS* l_szSep2   = _S("**************************");
+		const CharS* l_szSep3   = _S("--------------------------");
 		const CharS* l_szColon  = _S(":");
 		const CharS* l_szNoTest = _S("ERROR: NO SUCH TEST!");
 
@@ -282,6 +283,15 @@ public:
 		} //end if
 
 		//total information
+		{
+			buffer.SetLength(0);
+			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(buffer), _UnitTestMessageBuffer::c_size,
+									_S("Total (%Iu), Failed (%Iu)"), uTotal, uFailed);
+			if( ret >= 0 )
+				buffer.SetLength(ret);
+			Console::WriteLine(ConstStringS(l_szSep3, 0));
+			Console::WriteLine(buffer);
+		}
 
 		//free map
 		_UnitTestMapHelper::FreeUnitTestMap();
@@ -311,9 +321,10 @@ public:
 		const CharS   l_szCorrect[] = _S("correct:");
 		const uintptr l_iCorrectLen = sizeof(l_szCorrect) / sizeof(CharS) - 1;
 		_UnitTestMessageBuffer bufTemp;
-		value_to_string(FixedArrayHelper::GetInternalPointer(bufTemp), _UnitTestMessageBuffer::c_size,
-						_S("%s(%d) "), szFileName, iLineNumber);
-		bufTemp.RecalcLength();
+		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(bufTemp), _UnitTestMessageBuffer::c_size,
+								_S("%s(%d) "), szFileName, iLineNumber);
+		if( ret >= 0 )
+			bufTemp.SetLength(ret);
 		buffer.SetLength(0);
 		StringUtilHelper::Append(bufTemp, buffer);
 		if( bFixture ) {
@@ -334,9 +345,10 @@ public:
 			return ;
 		_UnitTestAssertException exception;
 		_UnitTestMessageBuffer&  buf = exception.GetMessageBuffer();
-		value_to_string(FixedArrayHelper::GetInternalPointer(buf), _UnitTestMessageBuffer::c_size,
-						_S("%s(%d): error : ASSERT_TRUE failed."), szFileName, iLineNumber);
-		buf.RecalcLength();
+		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(buf), _UnitTestMessageBuffer::c_size,
+								_S("%s(%d): error : ASSERT_TRUE failed."), szFileName, iLineNumber);
+		if( ret >= 0 )
+			buf.SetLength(ret);
 		throw exception;
 	}
 };
@@ -358,8 +370,9 @@ public:
 
 // define error message
 #define _GKC_TEST_FORMAT_ERROR(...)  \
-	value_to_string(GKC::FixedArrayHelper::GetInternalPointer(_gkc_utm_buffer), GKC::_UnitTestMessageBuffer::c_size, __VA_ARGS__);  \
-	_gkc_utm_buffer.RecalcLength();
+	{ _gkc_utm_buffer.SetLength(0);  \
+	int __ret = value_to_string(GKC::FixedArrayHelper::GetInternalPointer(_gkc_utm_buffer), GKC::_UnitTestMessageBuffer::c_size, __VA_ARGS__);  \
+	if( __ret >= 0 ) _gkc_utm_buffer.SetLength(__ret); }
 
 // define function
 #define _GKC_BEGIN_TEST_FUNC(x)  \

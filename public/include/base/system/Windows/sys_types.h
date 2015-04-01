@@ -139,7 +139,7 @@ public:
 		return call_result((int)hr);
 	}
 	//flush
-	void Flush(io_handle& hd) throw()
+	static void Flush(io_handle& hd) throw()
 	{
 		assert( hd.IsValid() );
 		BOOL bRet = ::FlushFileBuffers(hd.m_h);

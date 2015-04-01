@@ -24,7 +24,7 @@ DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, 
 DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
 
 // SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, sab_mgr)
+DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>, sab_mgr)
 DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
 
 //functions

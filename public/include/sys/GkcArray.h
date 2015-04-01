@@ -287,10 +287,10 @@ public:
 	typedef ArrayIterator<T>  Iterator;
 
 public:
-	SharedArray() throw() : m_pB(NULL), m_pT(NULL)
+	SharedArray() throw() : m_pB(NULL)
 	{
 	}
-	SharedArray(const SharedArray<T>& src) throw() : m_pB(src.m_pB), m_pT(src.m_pT)
+	SharedArray(const SharedArray<T>& src) throw() : m_pB(src.m_pB)
 	{
 		//add ref
 		if( m_pB != NULL ) {
@@ -302,9 +302,7 @@ public:
 	SharedArray(SharedArray<T>&& src) throw()
 	{
 		m_pB = src.m_pB;
-		m_pT = src.m_pT;
 		src.m_pB = NULL;
-		src.m_pT = NULL;
 	}
 	~SharedArray() throw()
 	{
@@ -319,22 +317,16 @@ public:
 			assert( pB->GetShareCount() > 0 );  //must have shared array
 			if( pB->Release() <= 0 ) {
 				//free array
-				if( m_pT != NULL ) {
-					pB->DestroyArray(m_pT);
-					m_pT = NULL;
-				}
+				pB->DestroyArray<T>();
 				//weak
 				assert( pB->GetWeakCount() > 0 );  //must have weak object
 				if( pB->WeakRelease() <= 0 ) {
 					//free block
 					pB->~SharedArrayBlock();
 					SharedArrayBlockHelper::Free(pB);
-					m_pB = NULL;
 				}
 			}
-		}
-		else {
-			assert( m_pT == NULL );
+			m_pB = NULL;
 		} //end if
 	}
 
@@ -347,7 +339,6 @@ public:
 				Release();
 				//assign
 				m_pB = src.m_pB;
-				m_pT = src.m_pT;
 				//add ref
 				if( m_pB != NULL ) {
 					SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
@@ -366,9 +357,7 @@ public:
 				Release();
 				//assign
 				m_pB = src.m_pB;
-				m_pT = src.m_pT;
 				src.m_pB = NULL;
-				src.m_pT = NULL;
 			}
 		}
 		return *this;
@@ -385,7 +374,7 @@ public:
 
 	bool operator==(const SharedArray<T>& right) const throw()
 	{
-		return m_pT == right.m_pT;
+		return m_pB == right.m_pB;
 	}
 	bool operator!=(const SharedArray<T>& right) const throw()
 	{
@@ -393,7 +382,7 @@ public:
 	}
 	bool IsNull() const throw()
 	{
-		return m_pT == NULL;
+		return (m_pB == NULL) || (get_array_address() == NULL);
 	}
 
 	uintptr GetCount() const throw()
@@ -408,19 +397,19 @@ public:
 	//iterator
 	const Iterator GetBegin() const throw()
 	{
-		return Iterator(RefPtr<T>(m_pT));
+		return Iterator(RefPtr<T>(get_array_address()));
 	}
 	Iterator GetBegin() throw()
 	{
-		return Iterator(RefPtr<T>(m_pT));
+		return Iterator(RefPtr<T>(get_array_address()));
 	}
 	const Iterator GetEnd() const throw()
 	{
-		return Iterator(RefPtr<T>(m_pT + GetCount()));
+		return Iterator(RefPtr<T>(get_array_address() + GetCount()));
 	}
 	Iterator GetEnd() throw()
 	{
-		return Iterator(RefPtr<T>(m_pT + GetCount()));
+		return Iterator(RefPtr<T>(get_array_address() + GetCount()));
 	}
 	const Iterator GetReverseBegin() const throw()
 	{
@@ -442,22 +431,22 @@ public:
 	const Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return Iterator(RefPtr<T>(m_pT + index));
+		return Iterator(RefPtr<T>(get_array_address() + index));
 	}
 	Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < GetCount() );
-		return Iterator(RefPtr<T>(m_pT + index));
+		return Iterator(RefPtr<T>(get_array_address() + index));
 	}
 	void SetAt(uintptr index, const T& t)  //may throw
 	{
 		assert( index < GetCount() );
-		m_pT[index] = t;
+		get_array_address()[index] = t;
 	}
 	void SetAt(uintptr index, T&& t)  //may throw
 	{
 		assert( index < GetCount() );
-		m_pT[index] = rv_forward(t);
+		get_array_address()[index] = rv_forward(t);
 	}
 
 	//size
@@ -471,17 +460,17 @@ public:
 		uintptr uOldSize = pB->GetLength();
 		if( uCount == 0 ) {
 			// shrink to nothing
-			clear_array();
+			pB->DestroyArray<T>();
 		}
 		else if( uCount <= pB->GetAllocLength() ) {
 			// it fits
 			if( uCount > uOldSize ) {
 				// initialize the new elements
-				call_array_constructors(m_pT + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);
+				call_array_constructors(get_array_address() + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);
 			}
 			else if( uOldSize > uCount ) {
 				// destroy the old elements
-				call_array_destructors(m_pT + uCount, uOldSize - uCount);
+				call_array_destructors(get_array_address() + uCount, uOldSize - uCount);
 			}
 			pB->SetLength(uCount);
 		}
@@ -490,7 +479,7 @@ public:
 			grow_buffer(uCount, uGrowBy);  //may throw
 			// construct new elements
 			assert( uCount > pB->GetLength() );
-			call_array_constructors(m_pT + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);
+			call_array_constructors(get_array_address() + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);
 			pB->SetLength(uCount);
 		} //end if
 	}
@@ -498,7 +487,7 @@ public:
 	void RemoveAll() throw()
 	{
 		assert( m_pB != NULL );  //must have a block for free
-		clear_array();
+		((SharedArrayBlock*)m_pB)->DestroyArray<T>();
 	}
 	void FreeExtra() throw()
 	{
@@ -511,17 +500,15 @@ public:
 		// shrink to desired size
 		if( uSize == 0 ) {
 			//free
-			pB->GetMemoryManager().Deref().Free(m_pT);
-			m_pT = NULL;
-			pB->SetAllocLength(0);
+			pB->DestroyArray<T>();
 			return ;
 		}
 		uintptr uBytes;
 		SafeOperators::Multiply(uSize, (uintptr)(sizeof(T)), uBytes);  //no check
-		T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)m_pT, uBytes));
+		T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)get_array_address(), uBytes));
 		if( pNew == NULL )
 			return ;
-		m_pT = pNew;
+		set_array_address(pNew);
 		pB->SetAllocLength(uSize);
 	}
 
@@ -542,14 +529,14 @@ public:
 		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
 		uintptr uOldSize = pB->GetLength();
 		SetCount(uOldSize + src.GetCount(), 0);
-		copy_elements(src.m_pT, m_pT + uOldSize, src.GetCount());
+		copy_elements(src.get_array_address(), get_array_address() + uOldSize, src.GetCount());
 	}
 	void Copy(const SharedArray<T>& src)  //may throw
 	{
 		assert( this != &src );  // cannot append to itself
 		uintptr uSize = src.GetCount();
 		SetCount(uSize, 0);
-		copy_elements(src.m_pT, m_pT, uSize);
+		copy_elements(src.get_array_address(), get_array_address(), uSize);
 	}
 
 	// count: the default value is 1.
@@ -569,15 +556,15 @@ public:
 			uintptr uOldSize = uSize;
 			SetCount(uSize + count, 0);  //grow it to new size
 			// destroy intial data before copying over it
-			call_array_destructors(m_pT + uOldSize, count);
+			call_array_destructors(get_array_address() + uOldSize, count);
 			// shift old data up to fill gap
-			relocate_elements(m_pT + index, m_pT + (index + count), uOldSize - index);
+			relocate_elements(get_array_address() + index, get_array_address() + (index + count), uOldSize - index);
 			try {
 				// re-init slots we copied from
-				call_array_constructors(m_pT + index, count, rv_forward<Args>(args)...);
+				call_array_constructors(get_array_address() + index, count, rv_forward<Args>(args)...);
 			}
 			catch(...) {
-				relocate_elements(m_pT + (index + count), m_pT + index, uOldSize - index);
+				relocate_elements(get_array_address() + (index + count), get_array_address() + index, uOldSize - index);
 				pB->SetLength(uOldSize);
 				throw ;  //re-throw
 			}
@@ -607,29 +594,25 @@ public:
 		// just remove a range
 		uintptr uMoveCount = uSize - uCut;
 		//destructor
-		call_array_destructors(m_pT + index, count);
+		call_array_destructors(get_array_address() + index, count);
 		if( uMoveCount > 0 ) {
-			relocate_elements(m_pT + uCut, m_pT + index, uMoveCount);
+			relocate_elements(get_array_address() + uCut, get_array_address() + index, uMoveCount);
 		}
 		//size
 		pB->SetLength(uSize - count);
 	}
 
-private:
-	//clear
-	void clear_array() throw()
+protected:
+	T* get_array_address() const throw()
 	{
-		SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
-		if( m_pT != NULL ) {
-			pB->DestroyArray(m_pT);
-			m_pT = NULL;
-		}
-		else {
-			pB->SetLength(0);
-			pB->SetAllocLength(0);
-		} //end if
+		return (T*)(((SharedArrayBlock*)m_pB)->GetAddress());
+	}
+	void set_array_address(T* p) throw()
+	{
+		((SharedArrayBlock*)m_pB)->SetAddress(p);
 	}
 
+private:
 	//grow
 	void grow_buffer(uintptr uNewSize, uintptr uGrowBy)  //may throw
 	{
@@ -637,16 +620,17 @@ private:
 		if( uNewSize <= pB->GetAllocLength() )
 			return ;
 		uintptr uAllocSize;
-		if( m_pT == NULL ) {
+		if( get_array_address() == NULL ) {
 			uAllocSize = (uGrowBy > uNewSize) ? uGrowBy : uNewSize;
 			uintptr uBytes = 0;
 			//overflow
 			if( SafeOperators::Multiply(uAllocSize, (uintptr)(sizeof(T)), uBytes).IsFailed() )
 				throw OverflowException();
 			//allocate
-			m_pT = (T*)(pB->GetMemoryManager().Deref().Allocate(uBytes));
-			if( m_pT == NULL )
+			T* pNew = (T*)(pB->GetMemoryManager().Deref().Allocate(uBytes));
+			if( pNew == NULL )
 				throw OutOfMemoryException();
+			set_array_address(pNew);
 		}
 		else {
 			//grow
@@ -665,11 +649,11 @@ private:
 			if( SafeOperators::Multiply(uAllocSize, (uintptr)(sizeof(T)), uBytes).IsFailed() )
 				throw OverflowException();
 			//reallocate
-			//  because uBytes != 0, m_pT is not freed
-			T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)m_pT, uBytes));
+			//  because uBytes != 0, m_p is not freed
+			T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)get_array_address(), uBytes));
 			if( pNew == NULL )
 				throw OutOfMemoryException();
-			m_pT = pNew;
+			set_array_address(pNew);
 		} //end if
 		pB->SetAllocLength(uAllocSize);
 	}
@@ -712,7 +696,6 @@ private:
 
 protected:
 	void* m_pB;  //to array block
-	T*    m_pT;  //first address of array
 
 private:
 	friend class SharedArrayHelper;
@@ -727,10 +710,10 @@ public:
 	typedef T  EType;
 
 public:
-	WeakArray() throw() : m_pB(NULL), m_pT(NULL)
+	WeakArray() throw() : m_pB(NULL)
 	{
 	}
-	WeakArray(const WeakArray<T>& src) throw() : m_pB(src.m_pB), m_pT(src.m_pT)
+	WeakArray(const WeakArray<T>& src) throw() : m_pB(src.m_pB)
 	{
 		//add ref
 		if( m_pB != NULL ) {
@@ -742,9 +725,7 @@ public:
 	WeakArray(WeakArray<T>&& src) throw()
 	{
 		m_pB = src.m_pB;
-		m_pT = src.m_pT;
 		src.m_pB = NULL;
-		src.m_pT = NULL;
 	}
 	~WeakArray() throw()
 	{
@@ -761,11 +742,8 @@ public:
 				//free block
 				pB->~SharedArrayBlock();
 				SharedArrayBlockHelper::Free(pB);
-				m_pB = NULL;
 			}
-		}
-		else {
-			assert( m_pT == NULL );
+			m_pB = NULL;
 		} //end if
 	}
 
@@ -778,7 +756,6 @@ public:
 				Release();
 				//assign
 				m_pB = src.m_pB;
-				m_pT = src.m_pT;
 				if( m_pB != NULL ) {
 					//add ref
 					SharedArrayBlock* pB = (SharedArrayBlock*)m_pB;
@@ -797,9 +774,7 @@ public:
 				Release();
 				//assign
 				m_pB = src.m_pB;
-				m_pT = src.m_pT;
 				src.m_pB = NULL;
-				src.m_pT = NULL;
 			}
 		}
 		return *this;
@@ -807,20 +782,25 @@ public:
 
 	bool operator==(const WeakArray<T>& right) const throw()
 	{
-		return m_pT == right.m_pT;
+		return m_pB == right.m_pB;
 	}
 	bool operator!=(const WeakArray<T>& right) const throw()
 	{
-		return m_pT != right.m_pT;
+		return !operator==(right);
 	}
 	bool IsNull() const throw()
 	{
-		return m_pT == NULL;
+		return m_pB == NULL;  //do not check m_p of m_pB
+	}
+
+protected:
+	T* get_array_address() const throw()
+	{
+		return (T*)(((SharedArrayBlock*)m_pB)->GetAddress());
 	}
 
 private:
 	void*  m_pB;   //A pointer to SharedArrayBlock
-	T*     m_pT;   //A pointer to array
 
 private:
 	friend class SharedArrayHelper;
@@ -835,12 +815,12 @@ public:
 	template <typename T>
 	static T* GetInternalPointer(const SharedArray<T>& sp) throw()
 	{
-		return sp.m_pT;
+		return sp.m_pB == NULL ? NULL : sp.get_array_address();
 	}
 	template <typename T>
 	static T* GetInternalPointer(const WeakArray<T>& sp) throw()
 	{
-		return sp.m_pT;
+		return sp.m_pB == NULL ? NULL : sp.get_array_address();
 	}
 	template <typename T>
 	static SharedArrayBlock* GetBlockPointer(const SharedArray<T>& sp) throw()
@@ -877,7 +857,6 @@ public:
 	static WeakArray<T> ToWeakArray(const SharedArray<T>& sp) throw()
 	{
 		WeakArray<T> ret;
-		ret.m_pT = sp.m_pT;
 		ret.m_pB = sp.m_pB;
 		if( ret.m_pB != NULL ) {
 			SharedArrayBlock* pB = (SharedArrayBlock*)ret.m_pB;
@@ -891,12 +870,11 @@ public:
 	static SharedArray<T> ToSharedArray(const WeakArray<T>& sp) throw()
 	{
 		SharedArray<T> ret;
-		ret.m_pT = sp.m_pT;
 		ret.m_pB = sp.m_pB;
 		if( ret.m_pB != NULL ) {
 			SharedArrayBlock* pB = (SharedArrayBlock*)ret.m_pB;
 			if( !pB->AddRefLock() ) {
-				ret.m_pT = NULL;  //shared array freed
+				//shared array freed
 				ret.m_pB = NULL;
 			}
 		}

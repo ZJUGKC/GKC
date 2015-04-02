@@ -78,6 +78,13 @@ public:
 		WriteLN();
 	}
 
+//attribute
+	//set text attribute (one or more STDOUT_ATTR_*)
+	static void SetTextAttribute(uint uAttrs) throw()
+	{
+		stdout_attr_helper::get_attr().SetAttribute(uAttrs);
+	}
+
 //input
 	template <uintptr t_size>
 	static void Read(FixedStringT<CharS, t_size>& str) throw()

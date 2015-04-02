@@ -26,5 +26,39 @@
 #endif
 
 //------------------------------------------------------------------------------
+//stdout tools
+
+// stdout_attr_helper
+
+class stdout_attr_helper
+{
+public:
+	BEGIN_NOINLINE
+	static stdout_attr& get_attr() throw()
+	END_NOINLINE
+	{
+		static stdout_attr l_stdout_attr;
+		return l_stdout_attr;
+	}
+};
+
+// stdout_attr_restore
+
+class stdout_attr_restore
+{
+public:
+	stdout_attr_restore(stdout_attr& attr) throw() : m_attr(attr)
+	{
+	}
+	~stdout_attr_restore() throw()
+	{
+		m_attr.Restore();
+	}
+
+private:
+	stdout_attr&  m_attr;
+};
+
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -29,7 +29,9 @@ namespace GKC {
 class CharStreamProvider
 {
 private:
-	const uint c_FILE_BUFFER_SIZE = 4 * 1024;  // 4K
+	enum {
+		FILE_BUFFER_SIZE = 4 * 1024   // 4K
+	};
 
 public:
 	CharStreamProvider() throw() : m_uReadTotal(0), m_uRead(0), m_uPos(0)
@@ -43,7 +45,6 @@ public:
 	void Close() throw()
 	{
 		m_hd.Close();
-		m_buffer.SetLength(0);
 		m_uReadTotal = 0;
 		m_uRead = 0;
 		m_uPos = 0;
@@ -54,7 +55,7 @@ public:
 	{
 		CallResult cr;
 
-		cr = IoHandleHelper::Open(szFileName), FileOpenTypes::Read, 0, m_hd);
+		cr = IoHandleHelper::Open(szFileName, FileOpenTypes::Read, 0, m_hd);
 		if( cr.IsFailed() )
 			return cr;
 		m_uReadTotal = 0;
@@ -63,7 +64,8 @@ public:
 		//check BOM
 
 		//read block
-		cr = m_hd.Read(RefPtrHelper::ToRefPtr(FixedArrayHelper::GetInternalPointer(m_buffer)), sizeof(byte) * c_FILE_BUFFER_SIZE, m_uRead);
+		RefPtr<byte> refBuffer(FixedArrayHelper::GetInternalPointer(m_buffer));
+		cr = m_hd.Read(refBuffer, sizeof(byte) * FILE_BUFFER_SIZE, m_uRead);
 		if( cr.IsFailed() ) {
 			m_hd.Close();
 			return cr;
@@ -80,28 +82,29 @@ public:
 	{
 		CallResult cr;
 		if( m_uPos < m_uRead ) {
-			ch = m_buffer[m_uPos ++];
+			ch = m_buffer[m_uPos ++].get_Value();
 			return cr;  //OK
 		}
 		//file end
-		if( m_uRead < c_FILE_BUFFER_SIZE ) {
-			cr.SetResult(SystemCallResult::S_EOF);
+		if( m_uRead < FILE_BUFFER_SIZE ) {
+			cr.SetResult(SystemCallResults::S_EOF);
 			return cr;
 		}
 		//read
-		cr = m_hd.Read(RefPtrHelper::ToRefPtr(FixedArrayHelper::GetInternalPointer(m_buffer)), sizeof(byte) * c_FILE_BUFFER_SIZE, m_uRead);
+		RefPtr<byte> refBuffer(FixedArrayHelper::GetInternalPointer(m_buffer));
+		cr = m_hd.Read(refBuffer, sizeof(byte) * FILE_BUFFER_SIZE, m_uRead);
 		if( cr.IsFailed() ) {
 			return cr;
 		}
 		m_uRead /= sizeof(byte);
 		//file end
 		if( m_uRead == 0 ) {
-			cr.SetResult(SystemCallResult::S_EOF);
+			cr.SetResult(SystemCallResults::S_EOF);
 			return cr;
 		}
 		m_uReadTotal += m_uRead;
 		m_uPos = 0;
-		ch = m_buffer[m_uPos ++];
+		ch = m_buffer[m_uPos ++].get_Value();
 		return cr;
 	}
 	//unget char
@@ -121,11 +124,12 @@ public:
 		}
 		//read
 		int64 iNewPos;
-		cr = IoHandleHelper::Seek(m_hd, -((m_uRead + uNum - m_uPos) * sizeof(byte)), iNewPos, IO_SEEK_CURRENT);
+		cr = IoHandleHelper::Seek(m_hd, -(int64)((m_uRead + uNum - m_uPos) * sizeof(byte)), iNewPos, IO_SEEK_CURRENT);
 		if( cr.IsFailed() )
 			return cr;
 		uint uRead;
-		cr = m_hd.Read(RefPtrHelper::ToRefPtr(FixedArrayHelper::GetInternalPointer(m_buffer)), sizeof(byte) * c_FILE_BUFFER_SIZE, uRead);
+		RefPtr<byte> refBuffer(FixedArrayHelper::GetInternalPointer(m_buffer));
+		cr = m_hd.Read(refBuffer, sizeof(byte) * FILE_BUFFER_SIZE, uRead);
 		if (cr.IsFailed()) {
 			return cr;
 		}
@@ -139,7 +143,7 @@ public:
 
 private:
 	IoHandle m_hd;
-	FixedArray<byte, c_FILE_BUFFER_SIZE> m_buffer;  //reading buffer
+	FixedArray<byte, FILE_BUFFER_SIZE> m_buffer;  //reading buffer
 	uintptr m_uReadTotal;  //the total bytes have been read
 	uint    m_uRead;       //the actual bytes have been read in buffer
 	uint    m_uPos;        //the current position in buffer

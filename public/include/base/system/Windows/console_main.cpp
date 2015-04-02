@@ -32,6 +32,10 @@ int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
 	//convert
 	_cmdline_to_strings(argc, argv, envp, spArgs, spEnv, args, env);  //may throw
 
+	//stdout
+	stdout_attr_helper::get_attr().Init();
+	stdout_attr_restore sar(stdout_attr_helper::get_attr());
+
 	//locale
 	set_default_locale();
 

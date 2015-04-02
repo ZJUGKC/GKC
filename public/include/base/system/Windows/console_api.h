@@ -61,6 +61,74 @@ inline void print_string(const CharH* sz) throw()
 }
 
 //------------------------------------------------------------------------------
+//stdout attributes
+
+// Macros
+#define STDOUT_ATTR_FORE_BLUE          FOREGROUND_BLUE
+#define STDOUT_ATTR_FORE_GREEN         FOREGROUND_GREEN
+#define STDOUT_ATTR_FORE_RED           FOREGROUND_RED
+#define STDOUT_ATTR_FORE_INTENSITY     FOREGROUND_INTENSITY
+#define STDOUT_ATTR_BACK_BLUE          BACKGROUND_BLUE
+#define STDOUT_ATTR_BACK_GREEN         BACKGROUND_GREEN
+#define STDOUT_ATTR_BACK_RED           BACKGROUND_RED
+#define STDOUT_ATTR_BACK_INTENSITY     BACKGROUND_INTENSITY
+#define STDOUT_ATTR_UNDERSCORE         COMMON_LVB_UNDERSCORE
+#define STDOUT_ATTR_REVERSE            COMMON_LVB_REVERSE_VIDEO
+
+// stdout_attr
+class stdout_attr
+{
+public:
+	stdout_attr() throw() : m_bInit(false), m_wOldAttr(0), m_hStdOutput(NULL)
+	{
+	}
+	~stdout_attr() throw()
+	{
+	}
+
+	//initialize
+	void Init() throw()
+	{
+		assert( !m_bInit );
+		m_bInit = true;
+		m_hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
+		if( m_hStdOutput == INVALID_HANDLE_VALUE || m_hStdOutput == NULL ) {
+			m_bInit = false;
+		}
+		else {
+			CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+			if( !::GetConsoleScreenBufferInfo(m_hStdOutput, &csbiInfo) ) {
+				m_bInit = false;
+			}
+			else {
+				m_wOldAttr = csbiInfo.wAttributes;
+			}
+		} //end if
+	}
+
+	//restore
+	void Restore() throw()
+	{
+		//restore automatically
+		if( m_bInit ) {
+			::SetConsoleTextAttribute(m_hStdOutput, m_wOldAttr);  //no check
+		}
+	}
+	//set attribute (one or more STDOUT_ATTR_*)
+	void SetAttribute(uint uAttrs) throw()
+	{
+		if( m_bInit ) {
+			::SetConsoleTextAttribute(m_hStdOutput, (WORD)uAttrs);  //no check
+		}
+	}
+
+private:
+	bool   m_bInit;
+	WORD   m_wOldAttr;
+	HANDLE m_hStdOutput;
+};
+
+//------------------------------------------------------------------------------
 //input
 
 // scan_format

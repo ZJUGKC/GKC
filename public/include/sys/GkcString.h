@@ -77,6 +77,11 @@ public:
 		baseClass::m_data[m_uLength] = 0;
 	}
 
+	bool IsEmpty() const throw()
+	{
+		return GetLength() == 0;
+	}
+
 	//iterators
 	const typename thisClass::Iterator GetEnd() const throw()
 	{
@@ -639,6 +644,41 @@ public:
 		if( uCount1 == 0 )
 			return ;
 		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
+	}
+
+	//replace
+	template <typename Tchar, uintptr t_size>
+	static uintptr Replace(const Tchar& chOld, const Tchar& chNew, INOUT FixedStringT<Tchar, t_size>& str) throw()
+	{
+		assert( chOld != 0 && chNew != 0 && chOld != chNew );
+		if( str.IsEmpty() )
+			return 0;
+		return _replace(chOld, chNew, str.GetBegin(), str.GetEnd());
+	}
+	template <typename Tchar>
+	static uintptr Replace(const Tchar& chOld, const Tchar& chNew, INOUT StringT<Tchar>& str) throw()
+	{
+		assert( chOld != 0 && chNew != 0 && chOld != chNew );
+		if( str.IsEmpty() )
+			return 0;
+		return _replace(chOld, chNew, str.GetBegin(), str.GetEnd());
+	}
+
+private:
+	//_replace
+	template <class TIterator>
+	static uintptr _replace(const typename TIterator::EType& tOld, const typename TIterator::EType& tNew,
+							TIterator& iterB, TIterator& iterE) throw()
+	{
+		uintptr uCount = 0;
+		//loop
+		for( auto iter = iterB; iter != iterE; iter.MoveNext() ) {
+			if( iter.get_Value() == tOld ) {
+				iter.set_Value(tNew);
+				uCount ++;
+			}
+		}
+		return uCount;
 	}
 };
 

@@ -26,7 +26,13 @@ SET_TARGET_PROPERTIES(wlc PROPERTIES OUTPUT_NAME "wlc-1-0"
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
 TARGET_LINK_LIBRARIES(wlc GkcSys ${STRING_LINK_EXTRA_LIBS})
 
+SET_POSTBUILD_PATH_COPY(wlc "no-platform" "no-machine" "config" "${PROJECT_SOURCE_DIR}/Compiler/wlc/data" "*" "${EXECUTABLE_OUTPUT_PATH}")
+
 INSTALL(TARGETS wlc
 	RUNTIME DESTINATION public/assemblies COMPONENT runtime)
+INSTALL(FILES "${PROJECT_SOURCE_DIR}/Compiler/wlc/data/wlang.lex"
+	DESTINATION public/assemblies COMPONENT runtime)
+INSTALL(FILES "${PROJECT_SOURCE_DIR}/Compiler/wlc/data/wlang.gra"
+	DESTINATION public/assemblies COMPONENT runtime)
 
 #end

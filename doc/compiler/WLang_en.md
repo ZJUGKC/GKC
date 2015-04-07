@@ -132,6 +132,26 @@ const int[] c_arr = { 0, 1, 2 };
 
 The constants must be defined in class or method body similar to static variables.
 
+The string constants are defined by a pair of quotation marks.
+
+The escape characters:
+
+|Symbols|Description|Values|
+|---|---|---|
+|\a| bell | 007 |
+|\b| backspace | 008 |
+|\f| form feed | 012 |
+|\n| line feed | 010 |
+|\r| carriage return | 013 |
+|\t| horizontal tab | 009 |
+|\v| vertical tab | 011 |
+|\\| backslash | 092 |
+|\'| single quote mark | 039 |
+|\"| quotation mark | 034 |
+|\0| null | 000 |
+|\ddd| one to three octal digits | 3-digit octal number |
+|\xhh| one to two hexadecimal digits | 2-digit hexadecimal number |
+
 ### Namespace
 
 The namespace organizes the classes to a hierarchical structure according to conceptions.

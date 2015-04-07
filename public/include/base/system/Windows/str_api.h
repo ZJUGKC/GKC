@@ -173,4 +173,25 @@ inline void result_to_string(const call_result& cr, CharH* szBuffer, uintptr uSi
 	}
 }
 
+//------------------------------------------------------------------------------
+// path to platform
+inline void cvt_path_string_to_platform(CharA* szBuffer) throw()
+{
+	CharA* ps = szBuffer;
+	while( *ps != 0 ) {
+		if( *ps == '/' )
+			*ps = '\\';
+		++ ps;
+	}
+}
+inline void cvt_path_string_to_platform(CharH* szBuffer) throw()
+{
+	CharH* ps = szBuffer;
+	while( *ps != 0 ) {
+		if( *ps == L'/' )
+			*ps = L'\\';
+		++ ps;
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////

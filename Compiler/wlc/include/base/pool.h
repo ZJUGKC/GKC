@@ -10,62 +10,53 @@
 **
 */
 
-/*
-This file contains classes for source analyzer.
-Author: Lijuan Mei
-*/
-
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __SOURCE_ANALYZER_H__
-#define __SOURCE_ANALYZER_H__
+#ifndef __POOL_H__
+#define __POOL_H__
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "../base/CharStreamProvider.h"
-#include "../base/fsa.h"
-#include "../base/pool.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// source analyzer
+// DataPoolAllocator
 
-class SourceAnalyzer
+class DataPoolAllocator
 {
 public:
-	SourceAnalyzer() throw()
-	{
-	}
-	~SourceAnalyzer() throw()
+	DataPoolAllocator() throw() : m_bInit(false)
 	{
 	}
 
-	// init
-	CallResult Initialize(const RefPtr<CharS>& szFileName) throw()
+	//return : the index of pool array
+	uint Allocate(uint uBytes)  //may throw
 	{
-		CallResult cr;
-		return cr;
+		assert( uBytes > 0 );
+		const uintptr c_Grow = 4 * 1024;  //4K
+		if( !m_bInit ) {
+			m_arr = SharedArrayHelper::MakeSharedArray<byte>(MemoryHelper::GetCrtMemoryManager());
+			m_bInit = true;
+		}
+		uintptr uCount = m_arr.GetCount();
+		if( uCount > (uintptr)(Limits<uint>::Max) )
+			throw OverflowException();
+		uint uNew = SafeOperators::AddThrow((uint)uCount, uBytes);
+		m_arr.SetCount((uintptr)uNew, c_Grow);
+		return (uint)uCount;
 	}
-
-	// parse
-	void parse() throw()
+	//get the pointer
+	void* ToPtr(uint index) const throw()
 	{
+		return SharedArrayHelper::GetInternalPointer(m_arr) + index;
 	}
 
 private:
-	void lexical() throw()
-	{
-	}
-	void grammar() throw()
-	{
-	}
-	void semantics() throw()
-	{
-	}
+	bool  m_bInit;
+	SharedArray<byte>  m_arr;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif // __SOURCE_ANALYZER_H__
+#endif //__POOL_H__
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,61 +11,27 @@
 */
 
 /*
-This file contains classes for source analyzer.
-Author: Lijuan Mei
+This file contains functions.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __SOURCE_ANALYZER_H__
-#define __SOURCE_ANALYZER_H__
+#ifndef __COMPILE_SINGLE_FILE_H__
+#define __COMPILE_SINGLE_FILE_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../base/CharStreamProvider.h"
-#include "../base/fsa.h"
-#include "../base/pool.h"
+#include "../parser/SourceAnalyzer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// source analyzer
-
-class SourceAnalyzer
+inline int compile_single_file(const StringS& strSrc, const StringS& strDest)
 {
-public:
-	SourceAnalyzer() throw()
-	{
-	}
-	~SourceAnalyzer() throw()
-	{
-	}
-
-	// init
-	CallResult Initialize(const RefPtr<CharS>& szFileName) throw()
-	{
-		CallResult cr;
-		return cr;
-	}
-
-	// parse
-	void parse() throw()
-	{
-	}
-
-private:
-	void lexical() throw()
-	{
-	}
-	void grammar() throw()
-	{
-	}
-	void semantics() throw()
-	{
-	}
-};
+	return 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif // __SOURCE_ANALYZER_H__
+#endif
 ////////////////////////////////////////////////////////////////////////////////

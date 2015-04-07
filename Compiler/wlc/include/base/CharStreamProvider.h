@@ -117,7 +117,7 @@ public:
 			return cr;
 		}
 		//file begin
-		if( (uintptr)m_uRead == m_uReadTotal ) {
+		if( (uint64)m_uRead == m_uReadTotal ) {
 			//this is an error!
 			cr.SetResult(CR_FAIL);
 			return cr;
@@ -144,7 +144,7 @@ public:
 private:
 	IoHandle m_hd;
 	FixedArray<byte, FILE_BUFFER_SIZE> m_buffer;  //reading buffer
-	uintptr m_uReadTotal;  //the total bytes have been read
+	uint64  m_uReadTotal;  //the total bytes have been read
 	uint    m_uRead;       //the actual bytes have been read in buffer
 	uint    m_uPos;        //the current position in buffer
 };

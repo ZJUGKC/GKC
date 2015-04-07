@@ -27,6 +27,7 @@ This is pre-compiled header file.
 #include "sys/GkcArray.h"
 #include "sys/GkcString.h"
 #include "sys/GkcConsole.h"
+#include "sys/GkcPath.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__PRECOMP_H__

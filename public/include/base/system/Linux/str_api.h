@@ -415,4 +415,13 @@ inline void result_to_string(const call_result& cr, CharA* szBuffer, uintptr uSi
 	}
 }
 
+//------------------------------------------------------------------------------
+// path to platform
+inline void cvt_path_string_to_platform(CharA* szBuffer) throw()
+{
+}
+inline void cvt_path_string_to_platform(CharL* szBuffer) throw()
+{
+}
+
 ////////////////////////////////////////////////////////////////////////////////

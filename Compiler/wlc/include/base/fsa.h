@@ -70,8 +70,9 @@ typedef struct _tagFSA_Table {
 #define BEGIN_FSA_TRAITS_STATE_MAP(_class) \
 	typedef _class _TraitsGetStateMap; \
 	BEGIN_NOINLINE  \
-	static const FSA_STATE_ITEM* GetStateTable(int& iMaxStateNo) throw() {  \
-	END_NOINLINE
+	static const FSA_STATE_ITEM* GetStateTable(int& iMaxStateNo) throw() \
+	END_NOINLINE \
+	{
 
 // BEGIN_STATE_TRANSITION(state_name)
 //   state_name : Specify the state name or state enumerator.

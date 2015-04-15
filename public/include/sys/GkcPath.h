@@ -11,61 +11,44 @@
 */
 
 /*
-This file contains classes for source analyzer.
-Author: Lijuan Mei
+This file contains Path of FileSystem classes.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __SOURCE_ANALYZER_H__
-#define __SOURCE_ANALYZER_H__
+#ifndef __GKC_PATH_H__
+#define __GKC_PATH_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../base/CharStreamProvider.h"
-#include "../base/fsa.h"
-#include "../base/pool.h"
+#ifndef __GKC_STRING_H__
+	#error GkcPath.h requires GkcString.h to be included first.
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// source analyzer
+// classes
 
-class SourceAnalyzer
+// FsPathHelper
+
+class FsPathHelper
 {
 public:
-	SourceAnalyzer() throw()
+	//convert path string to platform
+	template <typename Tchar, uintptr t_size>
+	static void ConvertPathStringToPlatform(INOUT FixedStringT<Tchar, t_size>& str) throw()
 	{
+		cvt_path_string_to_platform(FixedArrayHelper::GetInternalPointer(str));
 	}
-	~SourceAnalyzer() throw()
+	template <typename Tchar>
+	static void ConvertPathStringToPlatform(INOUT StringT<Tchar>& str) throw()
 	{
-	}
-
-	// init
-	CallResult Initialize(const RefPtr<CharS>& szFileName) throw()
-	{
-		CallResult cr;
-		return cr;
-	}
-
-	// parse
-	void parse() throw()
-	{
-	}
-
-private:
-	void lexical() throw()
-	{
-	}
-	void grammar() throw()
-	{
-	}
-	void semantics() throw()
-	{
+		cvt_path_string_to_platform(SharedArrayHelper::GetInternalPointer(str));
 	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif // __SOURCE_ANALYZER_H__
+#endif //__GKC_PATH_H__
 ////////////////////////////////////////////////////////////////////////////////

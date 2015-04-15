@@ -69,6 +69,62 @@ inline void print_string(const CharL* sz) throw()
 }
 
 //------------------------------------------------------------------------------
+//stdout attributes
+
+// Macros
+#define STDOUT_ATTR_FORE_BLUE          (0x00000004)
+#define STDOUT_ATTR_FORE_GREEN         (0x00000002)
+#define STDOUT_ATTR_FORE_RED           (0x00000001)
+#define STDOUT_ATTR_FORE_INTENSITY     (0x00000008)
+#define STDOUT_ATTR_BACK_BLUE          (0x00000040)
+#define STDOUT_ATTR_BACK_GREEN         (0x00000020)
+#define STDOUT_ATTR_BACK_RED           (0x00000010)
+#define STDOUT_ATTR_BACK_INTENSITY     (0x00000080)
+#define STDOUT_ATTR_UNDERSCORE         (0x00000100)
+#define STDOUT_ATTR_REVERSE            (0x00000200)
+
+// stdout_attr
+class stdout_attr
+{
+public:
+	stdout_attr() throw()
+	{
+	}
+	~stdout_attr() throw()
+	{
+	}
+
+	//initialize
+	void Init() throw()
+	{
+	}
+
+	//restore
+	void Restore() throw()
+	{
+		::printf("\033[0m");
+	}
+
+	//set attribute (one or more STDOUT_ATTR_*)
+	void SetAttribute(uint uAttrs) throw()
+	{
+		char szFormat[256];
+		szFormat[0] = 0;
+		int ret = value_to_string(szFormat, sizeof(szFormat) / sizeof(char),
+								"\033[%d;%d;%dm",
+								(uAttrs & STDOUT_ATTR_REVERSE) ? (7) : ((uAttrs & STDOUT_ATTR_UNDERSCORE) ? (4) : ((uAttrs & (STDOUT_ATTR_FORE_INTENSITY | STDOUT_ATTR_BACK_INTENSITY)) ? (1) : (0))),  //mode
+								(uAttrs & (STDOUT_ATTR_FORE_RED | STDOUT_ATTR_FORE_GREEN | STDOUT_ATTR_FORE_BLUE)) + 30,         //foreground
+								((uAttrs & (STDOUT_ATTR_BACK_RED | STDOUT_ATTR_BACK_GREEN | STDOUT_ATTR_BACK_BLUE)) >> 4) + 40   //background
+								);
+		if( ret >= 0 )
+			szFormat[ret] = 0;
+		print_string(szFormat);
+	}
+
+private:
+};
+
+//------------------------------------------------------------------------------
 //input
 
 // scan_format

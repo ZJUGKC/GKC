@@ -536,6 +536,9 @@ template <typename T>
 class ArrayIterator
 {
 public:
+	typedef T  EType;
+
+public:
 	ArrayIterator() throw()
 	{
 	}

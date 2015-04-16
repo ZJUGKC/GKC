@@ -14,6 +14,8 @@
 This file contains classes for Window handle.
 
 Author: Lijuan Mei
+
+Reference: ATL (ATL is not open source, so this file is re-written)
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,6 +57,18 @@ public:
 	{
 	}
 	HMENU m_hMenu;
+};
+
+class _U_STRINGorID
+{
+public:
+	_U_STRINGorID(LPCWSTR lpString) : m_lpstr(lpString)
+	{
+	}
+	_U_STRINGorID(UINT nID) : m_lpstr(MAKEINTRESOURCE(nID))
+	{
+	}
+	LPCWSTR m_lpstr;
 };
 
 // _Window

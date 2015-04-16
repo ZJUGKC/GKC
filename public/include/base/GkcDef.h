@@ -65,6 +65,15 @@ for cross-platform.
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+//------------------------------------------------------------------------------
+// Byte Order
+
+/* author: Lijuan Mei */
+
+// ByteOrderHelper
+typedef byte_order_helper  ByteOrderHelper;
+
+//------------------------------------------------------------------------------
 // CallResult
 
 typedef call_result  CallResult;
@@ -892,6 +901,48 @@ public:
 	{
 		return t.m_p;
 	}
+};
+
+// WeakObjectRef<T>
+//   T: must have GetHandle, Attach and Detach methods
+template <class T>
+class WeakObjectRef
+{
+	WeakObjectRef() throw()
+	{
+	}
+	WeakObjectRef(const WeakObjectRef& src) throw()
+	{
+		m_t.Detach();
+		m_t.Attach(src.m_t.GetHandle());
+	}
+	~WeakObjectRef() throw()
+	{
+		m_t.Detach();
+	}
+
+	//operators
+	WeakObjectRef& operator=(const WeakObjectRef& src) throw()
+	{
+		if( this != &src ) {
+			m_t.Detach();
+			m_t.Attach(src.m_t.GetHandle());
+		}
+		return *this;
+	}
+
+	//methods
+	const T& GetObject() const throw()
+	{
+		return m_t;
+	}
+	T& GetObject() throw()
+	{
+		return m_t;
+	}
+
+private:
+	T m_t;  //object may contain a pointer (or a handle) from system call or third party library
 };
 
 //------------------------------------------------------------------------------

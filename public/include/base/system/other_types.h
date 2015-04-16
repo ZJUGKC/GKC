@@ -45,5 +45,83 @@ inline void    crt_free(const uintptr& p) throw()
 }
 
 //------------------------------------------------------------------------------
+//classes
+
+// byte_order_helper
+
+class byte_order_helper
+{
+public:
+	//Check the host system's endian
+	static bool IsBigEndianHost() throw()
+	{
+		uint u = 1;
+		return *((byte*)&u) != 0x01;
+	}
+	//Swap an integer's byte order
+	static ushort Swap(ushort x) throw()
+	{
+		return ((x & 0x00FF) << 8) | ((x >> 8) & 0x00FF);
+	}
+	static short Swap(short x) throw()
+	{
+		return (short)Swap((ushort)x);
+	}
+	static uint Swap(uint x) throw()
+	{
+		return ((x & 0x000000FF) << 24)
+			| ((x & 0x0000FF00) << 8)
+			| ((x & 0x00FF0000) >> 8)
+			| ((x & 0xFF000000) >> 24);
+	}
+	static int Swap(int x) throw()
+	{
+		return (int)Swap((uint)x);
+	}
+	static uint64 Swap(uint64 x) throw()
+	{
+		return ((x & (uint64)0x00FF) << 56)
+			| ((x & (((uint64)0x00FF) << 8)) << 40)
+			| ((x & (((uint64)0x00FF) << 16)) << 24)
+			| ((x & (((uint64)0x00FF) << 24)) << 8)
+			| ((x & (((uint64)0x00FF) << 32)) >> 8)
+			| ((x & (((uint64)0x00FF) << 40)) >> 24)
+			| ((x & (((uint64)0x00FF) << 48)) >> 40)
+			| ((x & (((uint64)0x00FF) << 56)) >> 56);
+	}
+	static int64 Swap(int64 x) throw()
+	{
+		return (int64)Swap((uint64)x);
+	}
+
+	//Swap a character's byte order
+#if defined(OS_WINDOWS)
+	static CharH Swap(CharH x) throw()
+	{
+		return (CharH)Swap((ushort)x);
+	}
+#elif defined(OS_LINUX)
+	//static CharH Swap(CharH x) throw()
+	//  the same as : static ushort Swap(ushort x) throw()
+#else
+	#error Error OS type!
+#endif
+
+	static CharL Swap(CharL x) throw()
+	{
+		return (CharL)Swap((uint)x);
+	}
+	//Swap a float's byte order
+	static float Swap(float x) throw()
+	{
+		uint v = Swap(*((uint*)&x));
+		return *((float*)&v);
+	}
+	static double Swap(double x) throw()
+	{
+		uint64 v = Swap(*((uint64*)&x));
+		return *((double*)&v);
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////

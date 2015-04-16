@@ -32,16 +32,26 @@ public:
 	uint Allocate(uint uBytes)  //may throw
 	{
 		assert( uBytes > 0 );
-		const uintptr c_Grow = 4 * 1024;  //4K
 		if( !m_bInit ) {
 			m_arr = SharedArrayHelper::MakeSharedArray<byte>(MemoryHelper::GetCrtMemoryManager());
 			m_bInit = true;
 		}
 		uintptr uCount = m_arr.GetCount();
+		//overflow
 		if( uCount > (uintptr)(Limits<uint>::Max) )
 			throw OverflowException();
+		//add a room for count number
+		if( uCount < (uintptr)sizeof(uint) )
+			uCount = (uintptr)sizeof(uint);
 		uint uNew = SafeOperators::AddThrow((uint)uCount, uBytes);
-		m_arr.SetCount((uintptr)uNew, c_Grow);
+		m_arr.SetCount((uintptr)uNew, 0);
+		//fill the count number
+		uint uAct = uNew - ((uint)sizeof(uint));
+		if( !ByteOrderHelper::IsBigEndianHost() ) {
+			uAct = ByteOrderHelper::Swap(uAct);
+		}
+		*((uint*)ToPtr(0)) = uAct;
+		//return a nonzero value
 		return (uint)uCount;
 	}
 	//get the pointer

@@ -52,6 +52,29 @@ inline uintptr calc_string_char_length(const CharA* s) throw()
 	return ::_mbslen((const unsigned char*)s);
 }
 
+// copy_string
+//  no buffer overruns
+inline CharA* copy_string(const CharA* szSrc, uintptr uCopyLen, CharA* szDest, uintptr uDestLen) throw()
+{
+	assert( uDestLen > 0 );
+	uintptr n = uCopyLen;
+	if( n > uDestLen - 1 )
+		n = uDestLen - 1;
+	::strncpy_s(szDest, uDestLen, szSrc, n);
+	szDest[n] = '\0';
+	return szDest;
+}
+inline CharH* copy_string(const CharH* szSrc, uintptr uCopyLen, CharH* szDest, uintptr uDestLen) throw()
+{
+	assert( uDestLen > 0 );
+	uintptr n = uCopyLen;
+	if( n > uDestLen - 1 )
+		n = uDestLen - 1;
+	::wcsncpy_s(szDest, uDestLen, szSrc, n);
+	szDest[n] = L'\0';
+	return szDest;
+}
+
 // compare_string
 
 inline int compare_string(const CharH* s1, const CharH* s2) throw()

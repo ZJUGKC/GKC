@@ -255,6 +255,8 @@ the query implementation.
 Constructor can be defined. The default constructor, copy constructor, move constructor,
 assignment operator, move assignment operator and destructor are implemented automatically.
 
+The return type can be `weak ref` for the special wrapper using third party library.
+
 Exception.
 
 ### Interface

@@ -908,13 +908,22 @@ public:
 template <class T>
 class WeakObjectRef
 {
+public:
 	WeakObjectRef() throw()
 	{
 	}
 	WeakObjectRef(const WeakObjectRef& src) throw()
 	{
-		m_t.Detach();
+		//m_t is null
 		m_t.Attach(src.m_t.GetHandle());
+	}
+	WeakObjectRef(const T& t) throw()
+	{
+		m_t.Attach(t.GetHandle());
+	}
+	WeakObjectRef(T&& t) throw()
+	{
+		m_t.Attach(t.Detach());
 	}
 	~WeakObjectRef() throw()
 	{
@@ -928,6 +937,18 @@ class WeakObjectRef
 			m_t.Detach();
 			m_t.Attach(src.m_t.GetHandle());
 		}
+		return *this;
+	}
+	WeakObjectRef& operator=(const T& t) throw()
+	{
+		m_t.Detach();
+		m_t.Attach(t.GetHandle());
+		return *this;
+	}
+	WeakObjectRef& operator=(T&& t) throw()
+	{
+		m_t.Detach();
+		m_t.Attach(t.Detach());
 		return *this;
 	}
 

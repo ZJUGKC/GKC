@@ -147,6 +147,11 @@ public:
 		return m_hWnd;
 	}
 
+	HWND GetHandle() const throw()
+	{
+		return m_hWnd;
+	}
+
 	DWORD GetStyle() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
@@ -434,10 +439,10 @@ public:
 		return ::BeginPaint(m_hWnd, lpPaint);
 	}
 
-	void EndPaint(IN LPPAINTSTRUCT lpPaint) throw()
+	void EndPaint(IN const PAINTSTRUCT* lpPaint) throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		::EndPaint(m_hWnd, lpPaint);
+		::EndPaint(m_hWnd, lpPaint);  //no check
 	}
 
 	HDC GetDC() throw()
@@ -509,25 +514,25 @@ public:
 	}
 
 	BOOL InvalidateRect(
-		IN LPCRECT lpRect,
+		IN const RECT* lpRect,
 		IN BOOL bErase = TRUE) throw()
 	{
 		assert( ::IsWindow(m_hWnd)  );
 		return ::InvalidateRect(m_hWnd, lpRect, bErase);
 	}
 
-	BOOL ValidateRect(IN LPCRECT lpRect) throw()
+	BOOL ValidateRect(IN const RECT* lpRect) throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 		return ::ValidateRect(m_hWnd, lpRect);
 	}
 
-	void InvalidateRgn(
+	BOOL InvalidateRgn(
 		IN HRGN hRgn,
 		IN BOOL bErase = TRUE) throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		::InvalidateRgn(m_hWnd, hRgn, bErase);
+		return ::InvalidateRgn(m_hWnd, hRgn, bErase);
 	}
 
 	BOOL ValidateRgn(IN HRGN hRgn) throw()
@@ -569,7 +574,7 @@ public:
 	}
 
 	BOOL RedrawWindow(
-		IN LPCRECT lpRectUpdate = NULL,
+		IN const RECT* lpRectUpdate = NULL,
 		IN HRGN hRgnUpdate = NULL,
 		IN UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE) throw()
 	{
@@ -770,8 +775,8 @@ public:
 	BOOL ScrollWindow(
 		IN int xAmount,
 		IN int yAmount,
-		IN LPCRECT lpRect = NULL,
-		IN LPCRECT lpClipRect = NULL) throw()
+		IN const RECT* lpRect = NULL,
+		IN const RECT* lpClipRect = NULL) throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 		return ::ScrollWindow(m_hWnd, xAmount, yAmount, lpRect, lpClipRect);
@@ -780,8 +785,8 @@ public:
 	int ScrollWindowEx(
 		IN int dx,
 		IN int dy,
-		IN LPCRECT lpRectScroll,
-		IN LPCRECT lpRectClip,
+		IN const RECT* lpRectScroll,
+		IN const RECT* lpRectClip,
 		IN HRGN hRgnUpdate,
 		IN LPRECT lpRectUpdate,
 		IN UINT uFlags) throw()
@@ -794,8 +799,8 @@ public:
 		IN int dx,
 		IN int dy,
 		IN UINT uFlags,
-		IN LPCRECT lpRectScroll = NULL,
-		IN LPCRECT lpRectClip = NULL,
+		IN const RECT* lpRectScroll = NULL,
+		IN const RECT* lpRectClip = NULL,
 		IN HRGN hRgnUpdate = NULL,
 		IN LPRECT lpRectUpdate = NULL) throw()
 	{
@@ -840,14 +845,14 @@ public:
 
 // Window Access Functions
 
-	_Window ChildWindowFromPoint(IN POINT point) const throw()
+	_Window ChildWindowFromPoint(IN const POINT& point) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 		return _Window(::ChildWindowFromPoint(m_hWnd, point));
 	}
 
 	_Window ChildWindowFromPointEx(
-		IN POINT point,
+		IN const POINT& point,
 		IN UINT uFlags) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
@@ -1056,7 +1061,7 @@ public:
 
 	int SetScrollInfo(
 		IN int nBar,
-		IN LPSCROLLINFO lpScrollInfo,
+		IN LPCSCROLLINFO lpScrollInfo,
 		IN BOOL bRedraw = TRUE) throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
@@ -1113,7 +1118,7 @@ public:
 		return SetWindowPos(NULL, 0, 0, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top, uFlags);
 	}
 
-	int GetWindowRgn(OUT HRGN hRgn) throw()
+	int GetWindowRgn(INOUT HRGN hRgn) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 		return ::GetWindowRgn(m_hWnd, hRgn);
@@ -1140,13 +1145,13 @@ public:
 		return ::DeferWindowPos(hWinPosInfo, m_hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
 	}
 
-	DWORD GetWindowThreadID() throw()
+	DWORD GetWindowThreadID() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 		return ::GetWindowThreadProcessId(m_hWnd, NULL);
 	}
 
-	DWORD GetWindowProcessID() throw()
+	DWORD GetWindowProcessID() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 		DWORD dwProcessID;
@@ -1165,7 +1170,7 @@ public:
 		return ::IsWindowUnicode(m_hWnd);
 	}
 
-	BOOL IsParentDialog() throw()
+	BOOL IsParentDialog() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 		WCHAR szBuf[8]; // "#32770" + NUL character

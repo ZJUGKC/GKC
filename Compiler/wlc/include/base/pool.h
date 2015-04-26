@@ -63,6 +63,62 @@ public:
 private:
 	bool  m_bInit;
 	SharedArray<byte>  m_arr;
+
+private:
+	//noncopyable
+};
+
+// StringPool
+
+class StringPool
+{
+public:
+	StringPool() throw()
+	{
+	}
+	~StringPool() throw()
+	{
+	}
+
+	const RefPtr<CharA> GetString(uint uIndex) const throw()
+	{
+		return RefPtr<CharA>((CharA*)m_alloc.ToPtr(uIndex + sizeof(uint)));
+	}
+	uint GetStringLength(uint uIndex) const throw()
+	{
+		uint uLen = *((uint*)m_alloc.ToPtr(uIndex));
+		if( !ByteOrderHelper::IsBigEndianHost() ) {
+			uLen = ByteOrderHelper::Swap(uLen);
+		}
+		return uLen;
+	}
+
+	//nonempty string
+	uint PutString(const StringA& str)
+	{
+		uintptr uLen = str.GetLength();
+		assert( uLen > 0 );
+		//overflow
+		if( uLen >= (uintptr)(Limits<uint>::Max) )
+			throw OverflowException();
+		uint uBytes = SafeOperators::AddThrow((uint)sizeof(uint), (uint)((uLen + 1) * sizeof(CharA)));
+		uint uIndex = m_alloc.Allocate(uBytes);
+		//length
+		uint uSave = (uint)uLen;
+		if( !ByteOrderHelper::IsBigEndianHost() ) {
+			uSave = ByteOrderHelper::Swap(uSave);
+		}
+		*((uint*)m_alloc.ToPtr(uIndex)) = uSave;
+		//copy
+		mem_copy(SharedArrayHelper::GetInternalPointer(str), (uLen + 1) * sizeof(CharA), m_alloc.ToPtr(uIndex + sizeof(uint)));
+		return uIndex;
+	}
+
+private:
+	DataPoolAllocator m_alloc;
+
+private:
+	//noncopyable
 };
 
 ////////////////////////////////////////////////////////////////////////////////

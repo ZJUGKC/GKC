@@ -15,6 +15,7 @@ program : namespace_block_list { do_program_ns_list }
 	;
 
 namespace_block_list : namespace_block_list namespace_block { do_ns_list_block }
+	| namespace_block { do_ns_block }
 	;
 
 namespace_block : TK_KEY_NAMESPACE TK_IDENTIFIER TK_LCURLY TK_RCURLY  { do_ns_null_body }

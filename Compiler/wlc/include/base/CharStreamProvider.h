@@ -61,8 +61,24 @@ public:
 		m_uReadTotal = 0;
 		m_uRead = 0;
 		m_uPos = 0;
-		//check BOM
-
+		//check BOM (EF BB BF)
+		byte btBOM[3];
+		RefPtr<byte> refBOM(btBOM);
+		cr = m_hd.Read(refBOM, sizeof(btBOM), m_uRead);
+		if( cr.IsFailed() ) {
+			m_hd.Close();
+			return cr;
+		}
+		if( m_uRead != sizeof(btBOM) ) {
+			m_hd.Close();
+			cr.SetResult(CR_FAIL);
+			return cr;
+		}
+		if( btBOM[0] != 0xEF || btBOM[1] != 0xBB || btBOM[2] != 0xBF ) {
+			m_hd.Close();
+			cr.SetResult(CR_FAIL);
+			return cr;
+		}
 		//read block
 		RefPtr<byte> refBuffer(FixedArrayHelper::GetInternalPointer(m_buffer));
 		cr = m_hd.Read(refBuffer, sizeof(byte) * FILE_BUFFER_SIZE, m_uRead);

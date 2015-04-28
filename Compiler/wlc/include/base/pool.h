@@ -59,6 +59,19 @@ public:
 	{
 		return SharedArrayHelper::GetInternalPointer(m_arr) + index;
 	}
+	//get the size
+	uint GetSize() const throw()
+	{
+		uintptr uCount = m_arr.GetCount();
+		if( uCount == 0 )
+			return 0;
+		assert( uCount >= (uintptr)sizeof(uint) );
+		uint uSize = *((uint*)ToPtr(0));
+		if( !ByteOrderHelper::IsBigEndianHost() ) {
+			uSize = ByteOrderHelper::Swap(uSize);
+		}
+		return uSize;
+	}
 
 private:
 	bool  m_bInit;

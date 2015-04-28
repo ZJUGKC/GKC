@@ -132,26 +132,27 @@ TK_COMMENT_START  /\*
 TK_SPACE    [\s\t]+
 TK_RETURN   \r|\n|\r\n
 TK_SEP      %%
+TK_ACTION   do_[a-z]([a-z_]|[0-9])*
 TK_MACRO    [a-z]([a-z_]|[0-9])*
 TK_TOKEN    TK_[A-Z]([A-Z_]|[0-9])*
 TK_LCURLY   \{
 TK_RCURLY   \}
-TK_ACTION   do_[a-z]([a-z_]|[0-9])*
 %%
 TK_COMMENT_START  { do_comment_start }
 TK_SPACE          { do_space }
 TK_RETURN         { do_return }
 TK_SEP            { do_sep }
+TK_ACTION         { do_action }
 TK_MACRO          { do_macro }
 TK_TOKEN          { do_token }
 TK_LCURLY         { do_lcurly }
 TK_RCURLY         { do_rcurly }
-TK_ACTION         { do_action }
 ```
 
 ```
 %%
-lex_def : rule_block TK_SEP action_block  { do_def }
+lex_def : TK_COMMENT_START rule_block TK_SEP action_block  { do_comment_def }
+	| rule_block TK_SEP action_block  { do_def }
 	;
 rule_block : rule_block TK_TOKEN  { do_rule_block_token }
 	| TK_TOKEN  { do_rule_token }

@@ -11,27 +11,55 @@
 */
 
 /*
-This file contains functions.
+This file contains classes for lexer parser.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __COMPILE_SINGLE_FILE_H__
-#define __COMPILE_SINGLE_FILE_H__
+#ifndef __LEXER_PARSER_H__
+#define __LEXER_PARSER_H__
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "../analyzer/SourceAnalyzer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-inline int compile_single_file(const StringS& strSrc, const StringS& strDest)
+// LexerTable
+//   a general implementation
+class LexerTable : public ILexerTable
 {
-	return 0;
-}
+public:
+	LexerTable() throw()
+	{
+	}
+	~LexerTable() throw()
+	{
+	}
+
+public:
+	//ILexerTable
+	virtual void SetFSA(const SharedPtr<FiniteStateAutomata>& fsa) throw()
+	{
+		m_spFsa = fsa;
+	}
+	virtual const SharedPtr<FiniteStateAutomata>& GetFSA() const throw()
+	{
+		return m_fsa;
+	}
+	//token table
+	virtual uint GetTokenID(IN const RefPtr<Char>& szToken) throw() = 0;
+	virtual const RefPtr<CharA> GetTokenName(IN uint uID) throw() = 0;
+
+private:
+	//FSA
+	SharedPtr<FiniteStateAutomata>  m_spFsa;
+	//token table
+
+private:
+	//noncopyable
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif
+#endif //__LEXER_PARSER_H__
 ////////////////////////////////////////////////////////////////////////////////

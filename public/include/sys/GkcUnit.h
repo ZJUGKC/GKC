@@ -227,11 +227,12 @@ class _UnitTestMainHelper
 public:
 	static int MainProcess(const GKC::ConstArray<GKC::ConstStringS>& args, _UnitTestMessageBuffer& buffer)
 	{
-		const CharS* l_szSep1   = _S("==========================");
-		const CharS* l_szSep2   = _S("**************************");
-		const CharS* l_szSep3   = _S("--------------------------");
-		const CharS* l_szColon  = _S(":");
-		const CharS* l_szNoTest = _S("ERROR: NO SUCH TEST!");
+		//const strings
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep1, l_iSep1Len, _S("=========================="))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep2, l_iSep2Len, _S("**************************"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep3, l_iSep3Len, _S("--------------------------"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szColon, l_iColonLen, _S(":"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szNoTest, l_iNoTestLen, _S("ERROR: NO SUCH TEST!"))
 
 		//map
 		_UnitTestMap* pMap = _UnitTestMapHelper::GetUnitTestMap();
@@ -244,14 +245,14 @@ public:
 			bool bContinue = pMap->EnumFirst(info);
 			while( bContinue ) {
 				//current test
-				Console::WriteLine(ConstStringS(l_szSep1, 0));
+				Console::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
 				Console::Write(info.strName);
-				Console::WriteLine(ConstStringS(l_szColon, 0));
+				Console::WriteLine(ConstStringS(l_szColon, l_iColonLen));
 				if( !info.pFunc(buffer) ) {
 					Console::WriteLine(buffer);
 					uFailed ++;
 				}
-				Console::WriteLine(ConstStringS(l_szSep2, 0));
+				Console::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
 				uTotal ++;
 				bContinue = pMap->EnumNext(info);
 			}
@@ -263,12 +264,12 @@ public:
 			iter.MoveNext();  //from 1
 			for( ; iter != args.GetEnd(); iter.MoveNext() ) {
 				//current test
-				Console::WriteLine(ConstStringS(l_szSep1, 0));
+				Console::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
 				Console::Write(iter.get_Value());
-				Console::WriteLine(ConstStringS(l_szColon, 0));
+				Console::WriteLine(ConstStringS(l_szColon, l_iColonLen));
 				_UnitTestFunc pFunc = pMap->Find(iter.get_Value());
 				if( pFunc == NULL ) {
-					Console::WriteLine(ConstStringS(l_szNoTest, 0));
+					Console::WriteLine(ConstStringS(l_szNoTest, l_iNoTestLen));
 					uFailed ++;
 				}
 				else {
@@ -277,7 +278,7 @@ public:
 						uFailed ++;
 					}
 				}
-				Console::WriteLine(ConstStringS(l_szSep2, 0));
+				Console::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
 				uTotal ++;
 			}
 		} //end if
@@ -289,7 +290,7 @@ public:
 									_S("Total (%Iu), Failed (%Iu)"), uTotal, uFailed);
 			if( ret >= 0 )
 				buffer.SetLength(ret);
-			Console::WriteLine(ConstStringS(l_szSep3, 0));
+			Console::WriteLine(ConstStringS(l_szSep3, l_iSep3Len));
 			Console::WriteLine(buffer);
 		}
 
@@ -314,12 +315,11 @@ class _UnitTestBodyHelper
 public:
 	static void FormatErrorByCallResult(const CallResult& cr, const CharS* szFileName, int iLineNumber, bool bFixture, bool bError, _UnitTestMessageBuffer& buffer) throw()
 	{
-		const CharS   l_szFixture[] = _S("[fixture]");
-		const uintptr l_iFixtureLen = sizeof(l_szFixture) / sizeof(CharS) - 1;
-		const CharS   l_szError[]   = _S("error:");
-		const uintptr l_iErrorLen   = sizeof(l_szError) / sizeof(CharS) - 1;
-		const CharS   l_szCorrect[] = _S("correct:");
-		const uintptr l_iCorrectLen = sizeof(l_szCorrect) / sizeof(CharS) - 1;
+		//const strings
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szFixture, l_iFixtureLen, _S("[fixture]"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szError, l_iErrorLen, _S("error:"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szCorrect, l_iCorrectLen, _S("correct:"))
+		//format
 		_UnitTestMessageBuffer bufTemp;
 		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(bufTemp), _UnitTestMessageBuffer::c_size,
 								_S("%s(%d) "), szFileName, iLineNumber);

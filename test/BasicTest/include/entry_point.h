@@ -28,13 +28,16 @@ class ProgramEntryPoint
 public:
 	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env)
 	{
+		//const strings
+		DECLARE_LOCAL_CONST_STRING(CharS, c_szSep, c_iSepLen, _S("======================="))
+
 		//output argments
-		GKC::Console::WriteLine(GKC::ConstStringS(_S("======================="), 0));
+		GKC::Console::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
 		for( auto iter = args.GetBegin(); iter != args.GetEnd(); iter.MoveNext() ) {
 			GKC::Console::WriteLine(iter.get_Value());
 		}
 		//output environments
-		GKC::Console::WriteLine(GKC::ConstStringS(_S("======================="), 0));
+		GKC::Console::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
 		for( auto iter = env.GetBegin(); iter != env.GetEnd(); iter.MoveNext() ) {
 			GKC::Console::WriteLine(iter.get_Value());
 		}

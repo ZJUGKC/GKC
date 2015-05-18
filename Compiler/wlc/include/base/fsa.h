@@ -323,6 +323,9 @@ private:
 			//otherwise, stop
 		} //end if
 	}
+
+private:
+	//noncopyable
 };
 
 // FiniteStateMachineT<TTraits>
@@ -349,6 +352,9 @@ public:
 		assert( m_table.pState != NULL );
 		assert( m_table.pMatch != NULL );
 	}
+
+private:
+	//noncopyable
 };
 
 ////////////////////////////////////////////////////////////////////////////////

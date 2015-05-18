@@ -51,6 +51,35 @@ inline void Swap<int>(int& t1, int& t2)
 //------------------------------------------------------------------------------
 // Memory
 
+// AlignHelper
+
+class AlignHelper
+{
+public:
+	//T : Integer
+	//uAlign : it must be a value as 2^N.
+	template <typename T>
+	static T RoundUp(IN T n, IN uint uAlign) throw()
+	{
+		assert( uAlign > 0 );
+		//overflow is not checked
+		return T( (n + (uAlign - 1)) & ~(T(uAlign) - 1) );
+	}
+	template <typename T>
+	static T RoundUpThrow(IN T n, IN uint uAlign)
+	{
+		assert( uAlign > 0 );
+		T v = SafeOperators::AddThrow(n, T(uAlign - 1));
+		return T( (v) & ~(T(uAlign) - 1) );
+	}
+	template <typename T>
+	static T RoundDown(IN T n, IN uint uAlign) throw()
+	{
+		assert( uAlign > 0 );
+		return T( n & ~(T(uAlign) - 1) );
+	}
+};
+
 // IMemoryManager
 
 class NOVTABLE IMemoryManager

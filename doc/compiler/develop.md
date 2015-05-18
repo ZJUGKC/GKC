@@ -125,3 +125,43 @@ The grammar file for WLANG is named as `wlang.gra`.
 
 ## Analyze the Language Definition File
 
+A lex file can be described as the following lex and grammar files:
+
+```
+TK_COMMENT_START  /\*
+TK_SPACE    [\s\t]+
+TK_RETURN   \r|\n|\r\n
+TK_SEP      %%
+TK_ACTION   do_[a-z]([a-z_]|[0-9])*
+TK_MACRO    [a-z]([a-z_]|[0-9])*
+TK_TOKEN    TK_[A-Z]([A-Z_]|[0-9])*
+TK_LCURLY   \{
+TK_RCURLY   \}
+%%
+TK_COMMENT_START  { do_comment_start }
+TK_SPACE          { do_space }
+TK_RETURN         { do_return }
+TK_SEP            { do_sep }
+TK_ACTION         { do_action }
+TK_MACRO          { do_macro }
+TK_TOKEN          { do_token }
+TK_LCURLY         { do_lcurly }
+TK_RCURLY         { do_rcurly }
+```
+
+```
+%%
+lex_def : TK_COMMENT_START rule_block TK_SEP action_block  { do_comment_def }
+	| rule_block TK_SEP action_block  { do_def }
+	;
+rule_block : rule_block TK_TOKEN  { do_rule_block_token }
+	| TK_TOKEN  { do_rule_token }
+	;
+action_block : action_block action_item  { do_action_block_item }
+	| action_item  { do_action_item }
+	;
+action_item : TK_TOKEN TK_LCURLY TK_ACTION TK_RCURLY  { do_item }
+	;
+```
+
+The corresponding FSA tables are shown in `lex-parser.odg`.

@@ -44,6 +44,7 @@ GKC_BEGIN_TEST(SharedPtrTest)
 	public:
 		virtual uintptr TypeCast(const guid& clsid) throw()
 		{
+			assert( false );
 			return 0;
 		}
 		virtual void Destruction(const uintptr& p) throw()

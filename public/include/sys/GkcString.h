@@ -464,6 +464,18 @@ public:
 		return RefPtr<Tchar>(SharedArrayHelper::GetInternalPointer(str));
 	}
 
+	//To ConstStringT object
+	template <typename Tchar, uintptr t_size>
+	static ConstStringT<Tchar> To_ConstString(const FixedStringT<Tchar, t_size>& str) throw()
+	{
+		return ConstStringT<Tchar>(FixedArrayHelper::GetInternalPointer(str), str.GetLength());
+	}
+	template <typename Tchar>
+	static ConstStringT<Tchar> To_ConstString(const StringT<Tchar>& str) throw()
+	{
+		return ConstStringT<Tchar>(SharedArrayHelper::GetInternalPointer(str), str.GetLength());
+	}
+
 	//make empty string
 	template <typename Tchar>
 	static StringT<Tchar> MakeEmptyString(const RefPtr<IMemoryManager>& mgr)

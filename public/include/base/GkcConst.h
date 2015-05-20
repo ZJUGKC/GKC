@@ -185,7 +185,18 @@ typedef ConstStringT<CharW>  ConstStringW;   //wide version
 
 // macros
 
-// define Static Const String
+// define const string by constant array in a method body
+
+#define DECLARE_LOCAL_CONST_STRING(char_type, array_name, len_name, x)  \
+const char_type array_name[] = x;  \
+const uintptr len_name = sizeof(array_name) / sizeof(char_type) - 1;
+
+// define temporary const string object by constant array in a method body
+
+#define DECLARE_TEMP_CONST_STRING(const_string_type, x)  \
+const_string_type(x, sizeof(x) / sizeof(const_string_type::EType) - 1)
+
+// define Static Constant String
 
 #define DECLARE_STATIC_CONST_STRING(cls)  \
 	DECLARE_STATIC_CONST_ARRAY(cls, typename cls::EType)

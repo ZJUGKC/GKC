@@ -122,6 +122,28 @@ public:
 		uint64 v = Swap(*((uint64*)&x));
 		return *((double*)&v);
 	}
+
+	//GUID
+	static void Swap(const guid& id_in, guid& id_out) throw()
+	{
+		assert( &id_in != &id_out );
+		const byte* ps = (byte*)(&id_in);
+		byte* pd = (byte*)(&id_out);
+		//4 bytes
+		*((uint*)pd) = Swap(*((uint*)ps));
+		ps += sizeof(uint);
+		pd += sizeof(uint);
+		//2 bytes
+		*((ushort*)pd) = Swap(*((ushort*)ps));
+		ps += sizeof(ushort);
+		pd += sizeof(ushort);
+		//2 bytes
+		*((ushort*)pd) = Swap(*((ushort*)ps));
+		ps += sizeof(ushort);
+		pd += sizeof(ushort);
+		//8 bytes (big endian)
+		mem_copy(ps, 8, pd);
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

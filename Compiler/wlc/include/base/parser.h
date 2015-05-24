@@ -15,13 +15,56 @@
 #define __PARSER_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "fsa.h"
+#include "pool.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 //token
-#define TK_ERROR   ((uint)-1)     //error
-#define TK_NULL    0              //noop
+#define TK_ERROR   ((uint)-2)     //error
+#define TK_EOF     ((uint)-1)     //EOF
+#define TK_NULL    0              //noop or start token
+#define TK_FIRST   1              //the first user token
+
+// TokenTable
+
+class TokenTable
+{
+public:
+	TokenTable() throw() : m_symbol_pool(m_string_pool), m_uLevelHead(0)
+	{
+	}
+	~TokenTable() throw()
+	{
+	}
+
+	void InsertToken(const ConstStringA& strToken, uint uID)
+	{
+		assert( uID >= TK_FIRST );
+		assert( m_symbol_pool.Find(strToken).IsNull() );
+		Iterator iter(m_symbol_pool.CreateNode(strToken, sizeof(uint), 0, 0, m_uLevelHead));  //may throw
+		iter.GetData<uint>() = _cpl_process_byte_order(uID);
+		m_symbol_pool.SetZeroLevelHead(m_uLevelHead);
+	}
+
+	//properties
+	uint GetTokenID(const ConstStringA& strToken) const throw()
+	{
+		Iterator iter(m_symbol_pool.Find(strToken));
+		assert( !iter.IsNull() );
+		return _cpl_process_byte_order(iter.GetData<uint>());
+	}
+
+private:
+	SymbolPool m_symbol_pool;
+	StringPool m_string_pool;
+	uint m_uLevelHead;  //not used in this class
+
+private:
+	//noncopyable
+};
 
 #pragma pack(push, 1)
 
@@ -36,26 +79,42 @@ typedef struct _tagLexerCharInfo
 // LEXER_TOKEN_INFO
 typedef struct _tagLexerTokenInfo
 {
-	const RefPtr<CharA> szBuffer;  //token string
-	uint  uLength;  //string length
+	ConstStringA strBuffer;  //token string
 	LEXER_CHAR_INFO startInfo;
 	LEXER_CHAR_INFO endInfo;
-	uint  uID;  //token id
+	uint uID;  //token id
 } LEXER_TOKEN_INFO;
 
 #pragma pack(pop)
 
-// ILexerTable
-//   include: FSA, token table
-class NOVTABLE ILexerTable
+// LexerTable
+
+class LexerTable
 {
 public:
-	//FSA
-	virtual void SetFSA(const SharedPtr<FiniteStateAutomata>& fsa) throw() = 0;
-	virtual const SharedPtr<FiniteStateAutomata>& GetFSA() const throw() = 0;
-	//token table
-	virtual uint GetTokenID(IN const RefPtr<Char>& szToken) throw() = 0;
-	virtual const RefPtr<CharA> GetTokenName(IN uint uID) throw() = 0;
+	LexerTable(const RefPtr<FiniteStateAutomata>& fsa, const RefPtr<TokenTable>& tk) throw() : m_fsa(fsa), m_token_table(tk)
+	{
+	}
+	~LexerTable() throw()
+	{
+	}
+
+	//properties
+	FiniteStateAutomata& GetFSA() throw()
+	{
+		return m_fsa.Deref();
+	}
+	const TokenTable& GetTokenTable() const throw()
+	{
+		return m_token_table.Deref();
+	}
+
+private:
+	RefPtr<FiniteStateAutomata>  m_fsa;
+	RefPtr<TokenTable>           m_token_table;
+
+private:
+	//noncopyable
 };
 
 // ILexerAction
@@ -67,17 +126,40 @@ public:
 	virtual uint DoAction(IN int iMatch, INOUT IoHandle& hd, INOUT LEXER_TOKEN_INFO& info) throw() = 0;
 };
 
-// ILexerParser
-class NOVTABLE ILexerParser
+// LexerParser
+
+class LexerParser
 {
+private:
+	HashMap<ConstStringA, RefPtr<ILexerAction>, ConstStringHashTrait<ConstStringA>, ConstStringCompareTrait<ConstStringA>>  mapClass;
+
 public:
+	LexerParser() throw()
+	{
+	}
+	~LexerParser() throw()
+	{
+	}
+
 	//settings
-	virtual void SetLexerTable(IN　const RefPtr<ILexerTable>& pTable) throw() = 0;
-	virtual void SetAction(IN const RefPtr<CharA>& szToken, IN const RefPtr<ILexerAction>& pAction) throw() = 0;
+	void SetLexerTable(const RefPtr<LexerTable>& table) throw()
+	{
+		m_table = table;
+	}
+	void SetAction(const ConstStringA& strAction, const RefPtr<ILexerAction>& pAction) throw()
+	{
+	}
 	virtual void SetIoHandle(INOUT IoHandle& hd) throw() = 0;
 	// called repeatedly.
-	// return : S_FALSE, the end of stream, uID will be TK_ERROR or TK_NULL
+	// return : CR_S_FALSE, the end of stream, uID will be TK_ERROR or TK_NULL
 	virtual CallResult Parse(OUT LEXER_TOKEN_INFO& info) throw() = 0;
+
+private:
+	RefPtr<LexerTable>  m_table;
+	mapClass  m_actionMap;  //name --- action
+
+private:
+	//noncopyable
 };
 
 ////////////////////////////////////////////////////////////////////////////////

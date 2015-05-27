@@ -10,6 +10,7 @@
 **
 */
 
+%%
 digit [0-9]
 dot   .
 num_exp [eE][\+\-]?{digit}+
@@ -63,46 +64,3 @@ TK_LOG_AND     &&
 TK_LOG_OR      \|\|
 TK_SPACE       [\s\t]+
 TK_RETURN      \r|\n|\r\n
-%%
-TK_CONST_INTEGER { do_const_integer }
-TK_CONST_FLOAT   { do_const_float }
-TK_CONST_DOUBLE  { do_const_double }
-TK_IDENTIFIER    { do_identifier }
-TK_KEY_CLASS     { do_class }
-TK_KEY_NAMESPACE { do_namespace }
-TK_COMMENT_START { do_comment_start }
-TK_CONST_CHAR    { do_const_char }
-TK_CONST_WCHAR   { do_const_wchar }
-TK_CONST_STRING  { do_const_string }
-TK_CONST_WSTRING { do_const_wstring }
-TK_COMMA         { do_comma }
-TK_BANG          { do_bang }
-TK_SEMI          { do_semi }
-TK_HYPHEN        { do_hyphen }
-TK_LCURLY        { do_lcurly }
-TK_RCURLY        { do_rcurly }
-TK_LPAREN        { do_lparen }
-TK_RPAREN        { do_rparen }
-TK_LBRACKET      { do_lbracket }
-TK_RBRACKET      { do_rbracket }
-TK_UPARROW       { do_uparrow }
-TK_UPWAVE        { do_upwave }
-TK_STAR          { do_star }
-TK_PLUS          { do_plus }
-TK_SLASH         { do_slash }
-TK_PERCENT       { do_percent }
-TK_DOT           { do_dot }
-TK_COLON         { do_colon }
-TK_EQUAL         { do_euqal }
-TK_ET            { do_et }
-TK_VERT          { do_vert }
-TK_LOG_EQ        { do_log_eq }
-TK_LOG_NE        { do_log_ne }
-TK_LOG_GE        { do_log_ge }
-TK_LOG_LE        { do_log_le }
-TK_LOG_GT        { do_log_gt }
-TK_LOG_LT        { do_log_lt }
-TK_LOG_AND       { do_log_and }
-TK_LOG_OR        { do_log_or }
-TK_SPACE         { do_space }
-TK_RETURN        { do_return }

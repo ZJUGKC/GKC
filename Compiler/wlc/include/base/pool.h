@@ -47,9 +47,8 @@ public:
 	uint Allocate(uint uBytes)  //may throw
 	{
 		assert( uBytes > 0 );
-		if( !m_bInit ) {
+		if( SharedArrayHelper::GetBlockPointer(m_arr) == NULL ) {
 			m_arr = SharedArrayHelper::MakeSharedArray<byte>(MemoryHelper::GetCrtMemoryManager());  //may throw
-			m_bInit = true;
 		}
 		uintptr uCount = m_arr.GetCount();
 		//overflow
@@ -95,7 +94,6 @@ public:
 	}
 
 private:
-	bool  m_bInit;
 	SharedArray<byte>  m_arr;
 
 private:

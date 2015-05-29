@@ -27,6 +27,12 @@ namespace GKC {
 
 inline int compile_single_file(const StringS& strSrc, const StringS& strDest)
 {
+	CallResult cr;
+	SourceAnalyzer sa;
+
+	//init
+	cr = sa.Initialize(StringUtilHelper::To_C_Style(strSrc));
+
 	return 0;
 }
 

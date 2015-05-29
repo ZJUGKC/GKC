@@ -28,7 +28,7 @@ static
 void _help() throw()
 {
 	static const CharS* l_szHelp[] = {
-		_S("wlc version : 1.0.1.1001"),
+		_S("WLANG compiler (wlc) version : 1.0.1.1001"),
 		_S("  Usage : wlc options source-dir-or-file [destination dir]"),
 		_S("  options: -c compile the source file."),
 		NULL

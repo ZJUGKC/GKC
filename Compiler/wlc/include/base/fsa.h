@@ -260,7 +260,13 @@ public:
 		uBackEventNum = m_uBackEventNum;
 		return m_iMatch;
 	}
-	//check EOE and can restart
+	//check EOE (End Of Event)
+	bool CheckLastEvent_EndOfEvent() const throw()
+	{
+		assert( IsStopped() );
+		return m_uLastEventNo == FSA_END_OF_EVENT;
+	}
+	//can restart (check error of last token)
 	bool CanRestart() const throw()
 	{
 		assert( IsStopped() );

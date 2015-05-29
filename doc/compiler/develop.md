@@ -22,24 +22,19 @@ It uses the matching algorithm of maximum length.
 
 The definition of language is written in a lex file and a grammar file.
 
-A lex file consists of two sections as follows:
+A lex file consists of only one section as follows:
 
 ```
-Definition Block
 %%
-Rule Block
+Definition & Rule Block
 ```
 
 For example,
 
 ```
+%%
 TK_INTEGER [0-9]+
 TK_OTHER   [^\n]
-
-%%
-
-TK_INTEGER { do_integer }
-TK_OTHER   { do_others }
 ```
 
 The syntax of regular expression is shown in the following tables:
@@ -102,6 +97,7 @@ Rule Block
 For example,
 
 ```
+%%
 line : expr TK_RETURN  { do_line_expr }
 	;
 expr : expr TK_PLUS term  { do_expr_expr_plus_term }
@@ -128,6 +124,7 @@ The grammar file for WLANG is named as `wlang.gra`.
 A lex file can be described as the following lex and grammar files:
 
 ```
+%%
 TK_COMMENT_START  /\*
 TK_SPACE    [\s\t]+
 TK_RETURN   \r|\n|\r\n
@@ -137,16 +134,6 @@ TK_MACRO    [a-z]([a-z_]|[0-9])*
 TK_TOKEN    TK_[A-Z]([A-Z_]|[0-9])*
 TK_LCURLY   \{
 TK_RCURLY   \}
-%%
-TK_COMMENT_START  { do_comment_start }
-TK_SPACE          { do_space }
-TK_RETURN         { do_return }
-TK_SEP            { do_sep }
-TK_ACTION         { do_action }
-TK_MACRO          { do_macro }
-TK_TOKEN          { do_token }
-TK_LCURLY         { do_lcurly }
-TK_RCURLY         { do_rcurly }
 ```
 
 ```

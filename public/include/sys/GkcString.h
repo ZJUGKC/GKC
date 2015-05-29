@@ -321,6 +321,11 @@ public:
 		baseClass::SetCount(uLength + 1, 0);
 		baseClass::get_array_address()[uLength] = 0;
 	}
+	//clear content
+	void Clear() throw()
+	{
+		baseClass::RemoveAll();
+	}
 };
 
 // StringX
@@ -656,6 +661,25 @@ public:
 		if( uCount1 == 0 )
 			return ;
 		mem_copy(&(strSrc.GetBegin().get_Value()), uCount1 * sizeof(Tchar), &(strDest.GetAt(uCount2).get_Value()));
+	}
+	//append character
+	//  return: 0 or 1, whether the character is copied
+	template <typename Tchar, uintptr t_size>
+	uintptr Append(const Tchar& ch, INOUT FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		uintptr uCount = strDest.GetLength();
+		if( uCount >= t_size - 1 )
+			return 0;
+		strDest.SetLength(uCount + 1);
+		strDest.SetAt(uCount, ch);
+		return 1;
+	}
+	template <typename Tchar>
+	static void Append(const Tchar& ch, INOUT StringT<Tchar>& strDest)
+	{
+		uintptr uCount = strDest.GetLength();
+		strDest.SetLength(uCount + 1);  //may throw
+		strDest.SetAt(uCount, ch);
 	}
 
 	//replace

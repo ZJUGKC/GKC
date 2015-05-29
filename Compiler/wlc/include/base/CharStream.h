@@ -16,8 +16,8 @@ Author: Lijuan Mei
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __CHAR_STREAM_PRIVADER_H__
-#define __CHAR_STREAM_PRIVADER_H__
+#ifndef __CHAR_STREAM_H__
+#define __CHAR_STREAM_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ namespace GKC {
 
 // char stream provider
 
-class CharStreamProvider
+class CharStream
 {
 private:
 	enum {
@@ -34,10 +34,10 @@ private:
 	};
 
 public:
-	CharStreamProvider() throw() : m_uReadTotal(0), m_uRead(0), m_uPos(0)
+	CharStream() throw() : m_uReadTotal(0), m_uRead(0), m_uPos(0)
 	{
 	}
-	~CharStreamProvider() throw()
+	~CharStream() throw()
 	{
 	}
 
@@ -163,10 +163,13 @@ private:
 	uint64  m_uReadTotal;  //the total bytes have been read
 	uint    m_uRead;       //the actual bytes have been read in buffer
 	uint    m_uPos;        //the current position in buffer
+
+private:
+	//noncopyable
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif // __CHAR_STREAM_PRIVADER_H__
+#endif // __CHAR_STREAM_H__
 ////////////////////////////////////////////////////////////////////////////////

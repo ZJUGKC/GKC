@@ -121,7 +121,7 @@ The grammar file for WLANG is named as `wlang.gra`.
 
 ## Analyze the Language Definition File
 
-A lex file can be described as the following lex and grammar files:
+The lexical elements of lex and grammar files can be described as the following lex file:
 
 ```
 %%
@@ -134,21 +134,20 @@ TK_MACRO    [a-z]([a-z_]|[0-9])*
 TK_TOKEN    TK_[A-Z]([A-Z_]|[0-9])*
 TK_LCURLY   \{
 TK_RCURLY   \}
+TK_COLON    :
+TK_VERT     \|
+TK_SEMI     ;
 ```
+
+The corresponding FSA tables are shown in `ldf-fsa.odg` and `LdfTable.h`.
+
+The syntax of lex file can be described as the following grammar file:
 
 ```
 %%
-lex_def : TK_COMMENT_START rule_block TK_SEP action_block  { do_comment_def }
-	| rule_block TK_SEP action_block  { do_def }
+lex_def : TK_SEP rule_block  { do_def }
 	;
 rule_block : rule_block TK_TOKEN  { do_rule_block_token }
 	| TK_TOKEN  { do_rule_token }
 	;
-action_block : action_block action_item  { do_action_block_item }
-	| action_item  { do_action_item }
-	;
-action_item : TK_TOKEN TK_LCURLY TK_ACTION TK_RCURLY  { do_item }
-	;
 ```
-
-The corresponding FSA tables are shown in `lex-parser.odg`.

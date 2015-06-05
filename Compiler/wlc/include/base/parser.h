@@ -26,7 +26,7 @@ namespace GKC {
 //token
 #define TK_ERROR   ((uint)-2)     //error
 #define TK_EOF     ((uint)-1)     //EOF
-#define TK_NULL    0              //noop or start token
+#define TK_NULL    0              //noop or start token (S0)
 #define TK_FIRST   1              //the first user token
 
 // TokenTable
@@ -102,9 +102,9 @@ public:
 			m_strBuffer = StringUtilHelper::MakeEmptyString(MemoryHelper::GetCrtMemoryManager());  //may throw
 	}
 	//reset for parsing new token
-	void Reset() throw()
+	void Reset()
 	{
-		m_strBuffer.Clear();
+		m_strBuffer.SetLength(0);  //may throw
 		m_info.startInfo = m_info.endInfo;
 		m_uID = TK_NULL;
 	}
@@ -125,6 +125,7 @@ public:
 		//only in current line
 		assert( m_info.endInfo.uCol >= uBackNum );
 		m_info.endInfo.uCol -= uBackNum;
+		m_info.endInfo.uCharIndex -= uBackNum;
 	}
 
 	//properties
@@ -235,7 +236,7 @@ public:
 	void Start(OUT LexerTokenInfo& info)
 	{
 		m_table.GetFSA().SetStartState();
-		info.Init();
+		info.Init();  //may throw
 	}
 
 	// called repeatedly.
@@ -257,25 +258,26 @@ public:
 			return cr;
 		}
 
+		uint uEvent;
+		byte ch;
+		//read a character
+		cr = m_stream.Deref().GetChar(ch);
+		if( cr.IsFailed() )
+			return cr;
+		if( cr.GetResult() == SystemCallResults::S_EOF ) {
+			cr.SetResult(SystemCallResults::S_False);
+			return cr;
+		}
+
 		//start state
 		m_table.GetFSA().SetStartState();
-		info.Reset();
+		info.Reset();  //may throw
+		//first character
+		uEvent = ch;
+		info.Append(ch);  //may throw
+
 		//loop
 		do {
-			uint uEvent;
-			//get char
-			byte ch;
-			cr = m_stream.Deref().GetChar(ch);
-			if( cr.IsFailed() )
-				return cr;
-			if( cr.GetResult() == SystemCallResults::S_EOF ) {
-				uEvent = FSA_END_OF_EVENT;
-				cr.SetResult(SystemCallResults::OK);
-			}
-			else {
-				uEvent = ch;
-				info.Append(ch);  //may throw
-			}
 			//state
 			m_table.GetFSA().ProcessState(uEvent);
 			//stopped
@@ -302,6 +304,18 @@ public:
 				}
 				break;
 			} //end if
+			//get next char
+			cr = m_stream.Deref().GetChar(ch);
+			if( cr.IsFailed() )
+				return cr;
+			if( cr.GetResult() == SystemCallResults::S_EOF ) {
+				uEvent = FSA_END_OF_EVENT;
+				cr.SetResult(SystemCallResults::OK);
+			}
+			else {
+				uEvent = ch;
+				info.Append(ch);  //may throw
+			}
 		} while( true );
 
 		return cr;

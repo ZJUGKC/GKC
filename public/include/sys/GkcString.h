@@ -321,7 +321,7 @@ public:
 		baseClass::SetCount(uLength + 1, 0);
 		baseClass::get_array_address()[uLength] = 0;
 	}
-	//clear content
+	//clear content and free array
 	void Clear() throw()
 	{
 		baseClass::RemoveAll();

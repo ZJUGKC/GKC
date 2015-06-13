@@ -26,7 +26,19 @@ namespace GKC {
 
 // char stream provider
 
-class CharStream
+// ICharStream
+
+class NOVTABLE ICharStream
+{
+public:
+	// The return value SystemCallResult::S_EOF means the end of file is reached.
+	virtual CallResult GetChar(byte& ch) throw() = 0;
+	virtual CallResult UngetChar(uint uNum) throw() = 0;
+};
+
+// FileCharStream
+
+class FileCharStream : public ICharStream
 {
 private:
 	enum {
@@ -34,10 +46,10 @@ private:
 	};
 
 public:
-	CharStream() throw() : m_uReadTotal(0), m_uRead(0), m_uPos(0)
+	FileCharStream() throw() : m_uReadTotal(0), m_uRead(0), m_uPos(0)
 	{
 	}
-	~CharStream() throw()
+	~FileCharStream() throw()
 	{
 	}
 
@@ -92,9 +104,10 @@ public:
 
 		return cr;
 	}
+
+// ICharStream
 	//get char
-	//  SystemCallResult::S_EOF means the end of file is reached.
-	CallResult GetChar(byte& ch) throw()
+	virtual CallResult GetChar(byte& ch) throw()
 	{
 		CallResult cr;
 		if( m_uPos < m_uRead ) {
@@ -124,7 +137,7 @@ public:
 		return cr;
 	}
 	//unget char
-	CallResult UngetChar(uint uNum) throw()
+	virtual CallResult UngetChar(uint uNum) throw()
 	{
 		assert( uNum > 0 );
 		CallResult cr;
@@ -163,6 +176,58 @@ private:
 	uint64  m_uReadTotal;  //the total bytes have been read
 	uint    m_uRead;       //the actual bytes have been read in buffer
 	uint    m_uPos;        //the current position in buffer
+
+private:
+	//noncopyable
+};
+
+// MemoryCharStream
+
+class MemoryCharStream : public ICharStream
+{
+public:
+	MemoryCharStream() throw() : m_uPos(0)
+	{
+	}
+	~MemoryCharStream() throw()
+	{
+	}
+
+	void Initialize(const ConstArray<byte>& buffer) throw()
+	{
+		m_buffer = buffer;
+		m_uPos = 0;
+	}
+
+// ICharStream
+	virtual CallResult GetChar(byte& ch) throw()
+	{
+		CallResult cr;
+
+		if( m_uPos >= m_buffer.GetCount() ) {
+			cr.SetResult(SystemCallResults::S_EOF);
+			return cr;
+		}
+		ch = m_buffer[m_uPos].get_Value();
+		m_uPos ++;
+
+		return cr;
+	}
+	virtual CallResult UngetChar(uint uNum) throw()
+	{
+		assert( uNum > 0 );
+		CallResult cr;
+		if( (uintptr)uNum > m_uPos ) {
+			cr.SetResult(CR_FAIL);
+			return cr;
+		}
+		m_uPos -= uNum;
+		return cr;
+	}
+
+private:
+	ConstArray<byte>  m_buffer;
+	uintptr  m_uPos;  //the current position in buffer
 
 private:
 	//noncopyable

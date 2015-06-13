@@ -201,6 +201,16 @@ public:
 		m_iMatch         = 0;
 		m_uLastEventNo   = 0;
 	}
+	//**special method**
+	void InitializeAsStopState() throw()
+	{
+		m_iCurrentState  = 0;
+		m_iPrevState     = 0;
+		m_iLastStopState = 0;
+		m_uBackEventNum  = 1;
+		m_iMatch         = 0;
+		m_uLastEventNo   = 0;
+	}
 	//back to the previous state
 	// User should not call this method repeatedly.
 	void BackState() throw()
@@ -260,18 +270,40 @@ public:
 		uBackEventNum = m_uBackEventNum;
 		return m_iMatch;
 	}
-	//check EOE (End Of Event)
-	bool CheckLastEvent_EndOfEvent() const throw()
+	//can restart
+	//  bErrorOrEnd: true for error of last token, false for end of input
+	bool CanRestart(bool& bErrorOrEnd) const throw()
 	{
 		assert( IsStopped() );
-		return m_uLastEventNo == FSA_END_OF_EVENT;
-	}
-	//can restart (check error of last token)
-	bool CanRestart() const throw()
-	{
-		assert( IsStopped() );
-		return (m_uLastEventNo != FSA_END_OF_EVENT)
-				|| (m_iLastStopState <= 0 && m_uBackEventNum != 0);
+		bErrorOrEnd = true;
+		bool bRet = true;
+		if( m_uLastEventNo == FSA_END_OF_EVENT ) {
+			//EOE
+			if( m_iLastStopState <= 0 ) {
+				//stop state
+				if( m_uBackEventNum == 0 ) {
+					bErrorOrEnd = false;
+					bRet = false;
+				}
+			}
+			else {
+				//error
+				assert( m_uBackEventNum == 0 );
+				bRet = false;
+			}
+		}
+		else {
+			if( m_iLastStopState <= 0 ) {
+				//stop state
+				assert( m_uBackEventNum > 0 );
+			}
+			else {
+				//error
+				assert( m_uBackEventNum == 0 );
+				bRet = false;
+			}
+		} //end if
+		return bRet;
 	}
 
 protected:

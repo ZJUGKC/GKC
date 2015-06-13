@@ -33,9 +33,9 @@ namespace GKC {
 
 // classes
 
-// Console
+// ConsoleHelper
 
-class Console
+class ConsoleHelper
 {
 public:
 //output

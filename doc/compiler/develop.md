@@ -87,6 +87,11 @@ The syntax of regular expression is shown in the following tables:
 
 The lex file for WLANG is named as `wlang.lex`.
 
+The basic principles are shown as follows:
+
+1. Match the string with the maximum length.
+1. Match the first regular expression for conflicts.
+
 A grammar file has only one section as follows:
 
 ```

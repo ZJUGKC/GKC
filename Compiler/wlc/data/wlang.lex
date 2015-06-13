@@ -27,11 +27,11 @@ hex_digit    [0-9A-Fa-f]
 hex_byte     {hex_digit}{hex_digit}?
 oct_digit    [0-7]
 oct_byte     {oct_digit}({oct_digit}{oct_digit}?)?
-escape_char  \\([′″\\0abfnrtv]|x{hex_byte}|{oct_byte})
-byte_char    [^′″\r\n]|{escape_char}
-TK_CONST_CHAR     ′{byte_char}′
+escape_char  \\(['"\\0abfnrtv]|x{hex_byte}|{oct_byte})
+byte_char    [^'"\r\n]|{escape_char}
+TK_CONST_CHAR     '{byte_char}'
 TK_CONST_WCHAR    L{TK_CONST_CHAR}
-TK_CONST_STRING   ″{byte_char}*″
+TK_CONST_STRING   "{byte_char}*"
 TK_CONST_WSTRING  L{TK_CONST_STRING}
 TK_COMMA       ,
 TK_BANG        !

@@ -229,6 +229,42 @@ public:
 	}
 };
 
+// MessageException<t_size>
+
+template <uintptr t_size>
+class MessageException : public Exception
+{
+public:
+	typedef FixedStringT<CharS, t_size>  MessageBufferClass;
+
+public:
+	MessageException() throw() : Exception()
+	{
+	}
+	MessageException(const MessageException<t_size>& src) throw() : Exception(static_cast<const Exception&>(src))
+	{
+		m_messageBuffer = src.m_messageBuffer;
+	}
+	MessageException& operator=(const MessageException<t_size>& src) throw()
+	{
+		Exception::operator=(static_cast<const Exception&>(src));
+		m_messageBuffer = src.m_messageBuffer;  //no check self
+		return *this;
+	}
+
+	const MessageBufferClass& GetMessageBuffer() const throw()
+	{
+		return m_messageBuffer;
+	}
+	MessageBufferClass& GetMessageBuffer() throw()
+	{
+		return m_messageBuffer;
+	}
+
+private:
+	FixedStringT<CharS, t_size>  m_messageBuffer;
+};
+
 //------------------------------------------------------------------------------
 
 // StringT<Tchar>

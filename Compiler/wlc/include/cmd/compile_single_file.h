@@ -31,7 +31,7 @@ inline int compile_single_file(const StringS& strSrc, const StringS& strDest)
 	SourceAnalyzer sa;
 
 	//init
-	cr = sa.Initialize(StringUtilHelper::To_C_Style(strSrc));
+	cr = sa.Initialize(StringUtilHelper::To_ConstString(strSrc));
 
 	return 0;
 }

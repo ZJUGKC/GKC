@@ -245,14 +245,14 @@ public:
 			bool bContinue = pMap->EnumFirst(info);
 			while( bContinue ) {
 				//current test
-				Console::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
-				Console::Write(info.strName);
-				Console::WriteLine(ConstStringS(l_szColon, l_iColonLen));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
+				ConsoleHelper::Write(info.strName);
+				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_iColonLen));
 				if( !info.pFunc(buffer) ) {
-					Console::WriteLine(buffer);
+					ConsoleHelper::WriteLine(buffer);
 					uFailed ++;
 				}
-				Console::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
 				uTotal ++;
 				bContinue = pMap->EnumNext(info);
 			}
@@ -264,21 +264,21 @@ public:
 			iter.MoveNext();  //from 1
 			for( ; iter != args.GetEnd(); iter.MoveNext() ) {
 				//current test
-				Console::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
-				Console::Write(iter.get_Value());
-				Console::WriteLine(ConstStringS(l_szColon, l_iColonLen));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
+				ConsoleHelper::Write(iter.get_Value());
+				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_iColonLen));
 				_UnitTestFunc pFunc = pMap->Find(iter.get_Value());
 				if( pFunc == NULL ) {
-					Console::WriteLine(ConstStringS(l_szNoTest, l_iNoTestLen));
+					ConsoleHelper::WriteLine(ConstStringS(l_szNoTest, l_iNoTestLen));
 					uFailed ++;
 				}
 				else {
 					if( !pFunc(buffer) ) {
-						Console::WriteLine(buffer);
+						ConsoleHelper::WriteLine(buffer);
 						uFailed ++;
 					}
 				}
-				Console::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
 				uTotal ++;
 			}
 		} //end if
@@ -290,8 +290,8 @@ public:
 									_S("Total (%Iu), Failed (%Iu)"), uTotal, uFailed);
 			if( ret >= 0 )
 				buffer.SetLength(ret);
-			Console::WriteLine(ConstStringS(l_szSep3, l_iSep3Len));
-			Console::WriteLine(buffer);
+			ConsoleHelper::WriteLine(ConstStringS(l_szSep3, l_iSep3Len));
+			ConsoleHelper::WriteLine(buffer);
 		}
 
 		//free map
@@ -434,7 +434,7 @@ public:
 		__bException = true;  __cr.SetResult(0); }  \
 	if( __bException ) {  \
 		GKC::_UnitTestBodyHelper::FormatErrorByCallResult(__cr, __SFILE__, __LINE__, false, false, _gkc_utm_buffer);  \
-		GKC::Console::WriteLine(_gkc_utm_buffer); }  \
+		GKC::ConsoleHelper::WriteLine(_gkc_utm_buffer); }  \
 	else { GKC_TEST_ASSERT_TRUE(false); } }
 
 ////////////////////////////////////////////////////////////////////////////////

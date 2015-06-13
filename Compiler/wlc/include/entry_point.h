@@ -56,7 +56,7 @@ public:
 		}
 		int ret = 0;
 		//-c
-		if( compare_string(GKC::ConstHelper::GetInternalPointer(args[1].get_Value()), _S("-c")) ) {
+		if( compare_string(GKC::ConstHelper::GetInternalPointer(args[1].get_Value()), _S("-c")) == 0 ) {
 			if( uArgCount > 4 ) {
 				_help();
 				return 0;
@@ -70,7 +70,8 @@ public:
 			//file name
 
 			GKC::FsPathHelper::ConvertPathStringToPlatform(strSrc);
-			GKC::FsPathHelper::ConvertPathStringToPlatform(strDest);
+			if( !strDest.IsNull() )
+				GKC::FsPathHelper::ConvertPathStringToPlatform(strDest);
 			ret = GKC::compile_single_file(strSrc, strDest);
 		}
 

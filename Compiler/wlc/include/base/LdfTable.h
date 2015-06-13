@@ -53,11 +53,11 @@ public:
 		}
 		//allocate
 		uint uBytes, uBytes1, uBytes2;
-		uBytes1 = SafeOpertaor::MultiplyThrow((uint)iMaxState + 1, (uint)sizeof(FSA_STATE_ITEM));  //may throw
-		uBytes2 = SafeOpertaor::MultiplyThrow((uint)iMaxMatch + 1, (uint)sizeof(FSA_MATCH_ITEM));  //may throw
-		uBytes = SafeOpertaor::AddThrow(uBytes1, uBytes2);  //may throw
-		uBytes1 = SafeOpertaor::MultiplyThrow((uint)total_transition_num, (uint)sizeof(FSA_TRANSITION_ITEM));  //may throw
-		uBytes = SafeOpertaor::AddThrow(uBytes, uBytes1);  //may throw
+		uBytes1 = SafeOperators::MultiplyThrow((uint)iMaxState + 1, (uint)sizeof(FSA_STATE_ITEM));  //may throw
+		uBytes2 = SafeOperators::MultiplyThrow((uint)iMaxMatch + 1, (uint)sizeof(FSA_MATCH_ITEM));  //may throw
+		uBytes = SafeOperators::AddThrow(uBytes1, uBytes2);  //may throw
+		uBytes1 = SafeOperators::MultiplyThrow((uint)total_transition_num, (uint)sizeof(FSA_TRANSITION_ITEM));  //may throw
+		uBytes = SafeOperators::AddThrow(uBytes, uBytes1);  //may throw
 		uint uStart = m_alloc.Allocate(uBytes);  //may throw
 		//pointers
 		m_pState = (FSA_STATE_ITEM*)m_alloc.ToPtr(uStart);
@@ -146,6 +146,8 @@ private:
 			BEGIN_STATE_TRANSITION(2)
 				STATE_TRANSITION_ENTRY('*', 3)
 			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(3)
+			END_STATE_TRANSITION()
 			BEGIN_STATE_TRANSITION(4)
 				STATE_TRANSITION_ENTRY(' ', 4)
 				STATE_TRANSITION_ENTRY('\t', 4)
@@ -153,8 +155,18 @@ private:
 			BEGIN_STATE_TRANSITION(5)
 				STATE_TRANSITION_ENTRY('\n', 6)
 			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(6)
+			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(7)
+			END_STATE_TRANSITION()
 			BEGIN_STATE_TRANSITION(8)
 				STATE_TRANSITION_ENTRY('%', 9)
+			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(9)
+			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(10)
+			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(11)
 			END_STATE_TRANSITION()
 			BEGIN_STATE_TRANSITION(12)
 				STATE_TRANSITION_ENTRY('K', 13)
@@ -197,6 +209,12 @@ private:
 				STATE_TRANSITION_RANGE_ENTRY('0', '9', 20)
 				STATE_TRANSITION_ENTRY('_', 20)
 			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(21)
+			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(22)
+			END_STATE_TRANSITION()
+			BEGIN_STATE_TRANSITION(23)
+			END_STATE_TRANSITION()
 
 			//state
 			BEGIN_STATE_SET()
@@ -229,18 +247,18 @@ private:
 		// match map
 		BEGIN_FSA_TRAITS_MATCH_MAP(_LDF_FsaTraits)
 			STATE_MATCH_ENTRY(0)
-			STATE_MATCH_ENTRY(-1)   //TK_COMMENT_START
-			STATE_MATCH_ENTRY(-2)   //TK_SPACE
-			STATE_MATCH_ENTRY(-3)   //TK_RETURN
-			STATE_MATCH_ENTRY(-4)   //TK_SEP
-			STATE_MATCH_ENTRY(-5)   //TK_ACTION
-			STATE_MATCH_ENTRY(-6)   //TK_MACRO
-			STATE_MATCH_ENTRY(-7)   //TK_TOKEN
-			STATE_MATCH_ENTRY(-8)   //TK_LCURLY
-			STATE_MATCH_ENTRY(-9)   //TK_RCURLY
-			STATE_MATCH_ENTRY(-10)  //TK_COLON
-			STATE_MATCH_ENTRY(-11)  //TK_VERT
-			STATE_MATCH_ENTRY(-12)  //TK_SEMI
+			STATE_MATCH_ENTRY(1)   //TK_COMMENT_START
+			STATE_MATCH_ENTRY(2)   //TK_SPACE
+			STATE_MATCH_ENTRY(3)   //TK_RETURN
+			STATE_MATCH_ENTRY(4)   //TK_SEP
+			STATE_MATCH_ENTRY(5)   //TK_ACTION
+			STATE_MATCH_ENTRY(6)   //TK_MACRO
+			STATE_MATCH_ENTRY(7)   //TK_TOKEN
+			STATE_MATCH_ENTRY(8)   //TK_LCURLY
+			STATE_MATCH_ENTRY(9)   //TK_RCURLY
+			STATE_MATCH_ENTRY(10)  //TK_COLON
+			STATE_MATCH_ENTRY(11)  //TK_VERT
+			STATE_MATCH_ENTRY(12)  //TK_SEMI
 		END_FSA_TRAITS_MATCH_MAP()
 	};
 
@@ -271,13 +289,138 @@ private:
 		}
 
 	private:
-		TokenTable m_table; 
+		TokenTable m_table;
+	};
+
+	// actions
+	class MacroTokenAction : public ILexerAction
+	{
+	public:
+		virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
+		{
+			//receive the regular expression
+			info.GetData().SetLength(0);
+			CallResult cr;
+			byte ch;
+			//next char
+			cr = _get_next_char(stream, ch);
+			if( cr.IsFailed() )
+				return ;
+			//skip blanks
+			while( ch == ' ' || ch == '\t' ) {
+				(info.GetCharEnd().uCharIndex) ++;
+				(info.GetCharEnd().uCol) ++;
+				//next char
+				cr = _get_next_char(stream, ch);
+				if( cr.IsFailed() )
+					return ;
+			}
+			//regex
+			while( ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n' ) {
+				(info.GetCharEnd().uCharIndex) ++;
+				(info.GetCharEnd().uCol) ++;
+				StringUtilHelper::Append((CharA)ch, info.GetData());  //may throw
+				//next char
+				cr = _get_next_char(stream, ch);
+				if( cr.IsFailed() )
+					return ;
+			}
+			//back char
+			cr = stream.Deref().UngetChar(1);
+			assert( cr.IsOK() );
+		}
+
+	private:
+		static CallResult _get_next_char(RefPtr<ICharStream>& stream, byte& ch) throw()
+		{
+			CallResult cr;
+			cr = stream.Deref().GetChar(ch);
+			if( cr.GetResult() == SystemCallResults::S_EOF )
+				cr.SetResult(SystemCallResults::Fail);
+			if( cr.IsFailed() )
+				return cr;
+			return cr;
+		}
 	};
 
 public:
 	//process lex file
-	static void ProcessLexFile(const ConstringS& strFile)
+	static CallResult ProcessLexFile(IN const ConstStringS& strFile, OUT TokenTable& table, OUT FsaTableInPool& fsa, OUT CplErrorBuffer& errorBuffer)
 	{
+		CallResult cr;
+
+		//stream
+		FileCharStream stream;
+		cr = stream.Initialize(StringUtilHelper::To_C_Style(strFile));
+		if( cr.IsFailed() )
+			return cr;
+
+		//token table
+		_LDF_TokenTable ldfTokenTable;
+		ldfTokenTable.Init();  //may throw
+		//FSA
+		FiniteStateMachineT<_LDF_FsaTraits> fsm;
+		//lexer table
+		LexerTable lexTable(RefPtrHelper::TypeCast<FiniteStateMachineT<_LDF_FsaTraits>, FiniteStateAutomata>(RefPtr<FiniteStateMachineT<_LDF_FsaTraits>>(fsm)),
+							RefPtrHelper::ToRefPtr(ldfTokenTable.GetTable()));
+		//lexer parser
+		LexerParser lexParser;
+		lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(lexTable));
+		lexParser.SetStream(RefPtrHelper::TypeCast<FileCharStream, ICharStream>(RefPtr<FileCharStream>(stream)));
+		//actions
+		CommentStartAction actionCommentStart;
+		SpaceAction actionSpace;
+		ReturnAction actionReturn;
+		MacroTokenAction actionMacroToken;
+		lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"),
+							RefPtrHelper::TypeCast<CommentStartAction, ILexerAction>(RefPtr<CommentStartAction>(actionCommentStart)));
+		lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"),
+							RefPtrHelper::TypeCast<SpaceAction, ILexerAction>(RefPtr<SpaceAction>(actionSpace)));
+		lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"),
+							RefPtrHelper::TypeCast<ReturnAction, ILexerAction>(RefPtr<ReturnAction>(actionReturn)));
+		lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"),
+							RefPtrHelper::TypeCast<MacroTokenAction, ILexerAction>(RefPtr<MacroTokenAction>(actionMacroToken)));
+		lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"),
+							RefPtrHelper::TypeCast<MacroTokenAction, ILexerAction>(RefPtr<MacroTokenAction>(actionMacroToken)));
+
+		LexerTokenInfo tokenInfo;
+		//loop
+		lexParser.Start(tokenInfo);
+		do {
+			cr = lexParser.Parse(tokenInfo);
+			if( cr.IsFailed() ) {
+				errorBuffer = tokenInfo.GetErrorString();
+				break;
+			}
+			uint uTokenID;
+			if( cr.GetResult() == SystemCallResults::S_False ) {
+				cr.SetResult(SystemCallResults::OK);
+				uTokenID = TK_EOF;
+			}
+			else {
+				uTokenID = tokenInfo.GetID();
+			}
+			if( uTokenID == TK_ERROR ) {
+				int ret = value_to_string(FixedArrayHelper::GetInternalPointer(errorBuffer), CplErrorBuffer::c_size,
+										_S("Error token(%u, %u): %s"), tokenInfo.GetCharStart().uRow + 1, tokenInfo.GetCharStart().uCol + 1, SharedArrayHelper::GetInternalPointer(tokenInfo.GetBuffer()));
+				if( ret >= 0 )
+					errorBuffer.SetLength(ret);
+				//add to error string list
+			}
+			else if( uTokenID == TK_EOF ) {
+				//check error
+				break;
+			}
+			else if( uTokenID == TK_NULL ) {
+				//skip
+				continue;
+			}
+			//uint uPdaEvent = (uTokenID == TK_EOF) ? PDA_END_OF_EVENT : uTokenID;
+
+
+		} while( true );
+
+		return cr;
 	}
 };
 

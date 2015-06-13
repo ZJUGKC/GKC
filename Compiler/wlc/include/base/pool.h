@@ -36,7 +36,7 @@ inline uint _cpl_process_byte_order(uint v) throw()
 class DataPoolAllocator
 {
 public:
-	DataPoolAllocator() throw() : m_bInit(false)
+	DataPoolAllocator() throw()
 	{
 	}
 	~DataPoolAllocator() throw()

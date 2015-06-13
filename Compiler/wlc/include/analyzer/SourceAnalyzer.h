@@ -20,6 +20,8 @@ Author: Lijuan Mei
 #define __SOURCE_ANALYZER_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "../base/LdfTable.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,9 +39,26 @@ public:
 	}
 
 	// init
-	CallResult Initialize(const RefPtr<CharS>& szFileName) throw()
+	CallResult Initialize(const ConstStringS& strFileName) throw()
 	{
 		CallResult cr;
+		TokenTable tokenTable;
+		FsaTableInPool fsaTable;
+		try {
+			//process lex file
+			cr = LdfTableHelper::ProcessLexFile(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")),
+												tokenTable, fsaTable, m_errorBuffer);
+		}
+		catch(Exception& e) {
+			//error
+
+			return e.GetResult();
+		}
+		catch(...) {
+			//error
+
+		}
+
 		return cr;
 	}
 
@@ -58,6 +77,12 @@ private:
 	void semantics() throw()
 	{
 	}
+
+private:
+	CplErrorBuffer m_errorBuffer;
+
+private:
+	//noncopyable
 };
 
 ////////////////////////////////////////////////////////////////////////////////

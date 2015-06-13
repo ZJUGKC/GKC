@@ -32,14 +32,14 @@ public:
 		DECLARE_LOCAL_CONST_STRING(CharS, c_szSep, c_iSepLen, _S("======================="))
 
 		//output argments
-		GKC::Console::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
+		GKC::ConsoleHelper::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
 		for( auto iter = args.GetBegin(); iter != args.GetEnd(); iter.MoveNext() ) {
-			GKC::Console::WriteLine(iter.get_Value());
+			GKC::ConsoleHelper::WriteLine(iter.get_Value());
 		}
 		//output environments
-		GKC::Console::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
+		GKC::ConsoleHelper::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
 		for( auto iter = env.GetBegin(); iter != env.GetEnd(); iter.MoveNext() ) {
-			GKC::Console::WriteLine(iter.get_Value());
+			GKC::ConsoleHelper::WriteLine(iter.get_Value());
 		}
 
 		//unit test

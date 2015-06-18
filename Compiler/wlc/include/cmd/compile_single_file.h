@@ -30,6 +30,7 @@ inline int compile_single_file(const StringS& strSrc, const StringS& strDest)
 	CallResult cr;
 	SourceAnalyzer sa;
 
+	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Initialize...")));
 	//init
 	cr = sa.Initialize(StringUtilHelper::To_ConstString(strSrc));
 

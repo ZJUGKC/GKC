@@ -21,24 +21,23 @@ This file contains entry point function.
 
 #include "cmd/compile_single_file.h"
 
+#include "global.h"
+
 ////////////////////////////////////////////////////////////////////////////////
+
+// version
+
+static
+void _print_version() throw()
+{
+	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
+}
 
 // help
 static
-void _help() throw()
+void _print_help() throw()
 {
-	static const CharS* l_szHelp[] = {
-		_S("WLANG compiler (wlc) version : 1.0.1.1001"),
-		_S("  Usage : wlc options source-dir-or-file [destination dir]"),
-		_S("  options: -c compile the source file."),
-		NULL
-	};
-	const CharS** pp = l_szHelp;
-	while( (*pp) != NULL ) {
-		print_string(*pp);
-		print_string(_S("\n"));
-		++ pp;
-	}
+	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_help::GetAddress(), GKC::_const_array_help::GetCount()));
 }
 
 // ProgramEntryPoint
@@ -51,14 +50,16 @@ public:
 		uintptr uArgCount = args.GetCount();
 		//args
 		if( uArgCount <= 2 ) {
-			_help();
+			_print_version();
+			_print_help();
 			return 0;
 		}
 		int ret = 0;
 		//-c
 		if( compare_string(GKC::ConstHelper::GetInternalPointer(args[1].get_Value()), _S("-c")) == 0 ) {
 			if( uArgCount > 4 ) {
-				_help();
+				_print_version();
+				_print_help();
 				return 0;
 			}
 			GKC::StringS strSrc(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
@@ -72,6 +73,9 @@ public:
 			GKC::FsPathHelper::ConvertPathStringToPlatform(strSrc);
 			if( !strDest.IsNull() )
 				GKC::FsPathHelper::ConvertPathStringToPlatform(strDest);
+
+			//process
+			_print_version();
 			ret = GKC::compile_single_file(strSrc, strDest);
 		}
 

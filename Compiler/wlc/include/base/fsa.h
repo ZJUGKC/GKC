@@ -24,27 +24,30 @@ namespace GKC {
 //------------------------------------------------------------------------------
 // define FSA common states
 
-#define FSA_STATE_START  1
-#define FSA_STATE_STOP   0
+#define FSA_STATE_START  (1)
+#define FSA_STATE_STOP   (0)
 
 // event
 
-#define FSA_END_OF_EVENT   ((uint)-1)
+#define FSA_END_OF_EVENT    ((uint)-1)
+#define FSA_LAST_EVENT_NO   ((uint)-2)
 
 //------------------------------------------------------------------------------
 // structures
 
+#pragma pack(push, 1)
+
 // FSA_TRANSITION_ITEM
 typedef struct _tagFSA_TransitionItem {
-	uint uEventFirstNo;  //!< The first No. of event. (uint)-1 means the last transition item.
+	uint uEventFirstNo;  //!< The first No. of event. (uint)-2 means the last transition item.
 	uint uEventLastNo;   //!< The last No. of event.
 	int  iNextState;     //!< The next state. If this value is smaller than 0, it is an invalid state. 0 means the stop state.
 } FSA_TRANSITION_ITEM;
 
 // FSA_STATE_ITEM
 typedef struct _tagFSA_StateItem {
-	int  iDefaultState;   //!< The default next state if no transitions are used.
 	const FSA_TRANSITION_ITEM* pTransition;  //!< A pointer to transition array.
+	int  iDefaultState;   //!< The default next state if no transitions are used.
 	int  iMatchIndex;     //!< Specify the match index. If this value is not larger than 0, its absolute value is the match index (the current state is a stop state). If this value is larger than 0, the current state is not a stop state.
 } FSA_STATE_ITEM;
 
@@ -61,66 +64,67 @@ typedef struct _tagFSA_Table {
 	const FSA_MATCH_ITEM* pMatch;  //!< A pointer to match array with the size iMaxMatchNo + 1.
 } FSA_TABLE;
 
+#pragma pack(pop)
+
 //------------------------------------------------------------------------------
 // for constant definition
 
 // These macros are used for class of state machine traits
 
-// BEGIN_FSA_TRAITS_STATE_MAP(_class)
-#define BEGIN_FSA_TRAITS_STATE_MAP(_class) \
+// FSA_BEGIN_TRAITS_STATE_MAP(_class)
+#define FSA_BEGIN_TRAITS_STATE_MAP(_class) \
 	typedef _class _TraitsGetStateMap; \
 	BEGIN_NOINLINE  \
 	static const FSA_STATE_ITEM* GetStateTable(int& iMaxStateNo) throw() \
 	END_NOINLINE \
 	{
 
-// BEGIN_STATE_TRANSITION(state_name)
+// FSA_BEGIN_STATE_TRANSITION(state_name)
 //   state_name : Specify the state name or state enumerator.
-#define BEGIN_STATE_TRANSITION(state_name) \
+#define FSA_BEGIN_STATE_TRANSITION(state_name) \
 	static const FSA_TRANSITION_ITEM _ti##state_name[] = {
 
-// STATE_TRANSITION_ENTRY(event_no, state_next)
+// FSA_STATE_TRANSITION_ENTRY(event_no, state_next)
 //   event_no : Specify the event No.
 //   state_next : Specify the next state.
-#define STATE_TRANSITION_ENTRY(event_no, state_next) \
+#define FSA_STATE_TRANSITION_ENTRY(event_no, state_next) \
 	{event_no, event_no, state_next},
 
-
-// STATE_TRANSITION_RANGE_ENTRY(event_first, event_last, state_next)
+// FSA_STATE_TRANSITION_RANGE_ENTRY(event_first, event_last, state_next)
 //   event_first : Specify the first event No.
 //   event_last : Specify the last event No.
 //   state_next : Specify the next state.
-#define STATE_TRANSITION_RANGE_ENTRY(event_first, event_last, state_next) \
+#define FSA_STATE_TRANSITION_RANGE_ENTRY(event_first, event_last, state_next) \
 	{event_first, event_last, state_next},
 
-// END_STATE_TRANSITION()
-#define END_STATE_TRANSITION() \
-	{FSA_END_OF_EVENT, FSA_END_OF_EVENT, 0} };
+// FSA_END_STATE_TRANSITION()
+#define FSA_END_STATE_TRANSITION() \
+	{FSA_LAST_EVENT_NO, FSA_LAST_EVENT_NO, 0} };
 
-// BEGIN_STATE_SET()
-#define BEGIN_STATE_SET() \
+// FSA_BEGIN_STATE_SET()
+#define FSA_BEGIN_STATE_SET() \
 	static const FSA_STATE_ITEM map[] = { \
-	{ 0, NULL, 0 },
+	{ NULL, 0, 0 },
 
-// STATE_SET_ENTRY(default_state, state_name, match_index)
+// FSA_STATE_SET_ENTRY(default_state, state_name, match_index)
 //   default_state : The default state.
 //   state_name : Specify the state name or state enumerator.
 //   match_index : Specify the match index.
 // The first entry has the index whose value is FSA_STATE_START. This map has at least one entry.
-#define STATE_SET_ENTRY(default_state, state_name, match_index) \
-	{default_state, _ti##state_name, match_index},
+#define FSA_STATE_SET_ENTRY(default_state, state_name, match_index) \
+	{_ti##state_name, default_state, match_index},
 
-// END_STATE_SET()
-#define END_STATE_SET() \
-	{0, NULL, 0} };
+// FSA_END_STATE_SET()
+#define FSA_END_STATE_SET() \
+	{NULL, 0, 0} };
 
-// END_FSA_TRAITS_STATE_MAP()
-#define END_FSA_TRAITS_STATE_MAP() \
+// FSA_END_TRAITS_STATE_MAP()
+#define FSA_END_TRAITS_STATE_MAP() \
 	iMaxStateNo = (int)(sizeof(map) / sizeof(FSA_STATE_ITEM)) - 2; return map; \
 	}
 
-// BEGIN_FSA_TRAITS_MATCH_MAP(_class)
-#define BEGIN_FSA_TRAITS_MATCH_MAP(_class) \
+// FSA_BEGIN_TRAITS_MATCH_MAP(_class)
+#define FSA_BEGIN_TRAITS_MATCH_MAP(_class) \
 	typedef _class _TraitsGetMatchMap; \
 	BEGIN_NOINLINE  \
 	static const FSA_MATCH_ITEM* GetMatchTable(int& iMaxMatchNo) throw() \
@@ -128,13 +132,13 @@ typedef struct _tagFSA_Table {
 	{ \
 		static const FSA_MATCH_ITEM map[] = {
 
-// STATE_MATCH_ENTRY(match)
+// FSA_STATE_MATCH_ENTRY(match)
 //   match : Specify the match No. 0 means no match. If this value is less than zero, the last event should be unput. This map has at least one entry.
-#define STATE_MATCH_ENTRY(match) \
+#define FSA_STATE_MATCH_ENTRY(match) \
 	{match},
 
-// END_FSA_TRAITS_MATCH_MAP()
-#define END_FSA_TRAITS_MATCH_MAP() \
+// FSA_END_TRAITS_MATCH_MAP()
+#define FSA_END_TRAITS_MATCH_MAP() \
 	{ 0 } }; iMaxMatchNo = (int)(sizeof(map) / sizeof(FSA_MATCH_ITEM)) - 2; return map; \
 	}
 
@@ -147,21 +151,21 @@ class DefaultFsaTraits
 {
 public:
 	// state map
-	BEGIN_FSA_TRAITS_STATE_MAP(DefaultFsaTraits)
+	FSA_BEGIN_TRAITS_STATE_MAP(DefaultFsaTraits)
 		//transitions
-		BEGIN_STATE_TRANSITION(FSA_STATE_START)
-			STATE_TRANSITION_ENTRY(0, FSA_STATE_STOP)
-		END_STATE_TRANSITION()
+		FSA_BEGIN_STATE_TRANSITION(FSA_STATE_START)
+			FSA_STATE_TRANSITION_ENTRY(0, FSA_STATE_STOP)
+		FSA_END_STATE_TRANSITION()
 		//state
-		BEGIN_STATE_SET()
-			STATE_SET_ENTRY(FSA_STATE_STOP, FSA_STATE_START, FSA_STATE_STOP)
-		END_STATE_SET()
-	END_FSA_TRAITS_STATE_MAP()
+		FSA_BEGIN_STATE_SET()
+			FSA_STATE_SET_ENTRY(FSA_STATE_STOP, FSA_STATE_START, FSA_STATE_STOP)
+		FSA_END_STATE_SET()
+	FSA_END_TRAITS_STATE_MAP()
 
 	// match map
-	BEGIN_FSA_TRAITS_MATCH_MAP(DefaultFsaTraits)
-		STATE_MATCH_ENTRY(0)
-	END_FSA_TRAITS_MATCH_MAP()
+	FSA_BEGIN_TRAITS_MATCH_MAP(DefaultFsaTraits)
+		FSA_STATE_MATCH_ENTRY(0)
+	FSA_END_TRAITS_MATCH_MAP()
 };
 
 // FiniteStateAutomata
@@ -177,6 +181,10 @@ public:
 		m_table.pMatch = NULL;
 		m_table.iMaxMatchNo = 1;
 	}
+	~FiniteStateAutomata() throw()
+	{
+	}
+
 	//set parameters
 	// iMaxStateNo : Specify the maximum state No.
 	// pState : A pointer to state array.
@@ -225,6 +233,7 @@ public:
 	// uEventNo : The input event No.
 	void ProcessState(uint uEventNo) throw()
 	{
+		assert( m_table.pState != NULL && m_table.pMatch != NULL );
 		assert( m_iCurrentState > 0 && m_iCurrentState <= m_table.iMaxStateNo );
 		m_iPrevState = m_iCurrentState;
 		m_uLastEventNo = uEventNo;
@@ -235,7 +244,7 @@ public:
 			_post_process_current_state(uEventNo);
 			return ;
 		}
-		while( pItem->uEventFirstNo != FSA_END_OF_EVENT ) {
+		while( pItem->uEventFirstNo != FSA_LAST_EVENT_NO ) {
 			if( uEventNo >= pItem->uEventFirstNo && uEventNo <= pItem->uEventLastNo ) {
 				m_iCurrentState = pItem->iNextState;
 				_post_process_current_state(uEventNo);

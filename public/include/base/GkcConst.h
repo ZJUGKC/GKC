@@ -35,24 +35,47 @@ namespace GKC {
 
 //------------------------------------------------------------------------------
 
+// ConstArrayBase<T>
+
+template <typename T>
+struct ConstArrayBase
+{
+	const T*  m_first;
+	uintptr   m_size;
+};
+
 // ConstArray<T>
 
 template <typename T>
-class ConstArray
+class ConstArray : public ConstArrayBase<T>
 {
+private:
+	typedef ConstArrayBase<T>  baseClass;
+
 public:
 	typedef T  EType;
 	typedef ArrayIterator<T>  Iterator;
 
 public:
-	ConstArray() throw() : m_first(NULL), m_size(0)
+	ConstArray() throw()
 	{
+		baseClass::m_first = NULL;
+		baseClass::m_size  = 0;
 	}
-	ConstArray(const T* p, uintptr size) throw() : m_first(p), m_size(size)
+	ConstArray(const T* p, uintptr size) throw()
 	{
+		baseClass::m_first = p;
+		baseClass::m_size  = size;
 	}
-	ConstArray(const ConstArray<T>& src) throw() : m_first(src.m_first), m_size(src.m_size)
+	ConstArray(const ConstArrayBase<T>& src) throw()
 	{
+		baseClass::m_first = src.m_first;
+		baseClass::m_size  = src.m_size;
+	}
+	ConstArray(const ConstArray<T>& src) throw()
+	{
+		baseClass::m_first = src.m_first;
+		baseClass::m_size  = src.m_size;
 	}
 	~ConstArray() throw()
 	{
@@ -62,15 +85,15 @@ public:
 	ConstArray<T>& operator=(const ConstArray<T>& src) throw()
 	{
 		if( this != &src ) {
-			m_first = src.m_first;
-			m_size  = src.m_size;
+			baseClass::m_first = src.m_first;
+			baseClass::m_size  = src.m_size;
 		}
 		return *this;
 	}
 
 	bool operator==(const ConstArray<T>& right) const throw()
 	{
-		return m_first == right.m_first;
+		return baseClass::m_first == right.m_first;
 	}
 	bool operator!=(const ConstArray<T>& right) const throw()
 	{
@@ -87,21 +110,21 @@ public:
 	//count
 	uintptr GetCount() const throw()
 	{
-		return m_size;
+		return baseClass::m_size;
 	}
 	bool IsNull() const throw()
 	{
-		return m_first == NULL;
+		return baseClass::m_first == NULL;
 	}
 
 	//iterator
 	const Iterator GetBegin() const throw()
 	{
-		return Iterator(RefPtr<T>(m_first));
+		return Iterator(RefPtr<T>(baseClass::m_first));
 	}
 	const Iterator GetEnd() const throw()
 	{
-		return Iterator(RefPtr<T>(m_first + GetCount()));
+		return Iterator(RefPtr<T>(baseClass::m_first + GetCount()));
 	}
 	const ReverseIterator<Iterator> GetReverseBegin() const throw()
 	{
@@ -115,12 +138,8 @@ public:
 	const Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return Iterator(RefPtr<T>(m_first + index));
+		return Iterator(RefPtr<T>(baseClass::m_first + index));
 	}
-
-private:
-	const T*  m_first;
-	uintptr   m_size;
 
 private:
 	friend class ConstHelper;
@@ -164,6 +183,9 @@ public:
 	ConstStringT(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))
 	{
 	}
+	ConstStringT(const ConstArrayBase<Tchar>& src) throw() : baseClass(src)
+	{
+	}
 	~ConstStringT() throw()
 	{
 	}
@@ -199,7 +221,20 @@ const_string_type(x, sizeof(x) / sizeof(const_string_type::EType) - 1)
 // define Static Constant String
 
 #define DECLARE_STATIC_CONST_STRING(cls)  \
-	DECLARE_STATIC_CONST_ARRAY(cls, typename cls::EType)
+	DECLARE_STATIC_CONST_ARRAY(cls, cls::EType)
+
+// define const string member
+
+#define DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  GKC::ConstArrayBase<char_type>
+
+#define DECLARE_CONST_STRING_STRUCT_MEMBER(v_name, char_type)  \
+DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  v_name;
+
+#define DECLARE_STATIC_CONST_STRING_MEMBER(c_name, char_type)  \
+static const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  c_name;
+
+// DECLARE_CONST_STRING_ARRAY(char_type)
+#define DECLARE_CONST_STRING_ARRAY(char_type)  GKC::ConstArray<DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)>
 
 //------------------------------------------------------------------------------
 // Helper
@@ -351,7 +386,7 @@ public:
 // for definitions in cpp
 
 //static const array
-#define BEGIN_STATIC_CONST_ARRAY(cls)    const typename GKC::cls::EType GKC::cls::c_array[] = {
+#define BEGIN_STATIC_CONST_ARRAY(cls)    const GKC::cls::EType GKC::cls::c_array[] = {
 
 #define STATIC_CONST_ARRAY_ENTRY(x)           x,
 #define STATIC_CONST_ARRAY_ENTRY_LAST(y)      y
@@ -366,10 +401,17 @@ public:
 //static const string
 //  STATIC_CONST_STRING_ENTRY(x) can be used repeatedly with or without CRLF
 //  "some" or L"some" or _S("some")
-#define BEGIN_STATIC_CONST_STRING(cls)   const typename GKC::cls::EType GKC::cls::c_array[] =
+#define BEGIN_STATIC_CONST_STRING(cls)   const GKC::cls::EType GKC::cls::c_array[] =
 #define STATIC_CONST_STRING_ENTRY(x)     x
 #define END_STATIC_CONST_STRING(cls)     ;  \
 		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;
+
+//const string member
+#define IMPLEMENT_CONST_STRING_ENTRY(char_type, x)   { x, sizeof(x) / sizeof(char_type) - 1 }  //this macro can be used for implementing const string member
+
+#define IMPLEMENT_STATIC_CONST_STRING_MEMBER(cls, c_name, char_type, x)  \
+const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) GKC::cls::c_name = \
+IMPLEMENT_CONST_STRING_ENTRY(char_type, x) ;
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__GKC_CONST_H__

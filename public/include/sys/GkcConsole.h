@@ -112,6 +112,15 @@ public:
 		//no check
 		scan_format(szFormat, FixedArrayHelper::GetInternalPointer(str));
 	}
+
+	//print const string array
+	static void PrintConstStringArray(const DECLARE_CONST_STRING_ARRAY(CharS)& arr) throw()
+	{
+		auto iter(arr.GetBegin());
+		for( ; iter != arr.GetEnd(); iter.MoveNext() ) {
+			WriteLine(ConstStringS(iter.get_Value()));
+		}
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

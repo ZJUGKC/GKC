@@ -15,6 +15,12 @@
 
 General Kind C++
 
+## Source Code
+
+1. Use one of the *.UTF8 locales for Linux system.
+1. The source code files are encoded as UTF8 with BOM.
+1. All constant strings with CharA type should be considered as UTF8 encoding.
+
 ## Production
 
 Install the necessary softwares in the production machine.
@@ -38,19 +44,44 @@ papers, books and slides.
 
 ##### Compiler
 
-g++-4.9
+1. Install g++
 
-Install libuuid:
+	g++-4.9
+	```
+sudo apt-get install build-essential
 ```
+
+1. Install libuuid:
+	```
 sudo apt-get install uuid-dev
 ```
 
-Install X11:
-```
+1. Install X11:
+	```
 sudo apt-get install libx11-dev
 ```
 
+1. Set the environment variable `LD_LIBRARY_PATH`:
+
+	Edit the following file:
+	```
+sudo vi /etc/environment
+```
+
+	and add the variable:
+	```
+LD_LIBRARY_PATH=./
+```
+
+	Edit the following file:
+	```
+sudo vi /etc/X11/Xsession.options
+```
+
+	and change `use-ssh-agent` to `no-use-ssh-agent`.
+
 ##### Latex
+
 1. Install TexLive:
 	```
 sudo apt-get install texlive-full

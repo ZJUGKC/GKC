@@ -156,7 +156,7 @@ public:
 		cr = IoHandleHelper::Seek(m_hd, -(int64)((m_uRead + uNum - m_uPos) * sizeof(byte)), iNewPos, IO_SEEK_CURRENT);
 		if( cr.IsFailed() )
 			return cr;
-		uint uRead;
+		uint uRead = 0;
 		RefPtr<byte> refBuffer(FixedArrayHelper::GetInternalPointer(m_buffer));
 		cr = m_hd.Read(refBuffer, sizeof(byte) * FILE_BUFFER_SIZE, uRead);
 		if (cr.IsFailed()) {

@@ -135,7 +135,7 @@ The basic principles are shown as follows:
 1. Do not use nullable nonterminals and nullable production rules.
 1. Do not design ambiguous grammar, i.e., the nonterminal should not appear two or more times in right-hand side.
 1. The first nonterminal in the left-hand side of the first production rule is considered as the start nonterminal.
-The PDA generator would add a special production rule `S->start_nonterminal` implicitly.
+The PDA generator would add a special production rule `S->start_nonterminal $` implicitly.
 
 The grammar file for WLANG is named as `wlang.gra`.
 

@@ -55,9 +55,9 @@ public:
 		uint uBytes, uBytes1, uBytes2;
 		uBytes1 = SafeOperators::MultiplyThrow((uint)iMaxState + 1, (uint)sizeof(FSA_STATE_ITEM));  //may throw
 		uBytes2 = SafeOperators::MultiplyThrow((uint)iMaxMatch + 1, (uint)sizeof(FSA_MATCH_ITEM));  //may throw
-		uBytes = SafeOperators::AddThrow(uBytes1, uBytes2);  //may throw
+		uBytes  = SafeOperators::AddThrow(uBytes1, uBytes2);  //may throw
 		uBytes1 = SafeOperators::MultiplyThrow((uint)total_transition_num, (uint)sizeof(FSA_TRANSITION_ITEM));  //may throw
-		uBytes = SafeOperators::AddThrow(uBytes, uBytes1);  //may throw
+		uBytes  = SafeOperators::AddThrow(uBytes, uBytes1);  //may throw
 		uint uStart = m_alloc.Allocate(uBytes);  //may throw
 		//pointers
 		m_pState = (FSA_STATE_ITEM*)m_alloc.ToPtr(uStart);
@@ -78,7 +78,7 @@ public:
 	//set state
 	void SetState(int iState, int iDefaultState, int iMatchIndex) throw()
 	{
-		assert( iState > 0 );
+		assert( iState > 0 && iState <= m_iMaxState );
 		assert( m_pState != NULL );
 		m_pState[iState].iDefaultState = iDefaultState;
 		m_pState[iState].iMatchIndex = iMatchIndex;
@@ -86,7 +86,7 @@ public:
 	//set match table
 	void SetMatch(int iMatchIndex, int iMatch) throw()
 	{
-		assert( iMatchIndex > 0 );
+		assert( iMatchIndex > 0 && iMatchIndex <= m_iMaxMatch );
 		assert( m_pMatch != NULL );
 		m_pMatch[iMatchIndex].iMatch = iMatch;
 	}
@@ -109,6 +109,98 @@ private:
 	int m_iMaxState;
 	FSA_MATCH_ITEM* m_pMatch;
 	int m_iMaxMatch;
+
+private:
+	//noncopyable
+};
+
+// PdaTableInPool
+//   PDA tables are defined in a pool
+
+class PdaTableInPool
+{
+public:
+	PdaTableInPool() throw() : m_pState(NULL), m_iMaxState(0), m_pRule(NULL), m_iMaxRule(0)
+	{
+	}
+	~PdaTableInPool() throw()
+	{
+	}
+
+	//state: 2---iMaxState
+	//transition: the count of arrTransitionNum is iMaxState + 1
+	//rule: 0---iMaxRule
+	void Allocate(int iMaxState, const int* arrTransitionNum, int iMaxRule)
+	{
+		assert( iMaxState > 2 && iMaxRule > 0 );
+		assert( m_pState == NULL && m_pRule == NULL );
+		//transition number
+		int total_transition_num = 0;
+		for( int i = 2; i <= iMaxState; i ++ ) {
+			assert( arrTransitionNum[i] > 0 );
+			total_transition_num += arrTransitionNum[i];
+		}
+		//allocate
+		uint uBytes, uBytes1, uBytes2;
+		uBytes1 = SafeOperators::MultiplyThrow((uint)iMaxState + 1, (uint)sizeof(PDA_STATE_ITEM));  //may throw
+		uBytes2 = SafeOperators::MultiplyThrow((uint)iMaxRule + 1, (uint)sizeof(PDA_RULE_ITEM));  //may throw
+		uBytes  = SafeOperators::AddThrow(uBytes1, uBytes2);  //may throw
+		uBytes1 = SafeOperators::MultiplyThrow((uint)total_transition_num, (uint)sizeof(PDA_TRANSITION_ITEM));  //may throw
+		uBytes  = SafeOperators::AddThrow(uBytes, uBytes1);  //may throw
+		uint uStart = m_alloc.Allocate(uBytes);  //may throw
+		//pointers
+		m_pState = (PDA_STATE_ITEM*)m_alloc.ToPtr(uStart);
+		m_pState[0].iDefaultState = 0;
+		m_pState[0].pTransition = NULL;
+		m_pState[1].iDefaultState = 0;
+		m_pState[1].pTransition = NULL;
+		m_pRule = (PDA_RULE_ITEM*)((byte*)m_pState + sizeof(PDA_STATE_ITEM) * (iMaxState + 1));
+		m_pRule[0].uLeftEventNo = 0;
+		m_pRule[0].uRightSymbolNumber = 0;
+		PDA_TRANSITION_ITEM* pItem = (PDA_TRANSITION_ITEM*)((byte*)m_pRule + sizeof(PDA_RULE_ITEM) * (iMaxRule + 1));
+		for( int i = 2; i <= iMaxState; i ++ ) {
+			m_pState[i].pTransition = pItem;
+			pItem += arrTransitionNum[i];
+		}
+		//parameters
+		m_iMaxState = iMaxState;
+		m_iMaxRule  = iMaxRule;
+	}
+
+	//set state
+	void SetState(int iState, int iDefaultState) throw()
+	{
+		assert( iState > 1 && iState <= m_iMaxState );
+		assert( m_pState != NULL );
+		m_pState[iState].iDefaultState = iDefaultState;
+	}
+	//set rule
+	void SetRule(int iRule, uint uLeftEventNo, uint uRightSymbolNumber) throw()
+	{
+		assert( iRule > 0 && iRule <= m_iMaxRule );
+		assert( m_pRule != NULL );
+		m_pRule[iRule].uLeftEventNo = uLeftEventNo;
+		m_pRule[iRule].uRightSymbolNumber = uRightSymbolNumber;
+	}
+
+	const PDA_STATE_ITEM* GetStateTable(int& iMaxStateNo) const throw()
+	{
+		iMaxStateNo = m_iMaxState;
+		return m_pState;
+	}
+	const PDA_RULE_ITEM* GetRuleTable(int& iMaxRuleNo) const throw()
+	{
+		iMaxRuleNo = m_iMaxRule;
+		return m_pRule;
+	}
+
+private:
+	DataPoolAllocator m_alloc;  //pool
+	//tables
+	PDA_STATE_ITEM* m_pState;
+	int m_iMaxState;
+	PDA_RULE_ITEM*  m_pRule;
+	int m_iMaxRule;
 
 private:
 	//noncopyable
@@ -343,6 +435,12 @@ private:
 		}
 	};
 
+	//SymUserData
+	class SymUserData
+	{
+	public:
+	};
+
 public:
 	//process lex file
 	static CallResult ProcessLexFile(IN const ConstStringS& strFile, OUT TokenTable& table, OUT FsaTableInPool& fsa, OUT CplErrorBuffer& errorBuffer)
@@ -383,43 +481,18 @@ public:
 		lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"),
 							RefPtrHelper::TypeCast<MacroTokenAction, ILexerAction>(RefPtr<MacroTokenAction>(actionMacroToken)));
 
-		LexerTokenInfo tokenInfo;
-		//loop
-		lexParser.Start(tokenInfo);
-		do {
-			cr = lexParser.Parse(tokenInfo);
-			if( cr.IsFailed() ) {
-				errorBuffer = tokenInfo.GetErrorString();
-				break;
-			}
-			uint uTokenID;
-			if( cr.GetResult() == SystemCallResults::S_False ) {
-				cr.SetResult(SystemCallResults::OK);
-				uTokenID = TK_EOF;
-			}
-			else {
-				uTokenID = tokenInfo.GetID();
-			}
-			if( uTokenID == TK_ERROR ) {
-				int ret = value_to_string(FixedArrayHelper::GetInternalPointer(errorBuffer), CplErrorBuffer::c_size,
-										_S("Error token(%u, %u): %s"), tokenInfo.GetCharStart().uRow + 1, tokenInfo.GetCharStart().uCol + 1,
-											SharedArrayHelper::GetInternalPointer(tokenInfo.GetBuffer()));
-				if( ret >= 0 )
-					errorBuffer.SetLength(ret);
-				//add to error string list
-			}
-			else if( uTokenID == TK_EOF ) {
-				//check error
-				break;
-			}
-			else if( uTokenID == TK_NULL ) {
-				//skip
-				continue;
-			}
-			//uint uPdaEvent = (uTokenID == TK_EOF) ? PDA_END_OF_EVENT : uTokenID;
+		GrammarParser<SymUserData> graParser;
+		graParser.SetLexerParser(RefPtrHelper::ToRefPtr(lexParser));
 
+		graParser.Start();
+		bool bEmpty;
+		cr.SetResult(SystemCallResults::OK);
+		while( cr.GetResult() != SystemCallResults::S_False ) {
+			cr = graParser.Parse(bEmpty);
+			if( cr.IsFailed() )
+				break;
+		}
 
-		} while( true );
 
 		return cr;
 	}

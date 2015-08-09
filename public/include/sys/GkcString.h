@@ -354,9 +354,17 @@ public:
 	//methods
 	void SetLength(uintptr uLength)
 	{
-		baseClass::SetCount(uLength + 1, 0);
+		uintptr uSize = SafeOperators::AddThrow(uLength, (uintptr)1);
+		baseClass::SetCount(uSize, 0);
 		baseClass::get_array_address()[uLength] = 0;
 	}
+	void RecalcLength() throw()
+	{
+		assert( baseClass::m_pB != NULL );  //must have a block for allocation
+		SharedArrayBlock* pB = (SharedArrayBlock*)baseClass::m_pB;
+		pB->SetLength(calc_string_length(baseClass::get_array_address()) + 1);
+	}
+
 	//clear content and free array
 	void Clear() throw()
 	{

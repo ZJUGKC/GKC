@@ -125,6 +125,29 @@ inline int compare_string_case_insensitive(const CharL* s1, const CharL* s2) thr
 	return n;
 }
 
+// find_string_char
+
+inline CharH* find_string_char(const CharH* s, CharH c) throw()
+{
+	return (CharH*)::wcschr(s, c);
+}
+
+// find_string_last_char
+
+inline CharH* find_string_last_char(const CharH* s, CharH c) throw()
+{
+	return (CharH*)::wcsrchr(s, c);
+}
+
+// find_string_string
+
+inline CharH* find_string_string(const CharH* s, const CharH* z) throw()
+{
+	return (CharH*)::wcsstr(s, z);
+}
+
+//------------------------------------------------------------------------------
+
 // value_to_string
 //   uSize : buffer size in typed characters.
 //   return value : the number of typed characters, -1 means fail.
@@ -162,6 +185,75 @@ inline int string_to_value(const CharH* szString, const CharH* szFormat, ...) th
 	int ret = ::vswscanf(szString, szFormat, ap);
 	va_end(ap);
 	return ret;
+}
+
+//   return value: the pointer to the next character. If this value is equal to szString, no conversion is performed.
+inline CharH* string_to_value(const CharH* szString, float& v, bool& bOK) throw()
+{
+	CharH* pN = NULL;
+	errno = 0;
+	v = ::wcstof(szString, &pN);  // v may be +-HUGE_VALF
+	bOK = (errno == 0);  // ERANGE
+	return pN;
+}
+inline CharH* string_to_value(const CharH* szString, double& v, bool& bOK) throw()
+{
+	CharH* pN = NULL;
+	errno = 0;
+	v = ::wcstod(szString, &pN);  // v may be +-HUGE_VAL
+	bOK = (errno == 0);  // ERANGE
+	return pN;
+}
+
+inline CharH* string_to_value(const CharH* szString, int iBase, int& v, bool& bOK) throw()
+{
+	CharH* pN = NULL;
+	errno = 0;
+	v = (int)::wcstol(szString, &pN, iBase);  // v may be LONG_MAX or LONG_MIN
+	bOK = (errno == 0);  // ERANGE
+	return pN;
+}
+inline CharH* string_to_value(const CharH* szString, int iBase, uint& v, bool& bOK) throw()
+{
+	CharH* pN = NULL;
+	errno = 0;
+	v = (uint)::wcstoul(szString, &pN, iBase);  // v may be ULONG_MAX
+	bOK = (errno == 0);  // ERANGE
+	return pN;
+}
+
+inline CharA* string_to_value(const CharA* szString, int iBase, int64& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = ::_strtoi64(szString, &pN, iBase);  // v may be _I64_MAX or _I64_MIN
+	bOK = (errno == 0);  // EINVAL
+	return pN;
+}
+inline CharH* string_to_value(const CharH* szString, int iBase, int64& v, bool& bOK) throw()
+{
+	CharH* pN = NULL;
+	errno = 0;
+	v = ::_wcstoi64(szString, &pN, iBase);  // v may be _I64_MAX or _I64_MIN
+	bOK = (errno == 0);  // EINVAL
+	return pN;
+}
+
+inline CharA* string_to_value(const CharA* szString, int iBase, uint64& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = ::_strtoui64(szString, &pN, iBase);  // v may be _UI64_MAX
+	bOK = (errno == 0);  // EINVAL
+	return pN;
+}
+inline CharH* string_to_value(const CharH* szString, int iBase, uint64& v, bool& bOK) throw()
+{
+	CharH* pN = NULL;
+	errno = 0;
+	v = ::_wcstoui64(szString, &pN, iBase);  // v may be _UI64_MAX
+	bOK = (errno == 0);  // EINVAL
+	return pN;
 }
 
 //------------------------------------------------------------------------------

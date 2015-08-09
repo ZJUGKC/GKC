@@ -537,7 +537,7 @@ public:
 		{
 			//NULL node -> Tail
 			m_refNode = ( m_refNode.IsNull() ) ? m_refList.Deref().GetTail().m_refNode
-												: m_refNode.Deref().m_pPrev;
+												: RefPtr<_Node>(m_refNode.Deref().m_pPrev);
 		}
 
 	private:
@@ -1069,7 +1069,7 @@ private:
 	Iterator get_iterator(_Node* pNode) const throw()
 	{
 		Iterator iter;
-		iter.m_refList = this;
+		iter.m_refList = const_cast<thisClass*>(this);
 		iter.m_refNode = pNode;
 		return iter;
 	}

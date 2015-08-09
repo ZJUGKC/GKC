@@ -51,6 +51,27 @@ inline uintptr calc_string_length(const CharA* s) throw()
 	return ::strlen(s);
 }
 
+// find_string_char
+
+inline CharA* find_string_char(const CharA* s, int c) throw()
+{
+	return (CharA*)::strchr(s, c);
+}
+
+// find_string_last_char
+
+inline CharA* find_string_last_char(const CharA* s, int c) throw()
+{
+	return (CharA*)::strrchr(s, c);
+}
+
+// find_string_string
+
+inline CharA* find_string_string(const CharA* s, const CharA* z) throw()
+{
+	return (CharA*)::strstr(s, z);
+}
+
 //------------------------------------------------------------------------------
 // Unified Format String for output
 /*
@@ -145,6 +166,43 @@ or [c-c]
 or [^ccc]             NOT in a set of characters.
 %                     "%%", Matches a literal '%'.
 */
+
+// string_to_value
+//   return value: the pointer to the next character. If this value is equal to szString, no conversion is performed.
+inline CharA* string_to_value(const CharA* szString, float& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = ::strtof(szString, &pN);  // v may be +-HUGE_VALF
+	bOK = (errno == 0);  // ERANGE
+	return pN;
+}
+inline CharA* string_to_value(const CharA* szString, double& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = ::strtod(szString, &pN);  // v may be +-HUGE_VAL
+	bOK = (errno == 0);  // ERANGE
+	return pN;
+}
+
+inline CharA* string_to_value(const CharA* szString, int iBase, int& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = (int)::strtol(szString, &pN, iBase);  // v may be LONG_MAX or LONG_MIN (may be 64bits under linux)
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+inline CharA* string_to_value(const CharA* szString, int iBase, uint& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = (uint)::strtoul(szString, &pN, iBase);  // v may be ULONG_MAX (may be 64bits under linux)
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+
 //------------------------------------------------------------------------------
 //OS
 

@@ -42,6 +42,7 @@
 	#include <wchar.h>
 	#include <ctype.h>
 	#include <wctype.h>
+	#include <iconv.h>
 #else
 	#error Error OS type!
 #endif

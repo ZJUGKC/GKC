@@ -38,6 +38,7 @@ inline uintptr calc_string_length(const CharL* s) throw()
 
 // calc_char_length
 //   in current locale
+//   it is not thread-safe
 inline uintptr calc_char_length(const CharA* s) throw()
 {
 	return ::mbrlen(s, MB_LEN_MAX, NULL);
@@ -45,6 +46,7 @@ inline uintptr calc_char_length(const CharA* s) throw()
 
 // calc_string_char_length
 //   in current locale
+//   it is not thread-safe
 inline uintptr calc_string_char_length(const CharA* s) throw()
 {
 	const CharA* p = s;
@@ -129,6 +131,29 @@ inline int compare_string_case_insensitive(const CharL* s1, const CharL* s2) thr
 {
 	return ::wcscasecmp(s1, s2);
 }
+
+// find_string_char
+
+inline CharL* find_string_char(const CharL* s, CharL c) throw()
+{
+	return (CharL*)::wcschr(s, c);
+}
+
+// find_string_last_char
+
+inline CharL* find_string_last_char(const CharL* s, CharL c) throw()
+{
+	return (CharL*)::wcsrchr(s, c);
+}
+
+// find_string_string
+
+inline CharL* find_string_string(const CharL* s, const CharL* z) throw()
+{
+	return (CharL*)::wcsstr(s, z);
+}
+
+//------------------------------------------------------------------------------
 
 // convert format string from unification to linux specification
 
@@ -421,13 +446,82 @@ inline int string_to_value(const CharL* szString, const CharL* szFormat, ...) th
 	return ret;
 }
 
+//   return value: the pointer to the next character. If this value is equal to szString, no conversion is performed.
+inline CharL* string_to_value(const CharL* szString, float& v, bool& bOK) throw()
+{
+	CharL* pN = NULL;
+	errno = 0;
+	v = ::wcstof(szString, &pN);  // v may be +-HUGE_VALF
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+inline CharL* string_to_value(const CharL* szString, double& v, bool& bOK) throw()
+{
+	CharL* pN = NULL;
+	errno = 0;
+	v = ::wcstod(szString, &pN);  // v may be +-HUGE_VAL
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+
+inline CharL* string_to_value(const CharL* szString, int iBase, int& v, bool& bOK) throw()
+{
+	CharL* pN = NULL;
+	errno = 0;
+	v = (int)::wcstol(szString, &pN, iBase);  // v may be LONG_MAX or LONG_MIN (may be 64bits under linux)
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+inline CharL* string_to_value(const CharL* szString, int iBase, uint& v, bool& bOK) throw()
+{
+	CharL* pN = NULL;
+	errno = 0;
+	v = (uint)::wcstoul(szString, &pN, iBase);  // v may be ULONG_MAX (may be 64bits under linux)
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+
+inline CharA* string_to_value(const CharA* szString, int iBase, int64& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = ::strtoll(szString, &pN, iBase);  // v may be LLONG_MAX or LLONG_MIN
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+inline CharL* string_to_value(const CharL* szString, int iBase, int64& v, bool& bOK) throw()
+{
+	CharL* pN = NULL;
+	errno = 0;
+	v = ::wcstoll(szString, &pN, iBase);  // v may be LLONG_MAX or LLONG_MIN
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+
+inline CharA* string_to_value(const CharA* szString, int iBase, uint64& v, bool& bOK) throw()
+{
+	CharA* pN = NULL;
+	errno = 0;
+	v = ::strtoull(szString, &pN, iBase);  // v may be ULLONG_MAX
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+inline CharL* string_to_value(const CharL* szString, int iBase, uint64& v, bool& bOK) throw()
+{
+	CharL* pN = NULL;
+	errno = 0;
+	v = ::wcstoull(szString, &pN, iBase);  // v may be ULLONG_MAX
+	bOK = (errno == 0);  // ERANGE or EINVAL
+	return pN;
+}
+
 //------------------------------------------------------------------------------
 // result_to_string
 //   uSize : buffer size in typed characters. It must be large than 0.
 inline void result_to_string(const call_result& cr, CharA* szBuffer, uintptr uSize) throw()
 {
 	szBuffer[0] = 0;
-	char* szRet = ::strerror_r(cr.GetResult() & (~0x10000000), szBuffer, uSize);
+	char* szRet = ::strerror_r(cr.GetResult() & (~0x80000000), szBuffer, uSize);
 	if( szRet != szBuffer ) {
 		//copy
 		uintptr uLen = ::strlen(szRet);

@@ -51,6 +51,12 @@ papers, books and slides.
 sudo apt-get install build-essential
 ```
 
+	manual documents
+	```
+sudo apt-get install glibc-doc
+sudo apt-get install manpages-posix-dev
+```
+
 1. Install libuuid:
 	```
 sudo apt-get install uuid-dev
@@ -218,6 +224,7 @@ Install GKC in the computers on client end or server end for production and runn
 
 ### Windows
 
+Run the following command as administrator:
 ```
 cscript setup-gkc.vbs
 ```
@@ -232,6 +239,7 @@ sudo sh setup-gkc.sh
 
 ### Windows
 
+Run the following command as administrator:
 ```
 cscript uninstall-gkc.vbs
 ```

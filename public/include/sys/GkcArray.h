@@ -677,8 +677,10 @@ private:
 	}
 	static void call_array_destructors(T* p, uintptr size) throw()
 	{
+		T* pT = p;
 		for( uintptr i = 0; i < size; i ++ ) {
-			p[i].~T();
+			pT->~T();
+			++ pT;
 		}
 	}
 	//copy

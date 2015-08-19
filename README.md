@@ -32,7 +32,7 @@ Assume the building directory has the same level of directory GKC.
 
 ##### Compiler
 
-Visual Studio Express 2013
+Visual Studio Express 2015 for Desktop
 
 ##### Latex
 
@@ -121,12 +121,12 @@ change the item `Default Compiler` to `XeLaTeX`.
 1. CMake:
 	* x86 machine:
 	```
-cmake ../GKC -G"Visual Studio 12"
+cmake ../GKC -G "Visual Studio 14"
 ```
 
 	* x64 machine:
 	```
-cmake ../GKC -DUSE_64BITS=1 -G"Visual Studio 12 Win64"
+cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 14 Win64"
 ```
 
 1. make:
@@ -145,12 +145,12 @@ ctest -C "Debug"
 1. CMake:
 	* x86 machine:
 	```
-cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -G"Unix Makefiles"
+cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles"
 ```
 
 	* x64 machine:
 	```
-cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -DUSE_64BITS=1 -G"Unix Makefiles"
+cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -DUSE_64BITS=1 -G "Unix Makefiles"
 ```
 
 1. make:
@@ -171,12 +171,12 @@ ctest
 1. CMake:
 	* x86 machine:
 	```
-cmake ../GKC -G"Visual Studio 12"
+cmake ../GKC -G "Visual Studio 14"
 ```
 
 	* x64 machine:
 	```
-cmake ../GKC -DUSE_64BITS=1 -G"Visual Studio 12 Win64"
+cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 14 Win64"
 ```
 
 1. make:
@@ -197,12 +197,12 @@ into a zip file and redistribute it.
 1. CMake:
 	* x86 machine:
 	```
-cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
+cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles"
 ```
 
 	* x64 machine:
 	```
-cmake ../GKC -DCMAKE_BUILD_TYPE=Release -DUSE_64BITS=1 -G"Unix Makefiles"
+cmake ../GKC -DCMAKE_BUILD_TYPE=Release -DUSE_64BITS=1 -G "Unix Makefiles"
 ```
 
 1. make:

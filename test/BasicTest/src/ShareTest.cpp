@@ -122,8 +122,16 @@ GKC_BEGIN_TEST(SharedArrayTest)
 	//case 2
 	GKC_BEGIN_TEST_EXCEPTION
 	{
-		//1T memory
-		uintptr uElements = 1000ULL* 1000ULL * 1000ULL * 1000ULL;
+#if defined(CM_X64)
+		//4T memory (1T elements)
+		uintptr uElements = 1000ULL * 1000ULL * 1000ULL * 1000ULL;
+#elif defined(CM_X86)
+		//3G memory (750M elements)
+		uintptr uElements = 3UL * 1000UL * 1000UL * 1000UL / sizeof(uintptr);
+#else
+	#error error machine type!
+#endif
+
 		arrTest.SetCount(uElements, 0);
 	}
 	GKC_END_TEST_EXCEPTION

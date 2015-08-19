@@ -255,6 +255,8 @@ public:
 				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
 				uTotal ++;
 				bContinue = pMap->EnumNext(info);
+				//sleep
+				thread_sleep(1);
 			}
 		}
 		else {

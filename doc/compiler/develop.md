@@ -167,7 +167,13 @@ The syntax of lex file can be described as the following grammar file:
 %%
 lex_def : TK_SEP rule_block  { do_def }
 	;
-rule_block : rule_block TK_TOKEN  { do_rule_block_token }
-	| TK_TOKEN  { do_rule_token }
+rule_block : rule_block id { do_rule_block_id }
+	| id { do_rule_id }
+	;
+id : TK_TOKEN  { do_id_token }
+	| TK_MACRO  { do_id_macro }
 	;
 ```
+
+The corresponding PDA tables are shown in `ldf-lex-pda.odg` and `LdfTable.h`.
+

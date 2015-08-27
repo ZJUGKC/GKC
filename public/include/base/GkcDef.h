@@ -921,10 +921,6 @@ public:
 	{
 		m_t.Attach(t.GetHandle());
 	}
-	WeakObjectRef(T&& t) throw()
-	{
-		m_t.Attach(t.Detach());
-	}
 	~WeakObjectRef() throw()
 	{
 		m_t.Detach();
@@ -945,12 +941,6 @@ public:
 		m_t.Attach(t.GetHandle());
 		return *this;
 	}
-	WeakObjectRef& operator=(T&& t) throw()
-	{
-		m_t.Detach();
-		m_t.Attach(t.Detach());
-		return *this;
-	}
 
 	//methods
 	const T& GetObject() const throw()
@@ -964,6 +954,10 @@ public:
 
 private:
 	T m_t;  //object may contain a pointer (or a handle) from system call or third party library
+
+private:
+	WeakObjectRef(T&& t) throw();
+	WeakObjectRef& operator=(T&& t) throw();
 };
 
 //------------------------------------------------------------------------------

@@ -435,10 +435,140 @@ private:
 		}
 	};
 
+	//PDA for lex file
+	class _LDF_LexPdaTraits
+	{
+	public:
+		// state map
+		PDA_BEGIN_TRAITS_STATE_MAP(_LDF_LexPdaTraits)
+			//transitions
+			PDA_BEGIN_STATE_TRANSITION(PDA_STATE_START)
+				PDA_STATE_TRANSITION_ENTRY(101, 3)  //lex_def
+				PDA_STATE_TRANSITION_ENTRY(4, 4)    //TK_SEP
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(3)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, PDA_STATE_ACCEPTED)  //$
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(4)
+				PDA_STATE_TRANSITION_ENTRY(7, 5)    //TK_TOKEN
+				PDA_STATE_TRANSITION_ENTRY(6, 6)    //TK_MACRO
+				PDA_STATE_TRANSITION_ENTRY(103, 7)  //id
+				PDA_STATE_TRANSITION_ENTRY(102, 8)  //rule_block
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(5)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -4)  //$
+				PDA_STATE_TRANSITION_ENTRY(7, -4)    //TK_TOKEN
+				PDA_STATE_TRANSITION_ENTRY(6, -4)    //TK_MACRO
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(6)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -5)  //$
+				PDA_STATE_TRANSITION_ENTRY(7, -5)    //TK_TOKEN
+				PDA_STATE_TRANSITION_ENTRY(6, -5)    //TK_MACRO
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(7)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -3)  //$
+				PDA_STATE_TRANSITION_ENTRY(7, -3)    //TK_TOKEN
+				PDA_STATE_TRANSITION_ENTRY(6, -3)    //TK_MACRO
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(8)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -1)  //$
+				PDA_STATE_TRANSITION_ENTRY(7, 5)     //TK_TOKEN
+				PDA_STATE_TRANSITION_ENTRY(6, 6)     //TK_MACRO
+				PDA_STATE_TRANSITION_ENTRY(103, 9)   //id
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(9)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -2)  //$
+				PDA_STATE_TRANSITION_ENTRY(7, -2)    //TK_TOKEN
+				PDA_STATE_TRANSITION_ENTRY(6, -2)    //TK_MACRO
+			PDA_END_STATE_TRANSITION()
+			//state
+			PDA_BEGIN_STATE_SET()
+				PDA_STATE_SET_ENTRY(PDA_STATE_START)
+				PDA_STATE_SET_ENTRY(3)
+				PDA_STATE_SET_ENTRY(4)
+				PDA_STATE_SET_ENTRY(5)
+				PDA_STATE_SET_ENTRY(6)
+				PDA_STATE_SET_ENTRY(7)
+				PDA_STATE_SET_ENTRY(8)
+				PDA_STATE_SET_ENTRY(9)
+			PDA_END_STATE_SET()
+		PDA_END_TRAITS_STATE_MAP()
+
+		// rule map
+		PDA_BEGIN_TRAITS_RULE_MAP(_LDF_LexPdaTraits)
+			PDA_RULE_ENTRY(0, 1)      // S -> lex_def $
+			PDA_RULE_ENTRY(101, 2)    // lex_def -> TK_SEP rule_block
+			PDA_RULE_ENTRY(102, 2)    // rule_block -> rule_block id
+			PDA_RULE_ENTRY(102, 1)    // rule_block -> id
+			PDA_RULE_ENTRY(103, 1)    // id -> TK_TOKEN
+			PDA_RULE_ENTRY(103, 1)    // id -> TK_MACRO
+		PDA_END_TRAITS_RULE_MAP()
+	};
+
+	class _LDF_ActionTable
+	{
+	public:
+		//called only once
+		void Init()
+		{
+			uint uID = 1;
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_ref"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_block_id"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_id"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"), uID ++);
+		}
+
+		const TokenTable& GetTable() const throw()
+		{
+			return m_table;
+		}
+
+	private:
+		TokenTable m_table;
+	};
+
 	//SymUserData
 	class SymUserData
 	{
 	public:
+	};
+
+	//actions
+	class DoRefAction : public IGrammarAction<SymUserData>
+	{
+	public:
+		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
+		{
+		}
+	};
+	class DoRuleBlockIdAction : public IGrammarAction<SymUserData>
+	{
+	public:
+		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
+		{
+		}
+	};
+	class DoRuleIdAction : public IGrammarAction<SymUserData>
+	{
+	public:
+		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
+		{
+		}
+	};
+	class DoIdTokenAction : public IGrammarAction<SymUserData>
+	{
+	public:
+		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
+		{
+		}
+	};
+	class DoIdMacroAction : public IGrammarAction<SymUserData>
+	{
+	public:
+		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
+		{
+		}
 	};
 
 public:
@@ -481,9 +611,37 @@ public:
 		lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"),
 							RefPtrHelper::TypeCast<MacroTokenAction, ILexerAction>(RefPtr<MacroTokenAction>(actionMacroToken)));
 
+		//action table
+		_LDF_ActionTable ldfActionTable;
+		ldfActionTable.Init();  //may throw
+		//PDA
+		typedef PushDownMachineT<typename GrammarTable<SymUserData>::SymbolClass, _LDF_LexPdaTraits>  PdmClass;
+		PdmClass pdm;
+		//grammar table
+		GrammarTable<SymUserData> graTable(RefPtrHelper::TypeCast<PdmClass, typename PdmClass::baseClass>(RefPtr<PdmClass>(pdm)),
+										RefPtrHelper::ToRefPtr(ldfActionTable.GetTable()));
+		//grammar parser
 		GrammarParser<SymUserData> graParser;
 		graParser.SetLexerParser(RefPtrHelper::ToRefPtr(lexParser));
+		graParser.SetGrammarTable(RefPtrHelper::ToRefPtr(graTable));
+		//actions
+		DoRefAction actionDoRef;
+		DoRuleBlockIdAction actionDoRuleBlockId;
+		DoRuleIdAction actionDoRuleId;
+		DoIdTokenAction actionDoIdToken;
+		DoIdMacroAction actionDoIdMacro;
+		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_ref"),
+							RefPtrHelper::TypeCast<DoRefAction, IGrammarAction<SymUserData>>(RefPtr<DoRefAction>(actionDoRef)));
+		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_block_id"),
+							RefPtrHelper::TypeCast<DoRuleBlockIdAction, IGrammarAction<SymUserData>>(RefPtr<DoRuleBlockIdAction>(actionDoRuleBlockId)));
+		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_id"),
+							RefPtrHelper::TypeCast<DoRuleIdAction, IGrammarAction<SymUserData>>(RefPtr<DoRuleIdAction>(actionDoRuleId)));
+		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"),
+							RefPtrHelper::TypeCast<DoIdTokenAction, IGrammarAction<SymUserData>>(RefPtr<DoIdTokenAction>(actionDoIdToken)));
+		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"),
+							RefPtrHelper::TypeCast<DoIdMacroAction, IGrammarAction<SymUserData>>(RefPtr<DoIdMacroAction>(actionDoIdMacro)));
 
+		//loop
 		graParser.Start();
 		bool bEmpty;
 		cr.SetResult(SystemCallResults::OK);
@@ -492,8 +650,14 @@ public:
 			if( cr.IsFailed() )
 				break;
 		}
+		if( cr.IsFailed() )
+			return cr;
+		if( graParser.GetErrorArray().GetCount() > 0 ) {
+			cr.SetResult(SystemCallResults::Fail);
+			return cr;
+		}
 
-
+		cr.SetResult(SystemCallResults::OK);
 		return cr;
 	}
 };

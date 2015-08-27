@@ -47,6 +47,15 @@ public:
 	{
 		return m_strBuffer;
 	}
+	const StringA& GetAux() const throw()
+	{
+		return m_strData;
+	}
+	StringA& GetAux() throw()
+	{
+		return m_strData;
+	}
+
 	const T& GetData() const throw()
 	{
 		return m_data;
@@ -58,6 +67,7 @@ public:
 
 private:
 	StringA m_strBuffer;  //original string
+	StringA m_strData;    //additional string
 	T m_data;  //user data
 
 private:
@@ -113,7 +123,7 @@ template <typename T>
 class NOVTABLE IGrammarAction
 {
 public:
-	virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<T>>>& arr) = 0;
+	virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<T>>>& arr, INOUT SharedArray<StringS>& errorArray) = 0;
 };
 
 // GrammarParser<T>
@@ -247,7 +257,7 @@ public:
 				//action
 				RefPtr<IGrammarAction<T>> action = find_action(iRule);
 				if( !action.IsNull() ) {
-					action.Deref().DoAction(m_table.Deref().GetPDA().GetReduceSymbolArray());  //may throw
+					action.Deref().DoAction(m_table.Deref().GetPDA().GetReduceSymbolArray(), m_arrError);  //may throw
 				}
 				m_table.Deref().GetPDA().EndReduce();
 				break;
@@ -255,6 +265,7 @@ public:
 			//shift
 			SymbolDataT<T>& sData = m_table.Deref().GetPDA().Shift();  //may throw
 			sData.GetBuffer() = StringUtilHelper::Clone(m_tokenInfo.GetBuffer());  //may throw
+			sData.GetAux()    = StringUtilHelper::Clone(m_tokenInfo.GetData());  //may throw
 		} while( true );  //end while
 
 		return cr;

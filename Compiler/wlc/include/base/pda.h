@@ -211,6 +211,8 @@ public:
 	void SetStartState()
 	{
 		m_stack.RemoveAll();
+		if( SharedArrayHelper::GetBlockPointer(m_arrSymbol) == NULL )
+			m_arrSymbol = SharedArrayHelper::MakeSharedArray<RefPtr<T>>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		m_arrSymbol.RemoveAll();
 		m_uCurrentEvent = PDA_NO_EVENT;
 		m_iCurrentActState = PDA_STATE_START;
@@ -304,7 +306,7 @@ public:
 		//0 --- left symbol, 1, 2, 3, ... --- right symbols
 		m_arrSymbol.Add(RefPtr<T>(get_stack_top().m_t));  //may throw
 		for( uint i = 1; i <= uRightSymbolNumber; i ++ ) {
-			m_arrSymbol.Add(RefPtr<T>(get_stack_right_sym(i).m_t));  //may throw
+			m_arrSymbol.Add(RefPtr<T>(get_stack_right_sym(i, uRightSymbolNumber).m_t));  //may throw
 		}
 		m_uRightSymbolNumber = uRightSymbolNumber;
 	}
@@ -372,12 +374,12 @@ private:
 		assert( m_stack.GetCount() > 0 );
 		return m_stack.GetTail().get_Value();
 	}
-	_SymItem& get_stack_right_sym(uint uIndex) throw()
+	_SymItem& get_stack_right_sym(uint uIndex, uint uRightSymbolNumber) throw()
 	{
-		assert( uIndex <= m_uRightSymbolNumber );
+		assert( uIndex <= uRightSymbolNumber );
 		uintptr uCount = m_stack.GetCount();
-		assert( uCount > m_uRightSymbolNumber );
-		return m_stack.FindIndex(uCount - m_uRightSymbolNumber - 1 + uIndex - 1).get_Value();
+		assert( uCount > uRightSymbolNumber );
+		return m_stack.FindIndex(uCount - uRightSymbolNumber - 1 + uIndex - 1).get_Value();
 	}
 	//revert
 	bool revert_with_current_event(bool bFromTop) throw()
@@ -429,7 +431,7 @@ private:
 template <typename T, class TTraits = DefaultPdaTraits>
 class PushDownMachineT : public PushDownAutomata<T>
 {
-private:
+public:
 	typedef PushDownAutomata<T>  baseClass;
 
 public:

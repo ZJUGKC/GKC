@@ -608,12 +608,7 @@ public:
 	static StringT<Tchar> Clone(const StringT<Tchar>& str)
 	{
 		StringT<Tchar> ret;
-		uintptr uCount = str.GetLength();
-		ret.SetLength(uCount);
-		if( uCount == 0 ) {
-			return ret;
-		}
-		mem_copy(&(str.GetBegin().get_Value()), uCount * sizeof(Tchar), &(ret.GetBegin().get_Value()));
+		static_cast<SharedArray<Tchar>&>(ret) = SharedArrayHelper::Clone(static_cast<const SharedArray<Tchar>&>(str));
 		return ret;
 	}
 

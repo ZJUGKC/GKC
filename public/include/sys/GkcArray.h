@@ -889,7 +889,7 @@ public:
 	{
 		SharedArray<T> ret;
 		if( !sp.IsNull() ) {
-			ret = MakeSharedArray(sp.m_pB->GetMemoryManager());
+			ret = MakeSharedArray<T>(((SharedArrayBlock*)(sp.m_pB))->GetMemoryManager());
 			ret.Copy(sp);
 		}
 		return ret;

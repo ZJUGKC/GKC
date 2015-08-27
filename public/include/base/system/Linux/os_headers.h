@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <signal.h>
+#include <dlfcn.h>
 
 //X11
 #include <X11/Xlib.h>

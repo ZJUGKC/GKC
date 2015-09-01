@@ -61,7 +61,8 @@ public:
 	uint GetTokenID(const ConstStringA& strToken) const throw()
 	{
 		auto iter(m_symbol_pool.Find(strToken));
-		assert( !iter.IsNull() );
+		if( iter.IsNull() )
+			return 0;
 		return _cpl_process_byte_order(iter.GetData<uint>());
 	}
 
@@ -192,7 +193,7 @@ private:
 class LexerTable
 {
 public:
-	LexerTable(const RefPtr<FiniteStateAutomata>& fsa, const RefPtr<TokenTable>& tk) throw() : m_fsa(fsa), m_token_table(tk)
+	LexerTable() throw()
 	{
 	}
 	~LexerTable() throw()
@@ -200,9 +201,17 @@ public:
 	}
 
 	//properties
+	void SetFSA(const RefPtr<FiniteStateAutomata>& fsa) throw()
+	{
+		m_fsa = fsa;
+	}
 	FiniteStateAutomata& GetFSA() throw()
 	{
 		return m_fsa.Deref();
+	}
+	void SetTokenTable(const RefPtr<TokenTable>& tk) throw()
+	{
+		m_token_table = tk;
 	}
 	const TokenTable& GetTokenTable() const throw()
 	{

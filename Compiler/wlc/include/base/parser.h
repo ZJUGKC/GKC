@@ -83,7 +83,7 @@ public:
 	typedef SymbolDataT<T>  SymbolClass;
 
 public:
-	GrammarTable(const RefPtr<PushDownAutomata<SymbolClass>>& pda, const RefPtr<TokenTable>& ra) throw() : m_pda(pda), m_ra_table(ra)
+	GrammarTable() throw()
 	{
 	}
 	~GrammarTable() throw()
@@ -91,9 +91,17 @@ public:
 	}
 
 	//properties
+	void SetPDA(const RefPtr<PushDownAutomata<SymbolClass>>& pda) throw()
+	{
+		m_pda = pda;
+	}
 	PushDownAutomata<SymbolClass>& GetPDA() throw()
 	{
 		return m_pda.Deref();
+	}
+	void SetReductionActionTable(const RefPtr<TokenTable>& ra) throw()
+	{
+		m_ra_table = ra;
 	}
 	const TokenTable& GetReductionActionTable() const throw()
 	{

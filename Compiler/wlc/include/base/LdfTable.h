@@ -206,11 +206,41 @@ private:
 	//noncopyable
 };
 
-// LdfTableHelper
+// LdfTableAnalyzer
 
-class LdfTableHelper
+class LdfTableAnalyzer
 {
 private:
+	class _LDF_TokenTable
+	{
+	public:
+		//called only once
+		void Init()
+		{
+			uint uID = TK_FIRST;
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEP"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_ACTION"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LCURLY"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RCURLY"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COLON"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_VERT"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEMI"), uID ++);
+		}
+
+		const TokenTable& GetTable() const throw()
+		{
+			return m_table;
+		}
+
+	private:
+		TokenTable m_table;
+	};
+
 	//FSA for lex & grammar file
 	class _LDF_FsaTraits
 	{
@@ -354,37 +384,38 @@ private:
 		FSA_END_TRAITS_MATCH_MAP()
 	};
 
-	class _LDF_TokenTable
+public:
+	LdfTableAnalyzer() throw()
 	{
-	public:
-		//called only once
-		void Init()
-		{
-			uint uID = TK_FIRST;
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEP"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_ACTION"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LCURLY"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RCURLY"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COLON"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_VERT"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEMI"), uID ++);
-		}
+	}
+	~LdfTableAnalyzer() throw()
+	{
+	}
 
-		const TokenTable& GetTable() const throw()
-		{
-			return m_table;
-		}
+	void Init()
+	{
+		m_ldfTokenTable.Init();  //may throw
+		m_lexTable.SetFSA(RefPtrHelper::TypeCast<FiniteStateMachineT<_LDF_FsaTraits>, FiniteStateAutomata>(RefPtr<FiniteStateMachineT<_LDF_FsaTraits>>(m_fsm)));
+		m_lexTable.SetTokenTable(RefPtrHelper::ToRefPtr(m_ldfTokenTable.GetTable()));
 
-	private:
-		TokenTable m_table;
-	};
+	}
 
-	// actions
+	CallResult Process(IN const ConstStringS& strLexFile, IN const ConstStringS& strGraFile,
+					OUT TokenTable& tokenTable, OUT FsaTableInPool& fsa,
+					OUT TokenTable& actionTable, OUT PdaTableInPool& pda
+					)
+	{
+		CallResult cr;
+
+		cr = process_lex_file(strLexFile, tokenTable, fsa);
+		if( cr.IsFailed() )
+			return cr;
+
+		return cr;
+	}
+
+private:
+	// lexer actions
 	class MacroTokenAction : public ILexerAction
 	{
 	public:
@@ -433,6 +464,30 @@ private:
 				return cr;
 			return cr;
 		}
+	};
+
+	//reduction action table for lex file
+	class _LDF_LexActionTable
+	{
+	public:
+		//called only once
+		void Init()
+		{
+			uint uID = 1;
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_ref"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_block_id"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_id"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"), uID ++);
+		}
+
+		const TokenTable& GetTable() const throw()
+		{
+			return m_table;
+		}
+
+	private:
+		TokenTable m_table;
 	};
 
 	//PDA for lex file
@@ -505,57 +560,13 @@ private:
 		PDA_END_TRAITS_RULE_MAP()
 	};
 
-	class _LDF_ActionTable
-	{
-	public:
-		//called only once
-		void Init()
-		{
-			uint uID = 1;
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_ref"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_block_id"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_id"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"), uID ++);
-			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"), uID ++);
-		}
-
-		const TokenTable& GetTable() const throw()
-		{
-			return m_table;
-		}
-
-	private:
-		TokenTable m_table;
-	};
-
 	//SymUserData
 	class SymUserData
 	{
 	public:
 	};
 
-	//actions
-	class DoRefAction : public IGrammarAction<SymUserData>
-	{
-	public:
-		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
-		{
-		}
-	};
-	class DoRuleBlockIdAction : public IGrammarAction<SymUserData>
-	{
-	public:
-		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
-		{
-		}
-	};
-	class DoRuleIdAction : public IGrammarAction<SymUserData>
-	{
-	public:
-		virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<SymUserData>>>& arr, INOUT SharedArray<StringS>& errorArray)
-		{
-		}
-	};
+	// grammar actions
 	class DoIdTokenAction : public IGrammarAction<SymUserData>
 	{
 	public:
@@ -571,29 +582,19 @@ private:
 		}
 	};
 
-public:
-	//process lex file
-	static CallResult ProcessLexFile(IN const ConstStringS& strFile, OUT TokenTable& table, OUT FsaTableInPool& fsa, OUT CplErrorBuffer& errorBuffer)
+	CallResult process_lex_file(IN const ConstStringS& strLexFile, OUT TokenTable& tokenTable, OUT FsaTableInPool& fsa)
 	{
 		CallResult cr;
 
 		//stream
 		FileCharStream stream;
-		cr = stream.Initialize(StringUtilHelper::To_C_Style(strFile));
+		cr = stream.Initialize(StringUtilHelper::To_C_Style(strLexFile));
 		if( cr.IsFailed() )
 			return cr;
 
-		//token table
-		_LDF_TokenTable ldfTokenTable;
-		ldfTokenTable.Init();  //may throw
-		//FSA
-		FiniteStateMachineT<_LDF_FsaTraits> fsm;
-		//lexer table
-		LexerTable lexTable(RefPtrHelper::TypeCast<FiniteStateMachineT<_LDF_FsaTraits>, FiniteStateAutomata>(RefPtr<FiniteStateMachineT<_LDF_FsaTraits>>(fsm)),
-							RefPtrHelper::ToRefPtr(ldfTokenTable.GetTable()));
 		//lexer parser
 		LexerParser lexParser;
-		lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(lexTable));
+		lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(m_lexTable));
 		lexParser.SetStream(RefPtrHelper::TypeCast<FileCharStream, ICharStream>(RefPtr<FileCharStream>(stream)));
 		//actions
 		CommentStartAction actionCommentStart;
@@ -612,30 +613,22 @@ public:
 							RefPtrHelper::TypeCast<MacroTokenAction, ILexerAction>(RefPtr<MacroTokenAction>(actionMacroToken)));
 
 		//action table
-		_LDF_ActionTable ldfActionTable;
+		_LDF_LexActionTable ldfActionTable;
 		ldfActionTable.Init();  //may throw
 		//PDA
 		typedef PushDownMachineT<typename GrammarTable<SymUserData>::SymbolClass, _LDF_LexPdaTraits>  PdmClass;
 		PdmClass pdm;
 		//grammar table
-		GrammarTable<SymUserData> graTable(RefPtrHelper::TypeCast<PdmClass, typename PdmClass::baseClass>(RefPtr<PdmClass>(pdm)),
-										RefPtrHelper::ToRefPtr(ldfActionTable.GetTable()));
+		GrammarTable<SymUserData> graTable;
+		graTable.SetPDA(RefPtrHelper::TypeCast<PdmClass, typename PdmClass::baseClass>(RefPtr<PdmClass>(pdm)));
+		graTable.SetReductionActionTable(RefPtrHelper::ToRefPtr(ldfActionTable.GetTable()));
 		//grammar parser
 		GrammarParser<SymUserData> graParser;
 		graParser.SetLexerParser(RefPtrHelper::ToRefPtr(lexParser));
 		graParser.SetGrammarTable(RefPtrHelper::ToRefPtr(graTable));
 		//actions
-		DoRefAction actionDoRef;
-		DoRuleBlockIdAction actionDoRuleBlockId;
-		DoRuleIdAction actionDoRuleId;
 		DoIdTokenAction actionDoIdToken;
 		DoIdMacroAction actionDoIdMacro;
-		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_ref"),
-							RefPtrHelper::TypeCast<DoRefAction, IGrammarAction<SymUserData>>(RefPtr<DoRefAction>(actionDoRef)));
-		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_block_id"),
-							RefPtrHelper::TypeCast<DoRuleBlockIdAction, IGrammarAction<SymUserData>>(RefPtr<DoRuleBlockIdAction>(actionDoRuleBlockId)));
-		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_id"),
-							RefPtrHelper::TypeCast<DoRuleIdAction, IGrammarAction<SymUserData>>(RefPtr<DoRuleIdAction>(actionDoRuleId)));
 		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"),
 							RefPtrHelper::TypeCast<DoIdTokenAction, IGrammarAction<SymUserData>>(RefPtr<DoIdTokenAction>(actionDoIdToken)));
 		graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"),
@@ -660,6 +653,14 @@ public:
 		cr.SetResult(SystemCallResults::OK);
 		return cr;
 	}
+
+private:
+	//token table
+	_LDF_TokenTable m_ldfTokenTable;
+	//FSA
+	FiniteStateMachineT<_LDF_FsaTraits> m_fsm;
+	//lexer table
+	LexerTable m_lexTable;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

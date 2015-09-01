@@ -42,12 +42,19 @@ public:
 	CallResult Initialize(const ConstStringS& strFileName) throw()
 	{
 		CallResult cr;
+
 		TokenTable tokenTable;
 		FsaTableInPool fsaTable;
+		TokenTable actionTable;
+		PdaTableInPool pdaTable;
+
 		try {
-			//process lex file
-			cr = LdfTableHelper::ProcessLexFile(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")),
-												tokenTable, fsaTable, m_errorBuffer);
+			//process lex & gra file
+			LdfTableAnalyzer lta;
+			lta.Init();
+			cr = lta.Process(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")),
+							DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")),
+							tokenTable, fsaTable, actionTable, pdaTable);
 		}
 		catch(Exception& e) {
 			//error

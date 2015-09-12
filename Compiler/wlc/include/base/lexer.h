@@ -355,8 +355,9 @@ public:
 		uint uID = m_table.Deref().GetTokenTable().GetTokenID(strToken);
 		assert( uID > 0 );
 		//fill
-		if( m_arrAction.GetCount() < (uintptr)(uID + 1) )
-			m_arrAction.SetCount(uID + 1, 0);  //may throw
+		uint uLeastCount = SafeOperators::AddThrow(uID, (uint)1);  //may throw
+		if( m_arrAction.GetCount() < (uintptr)uLeastCount )
+			m_arrAction.SetCount((uintptr)uLeastCount, 0);  //may throw
 		m_arrAction.SetAt(uID, pAction);
 	}
 	void SetStream(IN const RefPtr<ICharStream>& stream) throw()

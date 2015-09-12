@@ -17,9 +17,9 @@
 //------------------------------------------------------------------------------
 //OS
 
-#if defined(OS_WINDOWS)
+#if defined(GKC_OS_WINDOWS)
 	#include "Windows/other_types.h"
-#elif defined(OS_LINUX)
+#elif defined(GKC_OS_LINUX)
 	#include "Linux/other_types.h"
 #else
 	#error Error OS type!
@@ -95,12 +95,12 @@ public:
 	}
 
 	//Swap a character's byte order
-#if defined(OS_WINDOWS)
+#if defined(GKC_OS_WINDOWS)
 	static CharH Swap(CharH x) throw()
 	{
 		return (CharH)Swap((ushort)x);
 	}
-#elif defined(OS_LINUX)
+#elif defined(GKC_OS_LINUX)
 	//static CharH Swap(CharH x) throw()
 	//  the same as : static ushort Swap(ushort x) throw()
 #else

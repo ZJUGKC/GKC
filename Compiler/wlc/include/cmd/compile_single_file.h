@@ -33,6 +33,10 @@ inline int compile_single_file(const StringS& strSrc, const StringS& strDest)
 	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Initialize...")));
 	//init
 	cr = sa.Initialize(StringUtilHelper::To_ConstString(strSrc));
+	if( cr.IsFailed() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Failed!")));
+		return 0;
+	}
 
 	return 0;
 }

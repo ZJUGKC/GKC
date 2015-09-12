@@ -16,9 +16,9 @@
 
 // composite types
 
-#if defined(OS_WINDOWS)
+#if defined(GKC_OS_WINDOWS)
 	#include "Windows/composite_types.h"
-#elif defined(OS_LINUX)
+#elif defined(GKC_OS_LINUX)
 	#include "Linux/composite_types.h"
 #else
 	#error Error OS type!
@@ -72,5 +72,14 @@ inline void call_constructor(T& t, Args&&... args)
 }
 
 #pragma pop_macro("new")
+
+//check derivations
+template <class T, class TBase>
+inline bool is_derived_from() throw()
+{
+	T* p = (T*)65536;
+	TBase* pb = static_cast<TBase*>(p);  //may be a compile time error
+	return pb != (TBase*)0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////

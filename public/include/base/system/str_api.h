@@ -206,9 +206,9 @@ inline CharA* string_to_value(const CharA* szString, int iBase, uint& v, bool& b
 //------------------------------------------------------------------------------
 //OS
 
-#if defined(OS_WINDOWS)
+#if defined(GKC_OS_WINDOWS)
 	#include "Windows/str_api.h"
-#elif defined(OS_LINUX)
+#elif defined(GKC_OS_LINUX)
 	#include "Linux/str_api.h"
 #else
 	#error Error OS type!

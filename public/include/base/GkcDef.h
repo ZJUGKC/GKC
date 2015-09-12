@@ -30,7 +30,7 @@ for cross-platform.
 //Machine Type
 #if ( !defined(CM_X86) && !defined(CM_X64) )
 //windows
-#define OS_WINDOWS
+#define GKC_OS_WINDOWS
 //WIN64
 #ifdef _WIN64
 #define WIN64
@@ -40,7 +40,7 @@ for cross-platform.
 #endif //WIN64
 #else
 //linux
-#define OS_LINUX
+#define GKC_OS_LINUX
 #endif //Machine Type
 
 //basic types
@@ -573,6 +573,11 @@ public:
 			m_iter = src.m_iter;
 		}
 		return *this;
+	}
+
+	bool IsNull() const throw()
+	{
+		return m_iter.IsNull();
 	}
 
 	//logical

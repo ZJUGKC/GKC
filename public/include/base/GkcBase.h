@@ -589,6 +589,11 @@ public:
 		return *this;
 	}
 
+	bool IsNull() const throw()
+	{
+		return m_element.IsNull();
+	}
+
 	const T& get_Value() const throw()
 	{
 		return m_element.Deref();
@@ -644,6 +649,10 @@ public:
 	void MoveDelta(intptr iDelta) throw()
 	{
 		m_element = &(m_element.Deref()) + iDelta;
+	}
+	intptr CalcDelta(const ArrayIterator<T>& second) const throw()
+	{
+		return &(m_element.Deref()) - &(second.m_element.Deref());
 	}
 
 private:

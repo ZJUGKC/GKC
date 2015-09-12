@@ -26,16 +26,15 @@ This file contains grammar parser.
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// SymbolDataT<T>
+// SymbolDataBase
 
-template <typename T>
-class SymbolDataT
+class SymbolDataBase
 {
 public:
-	SymbolDataT() throw()
+	SymbolDataBase() throw()
 	{
 	}
-	~SymbolDataT() throw()
+	~SymbolDataBase() throw()
 	{
 	}
 
@@ -55,33 +54,39 @@ public:
 	{
 		return m_strData;
 	}
-
-	const T& GetData() const throw()
+	const LEXER_CHAR_INFO& GetCharStart() const throw()
 	{
-		return m_data;
+		return m_startInfo;
 	}
-	T& GetData() throw()
+	LEXER_CHAR_INFO& GetCharStart() throw()
 	{
-		return m_data;
+		return m_startInfo;
+	}
+	const LEXER_CHAR_INFO& GetCharEnd() const throw()
+	{
+		return m_endInfo;
+	}
+	LEXER_CHAR_INFO& GetCharEnd() throw()
+	{
+		return m_endInfo;
 	}
 
-private:
+protected:
 	StringA m_strBuffer;  //original string
 	StringA m_strData;    //additional string
-	T m_data;  //user data
+	LEXER_CHAR_INFO m_startInfo;
+	LEXER_CHAR_INFO m_endInfo;
 
 private:
 	//noncopyable
 };
 
 // GrammarTable<T>
+//  T must be derived from SymbolDataBase
 
-template <typename T>
+template <class T>
 class GrammarTable
 {
-public:
-	typedef SymbolDataT<T>  SymbolClass;
-
 public:
 	GrammarTable() throw()
 	{
@@ -91,11 +96,11 @@ public:
 	}
 
 	//properties
-	void SetPDA(const RefPtr<PushDownAutomata<SymbolClass>>& pda) throw()
+	void SetPDA(const RefPtr<PushDownAutomata<T>>& pda) throw()
 	{
 		m_pda = pda;
 	}
-	PushDownAutomata<SymbolClass>& GetPDA() throw()
+	PushDownAutomata<T>& GetPDA() throw()
 	{
 		return m_pda.Deref();
 	}
@@ -109,8 +114,8 @@ public:
 	}
 
 private:
-	RefPtr<PushDownAutomata<SymbolClass>>  m_pda;
-	RefPtr<TokenTable>                     m_ra_table;  //reduction action name
+	RefPtr<PushDownAutomata<T>>  m_pda;
+	RefPtr<TokenTable>           m_ra_table;  //reduction action name
 
 private:
 	//noncopyable
@@ -126,22 +131,28 @@ public:
 };
 
 // IGrammarAction<T>
+//  T must be derived from SymbolDataBase
 
-template <typename T>
+template <class T>
 class NOVTABLE IGrammarAction
 {
 public:
-	virtual void DoAction(INOUT SharedArray<RefPtr<SymbolDataT<T>>>& arr, INOUT SharedArray<StringS>& errorArray) = 0;
+	virtual void DoAction(INOUT SharedArray<RefPtr<T>>& arr, INOUT SharedArray<StringS>& errorArray) = 0;
 };
 
 // GrammarParser<T>
+//  T must be derived from SymbolDataBase
 
-template <typename T>
+template <class T>
 class GrammarParser
 {
 public:
 	GrammarParser() throw()
 	{
+#ifdef DEBUG
+		bool b = is_derived_from<T, SymbolDataBase>();
+#endif
+		assert( b );
 	}
 	~GrammarParser() throw()
 	{
@@ -168,8 +179,9 @@ public:
 		uint uID = m_table.Deref().GetReductionActionTable().GetTokenID(strAction);
 		assert( uID > 0 );
 		//fill
-		if( m_arrAction.GetCount() < (uintptr)(uID + 1) )
-			m_arrAction.SetCount(uID + 1, 0);  //may throw
+		uint uLeastCount = SafeOperators::AddThrow(uID, (uint)1);  //may throw
+		if( m_arrAction.GetCount() < (uintptr)uLeastCount )
+			m_arrAction.SetCount((uintptr)uLeastCount, 0);  //may throw
 		m_arrAction.SetAt(uID, pAction);
 	}
 
@@ -271,9 +283,11 @@ public:
 				break;
 			}
 			//shift
-			SymbolDataT<T>& sData = m_table.Deref().GetPDA().Shift();  //may throw
+			T& sData = m_table.Deref().GetPDA().Shift();  //may throw
 			sData.GetBuffer() = StringUtilHelper::Clone(m_tokenInfo.GetBuffer());  //may throw
 			sData.GetAux()    = StringUtilHelper::Clone(m_tokenInfo.GetData());  //may throw
+			sData.GetCharStart() = m_tokenInfo.GetCharStart();
+			sData.GetCharEnd()   = m_tokenInfo.GetCharEnd();
 		} while( true );  //end while
 
 		return cr;

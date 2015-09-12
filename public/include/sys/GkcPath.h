@@ -38,12 +38,43 @@ public:
 	template <typename Tchar, uintptr t_size>
 	static void ConvertPathStringToPlatform(INOUT FixedStringT<Tchar, t_size>& str) throw()
 	{
+		assert( !str.IsNull() );
 		cvt_path_string_to_platform(FixedArrayHelper::GetInternalPointer(str));
 	}
 	template <typename Tchar>
 	static void ConvertPathStringToPlatform(INOUT StringT<Tchar>& str) throw()
 	{
+		assert( !str.IsNull() );
 		cvt_path_string_to_platform(SharedArrayHelper::GetInternalPointer(str));
+	}
+
+	//relative
+	template <typename Tchar>
+	static bool IsRelative(IN const ConstStringT<Tchar>& str) throw()
+	{
+		assert( !str.IsNull() );
+		return path_is_relative(ConstHelper::GetInternalPointer(str));
+	}
+
+	//separator
+	template <typename Tchar>
+	static void AppendSeparator(StringT<Tchar>& str)
+	{
+		assert( !str.IsNull() );
+		uintptr uLength = str.GetLength();
+		if( uLength == 0 || !check_path_separator(str.GetAt(uLength - 1).get_Value()) ) {
+			Tchar ch;
+			get_path_separator(ch);
+			StringUtilHelper::Append(str, ch);
+		}
+	}
+	template <typename Tchar>
+	static void RemoveSeparator(StringT<Tchar>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( uLength > 0 && check_path_separator(str.GetAt(uLength - 1).get_Value()) ) {
+			StringUtilHelper::Delete(uLength - 1, 1, str);
+		}
 	}
 };
 

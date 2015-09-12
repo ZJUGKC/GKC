@@ -549,12 +549,18 @@ public:
 		uintptr uSize = pB->GetLength();
 		if( index >= uSize ) {
 			// adding after the end of the array
-			SetCount(index + count, 0, rv_forward<Args>(args)...);  //grow so index is valid
+			uintptr uNewSize;
+			if( SafeOperators::Add(index, count, uNewSize).IsFailed() )
+				throw OverflowException();
+			SetCount(uNewSize, 0, rv_forward<Args>(args)...);  //grow so index is valid
 		}
 		else {
 			// inserting in the middle of the array
 			uintptr uOldSize = uSize;
-			SetCount(uSize + count, 0);  //grow it to new size
+			uintptr uNewSize;
+			if( SafeOperators::Add(uSize, count, uNewSize).IsFailed() )
+				throw OverflowException();
+			SetCount(uNewSize, 0);  //grow it to new size
 			// destroy intial data before copying over it
 			call_array_destructors(get_array_address() + uOldSize, count);
 			// shift old data up to fill gap

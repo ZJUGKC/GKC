@@ -54,7 +54,7 @@ The syntax of regular expression is shown in the following tables:
 
 | Symbols | Description |
 |-----|-----|
-| x | Visible ASCII character, 0x20-0x7E |
+| x | Visible ASCII character, 0x21-0x7E (remove space - 0x20) |
 | \x | Escape character |
 | [xyz...] or [...x-z...] or [^...] | Define a character set |
 
@@ -71,7 +71,7 @@ The syntax of regular expression is shown in the following tables:
 | Symbols | Description |
 |-----|-----|
 | R1R2 |  R1 followed by R2 |
-| R1|R2 | R1 or R2 |
+| R1`|`R2 | R1 or R2 |
 
 1. Others:
 
@@ -129,11 +129,12 @@ factor : TK_LPAREN expr TK_RPAREN  { do_factor_expr }
 
 The basic principles are shown as follows:
 
-1. Define grammar by left recursion.
+1. Define grammar by left recursion as much as possible.
 1. Use the first rule for reduction-reduction conflicts.
 1. Use the shift operation for shift-reduction conflicts.
 1. Do not use nullable nonterminals and nullable production rules.
 1. Do not design ambiguous grammar, i.e., the nonterminal should not appear two or more times in right-hand side.
+1. The priority order is from top to bottom with low level to high level.
 1. The first nonterminal in the left-hand side of the first production rule is considered as the start nonterminal.
 The PDA generator would add a special production rule `S->start_nonterminal $` implicitly.
 
@@ -159,7 +160,7 @@ TK_VERT     \|
 TK_SEMI     ;
 ```
 
-The corresponding FSA tables are shown in `ldf-fsa.odg` and `LdfTable.h`.
+The corresponding FSA tables are shown in `ldf-fsa.odg` and `_ldf_base.h`.
 
 The syntax of lex file can be described as the following grammar file:
 
@@ -175,5 +176,79 @@ id : TK_TOKEN  { do_id_token }
 	;
 ```
 
-The corresponding PDA tables are shown in `ldf-lex-pda.odg` and `LdfTable.h`.
+The corresponding PDA tables are shown in `ldf-lex-pda.odg` and `_ldf_base.h`.
 
+The lexical elements of regular expression can be described as the following lex file:
+
+```
+%%
+TK_CHAR_BACKSLASH       \\\\
+TK_CHAR_HEX             \\x[0-9A-Fa-f][0-9A-Fa-f]
+TK_CHAR_CR              \\r
+TK_CHAR_LN              \\n
+TK_CHAR_TAB             \\t
+TK_CHAR_SPACE           \\s
+TK_CHAR_LBRACKET        \\\[
+TK_CHAR_RBRACKET        \\\]
+TK_CHAR_LPAREN          \\\(
+TK_CHAR_RPAREN          \\\)
+TK_CHAR_LCURLY          \\\{
+TK_CHAR_RCURLY          \\\}
+TK_CHAR_QUESTION        \\\?
+TK_CHAR_STAR            \\\*
+TK_CHAR_PLUS            \\\+
+TK_CHAR_MINUS           \\\-
+TK_CHAR_UPARROW         \\\^
+TK_CHAR_VERT            \\\|
+TK_LBRACKET             \[
+TK_RBRACKET             \]
+TK_MINUS                \-
+TK_UPARROW              \^
+TK_QUESTION             \?
+TK_STAR                 \*
+TK_PLUS                 \+
+TK_VERT                 \|
+TK_LPAREN               \(
+TK_RPAREN               \)
+TK_CHAR                 [\x21-\x7E]
+```
+
+The corresponding FSA tables are shown in `ldf-regex-fsa.odg` and `_ldf_base.h`.
+
+The syntax of regular expression can be described as the following grammar file:
+
+```
+%%
+regex_exp : regex_exp TK_VERT regex_term  { do_exp_exp_term }
+	| regex_term  { do_exp_term }
+	;
+regex_term : regex_term regex_factor_1  { do_term_term_factor_1 }
+	| regex_factor_1  { do_term_factor_1 }
+	;
+regex_factor_1 : regex_factor_1 TK_PLUS  { do_factor_1_plus }
+	| regex_factor_1 TK_STAR  { do_factor_1_star }
+	| regex_factor_1 TK_QUESTION  { do_factor_1_question }
+	| regex_factor  { do_factor_1_factor }
+	;
+regex_factor : TK_LPAREN regex_exp TK_RPAREN  { do_factor_paren_exp }
+	| regex_char  { do_factor_char }
+	| regex_char_set { do_factor_char_set }
+	;
+regex_char_set : TK_LBRACKET regex_char_item TK_RLBRACKET  { do_char_set }
+	| TK_LBRACKET TK_UPARROW regex_char_item TK_RLBRACKET  { do_char_set_up }
+	;
+regex_char_item : regex_char_item regex_char_e  { do_char_item_item_char_e }
+	| regex_char_e  { do_char_item_char_e }
+	;
+regex_char_e : regex_char_range  { do_char_e_range }
+	| regex_char  { do_char_e_char }
+	;
+regex_char_range : regex_char TK_MINUS regex_char_s { do_char_range }
+	;
+regex_char_s : regex_char  { do_char_s }
+	;
+regex_char : TK_CHAR  { do_char }
+	;
+```
+
+The corresponding PDA tables are shown in `ldf-lex-regex-pda.odg` and `_ldf_base.h`.

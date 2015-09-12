@@ -93,9 +93,9 @@ private:
 //------------------------------------------------------------------------------
 //OS
 
-#if defined(OS_WINDOWS)
+#if defined(GKC_OS_WINDOWS)
 	#include "Windows/sys_types.h"
-#elif defined(OS_LINUX)
+#elif defined(GKC_OS_LINUX)
 	#include "Linux/sys_types.h"
 #else
 	#error Error OS type!

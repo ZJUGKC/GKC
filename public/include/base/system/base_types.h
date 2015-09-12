@@ -29,11 +29,11 @@ typedef unsigned int    uint;
 //float
 //double
 
-#if defined(OS_WINDOWS)
+#if defined(GKC_OS_WINDOWS)
 
 #include "Windows/base_types.h"
 
-#elif defined(OS_LINUX)
+#elif defined(GKC_OS_LINUX)
 
 #include "Linux/base_types.h"
 

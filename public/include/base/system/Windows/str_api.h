@@ -309,4 +309,34 @@ inline void cvt_path_string_to_platform(CharH* szBuffer) throw()
 	}
 }
 
+//------------------------------------------------------------------------------
+// path
+
+inline bool path_is_relative(const CharA* szPath) throw()
+{
+	return ::PathIsRelativeA(szPath) ? true : false;
+}
+inline bool path_is_relative(const CharH* szPath) throw()
+{
+	return ::PathIsRelativeW(szPath) ? true : false;
+}
+
+inline void get_path_separator(CharA& ch) throw()
+{
+	ch = '\\';
+}
+inline void get_path_separator(CharH& ch) throw()
+{
+	ch = L'\\';
+}
+
+inline bool check_path_separator(const CharA& ch) throw()
+{
+	return ch == '\\' || ch == '/';
+}
+inline bool check_path_separator(const CharH& ch) throw()
+{
+	return ch == L'\\' || ch == L'/';
+}
+
 ////////////////////////////////////////////////////////////////////////////////

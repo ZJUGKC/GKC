@@ -590,25 +590,25 @@ public:
 		return m_iter != right.m_iter;
 	}
 
-	const T& get_Value() const throw()
+	const typename T::EType& get_Value() const throw()
 	{
 		T tmp(m_iter);
 		tmp.MovePrev();
 		return tmp.get_Value();
 	}
-	T& get_Value() throw()
+	typename T::EType& get_Value() throw()
 	{
 		T tmp(m_iter);
 		tmp.MovePrev();
 		return tmp.get_Value();
 	}
-	void set_Value(const T& t)  //may throw
+	void set_Value(const typename T::EType& t)  //may throw
 	{
 		T tmp(m_iter);
 		tmp.MovePrev();
 		tmp.set_Value(t);
 	}
-	void set_Value(T&& t)  //may throw
+	void set_Value(typename T::EType&& t)  //may throw
 	{
 		T tmp(m_iter);
 		tmp.MovePrev();
@@ -623,6 +623,14 @@ public:
 	void MovePrev() throw()
 	{
 		m_iter.MoveNext();
+	}
+	void MoveDelta(intptr iDelta) throw()
+	{
+		m_iter.MoveDelta(iDelta);
+	}
+	intptr CalcDelta(const ReverseIterator<T>& second) const throw()
+	{
+		return m_iter.CalcDelta(second.m_iter);
 	}
 
 private:

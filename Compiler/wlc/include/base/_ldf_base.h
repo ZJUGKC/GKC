@@ -310,14 +310,8 @@ public:
 	};
 
 private:
-	// _LDF_SymUserData
-	class _LDF_SymUserData : public SymbolDataBase
-	{
-	public:
-	};
-
-public:
-	// _LDF_GrammarParser
+	// _LDF_GrammarParser<T>
+	template <class T>
 	class _LDF_GrammarParser
 	{
 	public:
@@ -325,12 +319,12 @@ public:
 		{
 			m_graParser.SetLexerParser(parser);
 		}
-		void SetGrammarTable(const RefPtr<GrammarTable<_LDF_SymUserData>>& table) throw()
+		void SetGrammarTable(const RefPtr<GrammarTable<T>>& table) throw()
 		{
 			m_graParser.SetGrammarTable(table);
 		}
 
-		GrammarParser<_LDF_SymUserData>& GetGrammarParser() throw()
+		GrammarParser<T>& GetGrammarParser() throw()
 		{
 			return m_graParser;
 		}
@@ -357,13 +351,19 @@ public:
 		}
 
 	private:
-		GrammarParser<_LDF_SymUserData> m_graParser;
+		GrammarParser<T> m_graParser;
 	};
 
 //------------------------------------------------------------------------------
 //for lex file
 
 private:
+	// _LDF_lex_SymUserData
+	class _LDF_lex_SymUserData : public SymbolDataBase
+	{
+	public:
+	};
+
 	// reduction action table for lex file
 	class _LDF_Lex_ActionTable
 	{
@@ -458,16 +458,16 @@ private:
 		PDA_END_TRAITS_RULE_MAP()
 	};
 
-	typedef PushDownMachineT<_LDF_SymUserData, _LDF_Lex_PdaTraits> _LDF_Lex_PDM;
+	typedef PushDownMachineT<_LDF_lex_SymUserData, _LDF_Lex_PdaTraits> _LDF_Lex_PDM;
 
 	// grammar actions
-	class DoIdTokenMacroAction : public IGrammarAction<_LDF_SymUserData>
+	class DoIdTokenMacroAction : public IGrammarAction<_LDF_lex_SymUserData>
 	{
 	public:
 		DoIdTokenMacroAction(TokenTable& tt, SharedArray<StringA>& arr) throw() : m_tt(tt), m_arr(arr), m_uCurrentID(TK_FIRST)
 		{
 		}
-		virtual void DoAction(INOUT SharedArray<RefPtr<_LDF_SymUserData>>& arr, INOUT SharedArray<StringS>& errorArray)
+		virtual void DoAction(INOUT SharedArray<RefPtr<_LDF_lex_SymUserData>>& arr, INOUT SharedArray<StringS>& errorArray)
 		{
 			StringA& strToken = arr[1].get_Value().Deref().GetBuffer();
 			ConstStringA cs_token = StringUtilHelper::To_ConstString(strToken);
@@ -512,15 +512,15 @@ public:
 			m_graTable.SetReductionActionTable(RefPtrHelper::ToRefPtr(m_actTable.GetTable()));
 		}
 
-		RefPtr<GrammarTable<_LDF_SymUserData>> GetGrammarTable() throw()
+		RefPtr<GrammarTable<_LDF_lex_SymUserData>> GetGrammarTable() throw()
 		{
-			return RefPtr<GrammarTable<_LDF_SymUserData>>(m_graTable);
+			return RefPtr<GrammarTable<_LDF_lex_SymUserData>>(m_graTable);
 		}
 
 	private:
 		_LDF_Lex_ActionTable m_actTable;
 		_LDF_Lex_PDM m_pdm;
-		GrammarTable<_LDF_SymUserData> m_graTable;
+		GrammarTable<_LDF_lex_SymUserData> m_graTable;
 	};
 
 	class _LDF_Lex_GrammarAction;
@@ -532,6 +532,11 @@ public:
 											m_tokenRegex(SharedArrayHelper::MakeSharedArray<StringA>(MemoryHelper::GetCrtMemoryManager())),
 											m_macroRegex(SharedArrayHelper::MakeSharedArray<StringA>(MemoryHelper::GetCrtMemoryManager()))
 		{
+		}
+
+		SharedArray<StringA>& GetTokenRegex() throw()
+		{
+			return m_tokenRegex;
 		}
 
 		void ExpandTokenMacros()
@@ -639,17 +644,408 @@ public:
 		{
 		}
 
-		void Apply(GrammarParser<_LDF_SymUserData>& graParser)
+		void Apply(GrammarParser<_LDF_lex_SymUserData>& graParser)
 		{
 			graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"),
-								RefPtrHelper::TypeCast<DoIdTokenMacroAction, IGrammarAction<_LDF_SymUserData>>(RefPtr<DoIdTokenMacroAction>(m_actionDoIdToken)));
+								RefPtrHelper::TypeCast<DoIdTokenMacroAction, IGrammarAction<_LDF_lex_SymUserData>>(RefPtr<DoIdTokenMacroAction>(m_actionDoIdToken)));
 			graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"),
-								RefPtrHelper::TypeCast<DoIdTokenMacroAction, IGrammarAction<_LDF_SymUserData>>(RefPtr<DoIdTokenMacroAction>(m_actionDoIdMacro)));
+								RefPtrHelper::TypeCast<DoIdTokenMacroAction, IGrammarAction<_LDF_lex_SymUserData>>(RefPtr<DoIdTokenMacroAction>(m_actionDoIdMacro)));
 		}
 
 	private:
 		DoIdTokenMacroAction m_actionDoIdToken;
 		DoIdTokenMacroAction m_actionDoIdMacro;
+	};
+
+	// _LDF_lex_GrammarParser
+	typedef _LDF_GrammarParser<_LDF_lex_SymUserData>  _LDF_lex_GrammarParser;
+
+//------------------------------------------------------------------------------
+//for regular expression
+
+private:
+	// token table
+	class _LDF_regex_TokenTable
+	{
+	public:
+		//called only once
+		void Init()
+		{
+			uint uID = TK_FIRST;
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_BACKSLASH"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_HEX"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_CR"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LN"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_TAB"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_SPACE"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LBRACKET"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RBRACKET"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LPAREN"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RPAREN"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LCURLY"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RCURLY"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_QUESTION"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_STAR"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_PLUS"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_MINUS"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_UPARROW"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_VERT"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LBRACKET"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RBRACKET"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MINUS"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_UPARROW"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_QUESTION"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_STAR"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_PLUS"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_VERT"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LPAREN"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RPAREN"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR"), uID ++);
+		}
+
+		const TokenTable& GetTable() const throw()
+		{
+			return m_table;
+		}
+
+	private:
+		TokenTable m_table;
+	};
+
+	// fsa
+	class _LDF_regex_FsaTraits
+	{
+	public:
+		// state map
+		FSA_BEGIN_TRAITS_STATE_MAP(_LDF_regex_FsaTraits)
+			//transitions
+			FSA_BEGIN_STATE_TRANSITION(FSA_STATE_START)
+				FSA_STATE_TRANSITION_ENTRY('\\', 2)
+				FSA_STATE_TRANSITION_ENTRY('[', 3)
+				FSA_STATE_TRANSITION_ENTRY(']', 4)
+				FSA_STATE_TRANSITION_ENTRY('-', 5)
+				FSA_STATE_TRANSITION_ENTRY('^', 6)
+				FSA_STATE_TRANSITION_ENTRY('?', 7)
+				FSA_STATE_TRANSITION_ENTRY('*', 8)
+				FSA_STATE_TRANSITION_ENTRY('+', 9)
+				FSA_STATE_TRANSITION_ENTRY('|', 10)
+				FSA_STATE_TRANSITION_ENTRY('(', 11)
+				FSA_STATE_TRANSITION_ENTRY(')', 12)
+				FSA_STATE_TRANSITION_RANGE_ENTRY(0x21, 0x7E, 13)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(2)
+				FSA_STATE_TRANSITION_ENTRY('\\', 14)
+				FSA_STATE_TRANSITION_ENTRY('r', 15)
+				FSA_STATE_TRANSITION_ENTRY('n', 16)
+				FSA_STATE_TRANSITION_ENTRY('t', 17)
+				FSA_STATE_TRANSITION_ENTRY('s', 18)
+				FSA_STATE_TRANSITION_ENTRY('[', 19)
+				FSA_STATE_TRANSITION_ENTRY(']', 20)
+				FSA_STATE_TRANSITION_ENTRY('(', 21)
+				FSA_STATE_TRANSITION_ENTRY(')', 22)
+				FSA_STATE_TRANSITION_ENTRY('{', 23)
+				FSA_STATE_TRANSITION_ENTRY('}', 24)
+				FSA_STATE_TRANSITION_ENTRY('?', 25)
+				FSA_STATE_TRANSITION_ENTRY('*', 26)
+				FSA_STATE_TRANSITION_ENTRY('+', 27)
+				FSA_STATE_TRANSITION_ENTRY('-', 28)
+				FSA_STATE_TRANSITION_ENTRY('^', 29)
+				FSA_STATE_TRANSITION_ENTRY('|', 30)
+				FSA_STATE_TRANSITION_ENTRY('x', 31)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(3)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(4)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(5)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(6)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(7)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(8)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(9)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(10)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(11)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(12)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(13)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(14)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(15)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(16)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(17)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(18)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(19)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(20)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(21)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(22)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(23)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(24)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(25)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(26)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(27)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(28)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(29)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(30)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(31)
+				FSA_STATE_TRANSITION_RANGE_ENTRY('0', '9', 32)
+				FSA_STATE_TRANSITION_RANGE_ENTRY('A', 'F', 32)
+				FSA_STATE_TRANSITION_RANGE_ENTRY('a', 'f', 32)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(32)
+				FSA_STATE_TRANSITION_RANGE_ENTRY('0', '9', 33)
+				FSA_STATE_TRANSITION_RANGE_ENTRY('A', 'F', 33)
+				FSA_STATE_TRANSITION_RANGE_ENTRY('a', 'f', 33)
+			FSA_END_STATE_TRANSITION()
+			FSA_BEGIN_STATE_TRANSITION(33)
+			FSA_END_STATE_TRANSITION()
+
+			//state
+			FSA_BEGIN_STATE_SET()
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, FSA_STATE_START, 100)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 2, -29)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 3, -19)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 4, -20)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 5, -21)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 6, -22)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 7, -23)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 8, -24)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 9, -25)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 10, -26)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 11, -27)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 12, -28)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 13, -29)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 14, -1)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 15, -3)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 16, -4)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 17, -5)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 18, -6)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 19, -7)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 20, -8)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 21, -9)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 22, -10)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 23, -11)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 24, -12)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 25, -13)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 26, -14)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 27, -15)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 28, -16)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 29, -17)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 30, -18)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 31, 100)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 32, 100)
+				FSA_STATE_SET_ENTRY(FSA_STATE_STOP, 33, -2)
+			FSA_END_STATE_SET()
+		FSA_END_TRAITS_STATE_MAP()
+
+		// match map
+		FSA_BEGIN_TRAITS_MATCH_MAP(_LDF_regex_FsaTraits)
+			FSA_STATE_MATCH_ENTRY(0)
+			FSA_STATE_MATCH_ENTRY(1)   //TK_CHAR_BACKSLASH
+			FSA_STATE_MATCH_ENTRY(2)   //TK_CHAR_HEX
+			FSA_STATE_MATCH_ENTRY(3)   //TK_CHAR_CR
+			FSA_STATE_MATCH_ENTRY(4)   //TK_CHAR_LN
+			FSA_STATE_MATCH_ENTRY(5)   //TK_CHAR_TAB
+			FSA_STATE_MATCH_ENTRY(6)   //TK_CHAR_SPACE
+			FSA_STATE_MATCH_ENTRY(7)   //TK_CHAR_LBRACKET
+			FSA_STATE_MATCH_ENTRY(8)   //TK_CHAR_RBRACKET
+			FSA_STATE_MATCH_ENTRY(9)   //TK_CHAR_LPAREN
+			FSA_STATE_MATCH_ENTRY(10)  //TK_CHAR_RPAREN
+			FSA_STATE_MATCH_ENTRY(11)  //TK_CHAR_LCURLY
+			FSA_STATE_MATCH_ENTRY(12)  //TK_CHAR_RCURLY
+			FSA_STATE_MATCH_ENTRY(13)  //TK_CHAR_QUESTION
+			FSA_STATE_MATCH_ENTRY(14)  //TK_CHAR_STAR
+			FSA_STATE_MATCH_ENTRY(15)  //TK_CHAR_PLUS
+			FSA_STATE_MATCH_ENTRY(16)  //TK_CHAR_MINUS
+			FSA_STATE_MATCH_ENTRY(17)  //TK_CHAR_UPARROW
+			FSA_STATE_MATCH_ENTRY(18)  //TK_CHAR_VERT
+			FSA_STATE_MATCH_ENTRY(19)  //TK_LBRACKET
+			FSA_STATE_MATCH_ENTRY(20)  //TK_RBRACKET
+			FSA_STATE_MATCH_ENTRY(21)  //TK_MINUS
+			FSA_STATE_MATCH_ENTRY(22)  //TK_UPARROW
+			FSA_STATE_MATCH_ENTRY(23)  //TK_QUESTION
+			FSA_STATE_MATCH_ENTRY(24)  //TK_STAR
+			FSA_STATE_MATCH_ENTRY(25)  //TK_PLUS
+			FSA_STATE_MATCH_ENTRY(26)  //TK_VERT
+			FSA_STATE_MATCH_ENTRY(27)  //TK_LPAREN
+			FSA_STATE_MATCH_ENTRY(28)  //TK_RPAREN
+			FSA_STATE_MATCH_ENTRY(29)  //TK_CHAR
+		FSA_END_TRAITS_MATCH_MAP()
+	};
+
+	typedef FiniteStateMachineT<_LDF_regex_FsaTraits>  _LDF_REGEX_FSM;
+
+	// actions
+	class CharAction : public ILexerAction
+	{
+	public:
+		virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
+		{
+			//fetch the actual character
+			StringA& str = info.GetBuffer();
+			assert( str.GetLength() > 1 );
+			//value
+			CharA ch = str.GetAt(1).get_Value();
+			if( ch == 'r' )
+				str.GetAt(0).set_Value('\r');
+			else if( ch == 'n' )
+				str.GetAt(0).set_Value('\n');
+			else if( ch == 't' )
+				str.GetAt(0).set_Value('\t');
+			else if( ch == 's' )
+				str.GetAt(0).set_Value(' ');
+			else if( ch == 'x' ) {
+				bool bOK;
+				uint v;
+				string_to_value(SharedArrayHelper::GetInternalPointer(str) + 2, 16, v, bOK);
+				assert( bOK );
+				str.GetAt(0).set_Value((CharA)v);
+			}
+			else
+				str.GetAt(0).set_Value(ch);
+			str.SetLength(1);
+			//change ID
+			info.SetID(29);  //TK_CHAR
+		}
+	};
+
+	// _LDF_regex_LexerParser
+	class _LDF_regex_LexerParser
+	{
+	public:
+		//called only once
+		void Init()
+		{
+			m_tokenTable.Init();  //may throw
+			m_lexTable.SetFSA(RefPtrHelper::TypeCast<_LDF_REGEX_FSM, FiniteStateAutomata>(RefPtr<_LDF_REGEX_FSM>(m_fsm)));
+			m_lexTable.SetTokenTable(RefPtrHelper::ToRefPtr(m_tokenTable.GetTable()));
+			m_lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(m_lexTable));
+			//actions
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_BACKSLASH"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_HEX"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_CR"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LN"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_TAB"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_SPACE"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LBRACKET"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RBRACKET"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LPAREN"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RPAREN"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LCURLY"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RCURLY"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_QUESTION"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_STAR"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_PLUS"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_MINUS"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_UPARROW"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_VERT"),
+								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+		}
+
+		void SetStream(const RefPtr<ICharStream>& stream) throw()
+		{
+			m_lexParser.SetStream(stream);
+		}
+
+		RefPtr<LexerParser> GetLexerParser() throw()
+		{
+			return RefPtr<LexerParser>(m_lexParser);
+		}
+
+	private:
+		//token table
+		_LDF_regex_TokenTable m_tokenTable;
+		//FSA
+		_LDF_REGEX_FSM m_fsm;
+		//lexer table
+		LexerTable m_lexTable;
+		//lexer parser
+		LexerParser m_lexParser;
+		//actions
+		CharAction m_actionChar;
+	};
+
+public:
+	// _LDF_regex_AST
+	class _LDF_regex_AST
+	{
+	public:
+		_LDF_regex_AST() throw()
+		{
+		}
+
+		//no cleanup
+		void Generate(const SharedArray<StringA>& regex)
+		{
+			for( auto iter(regex.GetBegin()); iter != regex.GetEnd(); iter.MoveNext() )
+				generate_one(iter.get_Value());
+		}
+
+	private:
+		void generate_one(const StringA& str)
+		{
+			if( str.IsNull() )
+				return ;
+
+			CallResult cr;
+			ConstArray<byte> buffer;
+			ConstHelper::SetInternalPointer((byte*)SharedArrayHelper::GetInternalPointer(str), str.GetLength(), buffer);
+			//stream
+			MemoryCharStream stream;
+			stream.Initialize(buffer);
+
+			//lexer parser
+			_LDF_regex_LexerParser lexer;
+			lexer.Init();
+			lexer.SetStream(RefPtrHelper::TypeCast<MemoryCharStream, ICharStream>(RefPtr<MemoryCharStream>(stream)));
+
+			//grammar parser
+			//_LDF_regex_GrammarParser parser;
+
+		}
+
+	private:
+		SharedArray<AstTree> m_trees;
+		DataPoolAllocator m_alloc;
 	};
 
 //------------------------------------------------------------------------------

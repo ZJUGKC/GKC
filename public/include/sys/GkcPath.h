@@ -76,6 +76,43 @@ public:
 			StringUtilHelper::Delete(uLength - 1, 1, str);
 		}
 	}
+
+	//extension
+	template <typename Tchar>
+	static bool FindExtensionStart(IN const ConstStringT<Tchar>& str, OUT uintptr& uPos) throw()
+	{
+		uintptr uLength = str.GetCount();
+		if( uLength == 0 )
+			return false;
+		auto iterB(str.GetReverseBegin());
+		auto iter(iterB);
+		for( ; iter != str.GetReverseEnd(); iter.MoveNext() ) {
+			const Tchar& ch = iter.get_Value();
+			if( check_path_separator(ch) )
+				return false;
+			if( check_path_extension_start(ch) ) {
+				uPos = uLength + iter.CalcDelta(iterB) - 1;
+				return true;
+			}
+		}
+		return false;
+	}
+	//file part
+	template <typename Tchar>
+	static uintptr FindFilePartStart(IN const ConstStringT<Tchar>& str) throw()
+	{
+		uintptr uLength = str.GetCount();
+		if( uLength == 0 )
+			return 0;
+		auto iterB(str.GetReverseBegin());
+		auto iter(iterB);
+		for( ; iter != str.GetReverseEnd(); iter.MoveNext() ) {
+			const Tchar& ch = iter.get_Value();
+			if( check_path_separator(ch) || check_drive_separator(ch) )
+				return uLength + iter.CalcDelta(iterB);
+		}
+		return 0;
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

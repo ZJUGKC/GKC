@@ -146,6 +146,40 @@ inline CharH* find_string_string(const CharH* s, const CharH* z) throw()
 	return (CharH*)::wcsstr(s, z);
 }
 
+// char_is_*
+inline bool char_is_alpha(const CharH& ch) throw()
+{
+	return ::iswalpha((wint_t)ch) != 0;
+}
+inline bool char_is_lower(const CharH& ch) throw()
+{
+	return ::iswlower((wint_t)ch) != 0;
+}
+inline bool char_is_upper(const CharH& ch) throw()
+{
+	return ::iswupper((wint_t)ch) != 0;
+}
+inline bool char_is_digit(const CharH& ch) throw()
+{
+	return ::iswdigit((wint_t)ch) != 0;
+}
+inline bool char_is_xdigit(const CharH& ch) throw()
+{
+	return ::iswxdigit((wint_t)ch) != 0;
+}
+inline bool char_is_blank(const CharH& ch) throw()
+{
+	return ::iswblank((wint_t)ch) != 0;
+}
+inline bool char_is_space(const CharH& ch) throw()
+{
+	return ::iswspace((wint_t)ch) != 0;
+}
+inline bool char_is_print(const CharH& ch) throw()
+{
+	return ::iswprint((wint_t)ch) != 0;
+}
+
 //------------------------------------------------------------------------------
 
 // value_to_string
@@ -337,6 +371,23 @@ inline bool check_path_separator(const CharA& ch) throw()
 inline bool check_path_separator(const CharH& ch) throw()
 {
 	return ch == L'\\' || ch == L'/';
+}
+inline bool check_drive_separator(const CharA& ch) throw()
+{
+	return ch == ':';
+}
+inline bool check_drive_separator(const CharH& ch) throw()
+{
+	return ch == L':';
+}
+
+inline void get_path_extension_start(CharH& ch) throw()
+{
+	ch = L'.';
+}
+inline bool check_path_extension_start(const CharH& ch) throw()
+{
+	return ch == L'.';
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -72,6 +72,40 @@ inline CharA* find_string_string(const CharA* s, const CharA* z) throw()
 	return (CharA*)::strstr(s, z);
 }
 
+// char_is_*
+inline bool char_is_alpha(const CharA& ch) throw()
+{
+	return ::isalpha((int)ch) != 0;
+}
+inline bool char_is_lower(const CharA& ch) throw()
+{
+	return ::islower((int)ch) != 0;
+}
+inline bool char_is_upper(const CharA& ch) throw()
+{
+	return ::isupper((int)ch) != 0;
+}
+inline bool char_is_digit(const CharA& ch) throw()
+{
+	return ::isdigit((int)ch) != 0;
+}
+inline bool char_is_xdigit(const CharA& ch) throw()
+{
+	return ::isxdigit((int)ch) != 0;
+}
+inline bool char_is_blank(const CharA& ch) throw()
+{
+	return ::isblank((int)ch) != 0;
+}
+inline bool char_is_space(const CharA& ch) throw()
+{
+	return ::isspace((int)ch) != 0;
+}
+inline bool char_is_print(const CharA& ch) throw()
+{
+	return ::isprint((int)ch) != 0;
+}
+
 //------------------------------------------------------------------------------
 // Unified Format String for output
 /*
@@ -225,5 +259,15 @@ inline int compare_string(const CharA* s1, const CharA* s2) throw()
 }
 
 //------------------------------------------------------------------------------
+// path
+
+inline void get_path_extension_start(CharA& ch) throw()
+{
+	ch = '.';
+}
+inline bool check_path_extension_start(const CharA& ch) throw()
+{
+	return ch == '.';
+}
 
 ////////////////////////////////////////////////////////////////////////////////

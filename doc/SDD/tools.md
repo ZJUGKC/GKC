@@ -40,7 +40,7 @@ mdc <source directory> <output directory>
 
 # Linux
 
-1. Copy `cmark`, `libcmark.so` and `libcmark.so.0.22.0` to `/usr/.GKC/public/assemblies`.
+1. Copy `cmark`, `libcmark.so` and `libcmark.so.0.22.0` to `/usr/.GKC/public/assemblies` with option `-d`.
 
 1. Execute:
 

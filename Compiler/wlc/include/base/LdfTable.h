@@ -256,7 +256,7 @@ private:
 		m_lexer.SetStream(RefPtrHelper::TypeCast<FileCharStream, ICharStream>(RefPtr<FileCharStream>(stream)));
 
 		//grammar parser
-		_ldf_helper::_LDF_GrammarParser parser;
+		_ldf_helper::_LDF_lex_GrammarParser parser;
 		parser.SetLexerParser(m_lexer.GetLexerParser());
 		// grammar table
 		_ldf_helper::_LDF_Lex_GrammarTable graTable;
@@ -275,6 +275,11 @@ private:
 
 		//expand macros
 		data.ExpandTokenMacros();
+
+		//analyze regular expressions
+		SharedArray<StringA>& regex(data.GetTokenRegex());
+		_ldf_helper::_LDF_regex_AST ast;
+		ast.Generate(regex);
 
 		cr.SetResult(SystemCallResults::OK);
 		return cr;

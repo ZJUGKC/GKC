@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -19,9 +19,9 @@ This file contains entry point function.
 #define __ENTRY_POINT_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "cmd/compile_single_file.h"
-
 #include "global.h"
+
+#include "process.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,46 +49,28 @@ public:
 	{
 		uintptr uArgCount = args.GetCount();
 		//args
-		if( uArgCount <= 2 ) {
+		if( uArgCount != 3 ) {
 			_print_version();
 			_print_help();
 			return 0;
 		}
-		int ret = 0;
-		//-c
-		if( compare_string(GKC::ConstHelper::GetInternalPointer(args[1].get_Value()), _S("-c")) == 0 ) {
-			if( uArgCount > 4 ) {
-				_print_version();
-				_print_help();
-				return 0;
-			}
-			GKC::StringS strSrc(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
-			GKC::StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
-			GKC::StringS strDest(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
-			if( uArgCount == 4 ) {
-				GKC::StringUtilHelper::MakeString(args[3].get_Value(), strDest);
-			}
-			else {
-				strDest = GKC::StringUtilHelper::Clone(strSrc);
-				uintptr uPos;
-				if( GKC::FsPathHelper::FindExtensionStart(GKC::StringUtilHelper::To_ConstString(strDest), uPos) ) {
-					GKC::StringUtilHelper::Delete(uPos, strDest.GetLength() - uPos, strDest);
-					GKC::StringUtilHelper::Insert(uPos, DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S(".wo")), strDest);
-				}
-				else {
-					GKC::StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S(".wo")), strDest);
-				}
-			}
-			//file name
-			GKC::FsPathHelper::ConvertPathStringToPlatform(strSrc);
-			GKC::FsPathHelper::ConvertPathStringToPlatform(strDest);
-
-			//process
-			_print_version();
-			ret = GKC::compile_single_file(strSrc, strDest);
+		if( compare_string(GKC::ConstHelper::GetInternalPointer(args[1].get_Value()), GKC::ConstHelper::GetInternalPointer(args[2].get_Value())) == 0 ) {
+			GKC::ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S("Error: The source directory and the destination directory cannot be the same!\n")));
+			return 0;
 		}
+		GKC::StringS strSrc(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
+		GKC::StringUtilHelper::MakeString(args[1].get_Value(), strSrc);
+		GKC::StringS strDest(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
+		GKC::StringUtilHelper::MakeString(args[2].get_Value(), strDest);
+		//file name
+		GKC::FsPathHelper::ConvertPathStringToPlatform(strSrc);
+		GKC::FsPathHelper::ConvertPathStringToPlatform(strDest);
 
-		return ret;
+		//process
+		_print_version();
+		GKC::process_md(strSrc, strDest);
+
+		return 0;
 	}
 };
 

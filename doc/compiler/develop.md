@@ -78,7 +78,7 @@ The syntax of regular expression is shown in the following tables:
 | Symbols | Description |
 |-----|-----|
 | (R) | Grouped by R |
-| {macro} | Quote the macro defined in definition block |
+| {macro} | Quote the macro defined in definition block (it cannot be nested) |
 
 1. Escape characters:
 
@@ -232,7 +232,7 @@ regex_factor_1 : regex_factor_1 TK_PLUS  { do_factor_1_plus }
 	;
 regex_factor : TK_LPAREN regex_exp TK_RPAREN  { do_factor_paren_exp }
 	| regex_char  { do_factor_char }
-	| regex_char_set { do_factor_char_set }
+	| regex_char_set  { do_factor_char_set }
 	;
 regex_char_set : TK_LBRACKET regex_char_item TK_RLBRACKET  { do_char_set }
 	| TK_LBRACKET TK_UPARROW regex_char_item TK_RLBRACKET  { do_char_set_up }
@@ -243,7 +243,7 @@ regex_char_item : regex_char_item regex_char_e  { do_char_item_item_char_e }
 regex_char_e : regex_char_range  { do_char_e_range }
 	| regex_char  { do_char_e_char }
 	;
-regex_char_range : regex_char TK_MINUS regex_char_s { do_char_range }
+regex_char_range : regex_char TK_MINUS regex_char_s  { do_char_range }
 	;
 regex_char_s : regex_char  { do_char_s }
 	;
@@ -251,4 +251,28 @@ regex_char : TK_CHAR  { do_char }
 	;
 ```
 
-The corresponding PDA tables are shown in `ldf-lex-regex-pda.odg` and `_ldf_base.h`.
+The corresponding PDA tables are shown in `ldf-regex-pda.odg` and `_ldf_base.h`.
+
+The syntax of grammar file can be described as the following grammar file:
+
+```
+%%
+gra_def : TK_SEP rule_block  { do_ref }
+	;
+rule_block : rule_block rule  { do_rule_block_rule }
+	| rule  { do_rule }
+	;
+rule : TK_MACRO rule_right_block TK_SEMI  { do_rule_right_block }
+	;
+rule_right_block : rule_right_block TK_VERT rule_right  { do_right_block }
+	| rule_right  { do_right }
+	;
+rule_right : rule_right id  { do_right_id }
+	| id  { do_id }
+	;
+id : TK_TOKEN  { do_id_token }
+	| TK_MACRO  { do_id_macro }
+	;
+```
+
+The corresponding PDA tables are shown in `ldf-gra-pda.odg` and `_ldf_base.h`.

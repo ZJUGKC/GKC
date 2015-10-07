@@ -14,6 +14,7 @@ INCLUDE("common.cmk")
 PROJECT(GKC)
 ADD_SUBDIRECTORY(RT RT)
 ADD_SUBDIRECTORY(Compiler/wlc Compiler/wlc)
+ADD_SUBDIRECTORY(tools tools)
 ADD_SUBDIRECTORY(test test)
 
 #pack

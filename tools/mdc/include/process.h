@@ -25,7 +25,7 @@ namespace GKC {
 
 //process
 
-void process_md(const StringS& strSrc, const StringS& strDest)
+inline void process_md(const StringS& strSrc, const StringS& strDest)
 {
 	StringS strCurrentPath(StringUtilHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 	StringS strFile(StringUtilHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));

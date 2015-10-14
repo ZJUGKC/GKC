@@ -92,10 +92,10 @@ MACRO(WIN32_SET_PCH IsShared pchHeader pchSource)
 	#set compile flags for creating pch
 	SET(src_compile_flags "/Fp\"${pchBinary}\"")
 	#check the shared library
-	IF(IsShared)
+	IF(${IsShared})
 		SET(src_compile_flags
 			"/D \"SHARED_LIBRARY\" ${src_compile_flags}")
-	ENDIF(IsShared)
+	ENDIF(${IsShared})
 	#set source files
 	SET_SOURCE_FILES_PROPERTIES(${pchSource} PROPERTIES
 		COMPILE_FLAGS
@@ -158,9 +158,9 @@ MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
 		LIST(APPEND _compile_FLAGS "-DCM_X86")
 	ENDIF(USE_64BITS)
 	#check shared library
-	IF(IsShared)
+	IF(${IsShared})
 		LIST(APPEND _compile_FLAGS "-DSHARED_LIBRARY")
-	ENDIF(IsShared)
+	ENDIF(${IsShared})
 	SEPARATE_ARGUMENTS(_compile_FLAGS)
 	MESSAGE("_compiler_FLAGS: ${_compile_FLAGS}")
 	#copy header files to building directory
@@ -186,10 +186,10 @@ MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
 		SET(src_compile_flags "${src_compile_flags} -m32 -DCM_X86")
 	ENDIF(USE_64BITS)
 	#shared library
-	IF(IsShared)
+	IF(${IsShared})
 		SET(src_compile_flags
 			"${src_compile_flags} -DSHARED_LIBRARY")
-	ENDIF(IsShared)
+	ENDIF(${IsShared})
 	#set source files
 	FOREACH(source ${Sources})
 		SET_SOURCE_FILES_PROPERTIES(${source} PROPERTIES
@@ -238,8 +238,9 @@ ENDMACRO(SET_POSTBUILD_COPY)
 
 # strNeedPlatform: "platform" or "no-platform"
 # strNeedMachine:  "machine" or "no-machine"
+# IsConfig: TRUE or FALSE
 # output: POSTBUILD_SRC_PATH
-MACRO(SET_POSTBUILD_SRC_PATH strNeedPlatform strNeedMachine SourcePath)
+MACRO(SET_POSTBUILD_SRC_PATH strNeedPlatform strNeedMachine IsConfig SourcePath)
 	STRING(COMPARE EQUAL ${strNeedPlatform} "platform" IsPlatform)
 	STRING(COMPARE EQUAL ${strNeedMachine} "machine" IsMachine)
 	SET(POSTBUILD_SRC_PATH "${SourcePath}")
@@ -258,18 +259,25 @@ MACRO(SET_POSTBUILD_SRC_PATH strNeedPlatform strNeedMachine SourcePath)
 			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/x86")
 		ENDIF(USE_64BITS)
 	ENDIF(IsMachine)
+	IF(WIN32)
+		IF(${IsConfig})
+			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/$<CONFIG>")
+		ENDIF(${IsConfig})
+	ENDIF(WIN32)
 ENDMACRO(SET_POSTBUILD_SRC_PATH)
 
-# strNeedConfig: "config" or "no-config"
-MACRO(SET_POSTBUILD_PATH_COPY targetName strNeedPlatform strNeedMachine strNeedConfig SourcePath Source Dest)
-	STRING(COMPARE EQUAL ${strNeedConfig} "config" IsConfig)
-	SET_POSTBUILD_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${SourcePath})
+# strSrcNeedConfig: "config" or "no-config"
+# strDestNeedConfig: "config" or "no-config"
+MACRO(SET_POSTBUILD_PATH_COPY targetName strNeedPlatform strNeedMachine strSrcNeedConfig strDestNeedConfig SourcePath Source Dest)
+	STRING(COMPARE EQUAL ${strSrcNeedConfig} "config" IsSrcConfig)
+	STRING(COMPARE EQUAL ${strDestNeedConfig} "config" IsDestConfig)
+	SET_POSTBUILD_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${IsSrcConfig} ${SourcePath})
 	SET(_source "${POSTBUILD_SRC_PATH}/${Source}")
 	SET(_dest "${Dest}")
 	IF(WIN32)
-		IF(IsConfig)
+		IF(IsDestConfig)
 			SET(_dest "${_dest}/$<CONFIG>")
-		ENDIF(IsConfig)
+		ENDIF(IsDestConfig)
 		STRING(REPLACE "/" "\\\\" _source ${_source})
 		STRING(REPLACE "/" "\\\\" _dest ${_dest})
 	ENDIF(WIN32)

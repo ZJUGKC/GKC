@@ -25,16 +25,16 @@ SET_TARGET_PROPERTIES(GkcSys PROPERTIES OUTPUT_NAME "GkcSys-1-0"
 	VERSION 1.0 SOVERSION 1
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
 
-SET_POSTBUILD_PATH_COPY(GkcSys "platform" "machine" "config" "${PROJECT_SOURCE_DIR}/others/redist" "*" "${LIBRARY_OUTPUT_PATH}")
+SET_POSTBUILD_PATH_COPY(GkcSys "platform" "machine" "config" "config" "${PROJECT_SOURCE_DIR}/others/redist" "*" "${LIBRARY_OUTPUT_PATH}")
 #setup scripts
 FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/_pack")
-SET_POSTBUILD_PATH_COPY(GkcSys "platform" "machine" "no-config" "${PROJECT_SOURCE_DIR}/setup" "*" "${PROJECT_BINARY_DIR}/_pack")
+SET_POSTBUILD_PATH_COPY(GkcSys "platform" "machine" "no-config" "no-config" "${PROJECT_SOURCE_DIR}/setup" "*" "${PROJECT_BINARY_DIR}/_pack")
 
 INSTALL(TARGETS GkcSys
 	RUNTIME DESTINATION public/assemblies COMPONENT runtime
 	LIBRARY DESTINATION public/assemblies COMPONENT runtime
 	ARCHIVE DESTINATION public/lib COMPONENT development)
-SET_POSTBUILD_SRC_PATH("platform" "machine" "${PROJECT_SOURCE_DIR}/others/redist")
+SET_POSTBUILD_SRC_PATH("platform" "machine" TRUE "${PROJECT_SOURCE_DIR}/others/redist")
 INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
 	DESTINATION public/assemblies COMPONENT runtime)
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/public/include/"

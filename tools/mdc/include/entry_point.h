@@ -26,15 +26,14 @@ This file contains entry point function.
 ////////////////////////////////////////////////////////////////////////////////
 
 // version
-
-static
+inline
 void _print_version() throw()
 {
 	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
 }
 
 // help
-static
+inline
 void _print_help() throw()
 {
 	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_help::GetAddress(), GKC::_const_array_help::GetCount()));

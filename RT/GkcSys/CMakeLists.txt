@@ -34,9 +34,16 @@ INSTALL(TARGETS GkcSys
 	RUNTIME DESTINATION public/assemblies COMPONENT runtime
 	LIBRARY DESTINATION public/assemblies COMPONENT runtime
 	ARCHIVE DESTINATION public/lib COMPONENT development)
-SET_POSTBUILD_SRC_PATH("platform" "machine" TRUE "${PROJECT_SOURCE_DIR}/others/redist")
+
+SET_POSTBUILD_SRC_PATH("platform" "machine" "user-config" "Debug" "${PROJECT_SOURCE_DIR}/others/redist")
 INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
-	DESTINATION public/assemblies COMPONENT runtime)
+	DESTINATION public/assemblies COMPONENT runtime
+	CONFIGURATIONS Debug)
+SET_POSTBUILD_SRC_PATH("platform" "machine" "user-config" "Release" "${PROJECT_SOURCE_DIR}/others/redist")
+INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
+	DESTINATION public/assemblies COMPONENT runtime
+	CONFIGURATIONS Release)
+
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/public/include/"
 	DESTINATION public/include COMPONENT development)
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcSys/public/"

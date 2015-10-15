@@ -238,49 +238,49 @@ ENDMACRO(SET_POSTBUILD_COPY)
 
 # strNeedPlatform: "platform" or "no-platform"
 # strNeedMachine:  "machine" or "no-machine"
-# IsConfig: TRUE or FALSE
+# strNeedConfig:   "config", "no-config" or "user-config"
+# strConfig: user config name, "", "Debug" or "Release"
 # output: POSTBUILD_SRC_PATH
-MACRO(SET_POSTBUILD_SRC_PATH strNeedPlatform strNeedMachine IsConfig SourcePath)
-	STRING(COMPARE EQUAL ${strNeedPlatform} "platform" IsPlatform)
-	STRING(COMPARE EQUAL ${strNeedMachine} "machine" IsMachine)
+MACRO(SET_POSTBUILD_SRC_PATH strNeedPlatform strNeedMachine strNeedConfig strConfig SourcePath)
 	SET(POSTBUILD_SRC_PATH "${SourcePath}")
-	IF(IsPlatform)
+	IF(${strNeedPlatform} STREQUAL "platform")
 		IF(WIN32)
 			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/windows")
 		ENDIF(WIN32)
 		IF(CMAKE_COMPILER_IS_GNUCXX)
 			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/linux")
 		ENDIF(CMAKE_COMPILER_IS_GNUCXX)
-	ENDIF(IsPlatform)
-	IF(IsMachine)
+	ENDIF(${strNeedPlatform} STREQUAL "platform")
+	IF(${strNeedMachine} STREQUAL "machine")
 		IF(USE_64BITS)
 			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/x64")
 		ELSE(USE_64BITS)
 			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/x86")
 		ENDIF(USE_64BITS)
-	ENDIF(IsMachine)
+	ENDIF(${strNeedMachine} STREQUAL "machine")
 	IF(WIN32)
-		IF(${IsConfig})
+		IF(${strNeedConfig} STREQUAL "config")
 			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/$<CONFIG>")
-		ENDIF(${IsConfig})
+		ELSEIF(${strNeedConfig} STREQUAL "user-config")
+			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/${strConfig}")
+		ELSE(${strNeedConfig} STREQUAL "config")
+		ENDIF(${strNeedConfig} STREQUAL "config")
 	ENDIF(WIN32)
 ENDMACRO(SET_POSTBUILD_SRC_PATH)
 
 # strSrcNeedConfig: "config" or "no-config"
 # strDestNeedConfig: "config" or "no-config"
 MACRO(SET_POSTBUILD_PATH_COPY targetName strNeedPlatform strNeedMachine strSrcNeedConfig strDestNeedConfig SourcePath Source Dest)
-	STRING(COMPARE EQUAL ${strSrcNeedConfig} "config" IsSrcConfig)
-	STRING(COMPARE EQUAL ${strDestNeedConfig} "config" IsDestConfig)
-	SET_POSTBUILD_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${IsSrcConfig} ${SourcePath})
+	SET_POSTBUILD_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${strSrcNeedConfig} "" ${SourcePath})
 	SET(_source "${POSTBUILD_SRC_PATH}/${Source}")
-	SET(_dest "${Dest}")
+	SET_POSTBUILD_SRC_PATH("no-platform" "no-machine" ${strDestNeedConfig} "" ${Dest})
+	SET(_dest "${POSTBUILD_SRC_PATH}")
+
 	IF(WIN32)
-		IF(IsDestConfig)
-			SET(_dest "${_dest}/$<CONFIG>")
-		ENDIF(IsDestConfig)
 		STRING(REPLACE "/" "\\\\" _source ${_source})
 		STRING(REPLACE "/" "\\\\" _dest ${_dest})
 	ENDIF(WIN32)
+
 	SET_POSTBUILD_COPY(${targetName} ${_source} ${_dest})
 ENDMACRO(SET_POSTBUILD_PATH_COPY)
 

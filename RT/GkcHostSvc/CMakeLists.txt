@@ -31,7 +31,8 @@ SET_POSTBUILD_PATH_COPY(GkcHostSvc "platform" "machine" "no-config" "config" "${
 
 INSTALL(TARGETS GkcHostSvc
 	RUNTIME DESTINATION public/assemblies COMPONENT runtime)
-SET_POSTBUILD_SRC_PATH("platform" "machine" FALSE "${PROJECT_SOURCE_DIR}/RT/GkcHostSvc/setup")
+
+SET_POSTBUILD_SRC_PATH("platform" "machine" "no-config" "" "${PROJECT_SOURCE_DIR}/RT/GkcHostSvc/setup")
 INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
 	DESTINATION public/assemblies COMPONENT runtime)
 

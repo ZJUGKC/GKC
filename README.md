@@ -192,6 +192,11 @@ cpack -D CPACK_GENERATOR="ZIP;TGZ"
 	Compress the files, setup-gkc.vbs, uninstall-gkc.vbs and GKC-1.0.1-win32.zip (or GKC-1.0.1-win64.zip),
 into a zip file and redistribute it.
 
+	Pack with debug version:
+	```
+cpack -C "Debug" -D CPACK_GENERATOR="ZIP;TGZ"
+```
+
 #### Linux
 
 1. CMake:

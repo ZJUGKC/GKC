@@ -11,6 +11,12 @@
 #
 -->
 
+# SciTE
+
+```
+http://www.scintilla.org
+```
+
 # Set the configuration for SciTE
 
 Edit the file `SciTEGlobal.properties`:

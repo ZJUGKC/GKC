@@ -208,7 +208,7 @@ private:
 	typedef FiniteStateMachineT<_LDF_FsaTraits>  _LDF_FSM;
 
 	// lexer actions
-	class MacroTokenAction : public ILexerAction
+	class Lexer_MacroTokenAction : public ILexerAction
 	{
 	public:
 		virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
@@ -272,15 +272,15 @@ public:
 			m_lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(m_lexTable));
 			//actions
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"),
-								RefPtrHelper::TypeCast<CommentStartAction, ILexerAction>(RefPtr<CommentStartAction>(m_actionCommentStart)));
+								RefPtrHelper::TypeCast<Lexer_CommentStartAction, ILexerAction>(RefPtr<Lexer_CommentStartAction>(m_actionCommentStart)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"),
-								RefPtrHelper::TypeCast<SpaceAction, ILexerAction>(RefPtr<SpaceAction>(m_actionSpace)));
+								RefPtrHelper::TypeCast<Lexer_SpaceAction, ILexerAction>(RefPtr<Lexer_SpaceAction>(m_actionSpace)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"),
-								RefPtrHelper::TypeCast<ReturnAction, ILexerAction>(RefPtr<ReturnAction>(m_actionReturn)));
+								RefPtrHelper::TypeCast<Lexer_ReturnAction, ILexerAction>(RefPtr<Lexer_ReturnAction>(m_actionReturn)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"),
-								RefPtrHelper::TypeCast<MacroTokenAction, ILexerAction>(RefPtr<MacroTokenAction>(m_actionMacroToken)));
+								RefPtrHelper::TypeCast<Lexer_MacroTokenAction, ILexerAction>(RefPtr<Lexer_MacroTokenAction>(m_actionMacroToken)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"),
-								RefPtrHelper::TypeCast<MacroTokenAction, ILexerAction>(RefPtr<MacroTokenAction>(m_actionMacroToken)));
+								RefPtrHelper::TypeCast<Lexer_MacroTokenAction, ILexerAction>(RefPtr<Lexer_MacroTokenAction>(m_actionMacroToken)));
 		}
 
 		void SetStream(const RefPtr<ICharStream>& stream) throw()
@@ -303,10 +303,10 @@ public:
 		//lexer parser
 		LexerParser m_lexParser;
 		//actions
-		CommentStartAction m_actionCommentStart;
-		SpaceAction m_actionSpace;
-		ReturnAction m_actionReturn;
-		MacroTokenAction m_actionMacroToken;
+		Lexer_CommentStartAction m_actionCommentStart;
+		Lexer_SpaceAction m_actionSpace;
+		Lexer_ReturnAction m_actionReturn;
+		Lexer_MacroTokenAction m_actionMacroToken;
 	};
 
 private:
@@ -365,7 +365,7 @@ private:
 	};
 
 	// reduction action table for lex file
-	class _LDF_Lex_ActionTable
+	class _LDF_lex_ActionTable
 	{
 	public:
 		//called only once
@@ -389,11 +389,11 @@ private:
 	};
 
 	// PDA for lex file
-	class _LDF_Lex_PdaTraits
+	class _LDF_lex_PdaTraits
 	{
 	public:
 		// state map
-		PDA_BEGIN_TRAITS_STATE_MAP(_LDF_Lex_PdaTraits)
+		PDA_BEGIN_TRAITS_STATE_MAP(_LDF_lex_PdaTraits)
 			//transitions
 			PDA_BEGIN_STATE_TRANSITION(PDA_STATE_START)
 				PDA_STATE_TRANSITION_ENTRY(101, 3)  //lex_def
@@ -448,7 +448,7 @@ private:
 		PDA_END_TRAITS_STATE_MAP()
 
 		// rule map
-		PDA_BEGIN_TRAITS_RULE_MAP(_LDF_Lex_PdaTraits)
+		PDA_BEGIN_TRAITS_RULE_MAP(_LDF_lex_PdaTraits)
 			PDA_RULE_ENTRY(0, 1)      // S -> lex_def $
 			PDA_RULE_ENTRY(101, 2)    // lex_def -> TK_SEP rule_block
 			PDA_RULE_ENTRY(102, 2)    // rule_block -> rule_block id
@@ -458,13 +458,13 @@ private:
 		PDA_END_TRAITS_RULE_MAP()
 	};
 
-	typedef PushDownMachineT<_LDF_lex_SymUserData, _LDF_Lex_PdaTraits> _LDF_Lex_PDM;
+	typedef PushDownMachineT<_LDF_lex_SymUserData, _LDF_lex_PdaTraits> _LDF_lex_PDM;
 
 	// grammar actions
-	class DoIdTokenMacroAction : public IGrammarAction<_LDF_lex_SymUserData>
+	class Lexgra_DoIdTokenMacroAction : public IGrammarAction<_LDF_lex_SymUserData>
 	{
 	public:
-		DoIdTokenMacroAction(TokenTable& tt, SharedArray<StringA>& arr) throw() : m_tt(tt), m_arr(arr), m_uCurrentID(TK_FIRST)
+		Lexgra_DoIdTokenMacroAction(TokenTable& tt, SharedArray<StringA>& arr) throw() : m_tt(tt), m_arr(arr), m_uCurrentID(TK_FIRST)
 		{
 		}
 		virtual void DoAction(INOUT SharedArray<RefPtr<_LDF_lex_SymUserData>>& arr, INOUT SharedArray<StringS>& errorArray)
@@ -500,15 +500,15 @@ private:
 	};
 
 public:
-	// _LDF_Lex_GrammarTable
-	class _LDF_Lex_GrammarTable
+	// _LDF_lex_GrammarTable
+	class _LDF_lex_GrammarTable
 	{
 	public:
 		//called only once
 		void Init()
 		{
 			m_actTable.Init();  //may throw
-			m_graTable.SetPDA(RefPtrHelper::TypeCast<_LDF_Lex_PDM, typename _LDF_Lex_PDM::baseClass>(RefPtr<_LDF_Lex_PDM>(m_pdm)));
+			m_graTable.SetPDA(RefPtrHelper::TypeCast<_LDF_lex_PDM, typename _LDF_lex_PDM::baseClass>(RefPtr<_LDF_lex_PDM>(m_pdm)));
 			m_graTable.SetReductionActionTable(RefPtrHelper::ToRefPtr(m_actTable.GetTable()));
 		}
 
@@ -518,17 +518,17 @@ public:
 		}
 
 	private:
-		_LDF_Lex_ActionTable m_actTable;
-		_LDF_Lex_PDM m_pdm;
+		_LDF_lex_ActionTable m_actTable;
+		_LDF_lex_PDM m_pdm;
 		GrammarTable<_LDF_lex_SymUserData> m_graTable;
 	};
 
-	class _LDF_Lex_GrammarAction;
-	// _LDF_Lex_GrammarData
-	class _LDF_Lex_GrammarData
+	class _LDF_lex_GrammarAction;
+	// _LDF_lex_GrammarData
+	class _LDF_lex_GrammarData
 	{
 	public:
-		_LDF_Lex_GrammarData(TokenTable& tt) : m_tokenTable(tt),
+		_LDF_lex_GrammarData(TokenTable& tt) : m_tokenTable(tt),
 											m_tokenRegex(SharedArrayHelper::MakeSharedArray<StringA>(MemoryHelper::GetCrtMemoryManager())),
 											m_macroRegex(SharedArrayHelper::MakeSharedArray<StringA>(MemoryHelper::GetCrtMemoryManager()))
 		{
@@ -632,14 +632,14 @@ public:
 		SharedArray<StringA> m_macroRegex;  //regular expression
 
 	private:
-		friend class _LDF_Lex_GrammarAction;
+		friend class _LDF_lex_GrammarAction;
 	};
 
-	// _LDF_Lex_GrammarAction
-	class _LDF_Lex_GrammarAction
+	// _LDF_lex_GrammarAction
+	class _LDF_lex_GrammarAction
 	{
 	public:
-		_LDF_Lex_GrammarAction(_LDF_Lex_GrammarData& data) throw() : m_actionDoIdToken(data.m_tokenTable, data.m_tokenRegex),
+		_LDF_lex_GrammarAction(_LDF_lex_GrammarData& data) throw() : m_actionDoIdToken(data.m_tokenTable, data.m_tokenRegex),
 																	m_actionDoIdMacro(data.m_macroTable, data.m_macroRegex)
 		{
 		}
@@ -647,14 +647,14 @@ public:
 		void Apply(GrammarParser<_LDF_lex_SymUserData>& graParser)
 		{
 			graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"),
-								RefPtrHelper::TypeCast<DoIdTokenMacroAction, IGrammarAction<_LDF_lex_SymUserData>>(RefPtr<DoIdTokenMacroAction>(m_actionDoIdToken)));
+								RefPtrHelper::TypeCast<Lexgra_DoIdTokenMacroAction, IGrammarAction<_LDF_lex_SymUserData>>(RefPtr<Lexgra_DoIdTokenMacroAction>(m_actionDoIdToken)));
 			graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"),
-								RefPtrHelper::TypeCast<DoIdTokenMacroAction, IGrammarAction<_LDF_lex_SymUserData>>(RefPtr<DoIdTokenMacroAction>(m_actionDoIdMacro)));
+								RefPtrHelper::TypeCast<Lexgra_DoIdTokenMacroAction, IGrammarAction<_LDF_lex_SymUserData>>(RefPtr<Lexgra_DoIdTokenMacroAction>(m_actionDoIdMacro)));
 		}
 
 	private:
-		DoIdTokenMacroAction m_actionDoIdToken;
-		DoIdTokenMacroAction m_actionDoIdMacro;
+		Lexgra_DoIdTokenMacroAction m_actionDoIdToken;
+		Lexgra_DoIdTokenMacroAction m_actionDoIdMacro;
 	};
 
 	// _LDF_lex_GrammarParser
@@ -898,7 +898,7 @@ private:
 	typedef FiniteStateMachineT<_LDF_regex_FsaTraits>  _LDF_REGEX_FSM;
 
 	// actions
-	class CharAction : public ILexerAction
+	class Regexlex_CharAction : public ILexerAction
 	{
 	public:
 		virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
@@ -944,41 +944,41 @@ private:
 			m_lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(m_lexTable));
 			//actions
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_BACKSLASH"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_HEX"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_CR"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LN"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_TAB"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_SPACE"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LBRACKET"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RBRACKET"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LPAREN"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RPAREN"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_LCURLY"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_RCURLY"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_QUESTION"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_STAR"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_PLUS"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_MINUS"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_UPARROW"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_VERT"),
-								RefPtrHelper::TypeCast<CharAction, ILexerAction>(RefPtr<CharAction>(m_actionChar)));
+								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
 		}
 
 		void SetStream(const RefPtr<ICharStream>& stream) throw()
@@ -1001,8 +1001,457 @@ private:
 		//lexer parser
 		LexerParser m_lexParser;
 		//actions
-		CharAction m_actionChar;
+		Regexlex_CharAction m_actionChar;
 	};
+
+	// _LDF_regex_SymUserData
+	class _LDF_regex_SymUserData : public SymbolDataBase
+	{
+	public:
+		void GetCharRange(uint& low, uint& high) const throw()
+		{
+			low  = m_iLow;
+			high = m_iHigh;
+		}
+		void SetCharRange(const uint& low, const uint& high) throw()
+		{
+			m_iLow  = low;
+			m_iHigh = high;
+		}
+
+	private:
+		uint m_iLow;
+		uint m_iHigh;
+	};
+
+	// reduction action table for regular expression
+	class _LDF_regex_ActionTable
+	{
+	public:
+		//called only once
+		void Init()
+		{
+			uint uID = 1;
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_exp_exp_term"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_exp_term"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_term_term_factor_1"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_term_factor_1"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_plus"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_star"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_question"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_factor"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_paren_exp"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_char"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_char_set"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_set"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_set_up"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_item_item_char_e"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_item_char_e"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_e_range"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_e_char"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_range"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_s"), uID ++);
+			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char"), uID ++);
+		}
+
+		const TokenTable& GetTable() const throw()
+		{
+			return m_table;
+		}
+
+	private:
+		TokenTable m_table;
+	};
+
+	// PDA for regular expression
+	class _LDF_regex_PdaTraits
+	{
+	public:
+		// state map
+		PDA_BEGIN_TRAITS_STATE_MAP(_LDF_regex_PdaTraits)
+			//transitions
+			PDA_BEGIN_STATE_TRANSITION(PDA_STATE_START)
+				PDA_STATE_TRANSITION_ENTRY(101, 3)   //regex_exp
+				PDA_STATE_TRANSITION_ENTRY(102, 4)   //regex_term
+				PDA_STATE_TRANSITION_ENTRY(103, 5)   //regex_factor_1
+				PDA_STATE_TRANSITION_ENTRY(27, 6)    //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, 7)    //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(104, 31)  //regex_factor
+				PDA_STATE_TRANSITION_ENTRY(105, 30)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(106, 29)  //regex_char_set
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(3)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, PDA_STATE_ACCEPTED)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, 12)   //TK_VERT
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(4)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -2)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -2)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(28, -2)   //TK_RPAREN
+				PDA_STATE_TRANSITION_ENTRY(103, 8)   //regex_factor_1
+				PDA_STATE_TRANSITION_ENTRY(104, 31)  //regex_factor
+				PDA_STATE_TRANSITION_ENTRY(27, 6)    //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(105, 30)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(106, 29)  //regex_char_set
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(19, 7)    //TK_LBRACKET
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(5)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -4)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -4)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -4)   //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -4)   //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -4)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(28, -4)   //TK_RPAREN
+				PDA_STATE_TRANSITION_ENTRY(25, 9)    //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, 10)   //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, 11)   //TK_QUESTION
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(6)
+				PDA_STATE_TRANSITION_ENTRY(102, 4)   //regex_term
+				PDA_STATE_TRANSITION_ENTRY(103, 5)   //regex_factor_1
+				PDA_STATE_TRANSITION_ENTRY(104, 31)  //regex_factor
+				PDA_STATE_TRANSITION_ENTRY(105, 30)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(106, 29)  //regex_char_set
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(101, 17)  //regex_exp
+				PDA_STATE_TRANSITION_ENTRY(19, 7)    //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(27, 6)    //TK_LPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(7)
+				PDA_STATE_TRANSITION_ENTRY(108, 27)  //regex_char_e
+				PDA_STATE_TRANSITION_ENTRY(109, 26)  //regex_char_range
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(105, 14)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(107, 15)  //regex_char_item
+				PDA_STATE_TRANSITION_ENTRY(22, 16)   //TK_UPARROW
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(8)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -3)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -3)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -3)   //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -3)   //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -3)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(28, -3)   //TK_RPAREN
+				PDA_STATE_TRANSITION_ENTRY(25, 9)    //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, 10)   //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, 11)   //TK_QUESTION
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(9)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -5)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -5)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -5)   //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -5)   //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -5)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -5)   //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -5)   //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -5)   //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -5)   //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(10)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -6)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -6)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -6)   //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -6)   //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -6)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -6)   //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -6)   //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -6)   //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -6)   //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(11)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -7)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -7)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -7)   //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -7)   //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -7)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -7)   //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -7)   //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -7)   //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -7)   //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(12)
+				PDA_STATE_TRANSITION_ENTRY(102, 13)  //regex_term
+				PDA_STATE_TRANSITION_ENTRY(103, 5)   //regex_factor_1
+				PDA_STATE_TRANSITION_ENTRY(27, 6)    //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, 7)    //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(104, 31)  //regex_factor
+				PDA_STATE_TRANSITION_ENTRY(105, 30)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(106, 29)  //regex_char_set
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(13)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -1)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -1)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(28, -1)   //TK_RPAREN
+				PDA_STATE_TRANSITION_ENTRY(103, 8)   //regex_factor_1
+				PDA_STATE_TRANSITION_ENTRY(104, 31)  //regex_factor
+				PDA_STATE_TRANSITION_ENTRY(27, 6)    //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(105, 30)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(19, 7)    //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(106, 29)  //regex_char_set
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(14)
+				PDA_STATE_TRANSITION_ENTRY(20, -17)  //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -17)  //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(21, 18)   //TK_MINUS
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(15)
+				PDA_STATE_TRANSITION_ENTRY(109, 26)  //regex_char_range
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(20, 24)   //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(108, 23)  //regex_char_e
+				PDA_STATE_TRANSITION_ENTRY(105, 14)  //regex_char
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(16)
+				PDA_STATE_TRANSITION_ENTRY(108, 27)  //regex_char_e
+				PDA_STATE_TRANSITION_ENTRY(109, 26)  //regex_char_range
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(107, 19)  //regex_char_item
+				PDA_STATE_TRANSITION_ENTRY(105, 14)  //regex_char
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(17)
+				PDA_STATE_TRANSITION_ENTRY(26, 12)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(28, 25)   //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(18)
+				PDA_STATE_TRANSITION_ENTRY(110, 22)  //regex_char_s
+				PDA_STATE_TRANSITION_ENTRY(105, 21)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(19)
+				PDA_STATE_TRANSITION_ENTRY(109, 26)  //regex_char_range
+				PDA_STATE_TRANSITION_ENTRY(29, 28)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(108, 23)  //regex_char_e
+				PDA_STATE_TRANSITION_ENTRY(105, 14)  //regex_char
+				PDA_STATE_TRANSITION_ENTRY(20, 20)   //TK_RBRACKET
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(20)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -13)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -13)  //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -13)  //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -13)  //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -13)  //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -13)  //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -13)  //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -13)  //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -13)  //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(21)
+				PDA_STATE_TRANSITION_ENTRY(20, -19)  //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -19)  //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(22)
+				PDA_STATE_TRANSITION_ENTRY(20, -18)  //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -18)  //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(23)
+				PDA_STATE_TRANSITION_ENTRY(20, -14)  //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -14)  //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(24)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -12)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -12)  //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -12)  //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -12)  //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -12)  //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -12)  //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -12)  //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -12)  //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -12)  //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(25)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -9)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -9)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -9)   //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -9)   //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -9)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -9)   //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -9)   //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -9)   //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -9)   //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(26)
+				PDA_STATE_TRANSITION_ENTRY(20, -16)  //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -16)  //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(27)
+				PDA_STATE_TRANSITION_ENTRY(20, -15)  //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -15)  //TK_CHAR
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(28)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -20)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -20)  //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -20)  //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -20)  //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -20)  //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -20)  //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -20)  //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -20)  //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(20, -20)  //TK_RBRACKET
+				PDA_STATE_TRANSITION_ENTRY(21, -20)  //TK_MINUS
+				PDA_STATE_TRANSITION_ENTRY(28, -20)  //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(29)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -11)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -11)  //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -11)  //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -11)  //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -11)  //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -11)  //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -11)  //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -11)  //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -11)  //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(30)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -10)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -10)  //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -10)  //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -10)  //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -10)  //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -10)  //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -10)  //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -10)  //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -10)  //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			PDA_BEGIN_STATE_TRANSITION(31)
+				PDA_STATE_TRANSITION_ENTRY(PDA_END_OF_EVENT, -8)  //$
+				PDA_STATE_TRANSITION_ENTRY(26, -8)   //TK_VERT
+				PDA_STATE_TRANSITION_ENTRY(27, -8)   //TK_LPAREN
+				PDA_STATE_TRANSITION_ENTRY(19, -8)   //TK_LBRACKET
+				PDA_STATE_TRANSITION_ENTRY(29, -8)   //TK_CHAR
+				PDA_STATE_TRANSITION_ENTRY(25, -8)   //TK_PLUS
+				PDA_STATE_TRANSITION_ENTRY(24, -8)   //TK_STAR
+				PDA_STATE_TRANSITION_ENTRY(23, -8)   //TK_QUESTION
+				PDA_STATE_TRANSITION_ENTRY(28, -8)   //TK_RPAREN
+			PDA_END_STATE_TRANSITION()
+			//state
+			PDA_BEGIN_STATE_SET()
+				PDA_STATE_SET_ENTRY(PDA_STATE_START)
+				PDA_STATE_SET_ENTRY(3)
+				PDA_STATE_SET_ENTRY(4)
+				PDA_STATE_SET_ENTRY(5)
+				PDA_STATE_SET_ENTRY(6)
+				PDA_STATE_SET_ENTRY(7)
+				PDA_STATE_SET_ENTRY(8)
+				PDA_STATE_SET_ENTRY(9)
+				PDA_STATE_SET_ENTRY(10)
+				PDA_STATE_SET_ENTRY(11)
+				PDA_STATE_SET_ENTRY(12)
+				PDA_STATE_SET_ENTRY(13)
+				PDA_STATE_SET_ENTRY(14)
+				PDA_STATE_SET_ENTRY(15)
+				PDA_STATE_SET_ENTRY(16)
+				PDA_STATE_SET_ENTRY(17)
+				PDA_STATE_SET_ENTRY(18)
+				PDA_STATE_SET_ENTRY(19)
+				PDA_STATE_SET_ENTRY(20)
+				PDA_STATE_SET_ENTRY(21)
+				PDA_STATE_SET_ENTRY(22)
+				PDA_STATE_SET_ENTRY(23)
+				PDA_STATE_SET_ENTRY(24)
+				PDA_STATE_SET_ENTRY(25)
+				PDA_STATE_SET_ENTRY(26)
+				PDA_STATE_SET_ENTRY(27)
+				PDA_STATE_SET_ENTRY(28)
+				PDA_STATE_SET_ENTRY(29)
+				PDA_STATE_SET_ENTRY(30)
+				PDA_STATE_SET_ENTRY(31)
+			PDA_END_STATE_SET()
+		PDA_END_TRAITS_STATE_MAP()
+
+		// rule map
+		PDA_BEGIN_TRAITS_RULE_MAP(_LDF_regex_PdaTraits)
+			PDA_RULE_ENTRY(0, 1)      // S -> regex_exp $
+			PDA_RULE_ENTRY(101, 3)    // regex_exp -> regex_exp TK_VERT regex_term
+			PDA_RULE_ENTRY(101, 1)    // regex_exp -> regex_term
+			PDA_RULE_ENTRY(102, 2)    // regex_term -> regex_term regex_factor_1
+			PDA_RULE_ENTRY(102, 1)    // regex_term -> regex_factor_1
+			PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_PLUS
+			PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_STAR
+			PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_QUESTION
+			PDA_RULE_ENTRY(103, 1)    // regex_factor_1 -> regex_factor
+			PDA_RULE_ENTRY(104, 3)    // regex_factor -> TK_LPAREN regex_exp TK_RPAREN
+			PDA_RULE_ENTRY(104, 1)    // regex_factor -> regex_char
+			PDA_RULE_ENTRY(104, 1)    // regex_factor -> regex_char_set
+			PDA_RULE_ENTRY(106, 3)    // regex_char_set -> TK_LBRACKET regex_char_item TK_RBRACKET
+			PDA_RULE_ENTRY(106, 4)    // regex_char_set -> TK_LBRACKET TK_UPARROW regex_char_item TK_RBRACKET
+			PDA_RULE_ENTRY(107, 2)    // regex_char_item -> regex_char_item regex_char_e
+			PDA_RULE_ENTRY(107, 1)    // regex_char_item -> regex_char_e
+			PDA_RULE_ENTRY(108, 1)    // regex_char_e -> regex_char_range
+			PDA_RULE_ENTRY(108, 1)    // regex_char_e -> regex_char
+			PDA_RULE_ENTRY(109, 3)    // regex_char_range -> regex_char TK_MINUS regex_char_s
+			PDA_RULE_ENTRY(110, 1)    // regex_char_s -> regex_char
+			PDA_RULE_ENTRY(105, 1)    // regex_char -> TK_CHAR
+		PDA_END_TRAITS_RULE_MAP()
+	};
+
+	typedef PushDownMachineT<_LDF_regex_SymUserData, _LDF_regex_PdaTraits> _LDF_regex_PDM;
+
+	// regex operators
+	enum {
+		REGEX_OP_LINK,
+		REGEX_OP_OR,
+		REGEX_OP_QUESTION,
+		REGEX_OP_STAR,
+		REGEX_OP_PLUS,
+		REGEX_OP_MAX
+	};
+
+	// grammar actions
+	class Regexgra_DoCharAction : public IGrammarAction<_LDF_regex_SymUserData>
+	{
+	public:
+		virtual void DoAction(INOUT SharedArray<RefPtr<_LDF_regex_SymUserData>>& arr, INOUT SharedArray<StringS>& errorArray)
+		{
+		}
+	};
+
+	// _LDF_regex_GrammarTable
+	class _LDF_regex_GrammarTable
+	{
+	public:
+		//called only once
+		void Init()
+		{
+			m_actTable.Init();  //may throw
+			m_graTable.SetPDA(RefPtrHelper::TypeCast<_LDF_regex_PDM, typename _LDF_regex_PDM::baseClass>(RefPtr<_LDF_regex_PDM>(m_pdm)));
+			m_graTable.SetReductionActionTable(RefPtrHelper::ToRefPtr(m_actTable.GetTable()));
+		}
+
+		RefPtr<GrammarTable<_LDF_regex_SymUserData>> GetGrammarTable() throw()
+		{
+			return RefPtr<GrammarTable<_LDF_regex_SymUserData>>(m_graTable);
+		}
+
+	private:
+		_LDF_regex_ActionTable m_actTable;
+		_LDF_regex_PDM m_pdm;
+		GrammarTable<_LDF_regex_SymUserData> m_graTable;
+	};
+
+	// _LDF_regex_GrammarAction
+	class _LDF_regex_GrammarAction
+	{
+	public:
+		_LDF_regex_GrammarAction() throw()
+		{
+		}
+
+		void Apply(GrammarParser<_LDF_regex_SymUserData>& graParser)
+		{
+			graParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char"),
+								RefPtrHelper::TypeCast<Regexgra_DoCharAction, IGrammarAction<_LDF_regex_SymUserData>>(RefPtr<Regexgra_DoCharAction>(m_actionDoChar)));
+		}
+
+	private:
+		Regexgra_DoCharAction m_actionDoChar;
+	};
+
+	// _LDF_regex_GrammarParser
+	typedef _LDF_GrammarParser<_LDF_regex_SymUserData>  _LDF_regex_GrammarParser;
 
 public:
 	// _LDF_regex_AST
@@ -1039,7 +1488,20 @@ public:
 			lexer.SetStream(RefPtrHelper::TypeCast<MemoryCharStream, ICharStream>(RefPtr<MemoryCharStream>(stream)));
 
 			//grammar parser
-			//_LDF_regex_GrammarParser parser;
+			_LDF_regex_GrammarParser parser;
+			parser.SetLexerParser(lexer.GetLexerParser());
+			// grammar table
+			_LDF_regex_GrammarTable graTable;
+			graTable.Init();
+			parser.SetGrammarTable(graTable.GetGrammarTable());
+			// action
+			_LDF_regex_GrammarAction action;
+			action.Apply(parser.GetGrammarParser());
+
+			//execute
+			cr = parser.Execute();
+			if( cr.IsFailed() )
+				throw Exception(cr);
 
 		}
 

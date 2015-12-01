@@ -234,8 +234,8 @@ regex_factor : TK_LPAREN regex_exp TK_RPAREN  { do_factor_paren_exp }
 	| regex_char  { do_factor_char }
 	| regex_char_set  { do_factor_char_set }
 	;
-regex_char_set : TK_LBRACKET regex_char_item TK_RLBRACKET  { do_char_set }
-	| TK_LBRACKET TK_UPARROW regex_char_item TK_RLBRACKET  { do_char_set_up }
+regex_char_set : TK_LBRACKET regex_char_item TK_RBRACKET  { do_char_set }
+	| TK_LBRACKET TK_UPARROW regex_char_item TK_RBRACKET  { do_char_set_up }
 	;
 regex_char_item : regex_char_item regex_char_e  { do_char_item_item_char_e }
 	| regex_char_e  { do_char_item_char_e }
@@ -262,12 +262,14 @@ gra_def : TK_SEP rule_block  { do_ref }
 rule_block : rule_block rule  { do_rule_block_rule }
 	| rule  { do_rule }
 	;
-rule : TK_MACRO rule_right_block TK_SEMI  { do_rule_right_block }
+rule : TK_MACRO TK_COLON rule_right_block TK_SEMI  { do_rule_right_block }
 	;
 rule_right_block : rule_right_block TK_VERT rule_right  { do_right_block }
 	| rule_right  { do_right }
 	;
-rule_right : rule_right id  { do_right_id }
+rule_right : id_block TK_LCURLY TK_ACTION TK_RCURLY  { do_right_id_block }
+	;
+id_block : id_block id  { do_id_block }
 	| id  { do_id }
 	;
 id : TK_TOKEN  { do_id_token }

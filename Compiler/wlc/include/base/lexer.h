@@ -236,8 +236,8 @@ public:
 
 // common actions
 
-// CommentStartAction
-class CommentStartAction : public ILexerAction
+// Lexer_CommentStartAction
+class Lexer_CommentStartAction : public ILexerAction
 {
 public:
 	virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
@@ -308,8 +308,8 @@ private:
 	}
 };
 
-// SpaceAction
-class SpaceAction : public ILexerAction
+// Lexer_SpaceAction
+class Lexer_SpaceAction : public ILexerAction
 {
 public:
 	virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
@@ -318,8 +318,8 @@ public:
 	}
 };
 
-// ReturnAction
-class ReturnAction : public ILexerAction
+// Lexer_ReturnAction
+class Lexer_ReturnAction : public ILexerAction
 {
 public:
 	virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)

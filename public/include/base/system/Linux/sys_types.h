@@ -646,7 +646,7 @@ public:
 		timespec to;
 		to.tv_sec = now.tv_sec + uSecond;
 		to.tv_nsec = (now.tv_usec + uRest * 1000) * 1000;
-		return ::pthread_cond_timedwait(&m_cv, &mtx.m_mtx, &to) == 0;
+		return ::pthread_cond_timedwait(&m_cv, &mtx.m_mtx, &to) == 0;  //ETIMEDOUT : failed
 	}
 	void Signal() throw()
 	{

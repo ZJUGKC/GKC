@@ -259,13 +259,13 @@ private:
 		_ldf_helper::_LDF_lex_GrammarParser parser;
 		parser.SetLexerParser(m_lexer.GetLexerParser());
 		// grammar table
-		_ldf_helper::_LDF_Lex_GrammarTable graTable;
+		_ldf_helper::_LDF_lex_GrammarTable graTable;
 		graTable.Init();
 		parser.SetGrammarTable(graTable.GetGrammarTable());
 		// data
-		_ldf_helper::_LDF_Lex_GrammarData data(tokenTable);
+		_ldf_helper::_LDF_lex_GrammarData data(tokenTable);
 		// action
-		_ldf_helper::_LDF_Lex_GrammarAction action(data);
+		_ldf_helper::_LDF_lex_GrammarAction action(data);
 		action.Apply(parser.GetGrammarParser());
 
 		//execute

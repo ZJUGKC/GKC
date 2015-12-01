@@ -32,6 +32,33 @@ inline bool guid_equal(const guid& id1, const guid& id2) throw()
 	return ::uuid_compare(id1, id2) == 0;
 }
 
+// internal
+#pragma pack(push, 1)
+typedef struct _tag_guid
+{
+//native endian
+	uint    l;
+	ushort  w1;
+	ushort  w2;
+//big endian
+	byte   d[8];
+} _i_guid;
+#pragma pack(pop)
+
+//constant
+
+// in header file
+#define DECLARE_GUID(name)  \
+	extern "C" const guid* name;
+
+// in cpp file
+#define IMPLEMENT_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)  \
+	const _i_guid _i_g_##name = { (l), (w1), (w2), { (b1), (b2), (b3), (b4), (b5), (b6), (b7), (b8) } };  \
+	const guid* name = (const guid*)(uintptr)(&_i_g_##name);
+
+// use
+#define USE_GUID(name)  (*(name))
+
 //------------------------------------------------------------------------------
 //character
 

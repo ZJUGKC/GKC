@@ -390,4 +390,26 @@ inline bool check_path_extension_start(const CharH& ch) throw()
 	return ch == L'.';
 }
 
+inline void get_current_path_prefix(CharA*& sz, uintptr& len) throw()
+{
+	sz = "";
+	len = 0;
+}
+inline void get_current_path_prefix(CharH*& sz, uintptr& len) throw()
+{
+	sz = L"";
+	len = 0;
+}
+
+inline void get_absolute_path_prefix(CharA*& sz, uintptr& len) throw()
+{
+	sz = "\\\\?\\";
+	len = 4;
+}
+inline void get_absolute_path_prefix(CharH*& sz, uintptr& len) throw()
+{
+	sz = L"\\\\?\\";
+	len = 4;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

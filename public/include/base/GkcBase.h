@@ -671,6 +671,14 @@ typedef inprocess_mutex      Mutex;
 typedef interprocess_mutex   ProcessMutex;
 
 // Condition
+/*
+lock Mutex
+while( !test_predicate() )
+	Wait
+change shared data
+unlock Mutex
+[option] [lock] [check shared data] Signal or SignalAll for other thread [unlock]
+*/
 typedef inprocess_condition  Condition;
 
 // RWLock

@@ -608,7 +608,7 @@ public:
 	bool TryWait(inprocess_mutex& mtx, uint uTimeout) throw()
 	{
 		assert( m_bInitialized );
-		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &mtx.m_sec, uTimeout);
+		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &mtx.m_sec, uTimeout);  //::GetLastError()==ERROR_TIMEOUT, failed
 		return bRet ? true : false;
 	}
 	void Signal() throw()

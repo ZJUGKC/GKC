@@ -31,6 +31,19 @@ inline bool guid_equal(const guid& id1, const guid& id2) throw()
 	return ::IsEqualGUID(id1, id2) ? true : false;
 }
 
+//constant
+
+// in header file
+#define DECLARE_GUID(name)  \
+	extern "C" const GUID FAR name;
+
+// in cpp file
+#define IMPLEMENT_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)  \
+	const GUID FAR name = { (l), (w1), (w2), { (b1), (b2), (b3), (b4), (b5), (b6), (b7), (b8) } };
+
+// use
+#define USE_GUID(name)  (name)
+
 //------------------------------------------------------------------------------
 //character
 

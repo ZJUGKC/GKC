@@ -113,6 +113,38 @@ public:
 		}
 		return 0;
 	}
+
+	//path prefix modification
+	template <typename Tchar>
+	static void AppendCurrentPathPrefix(StringT<Tchar>& str)
+	{
+		assert( !str.IsNull() );
+		uintptr uLength = str.GetLength();
+		if( uLength == 0 )
+			return ;
+		for( auto iter(str.GetBegin()); iter != str.GetEnd(); iter.MoveNext() ) {
+			const Tchar& ch = iter.get_Value();
+			if( check_path_separator(ch) || check_drive_separator(ch) )
+				return ;
+		}
+		Tchar* sz;
+		get_current_path_prefix(sz, uLength);
+		ConstStringT<Tchar> c_strPrefix(sz, uLength);
+		StringUtilHelper::Insert(0, c_strPrefix, str);
+	}
+	//called after ConvertPathStringToPlatform with absolute path
+	template <typename Tchar>
+	static void AppendAbsolutePathPrefix(StringT<Tchar>& str)
+	{
+		assert( !str.IsNull() );
+		uintptr uLength = str.GetLength();
+		if( uLength == 0 )
+			return ;
+		Tchar* sz;
+		get_absolute_path_prefix(sz, uLength);
+		ConstStringT<Tchar> c_strPrefix(sz, uLength);
+		StringUtilHelper::Insert(0, c_strPrefix, str);
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -27,14 +27,14 @@ noted as `<GitHubInstallDir>`.
 Right-click the shortcut and select property in popup menu,
 then edit the destination as:
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\bin\sh.exe" --login –i
+"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\git-bash.exe"
 ```
 
 	The `<LatestVersionNumber>` should be found in `<GitHubInstallDir>`.
 
 	The start location should be written as:
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\bin"
+"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>"
 ```
 
 	Save the shortcut.
@@ -45,12 +45,12 @@ then edit the destination as:
 Right-click the shortcut and select property in popup menu,
 then edit the destination as:
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\bin\wish.exe" "<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\libexec\git-core\git-gui"
+"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\cmd\git-gui.exe"
 ```
 
 	The start location should be written as:
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\bin"
+"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\cmd"
 ```
 
 	Save the shortcut.

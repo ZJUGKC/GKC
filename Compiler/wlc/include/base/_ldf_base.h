@@ -1463,17 +1463,22 @@ public:
 		}
 
 		//no cleanup
-		void Generate(const SharedArray<StringA>& regex)
+		CallResult Generate(const SharedArray<StringA>& regex)
 		{
-			for( auto iter(regex.GetBegin()); iter != regex.GetEnd(); iter.MoveNext() )
-				generate_one(iter.get_Value());
+			CallResult cr;
+			for( auto iter(regex.GetBegin()); iter != regex.GetEnd(); iter.MoveNext() ) {
+				cr = generate_one(iter.get_Value());
+				if( cr.IsFailed() )
+					return cr;
+			}
+			return cr;
 		}
 
 	private:
-		void generate_one(const StringA& str)
+		CallResult generate_one(const StringA& str)
 		{
 			if( str.IsNull() )
-				return ;
+				return CallResult(SystemCallResults::OK);
 
 			CallResult cr;
 			ConstArray<byte> buffer;
@@ -1501,8 +1506,10 @@ public:
 			//execute
 			cr = parser.Execute();
 			if( cr.IsFailed() )
-				throw Exception(cr);
+				return cr;
 
+			cr.SetResult(SystemCallResults::OK);
+			return cr;
 		}
 
 	private:

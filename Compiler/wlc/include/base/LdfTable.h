@@ -279,7 +279,9 @@ private:
 		//analyze regular expressions
 		SharedArray<StringA>& regex(data.GetTokenRegex());
 		_ldf_helper::_LDF_regex_AST ast;
-		ast.Generate(regex);
+		cr = ast.Generate(regex);
+		if( cr.IsFailed() )
+			return cr;
 
 		cr.SetResult(SystemCallResults::OK);
 		return cr;

@@ -20,6 +20,39 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
+// _Event
+
+class _Event
+{
+public:
+	_Event() throw() : m_evt(NULL)
+	{
+	}
+	~_Event() throw()
+	{
+		Close();
+	}
+
+	void Close() throw()
+	{
+		if( m_evt != NULL ) {
+			BOOL bRet = ::CloseHandle(m_evt);
+			assert( bRet );
+			m_evt = NULL;
+		}
+	}
+
+
+private:
+	HANDLE m_evt;  //event
+
+private:
+	//noncopyable
+	_Event(const _Event&) throw();
+	_Event& operator=(const _Event&) throw();
+};
+
+//------------------------------------------------------------------------------
 // Time
 
 // _cvt_system_time

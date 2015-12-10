@@ -440,6 +440,15 @@ public:
 	{
 		::ZeroMemory(&m_sec, sizeof(CRITICAL_SECTION));
 	}
+/*
+	explicit inprocess_mutex(uint uSpinCount) : m_bInitialized(false)
+	{
+		::ZeroMemory(&m_sec, sizeof(CRITICAL_SECTION));
+		call_result cr = Init(uSpinCount);
+		if( !m_bInitialized )
+			throw GKC::Exception(cr);
+	}
+*/
 	~inprocess_mutex() throw()
 	{
 		Term();
@@ -462,13 +471,12 @@ public:
 	}
 
 	//methods
-	call_result Init() throw()
+	call_result Init(uint uSpinCount = 0) throw()
 	{
 		assert( !m_bInitialized );
 
 		HRESULT hRes = S_OK;
-
-		if( !::InitializeCriticalSectionAndSpinCount(&m_sec, 0) ) {
+		if( !::InitializeCriticalSectionEx(&m_sec, uSpinCount, 0) ) {
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 		}
 
@@ -484,6 +492,14 @@ public:
 			m_bInitialized = false;
 		}
 	}
+/*
+	// Set the spin count for the critical section
+	uint SetSpinCount(uint uSpinCount) throw()
+	{
+		assert( m_bInitialized );
+		return ::SetCriticalSectionSpinCount(&m_sec, uSpinCount);
+	}
+*/
 
 private:
 	CRITICAL_SECTION m_sec;

@@ -263,7 +263,7 @@ public:
 	}
 	static void free_global_name(const CharW* p) throw()
 	{
-		crt_free((uintptr)p);
+		crt_free(p);
 	}
 	//tools
 	static CharW* gen_sync_name(const CharW* pSrc, bool bGlobal) throw()
@@ -436,74 +436,38 @@ private:
 class inprocess_mutex
 {
 public:
-	inprocess_mutex() throw() : m_bInitialized(false)
+	inprocess_mutex() throw()
 	{
-		::ZeroMemory(&m_sec, sizeof(CRITICAL_SECTION));
 	}
-/*
-	explicit inprocess_mutex(uint uSpinCount) : m_bInitialized(false)
-	{
-		::ZeroMemory(&m_sec, sizeof(CRITICAL_SECTION));
-		call_result cr = Init(uSpinCount);
-		if( !m_bInitialized )
-			throw GKC::Exception(cr);
-	}
-*/
 	~inprocess_mutex() throw()
 	{
-		Term();
 	}
 
 	void Lock() throw()
 	{
-		assert( m_bInitialized );
-		::EnterCriticalSection(&m_sec);
+		m_sect.Lock();
 	}
 	void Unlock() throw()
 	{
-		assert( m_bInitialized );
-		::LeaveCriticalSection(&m_sec);
+		m_sect.Unlock();
 	}
 	bool TryLock() throw()
 	{
-		assert( m_bInitialized );
-		return ::TryEnterCriticalSection(&m_sec) != FALSE;
+		return m_sect.TryLock();
 	}
 
 	//methods
-	call_result Init(uint uSpinCount = 0) throw()
+	call_result Init() throw()
 	{
-		assert( !m_bInitialized );
-
-		HRESULT hRes = S_OK;
-		if( !::InitializeCriticalSectionEx(&m_sec, uSpinCount, 0) ) {
-			hRes = HRESULT_FROM_WIN32(::GetLastError());
-		}
-
-		if( SUCCEEDED(hRes) )
-			m_bInitialized = true;
-
-		return call_result((int)hRes);
+		return m_sect.Init();
 	}
 	void Term() throw()
 	{
-		if( m_bInitialized ) {
-			::DeleteCriticalSection(&m_sec);
-			m_bInitialized = false;
-		}
+		m_sect.Term();
 	}
-/*
-	// Set the spin count for the critical section
-	uint SetSpinCount(uint uSpinCount) throw()
-	{
-		assert( m_bInitialized );
-		return ::SetCriticalSectionSpinCount(&m_sec, uSpinCount);
-	}
-*/
 
 private:
-	CRITICAL_SECTION m_sec;
-	bool m_bInitialized;
+	_os_critical_section m_sect;
 
 private:
 	friend class inprocess_condition;

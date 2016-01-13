@@ -13,7 +13,7 @@
 
 # SciTE
 
-The official website:
+The official website is:
 
 ```
 http://www.scintilla.org
@@ -60,3 +60,8 @@ Edit the file `SciTEGlobal.properties`:
 
 1. Cancel comment of `autocomplete.choose.single=1` and change value `1` to `0`.
 
+Copy the file `wlang.properties` to installed folder `$(SciteDefaultHome)` (The folder contains `SciTE.exe` file under Windows, or it is `/usr/share/scite/` typically under Linux).
+
+Copy `wlang.api` and `wlang-p.api` to folder `$(SciteDefaultHome)/api`.
+
+Use the key `ctrl+i` to pop the calltip window.

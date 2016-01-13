@@ -23,10 +23,13 @@ This file contains global variables.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "base/GkcDef.cpp"
-#include "base/GkcBase.cpp"
 
 //------------------------------------------------------------------------------
 //global variables
+
+//CrtMemoryManager
+BEGIN_SA_GLOBAL_VARIABLE(CrtMemoryManager, crt_mem_mgr)
+END_SA_GLOBAL_VARIABLE(crt_mem_mgr)
 
 //SPB
 BEGIN_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
@@ -47,7 +50,7 @@ END_SA_GLOBAL_VARIABLE(sab_mutex)
 
 bool init_globals() throw()
 {
-	GKC::RefPtr<GKC::IMemoryManager> mgr(GKC::MemoryHelper::GetCrtMemoryManager());
+	GKC::RefPtr<GKC::IMemoryManager> mgr(get_crt_mem_mgr());
 	GKC::CallResult cr;
 
 	//spb

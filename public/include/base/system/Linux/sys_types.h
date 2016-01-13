@@ -82,7 +82,7 @@ public:
 		ssize_t uRet = ::read(m_fd, (void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), (size_t)uBytes);
 		int res = 0;
 		if( uRet < 0 )
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 		else
 			uRead = (uint)uRet;
 		return call_result(res);
@@ -95,7 +95,7 @@ public:
 		ssize_t uRet = ::write(m_fd, (const void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), (size_t)uBytes);
 		int res = 0;
 		if( uRet < 0 )
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 		else
 			uWritten = (uint)uRet;
 		return call_result(res);
@@ -154,7 +154,7 @@ public:
 		int fd = ::open(GKC::RefPtrHelper::GetInternalPointer(szFile),
 						flags, S_IRWXU | S_IRWXG | S_IRWXO);
 		if( fd < 0 )
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 		else
 			hd.m_fd = fd;
 
@@ -170,7 +170,7 @@ public:
 		off_t npos = ::lseek(hd.m_fd, (off_t)iOffset, (int)uMethod);  //64 bits
 		int res = 0;
 		if( npos < 0 )
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 		else
 			iNewPos = npos;
 		return call_result(res);
@@ -191,7 +191,7 @@ public:
 		assert( hd.IsValid() );
 		int res = 0;
 		if( ::ftruncate(hd.m_fd, iSize) < 0 )
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 		return call_result(res);
 	}
 	//get status
@@ -203,7 +203,7 @@ public:
 		//stat
 		struct stat st;
 		if( ::fstat(hd.m_fd, &st) < 0 ) {
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 			return call_result(res);
 		}
 		//size
@@ -252,7 +252,7 @@ public:
 		fl.l_start  = iOffset;
 		fl.l_len    = iLen;
 		if( ::fcntl(hd.m_fd, bBlock ? F_SETLKW : F_SETLK, &fl) < 0 )
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 		return call_result(res);
 	}
 	//unlock
@@ -301,7 +301,7 @@ public:
 	}
 	static void free_global_name(const CharA* p) throw()
 	{
-		crt_free((uintptr)p);
+		crt_free(p);
 	}
 	//tools
 	static CharA* gen_sync_name(const CharA* pSrc, bool bGlobal) throw()
@@ -361,7 +361,7 @@ public:
 		assert( !m_bInitialized );
 		int res = ::sem_init(&m_sem, 0, (unsigned int)iCount);
 		if( res < 0 ) {
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 		}
 		else if( res == 0 ) {
 			m_bInitialized = true;
@@ -443,7 +443,7 @@ public:
 		int res = 0;
 		sem_t* psem = ::sem_open(psz, O_CREAT | O_EXCL | O_RDWR, S_IRWXU | S_IRWXG | (bGlobal ? S_IRWXO : 0), (unsigned int)iCount);
 		if( psem == SEM_FAILED ) {
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 			sync_helper::free_sync_name(psz, true);
 		}
 		else {
@@ -464,7 +464,7 @@ public:
 		int res = 0;
 		sem_t* psem = ::sem_open(psz, O_RDWR);
 		if( psem == SEM_FAILED ) {
-			res = CR_FROM_ERRORNO();
+			res = _OS_CR_FROM_ERRORNO();
 			sync_helper::free_sync_name(psz, true);
 		}
 		else {

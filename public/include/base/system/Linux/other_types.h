@@ -34,7 +34,7 @@ inline bool guid_equal(const guid& id1, const guid& id2) throw()
 
 // internal
 #pragma pack(push, 1)
-typedef struct _tag_guid
+typedef struct _tag_os_guid
 {
 //native endian
 	uint    l;
@@ -42,7 +42,7 @@ typedef struct _tag_guid
 	ushort  w2;
 //big endian
 	byte   d[8];
-} _i_guid;
+} _os_guid;
 #pragma pack(pop)
 
 //constant
@@ -53,8 +53,8 @@ typedef struct _tag_guid
 
 // in cpp file
 #define IMPLEMENT_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)  \
-	const _i_guid _i_g_##name = { (l), (w1), (w2), { (b1), (b2), (b3), (b4), (b5), (b6), (b7), (b8) } };  \
-	const guid* name = (const guid*)(uintptr)(&_i_g_##name);
+	const _os_guid _os_g_##name = { (l), (w1), (w2), { (b1), (b2), (b3), (b4), (b5), (b6), (b7), (b8) } };  \
+	const guid* name = (const guid*)(uintptr)(&_os_g_##name);
 
 // use
 #define USE_GUID(name)  (*(name))
@@ -62,15 +62,15 @@ typedef struct _tag_guid
 //------------------------------------------------------------------------------
 //character
 
-typedef char            CharA;  //ANSI or UTF8
-typedef unsigned short  CharH;  //word or UTF16
-typedef wchar_t         CharL;  //long or UTF32
+typedef char            char_a;  //ANSI or UTF8
+typedef unsigned short  char_h;  //word or UTF16
+typedef wchar_t         char_l;  //long or UTF32
 
-typedef CharA  CharS;  //system type, UTF8
+typedef char_a  char_s;  //system type, UTF8
 //for const string
 #define _S(x)  x
 
-typedef CharL  CharW;  //for wide type, L"..."
+typedef char_l  char_w;  //for wide type, L"..."
 
 //------------------------------------------------------------------------------
 //atomic
@@ -112,8 +112,9 @@ inline void* mem_move(const void* src, uintptr count, void* dest) throw()
 
 //------------------------------------------------------------------------------
 // errno
-#define CR_FROM_ERROR(err)  ((int)(0x80000000 | (err)))
-#define CR_FROM_ERRORNO()   CR_FROM_ERROR(errno)
+#define CR_FROM_ERROR(err)       ((int)(0x80000000 | (err)))
+
+#define _OS_CR_FROM_ERRORNO()    CR_FROM_ERROR(errno)
 
 //------------------------------------------------------------------------------
 //call_result
@@ -183,9 +184,9 @@ private:
 //------------------------------------------------------------------------------
 // call_result constants
 
-#define CR_S_EOF             38
-#define CR_S_FALSE           1
-#define CR_OK                0
+#define CR_S_EOF             (38)
+#define CR_S_FALSE           (1)
+#define CR_OK                (0)
 #define CR_FAIL              CR_FROM_ERROR(EFAULT)
 #define CR_OUTOFMEMORY       CR_FROM_ERROR(ENOMEM)
 #define CR_OVERFLOW          CR_FROM_ERROR(EOVERFLOW)
@@ -193,6 +194,7 @@ private:
 #define CR_INVALID           CR_FROM_ERROR(EINVAL)
 #define CR_NOTIMPL           CR_FROM_ERROR(ENOSYS)
 #define CR_NAMETOOLONG       CR_FROM_ERROR(ENAMETOOLONG)
+#define CR_DISKFULL          CR_FROM_ERROR(ENOSPC)
 
 //------------------------------------------------------------------------------
 // Service
@@ -205,7 +207,7 @@ private:
 
 // report_service_log
 //  type: SERVICE_LOG_*
-inline void report_service_log(const CharS* szService, uint type, const CharS* szMsg) throw()
+inline void report_service_log(const char_s* szService, uint type, const char_s* szMsg) throw()
 {
 	::openlog(szService, LOG_PID | LOG_NDELAY, LOG_USER);
 	::syslog(LOG_USER | type, "%s", szMsg);
@@ -278,14 +280,14 @@ public:
 		}
 	}
 
-	bool Load(const CharS* szFile) throw()
+	bool Load(const char_s* szFile) throw()
 	{
 		assert( szFile != NULL );
 		assert( m_hd == NULL );
 		m_hd = ::dlopen(szFile, RTLD_LAZY);
 		return m_hd != NULL;
 	}
-	uintptr GetFunctionAddress(const CharA* szFunc) throw()
+	uintptr GetFunctionAddress(const char_a* szFunc) throw()
 	{
 		assert( m_hd != NULL );
 		::dlerror();

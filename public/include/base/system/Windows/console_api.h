@@ -31,7 +31,7 @@ inline void set_default_locale() throw()
 
 // print_format
 //   return value: the number of typed characters, -1 means fail.
-inline int print_format(const CharA* szFormat, ...) throw()
+inline int print_format(const char_a* szFormat, ...) throw()
 {
 	va_list ap;
 	va_start(ap, szFormat);
@@ -39,7 +39,7 @@ inline int print_format(const CharA* szFormat, ...) throw()
 	va_end(ap);
 	return ret;
 }
-inline int print_format(const CharH* szFormat, ...) throw()
+inline int print_format(const char_h* szFormat, ...) throw()
 {
 	va_list ap;
 	va_start(ap, szFormat);
@@ -49,12 +49,12 @@ inline int print_format(const CharH* szFormat, ...) throw()
 }
 
 // print string
-inline void print_string(const CharA* sz) throw()
+inline void print_string(const char_a* sz) throw()
 {
 	//no check
 	::printf_s("%s", sz);
 }
-inline void print_string(const CharH* sz) throw()
+inline void print_string(const char_h* sz) throw()
 {
 	//no check
 	::wprintf_s(L"%s", sz);
@@ -126,6 +126,11 @@ private:
 	bool   m_bInit;
 	WORD   m_wOldAttr;
 	HANDLE m_hStdOutput;
+
+private:
+	//noncopyable
+	stdout_attr(const stdout_attr&) throw();
+	stdout_attr& operator=(const stdout_attr&) throw();
 };
 
 //------------------------------------------------------------------------------
@@ -133,7 +138,7 @@ private:
 
 // scan_format
 //  return value: the number of input items successfully matched and assigned. <0 means fail.
-inline int scan_format(const CharA* szFormat, ...) throw()
+inline int scan_format(const char_a* szFormat, ...) throw()
 {
 	va_list ap;
 	va_start(ap, szFormat);
@@ -141,7 +146,7 @@ inline int scan_format(const CharA* szFormat, ...) throw()
 	va_end(ap);
 	return ret;
 }
-inline int scan_format(const CharH* szFormat, ...) throw()
+inline int scan_format(const char_h* szFormat, ...) throw()
 {
 	va_list ap;
 	va_start(ap, szFormat);

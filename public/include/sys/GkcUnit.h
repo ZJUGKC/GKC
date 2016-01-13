@@ -19,8 +19,6 @@ Author: Lijuan Mei
 /*
 These are the basic macros you will use for creating tests and doing setup/teardown.
 
-The base/GkcBase.cpp must be included in cpp file.
-
 Example:
 
 In unit test cpp file:
@@ -186,23 +184,11 @@ class _UnitTestMapHelper
 public:
 	//get map
 	BEGIN_NOINLINE
-	static _UnitTestMap*& GetUnitTestMap()
+	static _UnitTestMap* GetUnitTestMap() throw()
 	END_NOINLINE
 	{
-		static _UnitTestMap* l_unit_test_map = NULL;
-
-		if( l_unit_test_map == NULL )
-			l_unit_test_map = new _UnitTestMap;
-		return l_unit_test_map;
-	}
-	//free
-	static void FreeUnitTestMap()
-	{
-		_UnitTestMap*& map = GetUnitTestMap();
-		if( map != NULL ) {
-			delete map;
-			map = NULL;
-		}
+		static _UnitTestMap l_unit_test_map;
+		return &l_unit_test_map;
 	}
 };
 
@@ -295,9 +281,6 @@ public:
 			ConsoleHelper::WriteLine(ConstStringS(l_szSep3, l_iSep3Len));
 			ConsoleHelper::WriteLine(buffer);
 		}
-
-		//free map
-		_UnitTestMapHelper::FreeUnitTestMap();
 
 		return 0;
 	}

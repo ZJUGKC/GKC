@@ -17,6 +17,24 @@
 
 Install Windows server 2012 R2.
 
+Change the port number of Terminal Server:
+
+1. Open `regedit` tool.
+
+1. Change the value of `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\Wds\rdpwd\Tds\tcp\PortNumber`.
+
+1. Change the value of `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\PortNumber`.
+
+1. Change the value of `Port=` in `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Defaults\FirewallPolicy\FirewallRules\RemoteDesktop-UserMode-In-TCP`.
+
+1. Change the value of `Port=` in `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Defaults\FirewallPolicy\FirewallRules\RemoteDesktop-UserMode-In-UDP`.
+
+1. Change the value of `Port=` in `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\FirewallRules\RemoteDesktop-UserMode-In-TCP`.
+
+1. Change the value of `Port=` in `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\FirewallRules\RemoteDesktop-UserMode-In-UDP`.
+
+1. Use `host:port` to connect the Terminal Server.
+
 ## Linux
 
 Install Ubuntu Server 14.04.

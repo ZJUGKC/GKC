@@ -31,38 +31,38 @@ inline void set_default_locale() throw()
 
 // print_format
 //   return value: the number of typed characters, -1 means fail.
-inline int print_format(const CharA* szFormat, ...) throw()
+inline int print_format(const char_a* szFormat, ...) throw()
 {
-	CharA* szV = _convert_unified_format_string(szFormat);
+	char_a* szV = _os_convert_unified_format_string(szFormat);
 	if( szV == NULL )
 		return -1;
 	va_list ap;
 	va_start(ap, szFormat);
 	int ret = ::vprintf(szV, ap);
 	va_end(ap);
-	_free_unified_format_convert_string(szV);
+	_os_free_unified_format_convert_string(szV);
 	return ret;
 }
-inline int print_format(const CharL* szFormat, ...) throw()
+inline int print_format(const char_l* szFormat, ...) throw()
 {
-	CharL* szV = _convert_unified_format_string(szFormat);
+	char_l* szV = _os_convert_unified_format_string(szFormat);
 	if( szV == NULL )
 		return -1;
 	va_list ap;
 	va_start(ap, szFormat);
 	int ret = ::vwprintf(szV, ap);
 	va_end(ap);
-	_free_unified_format_convert_string(szV);
+	_os_free_unified_format_convert_string(szV);
 	return ret;
 }
 
 // print string
-inline void print_string(const CharA* sz) throw()
+inline void print_string(const char_a* sz) throw()
 {
 	//no check
 	::printf("%s", sz);
 }
-inline void print_string(const CharL* sz) throw()
+inline void print_string(const char_l* sz) throw()
 {
 	//no check
 	::wprintf(L"%ls", sz);
@@ -122,6 +122,9 @@ public:
 	}
 
 private:
+	//noncopyable
+	stdout_attr(const stdout_attr&) throw();
+	stdout_attr& operator=(const stdout_attr&) throw();
 };
 
 //------------------------------------------------------------------------------
@@ -129,28 +132,28 @@ private:
 
 // scan_format
 //  return value: the number of input items successfully matched and assigned. <0 means fail.
-inline int scan_format(const CharA* szFormat, ...) throw()
+inline int scan_format(const char_a* szFormat, ...) throw()
 {
-	CharA* szV = _convert_unified_format_string(szFormat);
+	char_a* szV = _os_convert_unified_format_string(szFormat);
 	if( szV == NULL )
 		return -1;
 	va_list ap;
 	va_start(ap, szFormat);
 	int ret = ::vscanf(szV, ap);
 	va_end(ap);
-	_free_unified_format_convert_string(szV);
+	_os_free_unified_format_convert_string(szV);
 	return ret;
 }
-inline int scan_format(const CharL* szFormat, ...) throw()
+inline int scan_format(const char_l* szFormat, ...) throw()
 {
-	CharL* szV = _convert_unified_format_string(szFormat);
+	char_l* szV = _os_convert_unified_format_string(szFormat);
 	if( szV == NULL )
 		return -1;
 	va_list ap;
 	va_start(ap, szFormat);
 	int ret = ::vwscanf(szV, ap);
 	va_end(ap);
-	_free_unified_format_convert_string(szV);
+	_os_free_unified_format_convert_string(szV);
 	return ret;
 }
 

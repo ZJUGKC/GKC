@@ -27,6 +27,17 @@ namespace GKC {
 
 // classes
 
+// MemoryHelper
+
+class MemoryHelper
+{
+public:
+	static RefPtr<IMemoryManager> GetCrtMemoryManager() throw()
+	{
+		return RefPtr<IMemoryManager>(::CrtMemoryManager_Get());
+	}
+};
+
 // SharedPtrBlockHelper
 
 class SharedPtrBlockHelper

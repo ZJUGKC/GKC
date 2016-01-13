@@ -258,11 +258,11 @@ public:
 		return arr.m_first;
 	}
 
-	//type cast
-	template <class T, class TBase>
-	static const TBase& TypeCast(const T& src) throw()
+	//type cast (derived -> base or base -> derived)
+	template <class TSrc, class TDest>
+	static const TDest& TypeCast(const TSrc& src) throw()
 	{
-		return static_cast<const TBase&>(src);
+		return static_cast<const TDest&>(src);
 	}
 };
 

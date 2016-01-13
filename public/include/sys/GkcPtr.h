@@ -38,7 +38,7 @@ namespace GKC {
 
 // SharedPtr<T>
 
-template <class T>
+template <typename T>
 class SharedPtr
 {
 public:
@@ -161,7 +161,7 @@ private:
 
 // WeakPtr<T>
 
-template <class T>
+template <typename T>
 class WeakPtr
 {
 public:
@@ -341,30 +341,30 @@ public:
 		return ret;
 	}
 
-	//type cast
-	template <class T, class TBase>
-	static SharedPtr<TBase> TypeCast(const SharedPtr<T>& sp) throw()
+	//type cast (derived -> base or base -> derived)
+	template <class TSrc, class TDest>
+	static SharedPtr<TDest> TypeCast(const SharedPtr<TSrc>& sp) throw()
 	{
-		SharedPtr<TBase> ret;
+		SharedPtr<TDest> ret;
 		ret.m_pT = sp.m_pT;
 		ret.m_pB = sp.m_pB;
 		if( ret.m_pB != NULL ) {
 			SharedPtrBlock* pB = (SharedPtrBlock*)ret.m_pB;
 			assert( ret.m_pT != NULL );  //must have shared object
-			ret.m_pT = static_cast<TBase*>(ret.m_pT);
+			ret.m_pT = static_cast<TDest*>(ret.m_pT);
 			pB->AddRefCopy();
 		}
 		return ret;
 	}
-	template <class T, class TBase>
-	static WeakPtr<TBase> TypeCast(const WeakPtr<T>& sp) throw()
+	template <class TSrc, class TDest>
+	static WeakPtr<TDest> TypeCast(const WeakPtr<TSrc>& sp) throw()
 	{
-		WeakPtr<TBase> ret;
+		WeakPtr<TDest> ret;
 		ret.m_pT = sp.m_pT;
 		ret.m_pB = sp.m_pB;
 		if( ret.m_pB != NULL ) {
 			assert( ret.m_pT != NULL );  //must have weak object
-			ret.m_pT = static_cast<TBase*>(ret.m_pT);
+			ret.m_pT = static_cast<TDest*>(ret.m_pT);
 			ret.m_pB->WeakAddRef();
 		}
 		return ret;

@@ -66,6 +66,41 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
+// Time
+
+// SystemTime
+typedef system_time  SystemTime;
+
+//------------------------------------------------------------------------------
+// Pointers
+
+// RefPtr<T>
+
+template <typename T>
+using RefPtr = ref_ptr<T>;
+
+// RefPtrHelper
+typedef ref_ptr_helper  RefPtrHelper;
+
+//------------------------------------------------------------------------------
+// Character
+
+typedef char_a  CharA;
+typedef char_h  CharH;
+typedef char_l  CharL;
+
+typedef char_s  CharS;
+typedef char_w  CharW;
+
+//------------------------------------------------------------------------------
+// CallResult
+
+typedef call_result  CallResult;
+
+// CallResult constants
+typedef system_call_results  SystemCallResults;
+
+//------------------------------------------------------------------------------
 // Byte Order
 
 /* author: Lijuan Mei */
@@ -74,120 +109,16 @@ namespace GKC {
 typedef byte_order_helper  ByteOrderHelper;
 
 //------------------------------------------------------------------------------
-// CallResult
-
-typedef call_result  CallResult;
-
-// CallResult constants
-
-BEGIN_ENUM(SystemCallResults)
-	ENUM_VALUE_ENTRY(S_EOF, CR_S_EOF)
-	ENUM_VALUE_ENTRY(S_False, CR_S_FALSE)
-	ENUM_VALUE_ENTRY(OK, CR_OK)
-	ENUM_VALUE_ENTRY(Fail, CR_FAIL)
-	ENUM_VALUE_ENTRY(OutOfMemory, CR_OUTOFMEMORY)
-	ENUM_VALUE_ENTRY(Overflow, CR_OVERFLOW)
-	ENUM_VALUE_ENTRY(SABad, CR_SABAD)
-	ENUM_VALUE_ENTRY(Invalid, CR_INVALID)
-	ENUM_VALUE_ENTRY(NotImpl, CR_NOTIMPL)
-	ENUM_VALUE_ENTRY(NameTooLong, CR_NAMETOOLONG)
-END_ENUM()
-
-//------------------------------------------------------------------------------
 // Exceptions
 
 // Exception
-
-class Exception
-{
-public:
-	Exception() throw()
-	{
-	}
-	explicit Exception(const CallResult& res) throw() : m_result(res)
-	{
-	}
-	Exception(const Exception& src) throw() : m_result(src.m_result)
-	{
-	}
-	~Exception() throw()
-	{
-	}
-
-	//operators
-	Exception& operator=(const Exception& src) throw()
-	{
-		if( &src != this ) {
-			m_result = src.m_result;
-		}
-		return *this;
-	}
-
-	//methods
-	CallResult GetResult() const throw()
-	{
-		return m_result;
-	}
-	void SetResult(const CallResult& res) throw()
-	{
-		m_result = res;
-	}
-
-protected:
-	CallResult m_result;
-};
+typedef exception_base  Exception;
 
 // OutOfMemoryException
-
-class OutOfMemoryException : public Exception
-{
-public:
-	OutOfMemoryException() throw() : Exception(CallResult(SystemCallResults::OutOfMemory))
-	{
-	}
-	OutOfMemoryException(const OutOfMemoryException& src) throw() : Exception(static_cast<const Exception&>(src))
-	{
-	}
-	OutOfMemoryException& operator=(const OutOfMemoryException& src) throw()
-	{
-		Exception::operator=(static_cast<const Exception&>(src));
-		return *this;
-	}
-};
+typedef outofmemory_exception  OutOfMemoryException;
 
 // OverflowException
-
-class OverflowException : public Exception
-{
-public:
-	OverflowException() throw() : Exception(CallResult(SystemCallResults::Overflow))
-	{
-	}
-	OverflowException(const OverflowException& src) throw() : Exception(static_cast<const Exception&>(src))
-	{
-	}
-	OverflowException& operator=(const OverflowException& src) throw()
-	{
-		Exception::operator=(static_cast<const Exception&>(src));
-		return *this;
-	}
-};
-
-//------------------------------------------------------------------------------
-// Time
-
-// SystemTime
-struct SystemTime
-{
-	ushort uYear;
-	ushort uMonth;         //1--12
-	ushort uDayOfWeek;     //0--6, since Sunday
-	ushort uDay;           //1--31
-	ushort uHour;          //0--23
-	ushort uMinute;        //0--59
-	ushort uSecond;        //0--59/60
-	ushort uMilliseconds;  //0--999
-};
+typedef overflow_exception  OverflowException;
 
 //------------------------------------------------------------------------------
 // number
@@ -195,172 +126,13 @@ struct SystemTime
 // Limits<T>
 
 template <typename T>
-class Limits;
-
-//special
-template <>
-class Limits<char>
-{
-public:
-	static const char Lowest = SCHAR_MIN;
-	static const char Min = SCHAR_MIN;
-	static const char Max = SCHAR_MAX;
-};
-template <>
-class Limits<byte>
-{
-public:
-	static const byte Lowest = 0;
-	static const byte Min = 0;
-	static const byte Max = UCHAR_MAX;
-};
-
-template <>
-class Limits<short>
-{
-public:
-	static const short Lowest = SHRT_MIN;
-	static const short Min = SHRT_MIN;
-	static const short Max = SHRT_MAX;
-};
-template <>
-class Limits<ushort>
-{
-public:
-	static const ushort Lowest = 0;
-	static const ushort Min = 0;
-	static const ushort Max = USHRT_MAX;
-};
-
-template <>
-class Limits<int>
-{
-public:
-	static const int Lowest = INT_MIN;
-	static const int Min = INT_MIN;
-	static const int Max = INT_MAX;
-};
-template <>
-class Limits<uint>
-{
-public:
-	static const uint Lowest = 0;
-	static const uint Min = 0;
-	static const uint Max = UINT_MAX;
-};
-
-template <>
-class Limits<int64>
-{
-public:
-	static const int64 Lowest = LLONG_MIN;
-	static const int64 Min = LLONG_MIN;
-	static const int64 Max = LLONG_MAX;
-};
-template <>
-class Limits<uint64>
-{
-public:
-	static const uint64 Lowest = 0;
-	static const uint64 Min = 0;
-	static const uint64 Max = ULLONG_MAX;
-};
-
-template <>
-class Limits<float>
-{
-public:
-	static const float Lowest;
-	static const float Min;
-	static const float Max;
-};
-template <>
-class Limits<double>
-{
-public:
-	static const double Lowest;
-	static const double Min;
-	static const double Max;
-};
+using Limits = limits_base<T>;
 
 //------------------------------------------------------------------------------
 // basic operators
 
 // SafeOperators
-
-class SafeOperators
-{
-public:
-	template <typename T>
-	static CallResult Add(IN const T& left, IN const T& right, OUT T& result) throw()
-	{
-		if( Limits<T>::Max - left < right ) {
-			return CallResult(SystemCallResults::Overflow);
-		}
-		result = left + right;
-		return CallResult(SystemCallResults::OK);
-	}
-
-	template <typename T>
-	static CallResult Multiply(IN const T& left, IN const T& right, OUT T& result) throw()
-	{
-		//avoid divide 0
-		if( left == 0 ) {
-			result = 0;
-			return CallResult(SystemCallResults::OK);
-		}
-		if( Limits<T>::Max / left < right ) {
-			return CallResult(SystemCallResults::Overflow);
-		}
-		result = left * right;
-		return CallResult(SystemCallResults::OK);
-	}
-
-	//throw version
-	template <typename T>
-	static T AddThrow(IN const T& left, IN const T& right)
-	{
-		T result;
-		CallResult cr = Add(left, right, result);
-		if( cr.IsFailed() ) {
-			throw( Exception(cr) );
-		}
-		return result;
-	}
-	template <typename T>
-	static T MultiplyThrow(IN const T& left, IN const T& right)
-	{
-		T result;
-		CallResult cr = Multiply(left, right, result);
-		if( cr.IsFailed() ) {
-			throw( Exception(cr) );
-		}
-		return result;
-	}
-};
-
-//special
-template <>
-inline CallResult SafeOperators::Multiply<int>(IN const int& left, IN const int& right, OUT int& result) throw()
-{
-	int64 result64 = static_cast<int64>(left) * static_cast<int64>(right);
-	if( result64 > Limits<int>::Max || result64 < Limits<int>::Min ) {
-		return CallResult(SystemCallResults::Overflow);
-	}
-	result = static_cast<int>(result64);
-	return CallResult(SystemCallResults::OK);
-}
-
-template <>
-inline CallResult SafeOperators::Multiply<uint>(IN const uint& left, IN const uint& right, OUT uint& result) throw()
-{
-	uint64 result64 = static_cast<uint64>(left) * static_cast<uint64>(right);
-	if( result64 > Limits<uint>::Max ) {
-		return CallResult(SystemCallResults::Overflow);
-	}
-	result = static_cast<uint>(result64);
-	return CallResult(SystemCallResults::OK);
-}
+typedef safe_operators  SafeOperators;
 
 //------------------------------------------------------------------------------
 // logic
@@ -402,7 +174,7 @@ public:
 	}
 };
 
-//special
+//special versions
 template <>
 inline bool LogicalOperators::IsEQ<float>(const float& t1, const float& t2) throw()
 {
@@ -544,6 +316,7 @@ native : == != ...
 LogicalOperators
 <Element>Trait
 */
+
 //------------------------------------------------------------------------------
 //iterator
 
@@ -789,215 +562,23 @@ public:
 };
 
 //------------------------------------------------------------------------------
-// Pointers
+// Memory
 
-// RefPtr<T>
+// IMemoryManager
 
-template <class T>
-class RefPtr
-{
-public:
-	RefPtr() throw() : m_p(NULL)
-	{
-	}
-	explicit RefPtr(const T& t) throw() : m_p(&(const_cast<T&>(t)))
-	{
-	}
-	explicit RefPtr(const T* p) throw() : m_p(const_cast<T*>(p))
-	{
-	}
-	RefPtr(const RefPtr<T>& src) throw() : m_p(src.m_p)
-	{
-	}
-	~RefPtr() throw()
-	{
-	}
-
-	void Release() throw()
-	{
-		m_p = NULL;
-	}
-
-	//operators
-	RefPtr<T>& operator=(const RefPtr<T>& src) throw()
-	{
-		if( this != &src ) {
-			m_p = src.m_p;
-		}
-		return *this;
-	}
-	RefPtr<T>& operator=(T* p) throw()
-	{
-		m_p = p;
-		return *this;
-	}
-
-	//logical
-	bool operator==(const RefPtr<T>& right) const throw()
-	{
-		return m_p == right.m_p;
-	}
-	bool operator!=(const RefPtr<T>& right) const throw()
-	{
-		return !(*this == right);
-	}
-	bool operator<(const RefPtr<T>& right) const throw()
-	{
-		return m_p < right.m_p;
-	}
-	bool operator>(const RefPtr<T>& right) const throw()
-	{
-		return right < *this;
-	}
-	bool operator<=(const RefPtr<T>& right) const throw()
-	{
-		return !operator>(right);
-	}
-	bool operator>=(const RefPtr<T>& right) const throw()
-	{
-		return !operator<(right);
-	}
-
-	//methods
-	bool IsNull() const throw()
-	{
-		return m_p == NULL;
-	}
-
-	const T& Deref() const throw()
-	{
-		assert( !IsNull() );
-		return *m_p;
-	}
-	T& Deref() throw()
-	{
-		assert( !IsNull() );
-		return *m_p;
-	}
-
-private:
-	T* m_p;
-
-private:
-	friend class RefPtrHelper;
-};
-
-// RefPtrHelper
-
-class RefPtrHelper
-{
-public:
-	template <class T>
-	static RefPtr<T> ToRefPtr(const T& t) throw()
-	{
-		return RefPtr<T>(t);
-	}
-	//cast
-	template <class T, class TBase>
-	static RefPtr<TBase> TypeCast(const RefPtr<T>& t) throw()
-	{
-		assert( !t.IsNull() );
-		return RefPtr<TBase>(static_cast<const TBase&>(t.Deref()));
-	}
-	//clone
-	template <class T>
-	static void Clone(const RefPtr<T>& tSrc, RefPtr<T>& tDest) //may throw
-	{
-		if( tSrc.m_p != tDest.m_p && !tSrc.IsNull() && !tDest.IsNull() ) {
-			tDest.Deref() = tSrc.Deref();
-		}
-	}
-
-	//get internal pointer
-	template <class T>
-	static T* GetInternalPointer(const RefPtr<T>& t) throw()
-	{
-		return t.m_p;
-	}
-};
-
-// WeakObjectRef<T>
-//   T: must have GetHandle, Attach and Detach methods
-template <class T>
-class WeakObjectRef
-{
-public:
-	WeakObjectRef() throw()
-	{
-	}
-	WeakObjectRef(const WeakObjectRef& src) throw()
-	{
-		//m_t is null
-		m_t.Attach(src.m_t.GetHandle());
-	}
-	WeakObjectRef(const T& t) throw()
-	{
-		m_t.Attach(t.GetHandle());
-	}
-	~WeakObjectRef() throw()
-	{
-		m_t.Detach();
-	}
-
-	//operators
-	WeakObjectRef& operator=(const WeakObjectRef& src) throw()
-	{
-		if( this != &src ) {
-			m_t.Detach();
-			m_t.Attach(src.m_t.GetHandle());
-		}
-		return *this;
-	}
-	WeakObjectRef& operator=(const T& t) throw()
-	{
-		m_t.Detach();
-		m_t.Attach(t.GetHandle());
-		return *this;
-	}
-
-	//methods
-	const T& GetObject() const throw()
-	{
-		return m_t;
-	}
-	T& GetObject() throw()
-	{
-		return m_t;
-	}
-
-private:
-	T m_t;  //object may contain a pointer (or a handle) from system call or third party library
-
-private:
-	WeakObjectRef(T&& t) throw();
-	WeakObjectRef& operator=(T&& t) throw();
-};
+typedef i_memory_manager  IMemoryManager;
 
 //------------------------------------------------------------------------------
 // File
 
 // file open types
-BEGIN_ENUM(FileOpenTypes)
-	ENUM_VALUE_ENTRY(Read,       0x00000000)
-	ENUM_VALUE_ENTRY(Write,      0x00000001)
-	ENUM_VALUE_ENTRY(ReadWrite,  0x00000002)
-END_ENUM()
+typedef file_open_types  FileOpenTypes;
 
 // file creation types (can combine with <or> operation)
-BEGIN_ENUM(FileCreationTypes)
-	ENUM_VALUE_ENTRY(Create,     0x00001000)
-	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
-END_ENUM()
+typedef file_creation_types  FileCreationTypes;
 
 // FileStatus
-
-struct FileStatus
-{
-	int64       iSize;     //file size in bytes
-	SystemTime  tmAccess;  //time of last access
-	SystemTime  tmModify;  //time of last modification
-	SystemTime  tmCreate;  //time of creation
-};
+typedef file_status  FileStatus;
 
 //------------------------------------------------------------------------------
 

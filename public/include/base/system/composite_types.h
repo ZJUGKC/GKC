@@ -82,4 +82,207 @@ inline bool is_derived_from() throw()
 	return pb != (TBase*)0;
 }
 
+//------------------------------------------------------------------------------
+//classes
+
+// -----Time-----
+
+// system_time
+
+struct system_time
+{
+	ushort uYear;
+	ushort uMonth;         //1--12
+	ushort uDayOfWeek;     //0--6, since Sunday
+	ushort uDay;           //1--31
+	ushort uHour;          //0--23
+	ushort uMinute;        //0--59
+	ushort uSecond;        //0--59/60
+	ushort uMilliseconds;  //0--999
+};
+
+// -----Pointers-----
+
+// ref_ptr<T>
+
+template <typename T>
+class ref_ptr
+{
+public:
+	ref_ptr() throw() : m_p(NULL)
+	{
+	}
+	explicit ref_ptr(const T& t) throw() : m_p(&(const_cast<T&>(t)))
+	{
+	}
+	explicit ref_ptr(const T* p) throw() : m_p(const_cast<T*>(p))
+	{
+	}
+	ref_ptr(const ref_ptr<T>& src) throw() : m_p(src.m_p)
+	{
+	}
+	~ref_ptr() throw()
+	{
+	}
+
+	void Release() throw()
+	{
+		m_p = NULL;
+	}
+
+	//operators
+	ref_ptr<T>& operator=(const ref_ptr<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_p = src.m_p;
+		}
+		return *this;
+	}
+	ref_ptr<T>& operator=(T* p) throw()
+	{
+		m_p = p;
+		return *this;
+	}
+
+	//logical
+	bool operator==(const ref_ptr<T>& right) const throw()
+	{
+		return m_p == right.m_p;
+	}
+	bool operator!=(const ref_ptr<T>& right) const throw()
+	{
+		return !(*this == right);
+	}
+	bool operator<(const ref_ptr<T>& right) const throw()
+	{
+		return m_p < right.m_p;
+	}
+	bool operator>(const ref_ptr<T>& right) const throw()
+	{
+		return right < *this;
+	}
+	bool operator<=(const ref_ptr<T>& right) const throw()
+	{
+		return !operator>(right);
+	}
+	bool operator>=(const ref_ptr<T>& right) const throw()
+	{
+		return !operator<(right);
+	}
+
+	//methods
+	bool IsNull() const throw()
+	{
+		return m_p == NULL;
+	}
+
+	const T& Deref() const throw()
+	{
+		assert( !IsNull() );
+		return *m_p;
+	}
+	T& Deref() throw()
+	{
+		assert( !IsNull() );
+		return *m_p;
+	}
+
+private:
+	T* m_p;
+
+private:
+	friend class ref_ptr_helper;
+};
+
+// ref_ptr_helper
+
+class ref_ptr_helper
+{
+public:
+	template <typename T>
+	static ref_ptr<T> MakeRefPtr(const T& t) throw()
+	{
+		return ref_ptr<T>(t);
+	}
+	//type cast (derived -> base or base -> derived)
+	template <class TSrc, class TDest>
+	static ref_ptr<TDest> TypeCast(const ref_ptr<TSrc>& t) throw()
+	{
+		assert( !t.IsNull() );
+		return ref_ptr<TDest>(static_cast<const TDest&>(t.Deref()));
+	}
+	//clone
+	template <typename T>
+	static void Clone(const ref_ptr<T>& tSrc, ref_ptr<T>& tDest) //may throw
+	{
+		if( tSrc.m_p != tDest.m_p && !tSrc.IsNull() && !tDest.IsNull() ) {
+			tDest.Deref() = tSrc.Deref();
+		}
+	}
+
+	//get internal pointer
+	template <typename T>
+	static T* GetInternalPointer(const ref_ptr<T>& t) throw()
+	{
+		return t.m_p;
+	}
+};
+
+// weak_object_ref<T>
+//   T: must have GetHandle, Attach and Detach methods
+template <class T>
+class weak_object_ref
+{
+public:
+	weak_object_ref() throw()
+	{
+	}
+	weak_object_ref(const weak_object_ref& src) throw()
+	{
+		//m_t is null
+		m_t.Attach(src.m_t.GetHandle());
+	}
+	weak_object_ref(const T& t) throw()
+	{
+		m_t.Attach(t.GetHandle());
+	}
+	~weak_object_ref() throw()
+	{
+		m_t.Detach();
+	}
+
+	//operators
+	weak_object_ref& operator=(const weak_object_ref& src) throw()
+	{
+		if( this != &src ) {
+			m_t.Detach();
+			m_t.Attach(src.m_t.GetHandle());
+		}
+		return *this;
+	}
+	weak_object_ref& operator=(const T& t) throw()
+	{
+		m_t.Detach();
+		m_t.Attach(t.GetHandle());
+		return *this;
+	}
+
+	//methods
+	const T& GetObject() const throw()
+	{
+		return m_t;
+	}
+	T& GetObject() throw()
+	{
+		return m_t;
+	}
+
+private:
+	T m_t;  //object may contain a pointer (or a handle) from system call or third party library
+
+private:
+	weak_object_ref(T&& t) throw();
+	weak_object_ref& operator=(T&& t) throw();
+};
+
 ////////////////////////////////////////////////////////////////////////////////

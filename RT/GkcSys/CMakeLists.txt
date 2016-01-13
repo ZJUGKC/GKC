@@ -17,11 +17,11 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/public/include")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/precomp.cpp")
-SET(SRC_LIST "src/main.cpp" "src/globals.cpp" "src/sob_pool.cpp")
+SET(SRC_LIST "src/main.cpp" "src/globals.cpp" "src/sob_pool.cpp" "src/mem_mgr.cpp")
 ADD_LIBRARY(GkcSys SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcSys "shared" "precomp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")
-SET_TARGET_PROPERTIES(GkcSys PROPERTIES OUTPUT_NAME "GkcSys-1-0"
+SET_TARGET_PROPERTIES(GkcSys PROPERTIES OUTPUT_NAME "GkcSys"
 	VERSION 1.0 SOVERSION 1
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
 

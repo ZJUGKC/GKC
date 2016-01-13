@@ -160,7 +160,7 @@ TK_VERT     \|
 TK_SEMI     ;
 ```
 
-The corresponding FSA tables are shown in `ldf-fsa.odg` and `_ldf_base.h`.
+The corresponding FSA tables are shown in `ldf-fsa.odg` and `cpl_ldf_base.h`.
 
 The syntax of lex file can be described as the following grammar file:
 
@@ -176,7 +176,7 @@ id : TK_TOKEN  { do_id_token }
 	;
 ```
 
-The corresponding PDA tables are shown in `ldf-lex-pda.odg` and `_ldf_base.h`.
+The corresponding PDA tables are shown in `ldf-lex-pda.odg` and `cpl_ldf_lex.h`.
 
 The lexical elements of regular expression can be described as the following lex file:
 
@@ -213,7 +213,7 @@ TK_RPAREN               \)
 TK_CHAR                 [\x21-\x7E]
 ```
 
-The corresponding FSA tables are shown in `ldf-regex-fsa.odg` and `_ldf_base.h`.
+The corresponding FSA tables are shown in `ldf-regex-fsa.odg` and `cpl_ldf_regex.h`.
 
 The syntax of regular expression can be described as the following grammar file:
 
@@ -251,7 +251,7 @@ regex_char : TK_CHAR  { do_char }
 	;
 ```
 
-The corresponding PDA tables are shown in `ldf-regex-pda.odg` and `_ldf_base.h`.
+The corresponding PDA tables are shown in `ldf-regex-pda.odg` and `cpl_ldf_regex.h`.
 
 The syntax of grammar file can be described as the following grammar file:
 
@@ -277,4 +277,4 @@ id : TK_TOKEN  { do_id_token }
 	;
 ```
 
-The corresponding PDA tables are shown in `ldf-gra-pda.odg` and `_ldf_base.h`.
+The corresponding PDA tables are shown in `ldf-gra-pda.odg` and `cpl_ldf_gra.h`.

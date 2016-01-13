@@ -178,7 +178,7 @@ public:
 		{
 			m_actTable.Init();  //may throw
 			m_graTable.SetPDA(RefPtrHelper::TypeCast<_LDF_lex_PDM, typename _LDF_lex_PDM::baseClass>(RefPtr<_LDF_lex_PDM>(m_pdm)));
-			m_graTable.SetReductionActionTable(RefPtrHelper::ToRefPtr(m_actTable.GetTable()));
+			m_graTable.SetReductionActionTable(RefPtrHelper::MakeRefPtr(m_actTable.GetTable()));
 		}
 
 		RefPtr<GrammarTable<_LDF_lex_SymUserData>> GetGrammarTable() throw()

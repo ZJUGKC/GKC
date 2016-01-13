@@ -268,8 +268,8 @@ public:
 		{
 			m_ldfTokenTable.Init();  //may throw
 			m_lexTable.SetFSA(RefPtrHelper::TypeCast<_LDF_FSM, FiniteStateAutomata>(RefPtr<_LDF_FSM>(m_fsm)));
-			m_lexTable.SetTokenTable(RefPtrHelper::ToRefPtr(m_ldfTokenTable.GetTable()));
-			m_lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(m_lexTable));
+			m_lexTable.SetTokenTable(RefPtrHelper::MakeRefPtr(m_ldfTokenTable.GetTable()));
+			m_lexParser.SetLexerTable(RefPtrHelper::MakeRefPtr(m_lexTable));
 			//actions
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"),
 								RefPtrHelper::TypeCast<Lexer_CommentStartAction, ILexerAction>(RefPtr<Lexer_CommentStartAction>(m_actionCommentStart)));

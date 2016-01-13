@@ -26,6 +26,11 @@ This file contains GkcSys functions.
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
+// CRT MemoryManager
+
+SA_FUNCTION GKC::IMemoryManager* CrtMemoryManager_Get() throw();
+
+//------------------------------------------------------------------------------
 // SharedPtrBlock Pool
 
 SA_FUNCTION GKC::SharedPtrBlock* SpbPool_Allocate() throw();

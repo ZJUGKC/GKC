@@ -632,7 +632,7 @@ private:
 		ret = _A2W(uCP1, (const CharA*)pSrc, iSrcBytes, pTemp, ret);
 		assert( ret > 0 );
 		ret = _W2A(uCP2, pTemp, ret, (CharA*)pDest, iDestBytes);
-		crt_free((uintptr)pTemp);
+		crt_free(pTemp);
 		return ret > 0 ? 1 : ret;
 	}
 	static int c_H2A(UINT uCP, const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
@@ -677,7 +677,7 @@ private:
 		int ret = c_L2H(pSrc, iSrcBytes, pTemp, iSrcLen * sizeof(CharH));
 		assert( ret > 0 );
 		ret = _W2A(uCP, pTemp, iSrcLen, (CharA*)pDest, iDestBytes);
-		crt_free((uintptr)pTemp);
+		crt_free(pTemp);
 		return ret > 0 ? 1 : ret;
 	}
 

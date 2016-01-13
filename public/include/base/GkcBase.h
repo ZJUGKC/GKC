@@ -80,19 +80,6 @@ public:
 	}
 };
 
-// IMemoryManager
-
-class NOVTABLE IMemoryManager
-{
-public:
-	virtual uintptr Allocate(const uintptr& uBytes) throw() = 0;
-	// p == NULL : the same as Allocate
-	// uBytes == 0 : free p, return NULL
-	// return NULL, failed, and p unchanged
-	virtual uintptr Reallocate(const uintptr& p, const uintptr& uBytes) throw() = 0;
-	virtual void    Free(const uintptr& p) throw() = 0;
-};
-
 // FixedElementMemoryPool
 
 class FixedElementMemoryPool
@@ -109,7 +96,7 @@ public:
 		FreeDataChain();
 	}
 
-	//methods
+//methods
 
 	void SetMemoryManager(const RefPtr<IMemoryManager>& mgr) throw()
 	{
@@ -133,8 +120,8 @@ public:
 		m_pHead = NULL;
 	}
 
-	//may throw
-	uintptr CreateBlock(uintptr uMinElements, uintptr uMaxElements, uintptr uElementSize, uintptr& uActElements)
+	// create block
+	uintptr CreateBlock(uintptr uMinElements, uintptr uMaxElements, uintptr uElementSize, uintptr& uActElements)  //may throw
 	{
 		assert( uMinElements > 0 && uMaxElements > 0 && uMinElements <= uMaxElements && uElementSize > 0 );
 		assert( !m_mgr.IsNull() );
@@ -200,27 +187,7 @@ private:
 	FixedElementMemoryPool& operator=(const FixedElementMemoryPool& src) throw();
 };
 
-// CrtMemoryManager
-
-class CrtMemoryManager : public IMemoryManager
-{
-public:
-	// IMemoryManager methods
-	virtual uintptr Allocate(const uintptr& uBytes) throw()
-	{
-		return crt_alloc(uBytes);
-	}
-	virtual uintptr Reallocate(const uintptr& p, const uintptr& uBytes) throw()
-	{
-		return crt_realloc(p, uBytes);
-	}
-	virtual void    Free(const uintptr& p) throw()
-	{
-		crt_free(p);
-	}
-};
-
-// PoolMemoryManager
+// PoolMemoryManager<t_size>
 
 template <uintptr t_size>
 class PoolMemoryManager : public IMemoryManager
@@ -312,20 +279,6 @@ private:
 	FixedElementMemoryPool  m_pool;
 	void*  m_pFree;  //free list
 	uintptr m_uMinBlockElements, m_uMaxBlockElements;
-};
-
-// MemoryHelper
-
-class MemoryHelper
-{
-public:
-	static RefPtr<IMemoryManager> GetCrtMemoryManager() throw()
-	{
-		return RefPtrHelper::TypeCast<CrtMemoryManager, IMemoryManager>(RefPtr<CrtMemoryManager>(g_crtMemMgr));
-	}
-
-private:
-	static CrtMemoryManager g_crtMemMgr;
 };
 
 // ITypeProcess

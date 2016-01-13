@@ -28,6 +28,9 @@
 //no vtable
 #define NOVTABLE  __declspec(novtable)
 
+//------------------------------------------------------------------------------
+//shared library
+
 //export functions for shared library
 #ifdef SHARED_LIBRARY
 	#ifdef __cplusplus
@@ -42,9 +45,6 @@
 		#define SA_FUNCTION  __declspec(dllimport)
 	#endif
 #endif
-
-//------------------------------------------------------------------------------
-//shared library
 
 //global variables in shared library
 

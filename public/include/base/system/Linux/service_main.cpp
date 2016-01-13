@@ -22,7 +22,7 @@ This file contains main function for Service program.
 
 // tools
 
-int g_ExitFlag = 0;
+volatile int g_ExitFlag = 0;
 
 //signal callbacks
 static

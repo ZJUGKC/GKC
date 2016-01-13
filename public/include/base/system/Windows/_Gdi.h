@@ -141,7 +141,7 @@ private:
 	_GdiObject& operator=(const _GdiObject&) throw();
 };
 
-// GKC::WeakObjectRef<T>
+// weak_object_ref<T>
 //   T: _Pen, _Brush, _Font, _Bitmap, _Palette, _Rgn
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1067,30 +1067,30 @@ public:
 		return ::WindowFromDC(m_hDC);
 	}
 
-	GKC::WeakObjectRef<_Pen> GetCurrentPen() const throw()
+	weak_object_ref<_Pen> GetCurrentPen() const throw()
 	{
 		assert( !IsNull() );
-		return GKC::WeakObjectRef<_Pen>(_Pen((HPEN)::GetCurrentObject(m_hDC, OBJ_PEN)));
+		return weak_object_ref<_Pen>(_Pen((HPEN)::GetCurrentObject(m_hDC, OBJ_PEN)));
 	}
-	GKC::WeakObjectRef<_Brush> GetCurrentBrush() const throw()
+	weak_object_ref<_Brush> GetCurrentBrush() const throw()
 	{
 		assert( !IsNull() );
-		return GKC::WeakObjectRef<_Brush>(_Brush((HBRUSH)::GetCurrentObject(m_hDC, OBJ_BRUSH)));
+		return weak_object_ref<_Brush>(_Brush((HBRUSH)::GetCurrentObject(m_hDC, OBJ_BRUSH)));
 	}
-	GKC::WeakObjectRef<_Palette> GetCurrentPalette() const throw()
+	weak_object_ref<_Palette> GetCurrentPalette() const throw()
 	{
 		assert( !IsNull() );
-		return GKC::WeakObjectRef<_Palette>(_Palette((HPALETTE)::GetCurrentObject(m_hDC, OBJ_PAL)));
+		return weak_object_ref<_Palette>(_Palette((HPALETTE)::GetCurrentObject(m_hDC, OBJ_PAL)));
 	}
-	GKC::WeakObjectRef<_Font> GetCurrentFont() const throw()
+	weak_object_ref<_Font> GetCurrentFont() const throw()
 	{
 		assert( !IsNull() );
-		return GKC::WeakObjectRef<_Font>(_Font((HFONT)::GetCurrentObject(m_hDC, OBJ_FONT)));
+		return weak_object_ref<_Font>(_Font((HFONT)::GetCurrentObject(m_hDC, OBJ_FONT)));
 	}
-	GKC::WeakObjectRef<_Bitmap> GetCurrentBitmap() const throw()
+	weak_object_ref<_Bitmap> GetCurrentBitmap() const throw()
 	{
 		assert( !IsNull() );
-		return GKC::WeakObjectRef<_Bitmap>(_Bitmap((HBITMAP)::GetCurrentObject(m_hDC, OBJ_BITMAP)));
+		return weak_object_ref<_Bitmap>(_Bitmap((HBITMAP)::GetCurrentObject(m_hDC, OBJ_BITMAP)));
 	}
 
 	bool CreateDC(LPCWSTR lpszDriverName, LPCWSTR lpszDeviceName, LPCWSTR lpszOutput, const DEVMODEW* lpInitData) throw()
@@ -1943,7 +1943,7 @@ public:
 		assert( iWidth > 0 && iHeight > 0 );
 
 		// Create a generic DC for all BitBlts
-		WeakObjectRef<_DC> dc( _DC((hSrcDC != NULL) ? hSrcDC : ::CreateCompatibleDC(m_hDC)) );
+		weak_object_ref<_DC> dc( _DC((hSrcDC != NULL) ? hSrcDC : ::CreateCompatibleDC(m_hDC)) );
 		if( dc.IsNull() )
 			return FALSE;
 
@@ -2869,9 +2869,9 @@ public:
 	~_EnhMetaFileInfo() throw()
 	{
 		if( m_pDesc != NULL )
-			crt_free((uintptr)m_pDesc);
+			crt_free(m_pDesc);
 		if( m_pBits != NULL )
-			crt_free((uintptr)m_pBits);
+			crt_free(m_pBits);
 	}
 
 // Operations
@@ -2879,7 +2879,7 @@ public:
 	{
 		assert( m_hEMF != NULL );
 		UINT uBytes = ::GetEnhMetaFileBits(m_hEMF, 0, NULL);
-		crt_free((uintptr)m_pBits);
+		crt_free(m_pBits);
 		m_pBits = NULL;
 		m_pBits = (BYTE*)crt_alloc(uBytes * sizeof(BYTE));
 		if( m_pBits != NULL )
@@ -2890,7 +2890,7 @@ public:
 	{
 		assert( m_hEMF != NULL );
 		UINT uLen = ::GetEnhMetaFileDescriptionW(m_hEMF, 0, NULL);
-		crt_free((uintptr)m_pDesc);
+		crt_free(m_pDesc);
 		m_pDesc = NULL;
 		m_pDesc = (WCHAR*)crt_alloc(uLen * sizeof(WCHAR));
 		if( m_pDesc != NULL )

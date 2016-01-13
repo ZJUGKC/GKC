@@ -47,18 +47,18 @@ inline bool guid_equal(const guid& id1, const guid& id2) throw()
 //------------------------------------------------------------------------------
 //character
 
-typedef CHAR           CharA;  //ANSI or UTF8
-typedef WCHAR          CharH;  //word or UTF16
-typedef unsigned long  CharL;  //long or UTF32
+typedef CHAR           char_a;  //ANSI or UTF8
+typedef WCHAR          char_h;  //word or UTF16
+typedef unsigned long  char_l;  //long or UTF32
 
-typedef CharH  CharS;  //system type, UTF16
+typedef char_h  char_s;  //system type, UTF16
 //for const string
-#define _WIDEN2(x)  L##x
-#define _WIDEN(x)   _WIDEN2(x)
+#define _OS_WIDEN2(x)  L##x
+#define _OS_WIDEN(x)   _OS_WIDEN2(x)
 
-#define _S(x)  _WIDEN(x)
+#define _S(x)  _OS_WIDEN(x)
 
-typedef CharH  CharW;  //for wide type, L"..."
+typedef char_h  char_w;  //for wide type, L"..."
 
 //------------------------------------------------------------------------------
 //atomic
@@ -174,9 +174,9 @@ private:
 //------------------------------------------------------------------------------
 // call_result constants
 
-#define CR_S_EOF             ERROR_HANDLE_EOF
-#define CR_S_FALSE           1
-#define CR_OK                0
+#define CR_S_EOF             (ERROR_HANDLE_EOF)
+#define CR_S_FALSE           (1)
+#define CR_OK                (0)
 #define CR_FAIL              E_FAIL
 #define CR_OUTOFMEMORY       E_OUTOFMEMORY
 #define CR_OVERFLOW          CR_FROM_ERROR(ERROR_ARITHMETIC_OVERFLOW)
@@ -184,6 +184,7 @@ private:
 #define CR_INVALID           E_INVALIDARG
 #define CR_NOTIMPL           E_NOTIMPL
 #define CR_NAMETOOLONG       CO_E_PATHTOOLONG
+#define CR_DISKFULL          CR_FROM_ERROR(ERROR_DISK_FULL)
 
 //------------------------------------------------------------------------------
 // Service
@@ -196,7 +197,7 @@ private:
 
 // report_service_log
 //  type: SERVICE_LOG_*
-inline void report_service_log(const CharS* szService, uint type, const CharS* szMsg) throw()
+inline void report_service_log(const char_s* szService, uint type, const char_s* szMsg) throw()
 {
 	HANDLE hEventSource = ::RegisterEventSourceW(NULL, szService);
 	if( hEventSource != NULL ) {
@@ -268,13 +269,13 @@ public:
 		}
 	}
 
-	bool Load(const CharS* szFile) throw()
+	bool Load(const char_s* szFile) throw()
 	{
 		assert( m_hd == NULL );
 		m_hd = ::LoadLibraryW(szFile);
 		return m_hd != NULL;
 	}
-	uintptr GetFunctionAddress(const CharA* szFunc) throw()
+	uintptr GetFunctionAddress(const char_a* szFunc) throw()
 	{
 		assert( m_hd != NULL );
 		return (uintptr)::GetProcAddress(m_hd, szFunc);

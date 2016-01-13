@@ -28,24 +28,41 @@
 //------------------------------------------------------------------------------
 //functions
 
-//memory
-inline uintptr crt_alloc(const uintptr& uBytes) throw()
+// memory
+
+inline void* crt_alloc(uintptr uBytes) throw()
 {
-	return (uintptr)::malloc(uBytes);
+	return ::malloc(uBytes);
 }
 
-inline uintptr crt_realloc(const uintptr& p, const uintptr& uBytes) throw()
+inline void* crt_realloc(void* p, uintptr uBytes) throw()
 {
-	return (uintptr)::realloc((void*)p, uBytes);
+	return ::realloc(p, uBytes);
 }
 
-inline void    crt_free(const uintptr& p) throw()
+inline void    crt_free(void* p) throw()
 {
-	::free((void*)p);
+	::free(p);
 }
 
 //------------------------------------------------------------------------------
 //classes
+
+// system_call_results
+
+BEGIN_ENUM(system_call_results)
+	ENUM_VALUE_ENTRY(S_EOF, CR_S_EOF)
+	ENUM_VALUE_ENTRY(S_False, CR_S_FALSE)
+	ENUM_VALUE_ENTRY(OK, CR_OK)
+	ENUM_VALUE_ENTRY(Fail, CR_FAIL)
+	ENUM_VALUE_ENTRY(OutOfMemory, CR_OUTOFMEMORY)
+	ENUM_VALUE_ENTRY(Overflow, CR_OVERFLOW)
+	ENUM_VALUE_ENTRY(SABad, CR_SABAD)
+	ENUM_VALUE_ENTRY(Invalid, CR_INVALID)
+	ENUM_VALUE_ENTRY(NotImpl, CR_NOTIMPL)
+	ENUM_VALUE_ENTRY(NameTooLong, CR_NAMETOOLONG)
+	ENUM_VALUE_ENTRY(DiskFull, CR_DISKFULL)
+END_ENUM()
 
 // byte_order_helper
 
@@ -96,20 +113,20 @@ public:
 
 	//Swap a character's byte order
 #if defined(GKC_OS_WINDOWS)
-	static CharH Swap(CharH x) throw()
+	static char_h Swap(char_h x) throw()
 	{
-		return (CharH)Swap((ushort)x);
+		return (char_h)Swap((ushort)x);
 	}
 #elif defined(GKC_OS_LINUX)
-	//static CharH Swap(CharH x) throw()
+	//static char_h Swap(char_h x) throw()
 	//  the same as : static ushort Swap(ushort x) throw()
 #else
 	#error Error OS type!
 #endif
 
-	static CharL Swap(CharL x) throw()
+	static char_l Swap(char_l x) throw()
 	{
-		return (CharL)Swap((uint)x);
+		return (char_l)Swap((uint)x);
 	}
 	//Swap a float's byte order
 	static float Swap(float x) throw()
@@ -148,6 +165,291 @@ public:
 		//8 bytes (big endian)
 		mem_copy(ps, 8, pd);
 	}
+};
+
+// -----exception-----
+
+// exception_base
+
+class exception_base
+{
+public:
+	exception_base() throw()
+	{
+	}
+	explicit exception_base(const call_result& res) throw() : m_result(res)
+	{
+	}
+	exception_base(const exception_base& src) throw() : m_result(src.m_result)
+	{
+	}
+	~exception_base() throw()
+	{
+	}
+
+	//operators
+	exception_base& operator=(const exception_base& src) throw()
+	{
+		if( &src != this ) {
+			m_result = src.m_result;
+		}
+		return *this;
+	}
+
+	//methods
+	call_result GetResult() const throw()
+	{
+		return m_result;
+	}
+	void SetResult(const call_result& res) throw()
+	{
+		m_result = res;
+	}
+
+protected:
+	call_result m_result;
+};
+
+// exception_t<t_cr>
+
+template <int t_cr>
+class exception_t : public exception_base
+{
+public:
+	exception_t() throw() : exception_base(call_result(t_cr))
+	{
+	}
+	exception_t(const exception_t<t_cr>& src) throw() : exception_base(static_cast<const exception_base&>(src))
+	{
+	}
+	exception_t<t_cr>& operator=(const exception_t<t_cr>& src) throw()
+	{
+		exception_base::operator=(static_cast<const exception_base&>(src));
+		return *this;
+	}
+};
+
+// outofmemory_exception
+typedef exception_t<system_call_results::OutOfMemory>  outofmemory_exception;
+
+// overflow_exception
+typedef exception_t<system_call_results::Overflow>  overflow_exception;
+
+// -----number-----
+
+// limits_base<T>
+
+template <typename T>
+class limits_base;
+
+//special
+template <>
+class limits_base<char>
+{
+public:
+	static const char Lowest = SCHAR_MIN;
+	static const char Min = SCHAR_MIN;
+	static const char Max = SCHAR_MAX;
+};
+template <>
+class limits_base<byte>
+{
+public:
+	static const byte Lowest = 0;
+	static const byte Min = 0;
+	static const byte Max = UCHAR_MAX;
+};
+
+template <>
+class limits_base<short>
+{
+public:
+	static const short Lowest = SHRT_MIN;
+	static const short Min = SHRT_MIN;
+	static const short Max = SHRT_MAX;
+};
+template <>
+class limits_base<ushort>
+{
+public:
+	static const ushort Lowest = 0;
+	static const ushort Min = 0;
+	static const ushort Max = USHRT_MAX;
+};
+
+template <>
+class limits_base<int>
+{
+public:
+	static const int Lowest = INT_MIN;
+	static const int Min = INT_MIN;
+	static const int Max = INT_MAX;
+};
+template <>
+class limits_base<uint>
+{
+public:
+	static const uint Lowest = 0;
+	static const uint Min = 0;
+	static const uint Max = UINT_MAX;
+};
+
+template <>
+class limits_base<int64>
+{
+public:
+	static const int64 Lowest = LLONG_MIN;
+	static const int64 Min = LLONG_MIN;
+	static const int64 Max = LLONG_MAX;
+};
+template <>
+class limits_base<uint64>
+{
+public:
+	static const uint64 Lowest = 0;
+	static const uint64 Min = 0;
+	static const uint64 Max = ULLONG_MAX;
+};
+
+template <>
+class limits_base<float>
+{
+public:
+	static const float Lowest;
+	static const float Min;
+	static const float Max;
+};
+template <>
+class limits_base<double>
+{
+public:
+	static const double Lowest;
+	static const double Min;
+	static const double Max;
+};
+
+// -----basic operators-----
+
+// safe_operators
+
+class safe_operators
+{
+public:
+	template <typename T>
+	static call_result Add(IN const T& left, IN const T& right, OUT T& result) throw()
+	{
+		if( limits_base<T>::Max - left < right ) {
+			return call_result(system_call_results::Overflow);
+		}
+		result = left + right;
+		return call_result(system_call_results::OK);
+	}
+
+	template <typename T>
+	static call_result Multiply(IN const T& left, IN const T& right, OUT T& result) throw()
+	{
+		//avoid divide 0
+		if( left == 0 ) {
+			result = 0;
+			return call_result(system_call_results::OK);
+		}
+		if( limits_base<T>::Max / left < right ) {
+			return call_result(system_call_results::Overflow);
+		}
+		result = left * right;
+		return call_result(system_call_results::OK);
+	}
+
+	//throw version
+	template <typename T>
+	static T AddThrow(IN const T& left, IN const T& right)
+	{
+		T result;
+		call_result cr = Add(left, right, result);
+		if( cr.IsFailed() ) {
+			throw exception_base(cr);
+		}
+		return result;
+	}
+	template <typename T>
+	static T MultiplyThrow(IN const T& left, IN const T& right)
+	{
+		T result;
+		call_result cr = Multiply(left, right, result);
+		if( cr.IsFailed() ) {
+			throw exception_base(cr);
+		}
+		return result;
+	}
+};
+
+//special versions
+template <>
+inline call_result safe_operators::Multiply<int>(IN const int& left, IN const int& right, OUT int& result) throw()
+{
+	int64 result64 = static_cast<int64>(left) * static_cast<int64>(right);
+	if( result64 > limits_base<int>::Max || result64 < limits_base<int>::Min ) {
+		return call_result(system_call_results::Overflow);
+	}
+	result = static_cast<int>(result64);
+	return call_result(system_call_results::OK);
+}
+
+template <>
+inline call_result safe_operators::Multiply<uint>(IN const uint& left, IN const uint& right, OUT uint& result) throw()
+{
+	uint64 result64 = static_cast<uint64>(left) * static_cast<uint64>(right);
+	if( result64 > limits_base<uint>::Max ) {
+		return call_result(system_call_results::Overflow);
+	}
+	result = static_cast<uint>(result64);
+	return call_result(system_call_results::OK);
+}
+
+// -----memory-----
+
+#pragma pack(push, 1)
+
+// i_memory_manager
+
+class NOVTABLE i_memory_manager
+{
+public:
+	virtual uintptr Allocate(const uintptr& uBytes) throw() = 0;
+	// p == NULL : the same as Allocate
+	// uBytes == 0 : free p, return NULL
+	// return NULL, failed, and p unchanged
+	virtual uintptr Reallocate(const uintptr& p, const uintptr& uBytes) throw() = 0;
+	virtual void    Free(const uintptr& p) throw() = 0;
+};
+
+#pragma pack(pop)
+
+// -----File-----
+
+// file_open_types
+
+BEGIN_ENUM(file_open_types)
+	ENUM_VALUE_ENTRY(Read,       0x00000000)
+	ENUM_VALUE_ENTRY(Write,      0x00000001)
+	ENUM_VALUE_ENTRY(ReadWrite,  0x00000002)
+END_ENUM()
+
+// file_creation_types
+//   they can combine with <or> operation
+BEGIN_ENUM(file_creation_types)
+	ENUM_VALUE_ENTRY(Create,     0x00001000)
+	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
+END_ENUM()
+
+// file_status
+
+struct file_status
+{
+	int64        iSize;     //file size in bytes
+	system_time  tmAccess;  //time of last access
+	system_time  tmModify;  //time of last modification
+	system_time  tmCreate;  //time of creation
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -10,18 +10,15 @@
 **
 */
 
-/*
-This file contains main function.
-*/
-
+////////////////////////////////////////////////////////////////////////////////
+// internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "precomp.h"
+//Linux
 
-#include "entry_point.h"
+//X11
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "base/GkcConsoleMain.cpp"
-
-///////////////////////////////////////////////////////////////////////////////

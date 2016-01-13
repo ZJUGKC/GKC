@@ -20,15 +20,94 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
-// _Event
+// Synchronization
 
-class _Event
+// _os_critical_section
+
+class _os_critical_section
 {
 public:
-	_Event() throw() : m_evt(NULL)
+	_os_critical_section() throw() : m_bInitialized(false)
+	{
+		mem_zero(&m_sect, sizeof(CRITICAL_SECTION));
+	}
+	explicit _os_critical_section(uint uSpinCount) : m_bInitialized(false)
+	{
+		mem_zero(&m_sect, sizeof(CRITICAL_SECTION));
+		call_result cr = Init(uSpinCount);
+		if( !m_bInitialized )
+			throw exception_base(cr);
+	}
+	~_os_critical_section() throw()
+	{
+		Term();
+	}
+
+	void Lock() throw()
+	{
+		assert( m_bInitialized );
+		::EnterCriticalSection(&m_sect);
+	}
+	void Unlock() throw()
+	{
+		assert( m_bInitialized );
+		::LeaveCriticalSection(&m_sect);
+	}
+	bool TryLock() throw()
+	{
+		assert( m_bInitialized );
+		return ::TryEnterCriticalSection(&m_sect) != FALSE;
+	}
+
+	//methods
+	call_result Init(uint uSpinCount = 0) throw()
+	{
+		assert( !m_bInitialized );
+
+		HRESULT hRes = S_OK;
+		if( !::InitializeCriticalSectionEx(&m_sect, uSpinCount, 0) ) {
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		}
+
+		if( SUCCEEDED(hRes) )
+			m_bInitialized = true;
+
+		return call_result((int)hRes);
+	}
+	void Term() throw()
+	{
+		if( m_bInitialized ) {
+			::DeleteCriticalSection(&m_sect);
+			m_bInitialized = false;
+		}
+	}
+
+	// Set the spin count for the critical section
+	uint SetSpinCount(uint uSpinCount) throw()
+	{
+		assert( m_bInitialized );
+		return ::SetCriticalSectionSpinCount(&m_sect, uSpinCount);
+	}
+
+private:
+	CRITICAL_SECTION m_sect;
+	bool m_bInitialized;
+
+private:
+	//noncopyable
+	_os_critical_section(const _os_critical_section&) throw();
+	_os_critical_section& operator=(const _os_critical_section&) throw();
+};
+
+// _os_event
+
+class _os_event
+{
+public:
+	_os_event() throw() : m_evt(NULL)
 	{
 	}
-	~_Event() throw()
+	~_os_event() throw()
 	{
 		Close();
 	}
@@ -48,8 +127,8 @@ private:
 
 private:
 	//noncopyable
-	_Event(const _Event&) throw();
-	_Event& operator=(const _Event&) throw();
+	_os_event(const _os_event&) throw();
+	_os_event& operator=(const _os_event&) throw();
 };
 
 //------------------------------------------------------------------------------

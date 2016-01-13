@@ -38,6 +38,8 @@ mdc <source directory> <output directory>
 
 1. Install `HTML Help Workshop`, execute `hhc XXX.hhp`.
 
+1. Double-click `XXX.chm` and view it.
+
 # Linux
 
 1. Copy `cmark`, `libcmark.so` and `libcmark.so.0.22.0` to `/usr/.GKC/public/assemblies` with option `-d`.
@@ -48,8 +50,12 @@ mdc <source directory> <output directory>
 mdc <source directory> <output directory>
 ```
 
-1. Download chmc (http://sourceforge.net/projects/chmc/) and compile it. Execute:
+1. Download chmc (http://sourceforge.net/projects/chmc/) and compile it.
+
+1. Execute:
 
 ```
 chmc -c XXX.conf -o XXX.chm <source directory>
 ```
+
+1. Install the package `kchmviewer` and view `XXX.chm`.

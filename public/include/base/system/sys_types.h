@@ -68,7 +68,7 @@ public:
 	void Allocate(uintptr uSize)  //may throw
 	{
 		assert( m_p == NULL );
-		m_p = (void*)crt_alloc(uSize);
+		m_p = crt_alloc(uSize);
 		if( m_p == NULL )
 			throw GKC::OutOfMemoryException();
 	}
@@ -76,7 +76,7 @@ public:
 	void Free() throw()
 	{
 		if( m_p != NULL ) {
-			crt_free((uintptr)m_p);
+			crt_free(m_p);
 			m_p = NULL;
 		}
 	}

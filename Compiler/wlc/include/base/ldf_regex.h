@@ -303,8 +303,8 @@ private:
 		{
 			m_tokenTable.Init();  //may throw
 			m_lexTable.SetFSA(RefPtrHelper::TypeCast<_LDF_REGEX_FSM, FiniteStateAutomata>(RefPtr<_LDF_REGEX_FSM>(m_fsm)));
-			m_lexTable.SetTokenTable(RefPtrHelper::ToRefPtr(m_tokenTable.GetTable()));
-			m_lexParser.SetLexerTable(RefPtrHelper::ToRefPtr(m_lexTable));
+			m_lexTable.SetTokenTable(RefPtrHelper::MakeRefPtr(m_tokenTable.GetTable()));
+			m_lexParser.SetLexerTable(RefPtrHelper::MakeRefPtr(m_lexTable));
 			//actions
 			m_lexParser.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR_BACKSLASH"),
 								RefPtrHelper::TypeCast<Regexlex_CharAction, ILexerAction>(RefPtr<Regexlex_CharAction>(m_actionChar)));
@@ -781,7 +781,7 @@ private:
 		{
 			m_actTable.Init();  //may throw
 			m_graTable.SetPDA(RefPtrHelper::TypeCast<_LDF_regex_PDM, typename _LDF_regex_PDM::baseClass>(RefPtr<_LDF_regex_PDM>(m_pdm)));
-			m_graTable.SetReductionActionTable(RefPtrHelper::ToRefPtr(m_actTable.GetTable()));
+			m_graTable.SetReductionActionTable(RefPtrHelper::MakeRefPtr(m_actTable.GetTable()));
 		}
 
 		RefPtr<GrammarTable<_LDF_regex_SymUserData>> GetGrammarTable() throw()

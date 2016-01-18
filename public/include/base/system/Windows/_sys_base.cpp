@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains classes for global variables of _Module.
+This file contains classes for global variables of _os_module.
 
 Author: Lijuan Mei
 */
@@ -20,20 +20,18 @@ Author: Lijuan Mei
 // internal
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_Module.h"
-
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//_Module
+//_os_module
 
-_Module::_Module() throw()
+_os_module::_os_module() throw()
 {
 	m_hInst = m_hInstResource = reinterpret_cast<HINSTANCE>(&__ImageBase);
 }
 
 //global
-_Module g_module;
+_os_module _os_g_module;
 
 ////////////////////////////////////////////////////////////////////////////////

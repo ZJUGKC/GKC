@@ -27,10 +27,6 @@ Reference: ATL (ATL is not open source, so this file is re-written)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __IWIN_MODULE_H__
-	#error _Window.h requires _Module.h to be included first.
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 
 //internal
@@ -125,7 +121,7 @@ public:
 		m_hWnd = ::CreateWindowExW(dwExStyle, lpstrWndClass, szWindowName,
 			dwStyle, rect.m_lpRect->left, rect.m_lpRect->top, rect.m_lpRect->right - rect.m_lpRect->left,
 			rect.m_lpRect->bottom - rect.m_lpRect->top, hWndParent, MenuOrID.m_hMenu,
-			g_module.GetModuleInstance(), lpCreateParam);
+			_os_g_module.GetModuleInstance(), lpCreateParam);
 		return m_hWnd;
 	}
 

@@ -1337,7 +1337,7 @@ public:
 
 //init
 	// ansi->ansi
-	bool InitializeAnsiToAnsi(const CharS* szFrom, const CharS* szTo) throw()
+	bool InitializeAnsiToAnsi(const char_s* szFrom, const char_s* szTo) throw()
 	{
 		assert( m_cvt == (iconv_t)-1 );
 		assert( compare_string(szFrom, szTo) != 0 );
@@ -1345,28 +1345,28 @@ public:
 		return m_cvt != (iconv_t)-1;
 	}
 	// ansi->utf8
-	bool InitializeAnsiToUTF8(const CharS* sz) throw()
+	bool InitializeAnsiToUTF8(const char_s* sz) throw()
 	{
 		assert( m_cvt == (iconv_t)-1 );
 		m_cvt = ::iconv_open("UTF-8", sz);
 		return m_cvt != (iconv_t)-1;
 	}
 	// ansi->utf16
-	bool InitializeAnsiToUTF16(const CharS* sz) throw()
+	bool InitializeAnsiToUTF16(const char_s* sz) throw()
 	{
 		assert( m_cvt == (iconv_t)-1 );
 		m_cvt = ::iconv_open("UTF-16", sz);
 		return m_cvt != (iconv_t)-1;
 	}
 	// ansi->utf32
-	bool InitializeAnsiToUTF32(const CharS* sz) throw()
+	bool InitializeAnsiToUTF32(const char_s* sz) throw()
 	{
 		assert( m_cvt == (iconv_t)-1 );
 		m_cvt = ::iconv_open("UTF-32", sz);
 		return m_cvt != (iconv_t)-1;
 	}
 	// utf8->ansi
-	bool InitializeUTF8ToAnsi(const CharS* sz) throw()
+	bool InitializeUTF8ToAnsi(const char_s* sz) throw()
 	{
 		assert( m_cvt == (iconv_t)-1 );
 		m_cvt = ::iconv_open(sz, "UTF-8");
@@ -1387,7 +1387,7 @@ public:
 		return m_cvt != (iconv_t)-1;
 	}
 	// utf16->ansi
-	bool InitializeUTF16ToAnsi(const CharS* sz) throw()
+	bool InitializeUTF16ToAnsi(const char_s* sz) throw()
 	{
 		assert( m_cvt == (iconv_t)-1 );
 		m_cvt = ::iconv_open(sz, "UTF-16");
@@ -1408,7 +1408,7 @@ public:
 		return m_cvt != (iconv_t)-1;
 	}
 	// utf32->ansi
-	bool InitializeUTF32ToAnsi(const CharS* sz) throw()
+	bool InitializeUTF32ToAnsi(const char_s* sz) throw()
 	{
 		assert( m_cvt == (iconv_t)-1 );
 		m_cvt = ::iconv_open(sz, "UTF-32");
@@ -1430,7 +1430,7 @@ public:
 	}
 
 //system
-	bool InitializeAnsiToSystem(const CharS* sz, bool& bSame) throw()
+	bool InitializeAnsiToSystem(const char_s* sz, bool& bSame) throw()
 	{
 		bSame = false;
 		return InitializeAnsiToUTF8(sz);
@@ -1450,7 +1450,7 @@ public:
 		bSame = false;
 		return InitializeUTF32ToUTF8();
 	}
-	bool InitializeSystemToAnsi(const CharS* sz, bool& bSame) throw()
+	bool InitializeSystemToAnsi(const char_s* sz, bool& bSame) throw()
 	{
 		bSame = false;
 		return InitializeUTF8ToAnsi(sz);

@@ -1,0 +1,37 @@
+#
+# Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the 2-Clause BSD License.
+#
+# Author contact information:
+#   yxxinyuan@zju.edu.cn
+#
+
+INCLUDE_DIRECTORIES(
+	"${CMAKE_CURRENT_BINARY_DIR}"
+	"${CMAKE_CURRENT_SOURCE_DIR}"
+	"${PROJECT_SOURCE_DIR}/RT/GkcCompiler/public"
+	"${PROJECT_SOURCE_DIR}/RT/GkcCompiler/include"
+	"${PROJECT_SOURCE_DIR}/RT/GkcSys/public"
+	"${PROJECT_SOURCE_DIR}/public/include")
+SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
+SET(SRC_PCH_LIST "src/precomp.cpp")
+SET(SRC_LIST "src/main.cpp")
+ADD_LIBRARY(GkcCompiler SHARED ${SRC_PCH_LIST} ${SRC_LIST})
+SET_PCH(GkcCompiler "shared" "precomp.h" ${SRC_PCH_LIST} ${SRC_LIST})
+SET_TARGET_SUBSYSTEM("Background")
+SET_TARGET_PROPERTIES(GkcCompiler PROPERTIES OUTPUT_NAME "GkcCompiler"
+	VERSION 1.0 SOVERSION 1
+	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
+
+INSTALL(TARGETS GkcCompiler
+	RUNTIME DESTINATION public/assemblies COMPONENT runtime
+	LIBRARY DESTINATION public/assemblies COMPONENT runtime
+	ARCHIVE DESTINATION public/lib COMPONENT development)
+
+INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcCompiler/public/"
+	DESTINATION public/include/compiler COMPONENT development)
+
+#end

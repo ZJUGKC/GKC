@@ -315,7 +315,7 @@ public:
 
 //init
 	// ansi->ansi
-	bool InitializeAnsiToAnsi(const CharS* szFrom, const CharS* szTo) throw()
+	bool InitializeAnsiToAnsi(const char_s* szFrom, const char_s* szTo) throw()
 	{
 		assert( szFrom != NULL && szTo != NULL );
 		uint uFrom, uTo;
@@ -331,7 +331,7 @@ public:
 		return true;
 	}
 	// ansi->utf8
-	bool InitializeAnsiToUTF8(const CharS* sz) throw()
+	bool InitializeAnsiToUTF8(const char_s* sz) throw()
 	{
 		assert( sz != NULL );
 		uint uFrom;
@@ -345,7 +345,7 @@ public:
 		return true;
 	}
 	// ansi->utf16
-	bool InitializeAnsiToUTF16(const CharS* sz) throw()
+	bool InitializeAnsiToUTF16(const char_s* sz) throw()
 	{
 		assert( sz != NULL );
 		uint uFrom;
@@ -359,7 +359,7 @@ public:
 		return true;
 	}
 	// ansi->utf32
-	bool InitializeAnsiToUTF32(const CharS* sz) throw()
+	bool InitializeAnsiToUTF32(const char_s* sz) throw()
 	{
 		assert( sz != NULL );
 		uint uFrom;
@@ -373,7 +373,7 @@ public:
 		return true;
 	}
 	// utf8->ansi
-	bool InitializeUTF8ToAnsi(const CharS* sz) throw()
+	bool InitializeUTF8ToAnsi(const char_s* sz) throw()
 	{
 		assert( sz != NULL );
 		uint uTo;
@@ -403,7 +403,7 @@ public:
 		return true;
 	}
 	// utf16->ansi
-	bool InitializeUTF16ToAnsi(const CharS* sz) throw()
+	bool InitializeUTF16ToAnsi(const char_s* sz) throw()
 	{
 		assert( sz != NULL );
 		uint uTo;
@@ -433,7 +433,7 @@ public:
 		return true;
 	}
 	// utf32->ansi
-	bool InitializeUTF32ToAnsi(const CharS* sz) throw()
+	bool InitializeUTF32ToAnsi(const char_s* sz) throw()
 	{
 		assert( sz != NULL );
 		uint uTo;
@@ -464,7 +464,7 @@ public:
 	}
 
 //system
-	bool InitializeAnsiToSystem(const CharS* sz, bool& bSame) throw()
+	bool InitializeAnsiToSystem(const char_s* sz, bool& bSame) throw()
 	{
 		bSame = false;
 		return InitializeAnsiToUTF16(sz);
@@ -484,7 +484,7 @@ public:
 		bSame = false;
 		return InitializeUTF32ToUTF16();
 	}
-	bool InitializeSystemToAnsi(const CharS* sz, bool& bSame) throw()
+	bool InitializeSystemToAnsi(const char_s* sz, bool& bSame) throw()
 	{
 		bSame = false;
 		return InitializeUTF16ToAnsi(sz);
@@ -559,18 +559,17 @@ public:
 	}
 
 private:
-	static bool to_uint(const CharS* sz, uint& v) throw()
+	static bool to_uint(const char_s* sz, uint& v) throw()
 	{
-		CharS* szRet;
 		bool bOK;
-		szRet = string_to_value(sz, 10, v, bOK);
+		char_s* szRet = string_to_value(sz, 10, v, bOK);
 		if( !bOK || szRet == sz )
 			return false;
 		return true;
 	}
 	// szDest can be NULL. The actual size of szDest is iDestLen + 1
 	// return: the number of characters. 0 -- no more room, -1 -- fail
-	static int _A2W(UINT uCP, const CharA* szSrc, int iSrcLen, CharH* szDest, int iDestLen) throw()
+	static int _A2W(UINT uCP, const char_a* szSrc, int iSrcLen, char_h* szDest, int iDestLen) throw()
 	{
 		int ret = ::MultiByteToWideChar(uCP, 0, szSrc, iSrcLen, szDest, iDestLen);
 		if( ret < 0 )
@@ -584,7 +583,7 @@ private:
 			szDest[ret] = 0;
 		return ret;
 	}
-	static int _W2A(UINT uCP, const CharH* szSrc, int iSrcLen, CharA* szDest, int iDestLen) throw()
+	static int _W2A(UINT uCP, const char_h* szSrc, int iSrcLen, char_a* szDest, int iDestLen) throw()
 	{
 		int ret = ::WideCharToMultiByte(uCP, 0, szSrc, iSrcLen, szDest, iDestLen, NULL, NULL);
 		if( ret < 0 )
@@ -601,82 +600,82 @@ private:
 	//conversions
 	static int c_A2H(UINT uCP, const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
 	{
-		int ret = _A2W(uCP, (const CharA*)pSrc, iSrcBytes, (CharH*)pDest, iDestBytes / sizeof(CharH));
+		int ret = _A2W(uCP, (const char_a*)pSrc, iSrcBytes, (char_h*)pDest, iDestBytes / sizeof(char_h));
 		return ret > 0 ? 1 : ret;
 	}
 	static int c_A2L(UINT uCP, const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
 	{
-		int ret = _A2W(uCP, (const CharA*)pSrc, iSrcBytes, (CharH*)pDest, iDestBytes / sizeof(CharL));
+		int ret = _A2W(uCP, (const char_a*)pSrc, iSrcBytes, (char_h*)pDest, iDestBytes / sizeof(char_l));
 		if( ret > 0 ) {
 			for(int i = ret; i > 0; i -- ) {
-				CharH ch = ((CharH*)pDest)[i - 1];
-				((CharL*)pDest)[i - 1] = ch;
+				char_h ch = ((char_h*)pDest)[i - 1];
+				((char_l*)pDest)[i - 1] = ch;
 			}
-			((CharL*)pDest)[ret] = 0;
+			((char_l*)pDest)[ret] = 0;
 			return 1;
 		}
 		return ret;
 	}
 	static int c_A2A(UINT uCP1, UINT uCP2, const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
 	{
-		int ret = _A2W(uCP1, (const CharA*)pSrc, iSrcBytes, NULL, 0);
+		int ret = _A2W(uCP1, (const char_a*)pSrc, iSrcBytes, NULL, 0);
 		if( ret <= 0 )
 			return ret;
 		uintptr uSize;
-		call_result cr = GKC::SafeOperators::Multiply((uintptr)ret + 1, sizeof(CharH), uSize);
+		call_result cr = safe_operators::Multiply((uintptr)ret + 1, sizeof(char_h), uSize);
 		if( cr.IsFailed() )
 			return -1;
-		CharH* pTemp = (CharH*)crt_alloc(uSize);
+		char_h* pTemp = (char_h*)crt_alloc(uSize);
 		if( pTemp == NULL )
 			return -1;
-		ret = _A2W(uCP1, (const CharA*)pSrc, iSrcBytes, pTemp, ret);
+		ret = _A2W(uCP1, (const char_a*)pSrc, iSrcBytes, pTemp, ret);
 		assert( ret > 0 );
-		ret = _W2A(uCP2, pTemp, ret, (CharA*)pDest, iDestBytes);
+		ret = _W2A(uCP2, pTemp, ret, (char_a*)pDest, iDestBytes);
 		crt_free(pTemp);
 		return ret > 0 ? 1 : ret;
 	}
 	static int c_H2A(UINT uCP, const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
 	{
-		int ret = _W2A(uCP, (const CharH*)pSrc, iSrcBytes / sizeof(CharH), (CharA*)pDest, iDestBytes);
+		int ret = _W2A(uCP, (const char_h*)pSrc, iSrcBytes / sizeof(char_h), (char_a*)pDest, iDestBytes);
 		return ret > 0 ? 1 : ret;
 	}
 	static int c_H2L(const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
 	{
-		const CharH* ps = (const CharH*)pSrc;
-		int iSrcLen = iSrcBytes / sizeof(CharH);
-		CharL* pd = (CharL*)pDest;
-		int iDestLen = iDestBytes / sizeof(CharL);
+		const char_h* ps = (const char_h*)pSrc;
+		int iSrcLen = iSrcBytes / sizeof(char_h);
+		char_l* pd = (char_l*)pDest;
+		int iDestLen = iDestBytes / sizeof(char_l);
 		if( iDestLen < iSrcLen )
 			return 0;
 		int i = 0;
 		for( ; i < iSrcLen; i ++ )
-			pd[i] = (CharL)(ps[i]);
+			pd[i] = (char_l)(ps[i]);
 		pd[i] = 0;
 		return 1;
 	}
 	static int c_L2H(const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
 	{
-		const CharL* ps = (const CharL*)pSrc;
-		int iSrcLen = iSrcBytes / sizeof(CharL);
-		CharH* pd = (CharH*)pDest;
-		int iDestLen = iDestBytes / sizeof(CharH);
+		const char_l* ps = (const char_l*)pSrc;
+		int iSrcLen = iSrcBytes / sizeof(char_l);
+		char_h* pd = (char_h*)pDest;
+		int iDestLen = iDestBytes / sizeof(char_h);
 		if( iDestLen < iSrcLen )
 			return 0;
 		int i = 0;
 		for( ; i < iSrcLen; i ++ )
-			pd[i] = (CharH)(ps[i]);
+			pd[i] = (char_h)(ps[i]);
 		pd[i] = 0;
 		return 1;
 	}
 	static int c_L2A(UINT uCP, const void* pSrc, int iSrcBytes, void* pDest, int iDestBytes) throw()
 	{
-		int iSrcLen = iSrcBytes / sizeof(CharL);
-		CharH* pTemp = (CharH*)crt_alloc((iSrcLen + 1) * sizeof(CharH));
+		int iSrcLen = iSrcBytes / sizeof(char_l);
+		char_h* pTemp = (char_h*)crt_alloc((iSrcLen + 1) * sizeof(char_h));
 		if( pTemp == NULL )
 			return -1;
-		int ret = c_L2H(pSrc, iSrcBytes, pTemp, iSrcLen * sizeof(CharH));
+		int ret = c_L2H(pSrc, iSrcBytes, pTemp, iSrcLen * sizeof(char_h));
 		assert( ret > 0 );
-		ret = _W2A(uCP, pTemp, iSrcLen, (CharA*)pDest, iDestBytes);
+		ret = _W2A(uCP, pTemp, iSrcLen, (char_a*)pDest, iDestBytes);
 		crt_free(pTemp);
 		return ret > 0 ? 1 : ret;
 	}

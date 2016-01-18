@@ -16,19 +16,9 @@ This file contains global variables for header file.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "GkcDef.h"
+#include "system/other_types.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////
-
-//static variables
-
-const float limits_base<float>::Lowest = -FLT_MAX;
-const float limits_base<float>::Min = FLT_MIN;
-const float limits_base<float>::Max = FLT_MAX;
-
-const double limits_base<double>::Lowest = -DBL_MAX;
-const double limits_base<double>::Min = DBL_MIN;
-const double limits_base<double>::Max = DBL_MAX;
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

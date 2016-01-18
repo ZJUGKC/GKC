@@ -18,13 +18,13 @@ This file contains main function for UI program.
 
 // tools
 
-class _auto_com_final
+class _os_auto_com_final
 {
 public:
-	_auto_com_final() throw()
+	_os_auto_com_final() throw()
 	{
 	}
-	~_auto_com_final() throw()
+	~_os_auto_com_final() throw()
 	{
 		::CoUninitialize();
 	}
@@ -38,7 +38,7 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 	IN int       nCmdShow)
 {
 //command
-	_auto_local_mem spLocal;
+	_os_auto_local_mem spLocal;
 	GKC::ConstArray<GKC::ConstStringS> args;
 	_auto_mem spArgs;
 	{
@@ -61,7 +61,7 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 		::MessageBoxW(NULL, L"Cannot initialize STA!", L"Error", MB_OK);
 		return -1;
 	}
-	_auto_com_final _ac_final;  //auto call CoUninitialize
+	_os_auto_com_final _ac_final;  //auto call CoUninitialize
 	// this statement solves a problem from ATL thunk technique which is not used in this library.
 	::DefWindowProcW(NULL, 0, 0, 0);
 	{

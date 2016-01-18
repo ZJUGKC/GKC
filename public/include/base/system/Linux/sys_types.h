@@ -14,10 +14,6 @@
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_Base.h"
-
-////////////////////////////////////////////////////////////////////////////////
-
 //Linux
 
 //------------------------------------------------------------------------------
@@ -75,11 +71,11 @@ public:
 	}
 
 	//read
-	call_result Read(GKC::RefPtr<byte>& buffer, uint uBytes, uint& uRead) throw()
+	call_result Read(void* pBuffer, uint uBytes, uint& uRead) throw()
 	{
 		assert( IsValid() );
 		assert( uBytes <= SSIZE_MAX );
-		ssize_t uRet = ::read(m_fd, (void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), (size_t)uBytes);
+		ssize_t uRet = ::read(m_fd, pBuffer, (size_t)uBytes);
 		int res = 0;
 		if( uRet < 0 )
 			res = _OS_CR_FROM_ERRORNO();
@@ -89,10 +85,10 @@ public:
 	}
 	//write
 	//  may have a bug in 32-bit system: uWritten may be overflow.
-	call_result Write(const GKC::RefPtr<byte>& buffer, uint uBytes, uint& uWritten) throw()
+	call_result Write(const void* pBuffer, uint uBytes, uint& uWritten) throw()
 	{
 		assert( IsValid() );
-		ssize_t uRet = ::write(m_fd, (const void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), (size_t)uBytes);
+		ssize_t uRet = ::write(m_fd, pBuffer, (size_t)uBytes);
 		int res = 0;
 		if( uRet < 0 )
 			res = _OS_CR_FROM_ERRORNO();
@@ -119,9 +115,9 @@ class io_handle_helper
 public:
 	//open
 	//  The default behavior is sharing between processes and threads.
-	//  iOpenType   : FileOpenTypes::*
-	//  iCreateType : FileCreationTypes::*
-	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iCreateType, io_handle& hd) throw()
+	//  iOpenType   : file_open_types::*
+	//  iCreateType : file_creation_types::*
+	static call_result Open(const char_s* szFile, int iOpenType, int iCreateType, io_handle& hd) throw()
 	{
 		assert( !hd.IsValid() );
 
@@ -129,13 +125,13 @@ public:
 		int flags = 0;
 		// access
 		switch( iOpenType ) {
-		case GKC::FileOpenTypes::Read:
+		case file_open_types::Read:
 			flags |= O_RDONLY;
 			break;
-		case GKC::FileOpenTypes::Write:
+		case file_open_types::Write:
 			flags |= O_WRONLY;
 			break;
-		case GKC::FileOpenTypes::ReadWrite:
+		case file_open_types::ReadWrite:
 			flags |= O_RDWR;
 			break;
 		default:
@@ -143,16 +139,15 @@ public:
 			break;
 		}
 		// creation type
-		if( iCreateType & GKC::FileCreationTypes::Create ) {
+		if( iCreateType & file_creation_types::Create ) {
 			flags |= O_CREAT;
-			if( !(iCreateType & GKC::FileCreationTypes::NoTruncate) )
+			if( !(iCreateType & file_creation_types::NoTruncate) )
 				flags |= O_TRUNC;
 		}
 
 		//open
 		int res = 0;
-		int fd = ::open(GKC::RefPtrHelper::GetInternalPointer(szFile),
-						flags, S_IRWXU | S_IRWXG | S_IRWXO);
+		int fd = ::open(szFile, flags, S_IRWXU | S_IRWXG | S_IRWXO);
 		if( fd < 0 )
 			res = _OS_CR_FROM_ERRORNO();
 		else
@@ -195,7 +190,7 @@ public:
 		return call_result(res);
 	}
 	//get status
-	static call_result GetStatus(io_handle& hd, GKC::FileStatus& status) throw()
+	static call_result GetStatus(io_handle& hd, file_status& status) throw()
 	{
 		assert( hd.IsValid() );
 
@@ -217,7 +212,7 @@ public:
 			res = CR_FAIL;
 			return call_result(res);
 		}
-		_tm_to_system_time(&tmz, status.tmAccess);
+		_os_tm_to_system_time(&tmz, status.tmAccess);
 		status.tmAccess.uMilliseconds = (ushort)(st.st_atim.tv_nsec / 1000000);
 		//modify
 		ptm = ::gmtime_r(&st.st_mtime, &tmz);
@@ -225,7 +220,7 @@ public:
 			res = CR_FAIL;
 			return call_result(res);
 		}
-		_tm_to_system_time(&tmz, status.tmModify);
+		_os_tm_to_system_time(&tmz, status.tmModify);
 		status.tmModify.uMilliseconds = (ushort)(st.st_mtim.tv_nsec / 1000000);
 		//create
 		ptm = ::gmtime_r(&st.st_ctime, &tmz);
@@ -233,7 +228,7 @@ public:
 			res = CR_FAIL;
 			return call_result(res);
 		}
-		_tm_to_system_time(&tmz, status.tmCreate);
+		_os_tm_to_system_time(&tmz, status.tmCreate);
 		status.tmCreate.uMilliseconds = (ushort)(st.st_ctim.tv_nsec / 1000000);
 
 		return call_result(res);
@@ -277,41 +272,41 @@ public:
 
 // helper
 
-class sync_helper
+class _sync_helper
 {
 public:
-	static CharA* gen_global_name(const CharA* pSrc) throw()
+	static char_a* gen_global_name(const char_a* pSrc) throw()
 	{
 		//global
-		static const CharA c_szGlobal[] = "/";
-		static const uintptr c_uGlobalLength = sizeof(c_szGlobal) / sizeof(CharA) - 1;
+		static const char_a c_szGlobal[] = "/";
+		static const uintptr c_uGlobalLength = sizeof(c_szGlobal) / sizeof(char_a) - 1;
 		uintptr uCount = calc_string_length(pSrc);
 		uintptr uNewCount;
-		call_result cr = GKC::SafeOperators::Add(uCount, c_uGlobalLength, uNewCount);
+		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);
 		if( cr.IsFailed() )
 			return NULL;
-		CharA* pNew = (CharA*)crt_alloc((uNewCount + 1) * sizeof(CharA));
+		char_a* pNew = (char_a*)crt_alloc((uNewCount + 1) * sizeof(char_a));
 		if( pNew == NULL )
 			return NULL;
 		//copy
-		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(CharA), pNew);
-		mem_copy(pSrc, uCount * sizeof(CharA), pNew + c_uGlobalLength);
+		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(char_a), pNew);
+		mem_copy(pSrc, uCount * sizeof(char_a), pNew + c_uGlobalLength);
 		pNew[uNewCount] = 0;
 		return pNew;
 	}
-	static void free_global_name(const CharA* p) throw()
+	static void free_global_name(const char_a* p) throw()
 	{
 		crt_free(p);
 	}
 	//tools
-	static CharA* gen_sync_name(const CharA* pSrc, bool bGlobal) throw()
+	static char_a* gen_sync_name(const char_a* pSrc, bool bGlobal) throw()
 	{
-		CharA* psz = (CharA*)pSrc;
+		char_a* psz = (char_a*)pSrc;
 		if( bGlobal )
 			psz = gen_global_name(psz);
 		return psz;
 	}
-	static void free_sync_name(const CharA* p, bool bGlobal) throw()
+	static void free_sync_name(const char_a* p, bool bGlobal) throw()
 	{
 		if( bGlobal )
 			free_global_name(p);
@@ -338,7 +333,7 @@ public:
 		assert( m_bInitialized );
 		int res = ::sem_wait(&m_sem);
 		if( res != 0 )
-			throw GKC::Exception(call_result(CR_FAIL));
+			throw exception_base(call_result(CR_FAIL));
 	}
 	void Unlock() throw()
 	{
@@ -411,7 +406,7 @@ public:
 		assert( m_psem != NULL );
 		int res = ::sem_wait(m_psem);
 		if( res != 0 )
-			throw GKC::Exception(call_result(CR_FAIL));
+			throw exception_base(call_result(CR_FAIL));
 	}
 	void Unlock() throw()
 	{
@@ -431,12 +426,12 @@ public:
 
 	// name is case sensitive and limited to NAME_MAX-4 (251) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const GKC::RefPtr<CharS>& str, bool bGlobal, int iCount) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, int iCount) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_psem == NULL && m_szName == NULL );
 		//name
-		CharA* psz = sync_helper::gen_sync_name(GKC::RefPtrHelper::GetInternalPointer(str), true);
+		char_a* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), true);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
 		//create
@@ -444,7 +439,7 @@ public:
 		sem_t* psem = ::sem_open(psz, O_CREAT | O_EXCL | O_RDWR, S_IRWXU | S_IRWXG | (bGlobal ? S_IRWXO : 0), (unsigned int)iCount);
 		if( psem == SEM_FAILED ) {
 			res = _OS_CR_FROM_ERRORNO();
-			sync_helper::free_sync_name(psz, true);
+			_sync_helper::free_sync_name(psz, true);
 		}
 		else {
 			m_psem   = psem;
@@ -452,12 +447,12 @@ public:
 		}
 		return call_result(res);
 	}
-	call_result Open(const GKC::RefPtr<CharS>& str, bool bGlobal) throw()
+	call_result Open(const ref_ptr<char_s>& str, bool bGlobal) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_psem == NULL && m_szName == NULL );
 		//name
-		CharA* psz = sync_helper::gen_sync_name(GKC::RefPtrHelper::GetInternalPointer(str), true);
+		char_a* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), true);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
 		//open
@@ -465,7 +460,7 @@ public:
 		sem_t* psem = ::sem_open(psz, O_RDWR);
 		if( psem == SEM_FAILED ) {
 			res = _OS_CR_FROM_ERRORNO();
-			sync_helper::free_sync_name(psz, true);
+			_sync_helper::free_sync_name(psz, true);
 		}
 		else {
 			m_psem   = psem;
@@ -484,14 +479,14 @@ public:
 			m_psem = NULL;
 			assert( m_szName != NULL );
 			::sem_unlink(m_szName);  //no check, the return value may not be equal to zero.
-			sync_helper::free_sync_name(m_szName, true);
+			_sync_helper::free_sync_name(m_szName, true);
 			m_szName = NULL;
 		}
 	}
 
 private:
-	sem_t*  m_psem;
-	CharA*  m_szName;
+	sem_t*   m_psem;
+	char_a*  m_szName;
 
 private:
 	//noncopyable
@@ -593,11 +588,11 @@ public:
 
 	// name is case sensitive and limited to NAME_MAX-4 (251) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const GKC::RefPtr<CharS>& str, bool bGlobal) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal) throw()
 	{
 		return m_sem.Create(str, bGlobal, 1);
 	}
-	call_result Open(const GKC::RefPtr<CharS>& str, bool bGlobal) throw()
+	call_result Open(const ref_ptr<char_s>& str, bool bGlobal) throw()
 	{
 		return m_sem.Open(str, bGlobal);
 	}

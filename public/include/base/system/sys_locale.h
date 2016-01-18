@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //internal header
 //
-//This file can use exceptions
+// This file can use exceptions
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,8 +27,8 @@ public:
 	enum { NAME_LEN = 28 };
 
 public:
-	CharS szName[NAME_LEN];
-    uint  uLength;
+	char_s szName[NAME_LEN];
+    uint   uLength;
 };
 
 // locale_info
@@ -39,10 +39,10 @@ public:
 	enum { LANGUAGE_LEN = 12, REGION_LEN = 12 };
 
 public:
-	CharS szLanguageName[LANGUAGE_LEN];  //ISO 639
-    uint  uLanguageLength;
-	CharS szRegionName[REGION_LEN];      //ISO 3166
-    uint  uRegionLength;
+	char_s szLanguageName[LANGUAGE_LEN];  //ISO 639
+    uint   uLanguageLength;
+	char_s szRegionName[REGION_LEN];      //ISO 3166
+    uint   uRegionLength;
 };
 
 // constant strings for code page

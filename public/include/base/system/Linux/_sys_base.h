@@ -14,17 +14,12 @@
 //internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __ILINUX_BASE_H__
-#define __ILINUX_BASE_H__
-
-////////////////////////////////////////////////////////////////////////////////
-
 //------------------------------------------------------------------------------
 // Time
 
-// _tm_to_system_time
+// _os_tm_to_system_time
 
-inline void _tm_to_system_time(const struct tm* ptm, GKC::SystemTime& tm) throw()
+inline void _os_tm_to_system_time(const struct tm* ptm, system_time& tm) throw()
 {
 	tm.uYear         = (ushort)(ptm->tm_year + 1900);
 	tm.uMonth        = (ushort)(ptm->tm_mon + 1);
@@ -36,6 +31,4 @@ inline void _tm_to_system_time(const struct tm* ptm, GKC::SystemTime& tm) throw(
 	tm.uMilliseconds = 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-#endif  //__ILINUX_BASE_H__
 ////////////////////////////////////////////////////////////////////////////////

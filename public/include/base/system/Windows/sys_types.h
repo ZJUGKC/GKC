@@ -14,10 +14,6 @@
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_Base.h"
-
-////////////////////////////////////////////////////////////////////////////////
-
 //Windows
 
 //------------------------------------------------------------------------------
@@ -73,20 +69,20 @@ public:
 	}
 
 	//read
-	call_result Read(GKC::RefPtr<byte>& buffer, uint uBytes, uint& uRead) throw()
+	call_result Read(void* pBuffer, uint uBytes, uint& uRead) throw()
 	{
 		assert( IsValid() );
 		HRESULT hr = S_OK;
-		if( !::ReadFile(m_h, (void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), uBytes, (LPDWORD)&uRead, NULL) )
+		if( !::ReadFile(m_h, pBuffer, uBytes, (LPDWORD)&uRead, NULL) )
 			hr = HRESULT_FROM_WIN32(::GetLastError());
 		return call_result((int)hr);
 	}
 	//write
-	call_result Write(const GKC::RefPtr<byte>& buffer, uint uBytes, uint& uWritten) throw()
+	call_result Write(const void* pBuffer, uint uBytes, uint& uWritten) throw()
 	{
 		assert( IsValid() );
 		HRESULT hr = S_OK;
-		if( !::WriteFile(m_h, (const void*)(GKC::RefPtrHelper::GetInternalPointer(buffer)), uBytes, (LPDWORD)&uWritten, NULL) )
+		if( !::WriteFile(m_h, pBuffer, uBytes, (LPDWORD)&uWritten, NULL) )
 			hr = HRESULT_FROM_WIN32(::GetLastError());
 		return call_result((int)hr);
 	}
@@ -109,14 +105,13 @@ class io_handle_helper
 public:
 	//open
 	//  The default behavior is sharing between processes and threads.
-	//  iOpenType   : FileOpenTypes::*
-	//  iCreateType : FileCreationTypes::*
-	static call_result Open(const GKC::RefPtr<CharS>& szFile, int iOpenType, int iCreateType, io_handle& hd) throw()
+	//  iOpenType   : file_open_types::*
+	//  iCreateType : file_creation_types::*
+	static call_result Open(const char_s* szFile, int iOpenType, int iCreateType, io_handle& hd) throw()
 	{
 		assert( !hd.IsValid() );
 		HANDLE  hFile;
-		HRESULT hRes = _open_file(GKC::RefPtrHelper::GetInternalPointer(szFile),
-								iOpenType, _FileShareModes::DenyNone, iCreateType, hFile);
+		HRESULT hRes = _os_open_file(szFile, iOpenType, _os_file_share_modes::DenyNone, iCreateType, hFile);
 		hd.m_h = hFile;
 		return call_result((int)hRes);
 	}
@@ -158,7 +153,7 @@ public:
 		return cr;
 	}
 	//get status
-	static call_result GetStatus(io_handle& hd, GKC::FileStatus& status) throw()
+	static call_result GetStatus(io_handle& hd, file_status& status) throw()
 	{
 		assert( hd.IsValid() );
 
@@ -182,19 +177,19 @@ public:
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 			return call_result((int)hRes);
 		}
-		_cvt_system_time(&st, status.tmAccess);
+		_os_cvt_system_time(&st, status.tmAccess);
 		//modify
 		if( !::FileTimeToSystemTime(&ftM, &st) ) {
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 			return call_result((int)hRes);
 		}
-		_cvt_system_time(&st, status.tmModify);
+		_os_cvt_system_time(&st, status.tmModify);
 		//create
 		if( !::FileTimeToSystemTime(&ftC, &st) ) {
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 			return call_result((int)hRes);
 		}
-		_cvt_system_time(&st, status.tmCreate);
+		_os_cvt_system_time(&st, status.tmCreate);
 
 		return call_result((int)hRes);
 	}
@@ -239,41 +234,41 @@ public:
 
 // helper
 
-class sync_helper
+class _sync_helper
 {
 public:
-	static CharW* gen_global_name(const CharW* pSrc) throw()
+	static char_h* gen_global_name(const char_h* pSrc) throw()
 	{
 		//global
-		static const CharW c_szGlobal[] = L"Global\\";
-		static const uintptr c_uGlobalLength = sizeof(c_szGlobal) / sizeof(CharW) - 1;
+		static const char_h c_szGlobal[] = L"Global\\";
+		static const uintptr c_uGlobalLength = sizeof(c_szGlobal) / sizeof(char_h) - 1;
 		uintptr uCount = calc_string_length(pSrc);
 		uintptr uNewCount;
-		call_result cr = GKC::SafeOperators::Add(uCount, c_uGlobalLength, uNewCount);
+		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);
 		if( cr.IsFailed() )
 			return NULL;
-		CharW* pNew = (CharW*)crt_alloc((uNewCount + 1) * sizeof(CharW));
+		char_h* pNew = (char_h*)crt_alloc((uNewCount + 1) * sizeof(char_h));
 		if( pNew == NULL )
 			return NULL;
 		//copy
-		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(CharW), pNew);
-		mem_copy(pSrc, uCount * sizeof(CharW), pNew + c_uGlobalLength);
+		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(char_h), pNew);
+		mem_copy(pSrc, uCount * sizeof(char_h), pNew + c_uGlobalLength);
 		pNew[uNewCount] = 0;
 		return pNew;
 	}
-	static void free_global_name(const CharW* p) throw()
+	static void free_global_name(const char_h* p) throw()
 	{
 		crt_free(p);
 	}
 	//tools
-	static CharW* gen_sync_name(const CharW* pSrc, bool bGlobal) throw()
+	static char_h* gen_sync_name(const char_h* pSrc, bool bGlobal) throw()
 	{
-		CharW* psz = (CharW*)pSrc;
+		char_h* psz = (char_h*)pSrc;
 		if( bGlobal )
 			psz = gen_global_name(psz);
 		return psz;
 	}
-	static void free_sync_name(const CharW* p, bool bGlobal) throw()
+	static void free_sync_name(const char_h* p, bool bGlobal) throw()
 	{
 		if( bGlobal )
 			free_global_name(p);
@@ -300,7 +295,7 @@ public:
 		assert( m_hSema != NULL );
 		DWORD dwRet = ::WaitForSingleObject(m_hSema, INFINITE);
 		if( dwRet != WAIT_OBJECT_0 )
-			throw GKC::Exception(call_result(CR_FAIL));
+			throw exception_base(call_result(CR_FAIL));
 	}
 	void Unlock() throw()
 	{
@@ -361,7 +356,7 @@ public:
 		assert( m_hSema != NULL );
 		DWORD dwRet = ::WaitForSingleObject(m_hSema, INFINITE);
 		if( dwRet != WAIT_OBJECT_0 )
-			throw GKC::Exception(call_result(CR_FAIL));
+			throw exception_base(call_result(CR_FAIL));
 	}
 	void Unlock() throw()
 	{
@@ -379,12 +374,12 @@ public:
 
 	// name is case sensitive and limited to MAX_PATH (255) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const GKC::RefPtr<CharS>& str, bool bGlobal, int iCount) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, int iCount) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_hSema == NULL );
 		//name
-		CharW* psz = sync_helper::gen_sync_name(GKC::RefPtrHelper::GetInternalPointer(str), bGlobal);
+		char_h* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), bGlobal);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
 		//create
@@ -392,15 +387,15 @@ public:
 		m_hSema = ::CreateSemaphoreW(NULL, (LONG)iCount, (LONG)iCount, psz);
 		if( m_hSema == NULL )
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
-		sync_helper::free_sync_name(psz, bGlobal);
+		_sync_helper::free_sync_name(psz, bGlobal);
 		return call_result((int)hRes);
 	}
-	call_result Open(const GKC::RefPtr<CharS>& str, bool bGlobal) throw()
+	call_result Open(const ref_ptr<char_s>& str, bool bGlobal) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_hSema == NULL );
 		//name
-		CharW* psz = sync_helper::gen_sync_name(GKC::RefPtrHelper::GetInternalPointer(str), bGlobal);
+		char_h* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), bGlobal);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
 		//open
@@ -408,7 +403,7 @@ public:
 		m_hSema = ::OpenSemaphoreW(SEMAPHORE_ALL_ACCESS, FALSE, psz);
 		if( m_hSema == NULL )
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
-		sync_helper::free_sync_name(psz, bGlobal);
+		_sync_helper::free_sync_name(psz, bGlobal);
 		return call_result((int)hRes);
 	}
 	void Term() throw()
@@ -496,7 +491,7 @@ public:
 		assert( m_hMutex != NULL );
 		DWORD dwRet = ::WaitForSingleObject(m_hMutex, INFINITE);
 		if( dwRet != WAIT_OBJECT_0 )
-			throw GKC::Exception(call_result(CR_FAIL));
+			throw exception_base(call_result(CR_FAIL));
 	}
 	void Unlock() throw()
 	{
@@ -513,12 +508,12 @@ public:
 
 	// name is case sensitive and limited to MAX_PATH (255) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const GKC::RefPtr<CharS>& str, bool bGlobal) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_hMutex == NULL );
 		//name
-		CharW* psz = sync_helper::gen_sync_name(GKC::RefPtrHelper::GetInternalPointer(str), bGlobal);
+		char_h* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), bGlobal);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
 		//create
@@ -526,15 +521,15 @@ public:
 		m_hMutex = ::CreateMutexW(NULL, FALSE, psz);
 		if( m_hMutex == NULL )
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
-		sync_helper::free_sync_name(psz, bGlobal);
+		_sync_helper::free_sync_name(psz, bGlobal);
 		return call_result((int)hRes);
 	}
-	call_result Open(const GKC::RefPtr<CharS>& str, bool bGlobal) throw()
+	call_result Open(const ref_ptr<char_s>& str, bool bGlobal) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_hMutex == NULL );
 		//name
-		CharW* psz = sync_helper::gen_sync_name(GKC::RefPtrHelper::GetInternalPointer(str), bGlobal);
+		char_h* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), bGlobal);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
 		//open
@@ -542,7 +537,7 @@ public:
 		m_hMutex = ::OpenMutexW(MUTEX_ALL_ACCESS, FALSE, psz);
 		if( m_hMutex == NULL )
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
-		sync_helper::free_sync_name(psz, bGlobal);
+		_sync_helper::free_sync_name(psz, bGlobal);
 		return call_result((int)hRes);
 	}
 	void Term() throw()

@@ -14,11 +14,6 @@
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __IWIN_BASE_H__
-#define __IWIN_BASE_H__
-
-////////////////////////////////////////////////////////////////////////////////
-
 //------------------------------------------------------------------------------
 // Synchronization
 
@@ -134,9 +129,9 @@ private:
 //------------------------------------------------------------------------------
 // Time
 
-// _cvt_system_time
+// _os_cvt_system_time
 
-inline void _cvt_system_time(SYSTEMTIME* pST, GKC::SystemTime& tm) throw()
+inline void _os_cvt_system_time(SYSTEMTIME* pST, system_time& tm) throw()
 {
 	tm.uYear         = pST->wYear;
 	tm.uMonth        = pST->wMonth;
@@ -148,17 +143,17 @@ inline void _cvt_system_time(SYSTEMTIME* pST, GKC::SystemTime& tm) throw()
 	tm.uMilliseconds = pST->wMilliseconds;
 }
 
-// _filetime_to_ns_value
+// _os_filetime_to_ns_value
 //   unit: 100ns
-inline void _filetime_to_ns_value(FILETIME* pFT, uint64& v) throw()
+inline void _os_filetime_to_ns_value(FILETIME* pFT, uint64& v) throw()
 {
 	ULARGE_INTEGER uli;
 	uli.LowPart  = pFT->dwLowDateTime;
 	uli.HighPart = pFT->dwHighDateTime;
 	v = uli.QuadPart;
 }
-// _ns_value_to_filetime
-inline void _ns_value_to_filetime(uint64 v, FILETIME& ft) throw()
+// _os_ns_value_to_filetime
+inline void _os_ns_value_to_filetime(uint64 v, FILETIME& ft) throw()
 {
 	ULARGE_INTEGER uli;
 	uli.QuadPart = v;
@@ -169,29 +164,29 @@ inline void _ns_value_to_filetime(uint64 v, FILETIME& ft) throw()
 //------------------------------------------------------------------------------
 // Memory
 
-// _auto_local_mem
+// _os_auto_local_mem
 
-class _auto_local_mem
+class _os_auto_local_mem
 {
 public:
-	_auto_local_mem() throw() : m_h(NULL)
+	_os_auto_local_mem() throw() : m_h(NULL)
 	{
 	}
-	explicit _auto_local_mem(HLOCAL h) throw() : m_h(h)
+	explicit _os_auto_local_mem(HLOCAL h) throw() : m_h(h)
 	{
 	}
-	_auto_local_mem(_auto_local_mem&& src) throw()
+	_os_auto_local_mem(_os_auto_local_mem&& src) throw()
 	{
 		m_h = src.m_h;
 		src.m_h = NULL;
 	}
-	~_auto_local_mem() throw()
+	~_os_auto_local_mem() throw()
 	{
 		Free();
 	}
 
 	//operators
-	_auto_local_mem& operator=(_auto_local_mem&& src) throw()
+	_os_auto_local_mem& operator=(_os_auto_local_mem&& src) throw()
 	{
 		if( this != &src ) {
 			assert( m_h != src.m_h );  //unique
@@ -224,7 +219,7 @@ public:
 		assert( m_h == NULL );
 		m_h = ::LocalAlloc(uFlags, uSize);
 		if( m_h == NULL )
-			throw GKC::OutOfMemoryException();
+			throw outofmemory_exception();
 	}
 	//free
 	void Free() throw()
@@ -240,8 +235,8 @@ protected:
 
 private:
 	//noncopyable
-	_auto_local_mem(const _auto_local_mem& src) throw();
-	_auto_local_mem& operator=(const _auto_local_mem& src) throw();
+	_os_auto_local_mem(const _os_auto_local_mem& src) throw();
+	_os_auto_local_mem& operator=(const _os_auto_local_mem& src) throw();
 };
 
 //------------------------------------------------------------------------------
@@ -251,7 +246,7 @@ private:
 
 //assign
 
-inline IUnknown* _ComPtrAssign(INOUT IUnknown** pp, IN IUnknown* lp) throw()
+inline IUnknown* _os_com_ptr_assign(INOUT IUnknown** pp, IN IUnknown* lp) throw()
 {
 	if( pp == NULL )
 		return NULL;
@@ -263,7 +258,7 @@ inline IUnknown* _ComPtrAssign(INOUT IUnknown** pp, IN IUnknown* lp) throw()
 	return lp;
 }
 
-inline IUnknown* _ComQIPtrAssign(INOUT IUnknown** pp, IN IUnknown* lp, IN REFIID riid) throw()
+inline IUnknown* _os_com_qi_ptr_assign(INOUT IUnknown** pp, IN IUnknown* lp, IN REFIID riid) throw()
 {
 	if( pp == NULL )
 		return NULL;
@@ -276,10 +271,10 @@ inline IUnknown* _ComQIPtrAssign(INOUT IUnknown** pp, IN IUnknown* lp, IN REFIID
 	return *pp;
 }
 
-// _com_ptr<T>
+// _os_com_ptr<T>
 
 template <class T>
-class _NoAddRefReleaseOnComPtr : public T
+class _os_no_addref_release_on_com_ptr : public T
 {
 private:
 	STDMETHOD_(ULONG, AddRef)() = 0;
@@ -287,29 +282,29 @@ private:
 };
 
 template <class T>
-class _com_ptr
+class _os_com_ptr
 {
 public:
-	_com_ptr() throw() : m_p(NULL)
+	_os_com_ptr() throw() : m_p(NULL)
 	{
 	}
-	explicit _com_ptr(INOUT T* lp) throw() : m_p(lp)
+	explicit _os_com_ptr(INOUT T* lp) throw() : m_p(lp)
 	{
 		if( m_p != NULL )
 			m_p->AddRef();
 	}
-	~_com_ptr() throw()
+	~_os_com_ptr() throw()
 	{
 		if( m_p != NULL )
 			m_p->Release();
 	}
 
-	_com_ptr(INOUT const _com_ptr<T>& sp) throw() : m_p(sp.m_p)
+	_os_com_ptr(INOUT const _os_com_ptr<T>& sp) throw() : m_p(sp.m_p)
 	{
 		if( m_p != NULL )
 			m_p->AddRef();
 	}
-	_com_ptr(INOUT _com_ptr<T>&& lp) throw() : m_p(lp.p)
+	_os_com_ptr(INOUT _os_com_ptr<T>&& lp) throw() : m_p(lp.p)
 	{
 		lp.p = NULL;
 	}
@@ -317,26 +312,26 @@ public:
 	T* operator=(INOUT T* lp) throw()
 	{
 		if( *this != lp ) {
-			return static_cast<T*>(_ComPtrAssign((IUnknown**)&m_p, lp));
+			return static_cast<T*>(_os_com_ptr_assign((IUnknown**)&m_p, lp));
 		}
 		return *this;
 	}
 	template <typename Q>
-	T* operator=(INOUT const _com_ptr<Q>& sp) throw()
+	T* operator=(INOUT const _os_com_ptr<Q>& sp) throw()
 	{
 		if( !IsEqualObject(sp) ) {
-			return static_cast<T*>(_ComQIPtrAssign((IUnknown**)&m_p, sp, __uuidof(T)));
+			return static_cast<T*>(_os_com_qi_ptr_assign((IUnknown**)&m_p, sp, __uuidof(T)));
 		}
 		return *this;
 	}
-	T* operator=(INOUT const _com_ptr<T>& sp) throw()
+	T* operator=(INOUT const _os_com_ptr<T>& sp) throw()
 	{
 		if( *this != sp ) {
-			return static_cast<T*>(_ComPtrAssign((IUnknown**)&m_p, sp));
+			return static_cast<T*>(_os_com_ptr_assign((IUnknown**)&m_p, sp));
 		}
 		return *this;
 	}
-	T* operator=(INOUT _com_ptr<T>&& lp) throw()
+	T* operator=(INOUT _os_com_ptr<T>&& lp) throw()
 	{
 		if( *this != lp ) {
 			if( m_p != NULL )
@@ -362,10 +357,10 @@ public:
 		assert( m_p == NULL );
 		return &m_p;
 	}
-	_NoAddRefReleaseOnComPtr<T>* operator->() const throw()
+	_os_no_addref_release_on_com_ptr<T>* operator->() const throw()
 	{
 		assert( m_p != NULL );
-		return (_NoAddRefReleaseOnComPtr<T>*)m_p;
+		return (_os_no_addref_release_on_com_ptr<T>*)m_p;
 	}
 	bool operator!() const throw()
 	{	
@@ -409,8 +404,8 @@ public:
 			return true;   // They are both NULL objects
 		if( m_p == NULL || pOther == NULL )
 			return false;  // One is NULL the other is not
-		_com_ptr<IUnknown> punk1;
-		_com_ptr<IUnknown> punk2;
+		_os_com_ptr<IUnknown> punk1;
+		_os_com_ptr<IUnknown> punk2;
 		m_p->QueryInterface(__uuidof(IUnknown), (void**)&punk1);
 		pOther->QueryInterface(__uuidof(IUnknown), (void**)&punk2);
 		return punk1 == punk2;
@@ -469,7 +464,7 @@ private:
 // file
 
 // file share modes
-BEGIN_ENUM(_FileShareModes)
+BEGIN_ENUM(_os_file_share_modes)
 	ENUM_VALUE_ENTRY(Exclusive,  0x00000010)
 	ENUM_VALUE_ENTRY(DenyWrite,  0x00000020)
 	ENUM_VALUE_ENTRY(DenyRead,   0x00000030)
@@ -477,21 +472,21 @@ BEGIN_ENUM(_FileShareModes)
 END_ENUM()
 
 //open file
-//  iOpenType   : FileOpenTypes::*
-//  iShareMode  : _FileShareModes::*
-//  iCreateType : FileCreationTypes::*
-inline HRESULT _open_file(const CharS* szFile, int iOpenType, int iShareMode, int iCreateType, HANDLE& hd) throw()
+//  iOpenType   : file_open_types::*
+//  iShareMode  : _os_file_share_modes::*
+//  iCreateType : file_creation_types::*
+inline HRESULT _os_open_file(const char_s* szFile, int iOpenType, int iShareMode, int iCreateType, HANDLE& hd) throw()
 {
 	// access
 	DWORD dwAccess = 0;
 	switch( iOpenType & 3 ) {
-	case GKC::FileOpenTypes::Read:
+	case file_open_types::Read:
 		dwAccess = GENERIC_READ;
 		break;
-	case GKC::FileOpenTypes::Write:
+	case file_open_types::Write:
 		dwAccess = GENERIC_WRITE;
 		break;
-	case GKC::FileOpenTypes::ReadWrite:
+	case file_open_types::ReadWrite:
 		dwAccess = GENERIC_READ | GENERIC_WRITE;
 		break;
 	default:
@@ -501,16 +496,16 @@ inline HRESULT _open_file(const CharS* szFile, int iOpenType, int iShareMode, in
 	// map share mode
 	DWORD dwShareMode = 0;
 	switch( iShareMode & 0x70) { // map compatibility mode to exclusive
-	case _FileShareModes::Exclusive:
+	case _os_file_share_modes::Exclusive:
 		dwShareMode = 0;
 		break;
-	case _FileShareModes::DenyWrite:
+	case _os_file_share_modes::DenyWrite:
 		dwShareMode = FILE_SHARE_READ;
 		break;
-	case _FileShareModes::DenyRead:
+	case _os_file_share_modes::DenyRead:
 		dwShareMode = FILE_SHARE_WRITE;
 		break;
-	case _FileShareModes::DenyNone:
+	case _os_file_share_modes::DenyNone:
 		dwShareMode = FILE_SHARE_WRITE | FILE_SHARE_READ;
 		break;
 	default:
@@ -524,8 +519,8 @@ inline HRESULT _open_file(const CharS* szFile, int iOpenType, int iShareMode, in
 	sa.bInheritHandle = TRUE;  //inherited
 	// map creation flags
 	DWORD dwCreateFlag = OPEN_EXISTING;
-	if( iCreateType & GKC::FileCreationTypes::Create ) {
-		if( iCreateType & GKC::FileCreationTypes::NoTruncate )
+	if( iCreateType & file_creation_types::Create ) {
+		if( iCreateType & file_creation_types::NoTruncate )
 			dwCreateFlag = OPEN_ALWAYS;
 		else
 			dwCreateFlag = CREATE_ALWAYS;
@@ -550,6 +545,46 @@ inline HRESULT _open_file(const CharS* szFile, int iOpenType, int iShareMode, in
 	return hRes;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-#endif  //__IWIN_BASE_H__
+//------------------------------------------------------------------------------
+// Module of Assembly
+/*
+Author: Lijuan Mei
+*/
+
+// _os_module
+
+class _os_module
+{
+public:	
+	_os_module() throw();
+	~_os_Module() throw()
+	{
+	}
+
+	HINSTANCE GetModuleInstance() const throw()
+	{
+		return m_hInst;
+	}
+	HINSTANCE GetResourceInstance() const throw()
+	{
+		return m_hInstResource;
+	}
+	//set instance
+	HINSTANCE SetResourceInstance(IN HINSTANCE hInst) throw()
+	{
+		return static_cast< HINSTANCE >(::InterlockedExchangePointer((void**)&m_hInstResource, hInst));
+	}
+
+private:
+	HINSTANCE m_hInst;
+	HINSTANCE m_hInstResource;
+
+private:
+	_os_module(const _os_module&) throw();
+	_os_module& operator=(const _os_module&) throw();
+};
+
+//global variable
+extern _os_module _os_g_module;
+
 ////////////////////////////////////////////////////////////////////////////////

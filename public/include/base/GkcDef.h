@@ -61,6 +61,15 @@ for cross-platform.
 //console APIs
 #include "system/console_api.h"
 
+//------------------------------------------------------------------------------
+//system types which can use exceptions
+
+#include "system/sys_types.h"
+
+#include "system/sys_locale.h"
+
+//------------------------------------------------------------------------------
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
@@ -581,6 +590,173 @@ typedef file_creation_types  FileCreationTypes;
 typedef file_status  FileStatus;
 
 //------------------------------------------------------------------------------
+// Synchronization
+
+// Semaphore
+typedef inprocess_semaphore      Semaphore;
+typedef interprocess_semaphore   ProcessSemaphore;
+
+// Mutex
+typedef inprocess_mutex      Mutex;
+typedef interprocess_mutex   ProcessMutex;
+
+// Condition
+/*
+lock Mutex
+while( !test_predicate() )
+	Wait
+change shared data
+unlock Mutex
+[option] [lock] [check shared data] Signal or SignalAll for other thread [unlock]
+*/
+typedef inprocess_condition  Condition;
+
+// RWLock
+typedef inprocess_rwlock  RWLock;
+
+// SyncLock<T>
+
+template <class T>
+class SyncLock
+{
+public:
+	SyncLock(T& t, bool bInitialLock = true) : m_t(t), m_bLocked(false)
+	{
+		if( bInitialLock )
+			Lock();  //may throw
+	}
+	~SyncLock() throw()
+	{
+		if( m_bLocked )
+			Unlock();
+	}
+
+	void Lock()
+	{
+		assert( !m_bLocked );
+		m_t.Deref().Lock();  //may throw
+		m_bLocked = true;
+	}
+	void Unlock() throw()
+	{
+		assert( m_bLocked );
+		m_t.Deref().Unlock();
+		m_bLocked = false;
+	}
+	bool TryLock() throw()
+	{
+		assert( !m_bLocked );
+		bool bRet = m_t.Deref().TryLock();
+		if( bRet )
+			m_bLocked = true;
+		return bRet;
+	}
+
+private:
+	RefPtr<T>  m_t;
+	bool       m_bLocked;
+
+private:
+	//noncopyable
+	SyncLock(const SyncLock<T>&) throw();
+	SyncLock<T>& operator=(const SyncLock<T>&) throw();
+};
+
+// RWLockShared
+
+class RWLockShared
+{
+public:
+	RWLockShared(RWLock& rw, bool bInitialLock = true) throw() : m_rw(rw), m_bLocked(false)
+	{
+		if( bInitialLock )
+			Lock();
+	}
+	~RWLockShared() throw()
+	{
+		if( m_bLocked )
+			Unlock();
+	}
+
+	void Lock() throw()
+	{
+		assert( !m_bLocked );
+		m_rw.Deref().LockShared();
+		m_bLocked = true;
+	}
+	void Unlock() throw()
+	{
+		assert( m_bLocked );
+		m_rw.Deref().UnlockShared();
+		m_bLocked = false;
+	}
+	bool TryLock() throw()
+	{
+		assert( !m_bLocked );
+		bool bRet = m_rw.Deref().TryLockShared();
+		if( bRet )
+			m_bLocked = true;
+		return bRet;
+	}
+
+private:
+	RefPtr<RWLock>  m_rw;
+	bool            m_bLocked;
+
+private:
+	//noncopyable
+	RWLockShared(const RWLockShared&) throw();
+	RWLockShared& operator=(const RWLockShared&) throw();
+};
+
+// RWLockExclusive
+
+class RWLockExclusive
+{
+public:
+	RWLockExclusive(RWLock& rw, bool bInitialLock = true) throw() : m_rw(rw), m_bLocked(false)
+	{
+		if( bInitialLock )
+			Lock();
+	}
+	~RWLockExclusive() throw()
+	{
+		if( m_bLocked )
+			Unlock();
+	}
+
+	void Lock() throw()
+	{
+		assert( !m_bLocked );
+		m_rw.Deref().LockExclusive();
+		m_bLocked = true;
+	}
+	void Unlock() throw()
+	{
+		assert( m_bLocked );
+		m_rw.Deref().UnlockExclusive();
+		m_bLocked = false;
+	}
+	bool TryLock() throw()
+	{
+		assert( !m_bLocked );
+		bool bRet = m_rw.Deref().TryLockExclusive();
+		if( bRet )
+			m_bLocked = true;
+		return bRet;
+	}
+
+private:
+	RefPtr<RWLock>  m_rw;
+	bool            m_bLocked;
+
+private:
+	//noncopyable
+	RWLockExclusive(const RWLockExclusive&) throw();
+	RWLockExclusive& operator=(const RWLockExclusive&) throw();
+};
+
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////
 }
@@ -590,34 +766,7 @@ typedef file_status  FileStatus;
 // The macro of SERVICE:
 // User must define a macro: GKC_SERVICE_NAME
 //   e.g., #define GKC_SERVICE_NAME  _S("Host Server")
-
 //------------------------------------------------------------------------------
-//system types which can use exceptions
-
-#include "system/sys_types.h"
-
-#include "system/sys_locale.h"
-
-//------------------------------------------------------------------------------
-
-////////////////////////////////////////////////////////////////////////////////
-namespace GKC {
-////////////////////////////////////////////////////////////////////////////////
-
-//------------------------------------------------------------------------------
-// IO
-
-// IoHandle
-
-typedef io_handle  IoHandle;
-
-// IoHandleHelper
-
-typedef io_handle_helper  IoHandleHelper;
-
-////////////////////////////////////////////////////////////////////////////////
-}
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__GKC_DEF_H__

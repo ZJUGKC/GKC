@@ -29,7 +29,7 @@ This file contains entry point function.
 inline
 void _print_version() throw()
 {
-	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
+	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
 }
 
 // help
@@ -55,7 +55,7 @@ public:
 		}
 		int ret = 0;
 		//-c
-		if( compare_string(GKC::ConstHelper::GetInternalPointer(args[1].get_Value()), _S("-c")) == 0 ) {
+		if( compare_string(GKC::ConstArrayHelper::GetInternalPointer(args[1].get_Value()), _S("-c")) == 0 ) {
 			if( uArgCount > 4 ) {
 				_print_version();
 				_print_help();

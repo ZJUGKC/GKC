@@ -190,7 +190,7 @@ public:
 		return call_result(res);
 	}
 	//get status
-	static call_result GetStatus(io_handle& hd, file_status& status) throw()
+	static call_result GetStatus(io_handle& hd, storage_status& status) throw()
 	{
 		assert( hd.IsValid() );
 
@@ -278,8 +278,8 @@ public:
 	static char_a* gen_global_name(const char_a* pSrc) throw()
 	{
 		//global
-		static const char_a c_szGlobal[] = "/";
-		static const uintptr c_uGlobalLength = sizeof(c_szGlobal) / sizeof(char_a) - 1;
+		DECLARE_LOCAL_STATIC_CONST_STRING(char_a, c_szGlobal, c_uGlobalLength, "/")
+		//generate
 		uintptr uCount = calc_string_length(pSrc);
 		uintptr uNewCount;
 		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);

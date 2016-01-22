@@ -39,7 +39,7 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 {
 //command
 	_os_auto_local_mem spLocal;
-	GKC::ConstArray<GKC::ConstStringS> args;
+	const_array<const_string_s> args;
 	_auto_mem spArgs;
 	{
 		LPWSTR lpszCommandLine = ::GetCommandLineW();
@@ -75,12 +75,9 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 
 //Show Flag is unuseful
 
-	int ret = ProgramEntryPoint::UIMain(args);
+	int ret = program_entry_point::UIMain(args);
 
 	return ret;
 }
-
-//others
-#include "_Module.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

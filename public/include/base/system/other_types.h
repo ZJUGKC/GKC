@@ -442,14 +442,109 @@ BEGIN_ENUM(file_creation_types)
 	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
 END_ENUM()
 
-// file_status
+// storage_status
 
-struct file_status
+struct storage_status
 {
-	int64        iSize;     //file size in bytes
+	int64        iSize;     //storage size in bytes (such as file, memory)
 	system_time  tmAccess;  //time of last access
 	system_time  tmModify;  //time of last modification
 	system_time  tmCreate;  //time of creation
 };
+
+// -----constant string-----
+
+// const_string_t<Tchar>
+//   Tchar : char_a char_h char_l, char_s char_w
+
+template <typename Tchar>
+class const_string_t : public const_array<Tchar>
+{
+private:
+	typedef const_array<Tchar>    baseClass;
+	typedef const_string_t<Tchar>  thisClass;
+
+public:
+	const_string_t() throw()
+	{
+	}
+	const_string_t(const Tchar* p, uintptr size) throw() : baseClass(p, size)
+	{
+	}
+	const_string_t(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	{
+	}
+	explicit const_string_t(const const_array_base<Tchar>& src) throw() : baseClass(src)
+	{
+	}
+	~const_string_t() throw()
+	{
+	}
+
+	//operators
+	thisClass& operator=(const thisClass& src) throw()
+	{
+		baseClass::operator=(static_cast<const baseClass&>(src));
+		return *this;
+	}
+};
+
+// const_string_*
+typedef const_string_t<char_a>  const_string_a;   //ansi or UTF8
+typedef const_string_t<char_h>  const_string_h;   //UTF16
+typedef const_string_t<char_l>  const_string_l;   //UTF32
+typedef const_string_t<char_s>  const_string_s;   //system
+typedef const_string_t<char_w>  const_string_w;   //wide version
+
+// macros
+
+// define constant string by constant array in a method body
+
+#define DECLARE_LOCAL_CONST_STRING(char_type, array_name, len_name, x)  \
+const char_type array_name[] = x;  \
+const uintptr len_name = sizeof(array_name) / sizeof(char_type) - 1;
+
+#define DECLARE_LOCAL_STATIC_CONST_STRING(char_type, array_name, len_name, x)  \
+static const char_type array_name[] = x;  \
+static const uintptr len_name = sizeof(array_name) / sizeof(char_type) - 1;
+
+// define temporary constant string object by constant array in a method body
+
+#define DECLARE_TEMP_CONST_STRING(const_string_type, x)  \
+const_string_type(x, sizeof(x) / sizeof(const_string_type::EType) - 1)
+
+// define static constant string
+
+#define DECLARE_STATIC_CONST_STRING(cls)  \
+	DECLARE_STATIC_CONST_ARRAY(cls, cls::EType)
+
+// define constant string member
+
+#define DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  const_array_base<char_type>
+
+#define DECLARE_CONST_STRING_STRUCT_MEMBER(v_name, char_type)  \
+DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  v_name;
+
+#define DECLARE_STATIC_CONST_STRING_MEMBER(c_name, char_type)  \
+static const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  c_name;
+
+//DECLARE_CONST_STRING_ARRAY_TYPE(char_type)
+#define DECLARE_CONST_STRING_ARRAY_TYPE(char_type)  const_array<DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)>
+
+// static constant string in .cpp
+//   STATIC_CONST_STRING_ENTRY(x) can be used repeatedly with or without CRLF
+//   "some" or L"some" or _S("some")
+
+#define BEGIN_STATIC_CONST_STRING(cls)   const GKC::cls::EType GKC::cls::c_array[] =
+#define STATIC_CONST_STRING_ENTRY(x)     x
+#define END_STATIC_CONST_STRING(cls)     ;  \
+		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;
+
+//constant string member
+#define IMPLEMENT_CONST_STRING_ENTRY(char_type, x)   { x, sizeof(x) / sizeof(char_type) - 1 }  //this macro can be used for implementing constant string member
+
+#define IMPLEMENT_STATIC_CONST_STRING_MEMBER(cls, c_name, char_type, x)  \
+const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) GKC::cls::c_name = \
+IMPLEMENT_CONST_STRING_ENTRY(char_type, x) ;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1391,16 +1391,6 @@ public:
 	}
 };
 
-//------------------------------------------------------------------------------
-// thread
-
-// Message Queue for thread
-inline void _create_thread_message_queue() throw()
-{
-	MSG msg;
-	::PeekMessageW(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);  //no check
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__IWIN_WINDOW_H__
 ////////////////////////////////////////////////////////////////////////////////

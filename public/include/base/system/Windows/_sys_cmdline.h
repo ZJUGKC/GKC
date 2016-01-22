@@ -18,7 +18,7 @@
 
 inline void _cmdline_to_strings(int argc, wchar_t *argv[],  //in
 								_auto_mem& spArgs,  //out
-								GKC::ConstArray<GKC::ConstStringS>& args)  //out
+								const_array<const_string_s>& args)  //out
 {
 	assert( argc > 0 );
 
@@ -26,20 +26,20 @@ inline void _cmdline_to_strings(int argc, wchar_t *argv[],  //in
 
 	//alloc
 	uintptr uSize;
-	uSize = GKC::SafeOperators::MultiplyThrow<uintptr>(sizeof(GKC::ConstStringS), (uintptr)argc);
+	uSize = safe_operators::MultiplyThrow<uintptr>(sizeof(const_string_s), (uintptr)argc);
 	spArgs.Allocate(uSize);  //may throw
-	GKC::ConstStringS* parr1 = (GKC::ConstStringS*)spArgs.GetAddress();
+	const_string_s* parr1 = (const_string_s*)spArgs.GetAddress();
 
 	//fill
 	for( uintptr i = 0; i < (uintptr)argc; i ++ ) {
-		GKC::ConstHelper::SetInternalPointer(argv[i], calc_string_length(argv[i]), parr1[i]);
+		const_array_helper::SetInternalPointer(argv[i], calc_string_length(argv[i]), parr1[i]);
 	}
-	GKC::ConstHelper::SetInternalPointer(parr1, (uintptr)argc, args);
+	const_array_helper::SetInternalPointer(parr1, (uintptr)argc, args);
 }
 
 inline void _cmdline_to_strings(int argc, wchar_t *argv[], wchar_t *envp[],  //in
 								_auto_mem& spArgs, _auto_mem& spEnv,  //out
-								GKC::ConstArray<GKC::ConstStringS>& args, GKC::ConstArray<GKC::ConstStringS>& env)  //out
+								const_array<const_string_s>& args, const_array<const_string_s>& env)  //out
 {
 	assert( argc > 0 );
 
@@ -48,30 +48,30 @@ inline void _cmdline_to_strings(int argc, wchar_t *argv[], wchar_t *envp[],  //i
 
 	//alloc
 	uintptr uSize;
-	uSize = GKC::SafeOperators::MultiplyThrow<uintptr>(sizeof(GKC::ConstStringS), (uintptr)argc);
+	uSize = safe_operators::MultiplyThrow<uintptr>(sizeof(const_string_s), (uintptr)argc);
 	spArgs.Allocate(uSize);  //may throw
-	GKC::ConstStringS* parr1 = (GKC::ConstStringS*)spArgs.GetAddress();
+	const_string_s* parr1 = (const_string_s*)spArgs.GetAddress();
 
 	uintptr env_num = 0;
 	while( envp[env_num] != NULL ) {
 		++ env_num;
 	}
-	GKC::ConstStringS* parr2 = NULL;
+	const_string_s* parr2 = NULL;
 	if( env_num > 0 ) {
-		uSize = GKC::SafeOperators::MultiplyThrow<uintptr>(sizeof(GKC::ConstStringS), env_num);
+		uSize = safe_operators::MultiplyThrow<uintptr>(sizeof(const_string_s), env_num);
 		spEnv.Allocate(uSize);  //may throw
-		parr2 = (GKC::ConstStringS*)spEnv.GetAddress();
+		parr2 = (const_string_s*)spEnv.GetAddress();
 	}
 
 	//fill
 	for( uintptr i = 0; i < (uintptr)argc; i ++ ) {
-		GKC::ConstHelper::SetInternalPointer(argv[i], calc_string_length(argv[i]), parr1[i]);
+		const_array_helper::SetInternalPointer(argv[i], calc_string_length(argv[i]), parr1[i]);
 	}
-	GKC::ConstHelper::SetInternalPointer(parr1, (uintptr)argc, args);
+	const_array_helper::SetInternalPointer(parr1, (uintptr)argc, args);
 	for( uintptr i = 0; i < env_num; i ++ ) {
-		GKC::ConstHelper::SetInternalPointer(envp[i], calc_string_length(envp[i]), parr2[i]);
+		const_array_helper::SetInternalPointer(envp[i], calc_string_length(envp[i]), parr2[i]);
 	}
-	GKC::ConstHelper::SetInternalPointer(parr2, env_num, env);
+	const_array_helper::SetInternalPointer(parr2, env_num, env);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

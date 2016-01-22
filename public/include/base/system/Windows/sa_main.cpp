@@ -30,14 +30,14 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 		::DisableThreadLibraryCalls(hModule);
-		bRet = ProgramEntryPoint::SAMain(true);
+		bRet = program_entry_point::SAMain(true);
 		break;
 	case DLL_THREAD_ATTACH:
 		break;
 	case DLL_THREAD_DETACH:
 		break;
 	case DLL_PROCESS_DETACH:
-		bRet = ProgramEntryPoint::SAMain(false);
+		bRet = program_entry_point::SAMain(false);
 		break;
 	default:
 		break;
@@ -45,8 +45,5 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 	return bRet;
 }
-
-//others
-#include "_Module.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

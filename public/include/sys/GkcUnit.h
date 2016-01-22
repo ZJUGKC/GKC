@@ -200,7 +200,7 @@ public:
 	_UnitTestReg(const CharS* szName, _UnitTestFunc pFunc)
 	{
 		ConstStringS strName;
-		ConstHelper::SetInternalPointer(szName, calc_string_length(szName), strName);
+		ConstArrayHelper::SetInternalPointer(szName, calc_string_length(szName), strName);
 		_UnitTestMap* pMap = _UnitTestMapHelper::GetUnitTestMap();
 		pMap->AddUnitTest(strName, pFunc);
 	}

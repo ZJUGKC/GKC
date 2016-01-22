@@ -92,6 +92,28 @@ using RefPtr = ref_ptr<T>;
 typedef ref_ptr_helper  RefPtrHelper;
 
 //------------------------------------------------------------------------------
+// Iterator
+
+// ReverseIterator<T>
+template <typename T>
+using ReverseIterator = reverse_iterator<T>;
+
+//------------------------------------------------------------------------------
+// Array
+
+// ArrayIterator<T>
+
+template <typename T>
+using ArrayIterator = array_iterator<T>;
+
+// ConstArray<T>
+template <typename T>
+using ConstArray = const_array<T>;
+
+// ConstArrayHelper
+typedef const_array_helper  ConstArrayHelper;
+
+//------------------------------------------------------------------------------
 // Character
 
 typedef char_a  CharA;
@@ -327,99 +349,6 @@ LogicalOperators
 */
 
 //------------------------------------------------------------------------------
-//iterator
-
-// ReverseIterator<T>
-
-template <typename T>
-class ReverseIterator
-{
-public:
-	ReverseIterator() throw()
-	{
-	}
-	explicit ReverseIterator(const T& iter) throw() : m_iter(iter)
-	{
-	}
-	ReverseIterator(const ReverseIterator<T>& src) throw() : m_iter(src.m_iter)
-	{
-	}
-	~ReverseIterator() throw()
-	{
-	}
-
-	//operators
-	ReverseIterator<T>& operator=(const ReverseIterator<T>& src) throw()
-	{
-		if( this != &src ) {
-			m_iter = src.m_iter;
-		}
-		return *this;
-	}
-
-	bool IsNull() const throw()
-	{
-		return m_iter.IsNull();
-	}
-
-	//logical
-	bool operator==(const ReverseIterator<T>& right) const throw()
-	{
-		return m_iter == right.m_iter;
-	}
-	bool operator!=(const ReverseIterator<T>& right) const throw()
-	{
-		return m_iter != right.m_iter;
-	}
-
-	const typename T::EType& get_Value() const throw()
-	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		return tmp.get_Value();
-	}
-	typename T::EType& get_Value() throw()
-	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		return tmp.get_Value();
-	}
-	void set_Value(const typename T::EType& t)  //may throw
-	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		tmp.set_Value(t);
-	}
-	void set_Value(typename T::EType&& t)  //may throw
-	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		tmp.set_Value(rv_forward(t));
-	}
-
-	//methods
-	void MoveNext() throw()
-	{
-		m_iter.MovePrev();
-	}
-	void MovePrev() throw()
-	{
-		m_iter.MoveNext();
-	}
-	void MoveDelta(intptr iDelta) throw()
-	{
-		m_iter.MoveDelta(iDelta);
-	}
-	intptr CalcDelta(const ReverseIterator<T>& second) const throw()
-	{
-		return m_iter.CalcDelta(second.m_iter);
-	}
-
-private:
-	T m_iter;
-};
-
-//------------------------------------------------------------------------------
 //tuple
 
 // Pair<T1, T2>
@@ -586,8 +515,134 @@ typedef file_open_types  FileOpenTypes;
 // file creation types (can combine with <or> operation)
 typedef file_creation_types  FileCreationTypes;
 
-// FileStatus
-typedef file_status  FileStatus;
+// StorageStatus
+typedef storage_status  StorageStatus;
+
+//------------------------------------------------------------------------------
+// Constant String
+
+// ConstStringT<Tchar>
+template <typename Tchar>
+using ConstStringT = const_string_t<Tchar>;
+
+// ConstString*
+typedef const_string_a  ConstStringA;
+typedef const_string_h  ConstStringH;
+typedef const_string_l  ConstStringL;
+typedef const_string_s  ConstStringS;
+typedef const_string_w  ConstStringW;
+
+// Traits
+
+// ConstStringCompareTrait<T>
+
+template <class T>
+class ConstStringCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// ConstStringCaseIgnoreCompareTrait<T>
+
+template <class T>
+class ConstStringCaseIgnoreCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// ConstStringHashTrait<T>
+
+template <class T>
+class ConstStringHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = ConstArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// ConstStringCaseIgnoreHashTrait<T>
+
+template <class T>
+class ConstStringCaseIgnoreHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = ConstArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
 
 //------------------------------------------------------------------------------
 // Synchronization

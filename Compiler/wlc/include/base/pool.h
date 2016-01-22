@@ -132,7 +132,7 @@ public:
 		//length
 		m_alloc.ToObject<uint>(uIndex) = _cpl_process_byte_order((uint)uLen);
 		//copy
-		mem_copy(ConstHelper::GetInternalPointer(str), (uLen + 1) * sizeof(CharA), m_alloc.ToPtr(uIndex + sizeof(uint)));
+		mem_copy(ConstArrayHelper::GetInternalPointer(str), (uLen + 1) * sizeof(CharA), m_alloc.ToPtr(uIndex + sizeof(uint)));
 		return uIndex;
 	}
 
@@ -382,7 +382,7 @@ public:
 		assert( !str.IsNull() );
 		if( m_uStart == 0 )
 			return Iterator(const_cast<thisClass*>(this), 0);  //null
-		uint uHash = _calc_hash(ConstHelper::GetInternalPointer(str));
+		uint uHash = _calc_hash(ConstArrayHelper::GetInternalPointer(str));
 		uint uBin = uHash % m_uBins;
 		uint uNode = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)));
 		//first node
@@ -427,7 +427,7 @@ public:
 			}
 		}
 		//hash
-		uint uHash = _calc_hash(ConstHelper::GetInternalPointer(str));
+		uint uHash = _calc_hash(ConstArrayHelper::GetInternalPointer(str));
 		uint uBin = uHash % m_uBins;
 		uint uFirstNode = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)));
 		//node

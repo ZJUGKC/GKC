@@ -16,11 +16,6 @@ This file contains main function for Service program.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_Module.h"
-#include "_Window.h"
-
-#include "_cmdline.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 
 // tools
@@ -85,7 +80,7 @@ VOID WINAPI _ServiceMain(
 	g_status.dwWaitHint = 0;
 
 //command
-	GKC::ConstArray<GKC::ConstStringS> args;
+	const_array<const_string_s> args;
 	_auto_mem spArgs;
 	//convert
 	try {
@@ -106,12 +101,12 @@ VOID WINAPI _ServiceMain(
 	}
 
 //loop
-	_create_thread_message_queue();  //message queue
+	_os_create_thread_message_queue();  //message queue
 
 	_set_service_status(SERVICE_RUNNING);
 	report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_SUCCESS, _S("Service started/resumed"));
 
-	ServiceMainLoop sml;
+	service_main_loop sml;
 	if( !sml.Prepare(args) ) {
 		::CoUninitialize();
 		_set_service_status(SERVICE_STOPPED);

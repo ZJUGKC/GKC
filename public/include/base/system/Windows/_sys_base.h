@@ -15,6 +15,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
+// Thread
+
+// Message Queue for thread
+inline void _os_create_thread_message_queue() throw()
+{
+	MSG msg;
+	::PeekMessageW(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);  //no check
+}
+
+//------------------------------------------------------------------------------
 // Synchronization
 
 // _os_critical_section

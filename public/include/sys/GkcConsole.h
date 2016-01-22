@@ -19,10 +19,6 @@ This file contains console classes.
 #define __GKC_CONSOLE_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __GKC_CONST_H__
-	#error GkcConsole.h requires GkcConst.h to be included first.
-#endif
-
 #ifndef __GKC_STRING_H__
 	#error GkcConsole.h requires GkcString.h to be included first.
 #endif
@@ -48,7 +44,7 @@ public:
 	//write string
 	static void Write(const ConstStringS& str) throw()
 	{
-		print_string(ConstHelper::GetInternalPointer(str));
+		print_string(ConstArrayHelper::GetInternalPointer(str));
 	}
 	template <uintptr t_size>
 	static void Write(const FixedStringT<CharS, t_size>& str) throw()
@@ -114,7 +110,7 @@ public:
 	}
 
 	//print const string array
-	static void PrintConstStringArray(const DECLARE_CONST_STRING_ARRAY(CharS)& arr) throw()
+	static void PrintConstStringArray(const DECLARE_CONST_STRING_ARRAY_TYPE(CharS)& arr) throw()
 	{
 		auto iter(arr.GetBegin());
 		for( ; iter != arr.GetEnd(); iter.MoveNext() ) {

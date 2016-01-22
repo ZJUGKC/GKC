@@ -24,4 +24,7 @@ This file contains main function for Shared Assembly.
 	#error Error OS type!
 #endif
 
+//others
+#include "_sys_base.cpp"
+
 ////////////////////////////////////////////////////////////////////////////////

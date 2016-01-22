@@ -16,8 +16,6 @@ This file contains main function for Console Application.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_cmdline.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 
 //signal
@@ -33,7 +31,7 @@ void __sig_int(int signo)
 
 int main(int argc, char *argv[], char *envp[])
 {
-	GKC::ConstArray<GKC::ConstStringS> args, env;
+	const_array<const_string_s> args, env;
 
 	//memory
 	_auto_mem spArgs, spEnv;
@@ -52,7 +50,7 @@ int main(int argc, char *argv[], char *envp[])
 	::signal(SIGINT, __sig_int);  //no check
 
 	//main
-	return ProgramEntryPoint::ConsoleMain(args, env);
+	return program_entry_point::ConsoleMain(args, env);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -45,13 +45,13 @@ int main(int argc, char *argv[], char *envp[])
 	::signal(SIGCHLD, SIG_IGN);  //no check
 
 //command
-	GKC::ConstArray<GKC::ConstStringS> args;
+	const_array<const_string_s> args;
 	_auto_mem spArgs;
 	//convert
 	_cmdline_to_strings(argc, argv, spArgs, args);  //may throw
 
 	//main
-	return ProgramEntryPoint::UIMain(args);
+	return program_entry_point::UIMain(args);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

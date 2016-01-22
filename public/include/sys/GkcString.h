@@ -504,7 +504,7 @@ public:
 	static RefPtr<Tchar> To_C_Style(const ConstStringT<Tchar>& str, uintptr uStart = 0) throw()
 	{
 		assert( uStart <= str.GetCount() );
-		return RefPtr<Tchar>(ConstHelper::GetInternalPointer(str) + uStart);
+		return RefPtr<Tchar>(ConstArrayHelper::GetInternalPointer(str) + uStart);
 	}
 	template <typename Tchar, uintptr t_size>
 	static RefPtr<Tchar> To_C_Style(const FixedStringT<Tchar, t_size>& str, uintptr uStart = 0) throw()
@@ -766,7 +766,7 @@ public:
 			return 0;
 		mem_move(FixedArrayHelper::GetInternalPointer(str) + uPos, (uLength - uPos) * sizeof(Tchar), FixedArrayHelper::GetInternalPointer(str) + uPos + uAdd);
 		str.SetLength(uLength + uAdd);
-		mem_copy(ConstHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), FixedArrayHelper::GetInternalPointer(str) + uPos);
+		mem_copy(ConstArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), FixedArrayHelper::GetInternalPointer(str) + uPos);
 		return uAdd;
 	}
 	template <typename Tchar, uintptr t_size, uintptr t_sizeA>
@@ -803,7 +803,7 @@ public:
 		if( uAdd == 0 || uPos > uLength )
 			return ;
 		str.InsertAt(uPos, uAdd);
-		mem_copy(ConstHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), SharedArrayHelper::GetInternalPointer(str) + uPos);
+		mem_copy(ConstArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), SharedArrayHelper::GetInternalPointer(str) + uPos);
 	}
 	template <typename Tchar, uintptr t_size>
 	static void Insert(uintptr uPos, const FixedStringT<Tchar, t_size>& strAdd, StringT<Tchar>& str)
@@ -877,7 +877,7 @@ public:
 		if( uRet > t_size - 1 )
 			uRet = t_size - 1;
 		strDest.SetLength(uRet);
-		mem_copy(ConstHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), FixedArrayHelper::GetInternalPointer(strDest));
+		mem_copy(ConstArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), FixedArrayHelper::GetInternalPointer(strDest));
 		return uRet;
 	}
 	template <typename Tchar>
@@ -888,7 +888,7 @@ public:
 		if( uRet == 0 )
 			return ;
 		strDest.SetLength(uRet);
-		mem_copy(ConstHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), SharedArrayHelper::GetInternalPointer(strDest));
+		mem_copy(ConstArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), SharedArrayHelper::GetInternalPointer(strDest));
 	}
 	template <typename Tchar, uintptr t_sizeS, uintptr t_sizeD>
 	static uintptr Sub(const FixedStringT<Tchar, t_sizeS>& strSrc, uintptr uStart, uintptr uLength, FixedStringT<Tchar, t_sizeD>& strDest) throw()
@@ -943,7 +943,7 @@ public:
 	{
 		assert( uStart <= str.GetCount() );
 		assert( !str.IsNull() );
-		return typename ConstStringT<Tchar>::Iterator(RefPtr<Tchar>(find_string_char(ConstHelper::GetInternalPointer(str) + uStart, ch)));
+		return typename ConstStringT<Tchar>::Iterator(RefPtr<Tchar>(find_string_char(ConstArrayHelper::GetInternalPointer(str) + uStart, ch)));
 	}
 	template <typename Tchar, uintptr t_size>
 	static typename FixedStringT<Tchar, t_size>::Iterator Find(const FixedStringT<Tchar, t_size>& str, const Tchar& ch, uintptr uStart) throw()

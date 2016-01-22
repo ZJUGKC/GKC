@@ -21,7 +21,6 @@ This is pre-compiled header file.
 
 #include "base/GkcDef.h"
 #include "base/GkcBase.h"
-#include "base/GkcConst.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__PRECOMP_H__

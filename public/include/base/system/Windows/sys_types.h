@@ -153,7 +153,7 @@ public:
 		return cr;
 	}
 	//get status
-	static call_result GetStatus(io_handle& hd, file_status& status) throw()
+	static call_result GetStatus(io_handle& hd, storage_status& status) throw()
 	{
 		assert( hd.IsValid() );
 
@@ -240,8 +240,8 @@ public:
 	static char_h* gen_global_name(const char_h* pSrc) throw()
 	{
 		//global
-		static const char_h c_szGlobal[] = L"Global\\";
-		static const uintptr c_uGlobalLength = sizeof(c_szGlobal) / sizeof(char_h) - 1;
+		DECLARE_LOCAL_STATIC_CONST_STRING(char_h, c_szGlobal, c_uGlobalLength, L"Global\\")
+		//generate
 		uintptr uCount = calc_string_length(pSrc);
 		uintptr uNewCount;
 		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);

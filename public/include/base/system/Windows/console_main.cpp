@@ -16,15 +16,13 @@ This file contains main function for Console Application.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_cmdline.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 
 //main
 
 int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
 {
-	GKC::ConstArray<GKC::ConstStringS> args, env;
+	const_array<const_string_s> args, env;
 
 	//memory
 	_auto_mem spArgs, spEnv;
@@ -40,7 +38,7 @@ int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
 	set_default_locale();
 
 	//main
-	return ProgramEntryPoint::ConsoleMain(args, env);
+	return program_entry_point::ConsoleMain(args, env);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

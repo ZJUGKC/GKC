@@ -845,7 +845,7 @@ public:
 
 			CallResult cr;
 			ConstArray<byte> buffer;
-			ConstHelper::SetInternalPointer((byte*)SharedArrayHelper::GetInternalPointer(str), str.GetLength(), buffer);
+			ConstArrayHelper::SetInternalPointer((byte*)SharedArrayHelper::GetInternalPointer(str), str.GetLength(), buffer);
 			//stream
 			MemoryCharStream stream;
 			stream.Initialize(buffer);

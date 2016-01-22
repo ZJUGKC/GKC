@@ -16,8 +16,6 @@ This file contains main function for Service program.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_cmdline.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 
 // tools
@@ -81,7 +79,7 @@ int main(int argc, char *argv[], char *envp[])
 	::signal(SIGCHLD, SIG_IGN);  //no check
 
 //command
-	GKC::ConstArray<GKC::ConstStringS> args;
+	const_array<const_string_s> args;
 	_auto_mem spArgs;
 	//convert
 	try {
@@ -96,7 +94,7 @@ int main(int argc, char *argv[], char *envp[])
 	::signal(SIGTERM, _sig_term);  //no check
 //loop
 	report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_SUCCESS, _S("Start Service!"));
-	ServiceMainLoop sml;
+	service_main_loop sml;
 	if( !sml.Prepare(args) ) {
 		report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_ERROR, _S("Initialize loop failed!"));
 		return -1;

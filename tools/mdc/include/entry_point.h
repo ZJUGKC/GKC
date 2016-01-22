@@ -29,14 +29,14 @@ This file contains entry point function.
 inline
 void _print_version() throw()
 {
-	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
+	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
 }
 
 // help
 inline
 void _print_help() throw()
 {
-	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_help::GetAddress(), GKC::_const_array_help::GetCount()));
+	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(GKC::_const_array_help::GetAddress(), GKC::_const_array_help::GetCount()));
 }
 
 // ProgramEntryPoint
@@ -53,7 +53,7 @@ public:
 			_print_help();
 			return 0;
 		}
-		if( compare_string(GKC::ConstHelper::GetInternalPointer(args[1].get_Value()), GKC::ConstHelper::GetInternalPointer(args[2].get_Value())) == 0 ) {
+		if( compare_string(GKC::ConstArrayHelper::GetInternalPointer(args[1].get_Value()), GKC::ConstArrayHelper::GetInternalPointer(args[2].get_Value())) == 0 ) {
 			GKC::ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S("Error: The source directory and the destination directory cannot be the same!\n")));
 			return 0;
 		}

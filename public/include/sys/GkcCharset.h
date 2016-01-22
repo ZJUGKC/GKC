@@ -199,7 +199,7 @@ protected:
 		strDest.SetLength(uDestTotalBytes / sizeof(Tchar2) - 1);  //may throw
 		mem_zero(SharedArrayHelper::GetInternalPointer(strDest), uDestTotalBytes);
 		while( true ) {
-			int ret = cc.Convert(ConstHelper::GetInternalPointer(str), (int)(uSrcTotalBytes - sizeof(Tchar1)),
+			int ret = cc.Convert(ConstArrayHelper::GetInternalPointer(str), (int)(uSrcTotalBytes - sizeof(Tchar1)),
 								SharedArrayHelper::GetInternalPointer(strDest), (int)(uDestTotalBytes - sizeof(Tchar2)));
 			if( ret < 0 )
 				throw Exception(CallResult(SystemCallResults::Fail));
@@ -226,7 +226,7 @@ class _init_A2A
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP1, const ConstStringS& strCP2) throw()
 	{
-		return cc.InitializeAnsiToAnsi(ConstHelper::GetInternalPointer(strCP1), ConstHelper::GetInternalPointer(strCP2));
+		return cc.InitializeAnsiToAnsi(ConstArrayHelper::GetInternalPointer(strCP1), ConstArrayHelper::GetInternalPointer(strCP2));
 	}
 };
 class _init_A2U
@@ -234,7 +234,7 @@ class _init_A2U
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeAnsiToUTF8(ConstHelper::GetInternalPointer(strCP));
+		return cc.InitializeAnsiToUTF8(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
 class _init_A2H
@@ -242,7 +242,7 @@ class _init_A2H
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeAnsiToUTF16(ConstHelper::GetInternalPointer(strCP));
+		return cc.InitializeAnsiToUTF16(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
 class _init_A2L
@@ -250,7 +250,7 @@ class _init_A2L
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeAnsiToUTF32(ConstHelper::GetInternalPointer(strCP));
+		return cc.InitializeAnsiToUTF32(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
 class _init_U2A
@@ -258,7 +258,7 @@ class _init_U2A
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeUTF8ToAnsi(ConstHelper::GetInternalPointer(strCP));
+		return cc.InitializeUTF8ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
 class _init_U2H
@@ -282,7 +282,7 @@ class _init_H2A
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeUTF16ToAnsi(ConstHelper::GetInternalPointer(strCP));
+		return cc.InitializeUTF16ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
 class _init_H2U
@@ -306,7 +306,7 @@ class _init_L2A
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeUTF32ToAnsi(ConstHelper::GetInternalPointer(strCP));
+		return cc.InitializeUTF32ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
 class _init_L2U
@@ -424,11 +424,11 @@ public:
 			throw Exception(CallResult(SystemCallResults::Fail));
 		if( bSame ) {
 			baseClass::m_str.Release();
-			ConstHelper::SetInternalPointer<Tchar2>((const Tchar2*)ConstHelper::GetInternalPointer<Tchar1>(str), str.GetCount(), m_strC);
+			ConstArrayHelper::SetInternalPointer<Tchar2>((const Tchar2*)ConstArrayHelper::GetInternalPointer<Tchar1>(str), str.GetCount(), m_strC);
 			return ;
 		}
 		baseClass::cvt_string(str, cc, baseClass::m_str);
-		ConstHelper::SetInternalPointer<Tchar2>(NULL, 0, m_strC);
+		ConstArrayHelper::SetInternalPointer<Tchar2>(NULL, 0, m_strC);
 	}
 
 private:
@@ -440,7 +440,7 @@ class _init_A2S
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeAnsiToSystem(ConstHelper::GetInternalPointer(strCP), bSame);
+		return cc.InitializeAnsiToSystem(ConstArrayHelper::GetInternalPointer(strCP), bSame);
 	}
 };
 class _init_U2S
@@ -472,7 +472,7 @@ class _init_S2A
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame, const ConstStringS& strCP) throw()
 	{
-		return cc.InitializeSystemToAnsi(ConstHelper::GetInternalPointer(strCP), bSame);
+		return cc.InitializeSystemToAnsi(ConstArrayHelper::GetInternalPointer(strCP), bSame);
 	}
 };
 class _init_S2U

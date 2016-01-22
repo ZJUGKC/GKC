@@ -330,7 +330,7 @@ private:
 			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), CplErrorBuffer::c_size,
 									_S("Error (%u) : (%u) %s"), m_tokenInfo.GetCharStart().uRow + 1, m_tokenInfo.GetCharStart().uCol + 1,
 									eb.GetLength() == 0 ?
-										ConstHelper::GetInternalPointer(CS_U2S(StringUtilHelper::To_ConstString(m_tokenInfo.GetBuffer())).GetC())
+										ConstArrayHelper::GetInternalPointer(CS_U2S(StringUtilHelper::To_ConstString(m_tokenInfo.GetBuffer())).GetC())
 										: FixedArrayHelper::GetInternalPointer(eb)
 									);
 			if( ret >= 0 )

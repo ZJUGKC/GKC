@@ -285,4 +285,370 @@ private:
 	weak_object_ref& operator=(T&& t) throw();
 };
 
+// -----Iterator-----
+
+// reverse_iterator<T>
+
+template <typename T>
+class reverse_iterator
+{
+public:
+	reverse_iterator() throw()
+	{
+	}
+	explicit reverse_iterator(const T& iter) throw() : m_iter(iter)
+	{
+	}
+	reverse_iterator(const reverse_iterator<T>& src) throw() : m_iter(src.m_iter)
+	{
+	}
+	~reverse_iterator() throw()
+	{
+	}
+
+	//operators
+	reverse_iterator<T>& operator=(const reverse_iterator<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_iter = src.m_iter;
+		}
+		return *this;
+	}
+
+	bool IsNull() const throw()
+	{
+		return m_iter.IsNull();
+	}
+
+	//logical
+	bool operator==(const reverse_iterator<T>& right) const throw()
+	{
+		return m_iter == right.m_iter;
+	}
+	bool operator!=(const reverse_iterator<T>& right) const throw()
+	{
+		return m_iter != right.m_iter;
+	}
+
+	const typename T::EType& get_Value() const throw()
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		return tmp.get_Value();
+	}
+	typename T::EType& get_Value() throw()
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		return tmp.get_Value();
+	}
+	void set_Value(const typename T::EType& t)  //may throw
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		tmp.set_Value(t);
+	}
+	void set_Value(typename T::EType&& t)  //may throw
+	{
+		T tmp(m_iter);
+		tmp.MovePrev();
+		tmp.set_Value(rv_forward(t));
+	}
+
+	//methods
+	void MoveNext() throw()
+	{
+		m_iter.MovePrev();
+	}
+	void MovePrev() throw()
+	{
+		m_iter.MoveNext();
+	}
+	void MoveDelta(intptr iDelta) throw()
+	{
+		m_iter.MoveDelta(iDelta);
+	}
+	intptr CalcDelta(const reverse_iterator<T>& second) const throw()
+	{
+		return m_iter.CalcDelta(second.m_iter);
+	}
+
+private:
+	T m_iter;
+};
+
+// -----Array-----
+
+// array_iterator<T>
+
+template <typename T>
+class array_iterator
+{
+public:
+	typedef T  EType;
+
+public:
+	array_iterator() throw()
+	{
+	}
+	explicit array_iterator(const ref_ptr<T>& element) throw() : m_element(element)
+	{
+	}
+	array_iterator(const array_iterator<T>& src) throw() : m_element(src.m_element)
+	{
+	}
+	~array_iterator() throw()
+	{
+	}
+
+	array_iterator<T>& operator=(const array_iterator<T>& src) throw()
+	{
+		if( this != &src ) {
+			m_element = src.m_element;
+		}
+		return *this;
+	}
+
+	bool IsNull() const throw()
+	{
+		return m_element.IsNull();
+	}
+
+	const T& get_Value() const throw()
+	{
+		return m_element.Deref();
+	}
+	T& get_Value() throw()
+	{
+		return m_element.Deref();
+	}
+	void set_Value(const T& t)
+	{
+		m_element.Deref() = t;
+	}
+	void set_Value(T&& t)
+	{
+		m_element.Deref() = rv_forward(t);
+	}
+
+	//logical
+	bool operator==(const array_iterator<T>& right) const throw()
+	{
+		return m_element == right.m_element;
+	}
+	bool operator!=(const array_iterator<T>& right) const throw()
+	{
+		return m_element != right.m_element;
+	}
+	bool operator<(const array_iterator<T>& right) const throw()
+	{
+		return m_element < right.m_element;
+	}
+	bool operator>(const array_iterator<T>& right) const throw()
+	{
+		return right < *this;
+	}
+	bool operator<=(const array_iterator<T>& right) const throw()
+	{
+		return !operator>(right);
+	}
+	bool operator>=(const array_iterator<T>& right) const throw()
+	{
+		return !operator<(right);
+	}
+
+	//methods
+	void MoveNext() throw()
+	{
+		m_element = &(m_element.Deref()) + 1;
+	}
+	void MovePrev() throw()
+	{
+		m_element = &(m_element.Deref()) - 1;
+	}
+	void MoveDelta(intptr iDelta) throw()
+	{
+		m_element = &(m_element.Deref()) + iDelta;
+	}
+	intptr CalcDelta(const array_iterator<T>& second) const throw()
+	{
+		return &(m_element.Deref()) - &(second.m_element.Deref());
+	}
+
+private:
+	ref_ptr<T> m_element;
+};
+
+//const definition:
+// .h:   class C { ... public: static const T c_name; };
+// .cpp: const T C::c_name=...;
+
+// const_array_base<T>
+
+template <typename T>
+struct const_array_base
+{
+	const T*  m_first;
+	uintptr   m_size;
+};
+
+// const_array<T>
+
+template <typename T>
+class const_array : public const_array_base<T>
+{
+private:
+	typedef const_array_base<T>  baseClass;
+
+public:
+	typedef T  EType;
+	typedef array_iterator<T>  Iterator;
+
+public:
+	const_array() throw()
+	{
+		baseClass::m_first = NULL;
+		baseClass::m_size  = 0;
+	}
+	const_array(const T* p, uintptr size) throw()
+	{
+		baseClass::m_first = p;
+		baseClass::m_size  = size;
+	}
+	explicit const_array(const const_array_base<T>& src) throw()
+	{
+		baseClass::m_first = src.m_first;
+		baseClass::m_size  = src.m_size;
+	}
+	const_array(const const_array<T>& src) throw()
+	{
+		baseClass::m_first = src.m_first;
+		baseClass::m_size  = src.m_size;
+	}
+	~const_array() throw()
+	{
+	}
+
+	//operators
+	const_array<T>& operator=(const const_array<T>& src) throw()
+	{
+		if( this != &src ) {
+			baseClass::m_first = src.m_first;
+			baseClass::m_size  = src.m_size;
+		}
+		return *this;
+	}
+
+	bool operator==(const const_array<T>& right) const throw()
+	{
+		return baseClass::m_first == right.m_first;
+	}
+	bool operator!=(const const_array<T>& right) const throw()
+	{
+		return !operator==(right);
+	}
+
+	const Iterator operator[](uintptr index) const throw()
+	{
+		return GetAt(index);
+	}
+
+	//methods
+
+	//count
+	uintptr GetCount() const throw()
+	{
+		return baseClass::m_size;
+	}
+	bool IsNull() const throw()
+	{
+		return baseClass::m_first == NULL;
+	}
+
+	//iterator
+	const Iterator GetBegin() const throw()
+	{
+		return Iterator(ref_ptr<T>(baseClass::m_first));
+	}
+	const Iterator GetEnd() const throw()
+	{
+		return Iterator(ref_ptr<T>(baseClass::m_first + GetCount()));
+	}
+	const reverse_iterator<Iterator> GetReverseBegin() const throw()
+	{
+		return reverse_iterator<Iterator>(GetEnd());
+	}
+	const reverse_iterator<Iterator> GetReverseEnd() const throw()
+	{
+		return reverse_iterator<Iterator>(GetBegin());
+	}
+
+	const Iterator GetAt(uintptr index) const throw()
+	{
+		assert( index < GetCount() );
+		return Iterator(ref_ptr<T>(baseClass::m_first + index));
+	}
+
+private:
+	friend class const_array_helper;
+};
+
+// macros
+
+// define static constant array
+
+#define DECLARE_STATIC_CONST_ARRAY(cls, T)   class cls {  \
+public:  \
+	typedef T  EType;  \
+	static uintptr GetCount() throw() \
+	{ return c_size; } \
+	static const T* GetAddress() throw() \
+	{ return c_array; } \
+public:  \
+	static const T        c_array[]; \
+	static const uintptr  c_size;    \
+};
+
+// for definitions in .cpp
+
+//static constant array
+#define BEGIN_STATIC_CONST_ARRAY(cls)    const GKC::cls::EType GKC::cls::c_array[] = {
+
+#define STATIC_CONST_ARRAY_ENTRY(x)           x,
+#define STATIC_CONST_ARRAY_ENTRY_LAST(y)      y
+
+#define BEGIN_STATIC_CONST_ARRAY_GROUP()      {
+#define END_STATIC_CONST_ARRAY_GROUP()        },
+#define END_STATIC_CONST_ARRAY_GROUP_LAST()   }
+
+#define END_STATIC_CONST_ARRAY(cls)   };  \
+		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;
+
+// const_array_helper
+
+class const_array_helper
+{
+public:
+	//set internal pointer
+	template <typename T>
+	static void SetInternalPointer(const T* p, uintptr size, const_array<T>& arr) throw()
+	{
+		arr.m_first = p;
+		arr.m_size  = size;
+	}
+	//get internal pointer
+	template <typename T>
+	static const T* GetInternalPointer(const const_array<T>& arr) throw()
+	{
+		return arr.m_first;
+	}
+
+	//type cast (derived -> base or base -> derived)
+	template <class TSrc, class TDest>
+	static const TDest& TypeCast(const TSrc& src) throw()
+	{
+		return static_cast<const TDest&>(src);
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////

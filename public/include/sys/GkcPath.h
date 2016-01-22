@@ -53,7 +53,7 @@ public:
 	static bool IsRelative(IN const ConstStringT<Tchar>& str) throw()
 	{
 		assert( !str.IsNull() );
-		return path_is_relative(ConstHelper::GetInternalPointer(str));
+		return path_is_relative(ConstArrayHelper::GetInternalPointer(str));
 	}
 
 	//separator

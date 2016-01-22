@@ -147,7 +147,7 @@ private:
 										_S("Error (%u) : (%u) %s redifinition"),
 										arr[1].get_Value().Deref().GetCharStart().uRow + 1,
 										arr[1].get_Value().Deref().GetCharStart().uCol + 1,
-										ConstHelper::GetInternalPointer(CS_U2S(cs_token).GetC())
+										ConstArrayHelper::GetInternalPointer(CS_U2S(cs_token).GetC())
 										);
 				if( ret >= 0 )
 					tmp.SetLength(ret);

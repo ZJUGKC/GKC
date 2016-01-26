@@ -20,7 +20,6 @@ This is pre-compiled header file.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "base/GkcDef.h"
-#include "base/GkcBase.h"
 
 #include "base/GkcColl.h"
 

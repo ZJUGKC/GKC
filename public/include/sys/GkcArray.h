@@ -19,10 +19,6 @@ This file contains array classes.
 #define __GKC_ARRAY_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __GKC_BASE_H__
-	#error GkcArray.h requires GkcBase.h to be included first.
-#endif
-
 #ifndef __GKC_SYS_H__
 	#error GkcArray.h requires GkcSys.h to be included first.
 #endif

@@ -626,7 +626,7 @@ public:
 	bool LoadBitmap(_U_STRINGorID bitmap) throw()
 	{
 		assert( IsNull() );
-		m_hObj = ::LoadBitmapW(g_module.GetResourceInstance(), bitmap.m_lpstr);
+		m_hObj = ::LoadBitmapW(_os_g_module.GetResourceInstance(), bitmap.m_lpstr);
 		return m_hObj != NULL;
 	}
 	bool LoadOEMBitmap(UINT uIDBitmap) throw() // for OBM_/OCR_/OIC_
@@ -638,7 +638,7 @@ public:
 	bool LoadMappedBitmap(UINT uIDBitmap, UINT uFlags = 0, LPCOLORMAP lpColorMap = NULL, int iMapSize = 0) throw()
 	{
 		assert( IsNull() );
-		m_hObj = ::CreateMappedBitmap(g_module.GetResourceInstance(), uIDBitmap, (WORD)uFlags, lpColorMap, iMapSize);
+		m_hObj = ::CreateMappedBitmap(_os_g_module.GetResourceInstance(), uIDBitmap, (WORD)uFlags, lpColorMap, iMapSize);
 		return m_hObj != NULL;
 	}
 	bool Create(int iWidth, int iHeight, UINT uPlanes, UINT uBitsPerPixel, const void* lpBits) throw()

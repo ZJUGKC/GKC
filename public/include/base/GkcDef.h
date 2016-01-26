@@ -506,6 +506,35 @@ public:
 
 typedef i_memory_manager  IMemoryManager;
 
+// AlignHelper
+
+class AlignHelper
+{
+public:
+	//T : Integer
+	//uAlign : it must be a value as 2^N.
+	template <typename T>
+	static T RoundUp(IN T n, IN uint uAlign) throw()
+	{
+		assert( uAlign > 0 );
+		//overflow is not checked
+		return T( (n + (uAlign - 1)) & ~(T(uAlign) - 1) );
+	}
+	template <typename T>
+	static T RoundUpThrow(IN T n, IN uint uAlign)
+	{
+		assert( uAlign > 0 );
+		T v = SafeOperators::AddThrow(n, T(uAlign - 1));
+		return T( (v) & ~(T(uAlign) - 1) );
+	}
+	template <typename T>
+	static T RoundDown(IN T n, IN uint uAlign) throw()
+	{
+		assert( uAlign > 0 );
+		return T( n & ~(T(uAlign) - 1) );
+	}
+};
+
 //------------------------------------------------------------------------------
 // File
 
@@ -643,6 +672,25 @@ public:
 		return uHash;
 	}
 };
+
+//------------------------------------------------------------------------------
+// Swap
+
+template <typename T>
+inline void Swap(T& t1, T& t2)
+{
+	assert( &t1 != &t2 );
+	T tmp = static_cast<T&&>(t1);
+	t1 = static_cast<T&&>(t2);
+	t2 = static_cast<T&&>(tmp);
+}
+
+template <>
+inline void Swap<int>(int& t1, int& t2)
+{
+	assert( &t1 != &t2 );
+	t1 ^= t2 ^= t1 ^= t2;
+}
 
 //------------------------------------------------------------------------------
 // Synchronization

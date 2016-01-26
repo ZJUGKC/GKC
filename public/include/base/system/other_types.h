@@ -425,6 +425,523 @@ public:
 
 #pragma pack(pop)
 
+// fixed_element_memory_pool
+
+class fixed_element_memory_pool
+{
+public:
+	fixed_element_memory_pool() throw() : m_pMgr(NULL), m_pHead(NULL)
+	{
+	}
+	explicit fixed_element_memory_pool(i_memory_manager* pMgr) throw() : m_pMgr(pMgr), m_pHead(NULL)
+	{
+	}
+	~fixed_element_memory_pool() throw()
+	{
+		FreeDataChain();
+	}
+
+//methods
+
+	i_memory_manager* GetMemoryManager() const throw()
+	{
+		return m_pMgr;
+	}
+	void SetMemoryManager(i_memory_manager* pMgr) throw()
+	{
+		assert( pMgr != NULL && m_pMgr == NULL );
+		m_pMgr = pMgr;
+	}
+
+	// free data links
+	void FreeDataChain() throw()
+	{
+		if( m_pMgr == NULL ) {
+			assert( m_pHead == NULL );
+			return ;
+		}
+		void* pPlex = m_pHead;
+		while( pPlex != NULL ) {
+			void* pNext = get_next_block(pPlex);
+			m_pMgr->Free((uintptr)pPlex);
+			pPlex = pNext;
+		}
+		m_pHead = NULL;
+	}
+
+	// create block
+	void* CreateBlock(uintptr uMinElements, uintptr uMaxElements, uintptr uElementSize, uintptr& uActElements)  //may throw
+	{
+		assert( uMinElements > 0 && uMaxElements > 0 && uMinElements <= uMaxElements && uElementSize > 0 );
+		assert( m_pMgr != NULL );
+
+		void* pPlex = NULL;
+		uintptr uBytes = 0;
+		uintptr uElements = uMaxElements;
+		uintptr uLinkSize = sizeof(void*);
+
+		uActElements = uElements;
+		while( uElements >= uMinElements ) {
+			//try
+			if( safe_operators::Multiply<uintptr>(uElements, uElementSize, uBytes).IsFailed()
+				|| safe_operators::Add<uintptr>(uBytes, uLinkSize, uBytes).IsFailed() ) {
+				uElements --;
+				continue;
+			}
+			break;
+		}
+		if( uElements < uMinElements )
+			throw overflow_exception();
+
+		while( uElements >= uMinElements ) {
+			//no overflow
+			uBytes = uElements * uElementSize + sizeof(void*);
+			pPlex = (void*)(m_pMgr->Allocate(uBytes));
+			if( pPlex == NULL ) {
+				uElements --;
+				continue;
+			}
+			break;
+		}
+		if( pPlex == NULL )
+			throw outofmemory_exception();
+		uActElements = uElements;
+
+		get_next_block(pPlex) = m_pHead;
+		m_pHead = pPlex;
+
+		return get_data(pPlex);
+	}
+
+private:
+	static void*& get_next_block(void* pBlock) throw()
+	{
+		assert( pBlock != NULL );
+		return *((void**)pBlock);
+	}
+	static void* get_data(void* pBlock) throw()
+	{
+		return (void*)(((void**)pBlock) + 1);
+	}
+
+private:
+	i_memory_manager* m_pMgr;
+	void* m_pHead;
+
+private:
+	//non-copyable
+	fixed_element_memory_pool(const fixed_element_memory_pool& src) throw();
+	fixed_element_memory_pool& operator=(const fixed_element_memory_pool& src) throw();
+};
+
+// free_list<TNode>
+//  TNode : has a member named m_pNext (TNode*)
+
+template <class TNode>
+class free_list
+{
+public:
+	free_list(i_memory_manager* pMgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+			: m_pool(pMgr), m_pFree(NULL), m_uMinBlockElements(uMinElements), m_uMaxBlockElements(uMaxElements)
+	{
+		assert( uMinElements > 0 && uMaxElements > 0 && uMinElements <= uMaxElements );
+	}
+	~free_list() throw()
+	{
+	}
+
+	//methods
+	void Clear() throw()
+	{
+		m_pFree = NULL;
+		m_pool.FreeDataChain();
+	}
+	//get a free node
+	TNode* GetFreeNode()  //may throw
+	{
+		if( m_pFree == NULL ) {
+			uintptr uActElements;
+			//may throw
+			TNode* pNode = (TNode*)m_pool.CreateBlock(m_uMinBlockElements, m_uMaxBlockElements, sizeof(TNode), uActElements);
+			pNode += (uActElements - 1);
+			for( uintptr uBlock = uActElements; uBlock > 0; uBlock -- ) {
+				pNode->m_pNext = m_pFree;
+				m_pFree = pNode;
+				pNode --;
+			}
+		}
+		assert( m_pFree != NULL );
+		return m_pFree;
+	}
+	//pick free node
+	void PickFreeNode() throw()
+	{
+		if( m_pFree != NULL )
+			m_pFree = m_pFree->m_pNext;
+	}
+	void PutFreeNode(TNode* pNode) throw()
+	{
+		pNode->m_pNext = m_pFree;
+		m_pFree = pNode;
+	}
+
+private:
+	//pool
+	fixed_element_memory_pool  m_pool;
+	TNode*  m_pFree;  //free list
+	uintptr m_uMinBlockElements, m_uMaxBlockElements;
+
+private:
+	free_list(const free_list&) throw();
+	free_list& operator=(const free_list&) throw();
+};
+
+// node_pair_helper<TNode, TPair>
+
+template <typename TNode, typename TPair>
+class node_pair_helper
+{
+public:
+	//tools
+	static TNode* ConstructNode(free_list<TNode>& fl)  //may throw
+	{
+		TNode* pNewNode = fl.GetFreeNode();
+		call_constructor(*pNewNode);  //may throw
+		fl.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey>
+	static TNode* ConstructNode(free_list<TNode>& fl, const TKey& key)  //may throw
+	{
+		TNode* pNewNode = fl.GetFreeNode();
+		call_constructor(*pNewNode, key);  //may throw
+		fl.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey>
+	static TNode* ConstructNode(free_list<TNode>& fl, TKey&& key)  //may throw
+	{
+		TNode* pNewNode = fl.GetFreeNode();
+		call_constructor(*pNewNode, rv_forward(key));  //may throw
+		fl.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey, typename TValue>
+	static TNode* ConstructNode(free_list<TNode>& fl, const TKey& key, const TValue& val)  //may throw
+	{
+		TNode* pNewNode = fl.GetFreeNode();
+		call_constructor(*pNewNode, key, val);  //may throw
+		fl.PickFreeNode();
+		return pNewNode;
+	}
+	template <typename TKey, typename TValue>
+	static TNode* ConstructNode(free_list<TNode>& fl, TKey&& key, TValue&& val)  //may throw
+	{
+		TNode* pNewNode = fl.GetFreeNode();
+		call_constructor(*pNewNode, rv_forward(key), rv_forward(val));  //may throw
+		fl.PickFreeNode();
+		return pNewNode;
+	}
+	static TNode* ConstructNode(free_list<TNode>& fl, const TPair& pair)  //may throw
+	{
+		TNode* pNewNode = fl.GetFreeNode();
+		call_constructor(*pNewNode, pair);  //may throw
+		fl.PickFreeNode();
+		return pNewNode;
+	}
+	static TNode* ConstructNode(free_list<TNode>& fl, TPair&& pair)  //may throw
+	{
+		TNode* pNewNode = fl.GetFreeNode();
+		call_constructor(*pNewNode, rv_forward(pair));  //may throw
+		fl.PickFreeNode();
+		return pNewNode;
+	}
+	static void DestructNode(free_list<TNode>& fl, TNode* pNode, uintptr& uElements) throw()
+	{
+		assert( pNode != NULL );
+		pNode->~TNode();
+		fl.PutFreeNode(pNode);
+		assert( uElements > 0 );
+		uElements --;
+		if( uElements == 0 )
+			fl.Clear();
+	}
+};
+
+// fixed_size_memory_pool<t_size>
+
+template <uintptr t_size>
+class fixed_size_memory_pool
+{
+private:
+	struct _Node
+	{
+		_Node* m_pNext;
+		char   m_data[t_size];
+	};
+
+public:
+	explicit fixed_size_memory_pool(i_memory_manager* pMgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+									: m_uElements(0), m_freelist(pMgr, uMinElements, uMaxElements)
+	{
+	}
+	~fixed_size_memory_pool() throw()
+	{
+	}
+
+	void* Allocate() //may throw
+	{
+		_Node* pNode = m_freelist.GetFreeNode();  //may throw
+		m_freelist.PickFreeNode();
+
+		m_uElements ++;
+		assert( m_uElements > 0 );
+
+		return (void*)(pNode->m_data);  //data
+	}
+	void Free(void* p) throw()
+	{
+		//back to node
+		_Node* pNode = (_Node*)((byte*)p - ((byte*)(((_Node*)(0x128))->m_data) - 0x128));
+		m_freelist.PutFreeNode(pNode);
+
+		assert( m_uElements > 0 );
+		m_uElements --;
+		if( m_uElements == 0 )
+			m_freelist.Clear();
+	}
+
+private:
+	uintptr m_uElements;
+
+	free_list<_Node>  m_freelist;
+
+private:
+	fixed_size_memory_pool(const fixed_size_memory_pool&) throw();
+	fixed_size_memory_pool& operator=(const fixed_size_memory_pool&) throw();
+};
+
+// for share object
+
+#pragma pack(push, 1)
+
+// share_block_base
+
+class share_block_base
+{
+public:
+	share_block_base() throw() : m_pMgr(NULL), m_p(NULL), m_shareCount(1), m_weakCount(1)
+	{
+	}
+	~share_block_base() throw()
+	{
+	}
+
+	//methods
+	i_memory_manager* GetMemoryManager() const throw()
+	{
+		return m_pMgr;
+	}
+	void SetMemoryManager(i_memory_manager* pMgr) throw()
+	{
+		m_pMgr = pMgr;
+	}
+	//object pointer
+	void* GetAddress() const throw()
+	{
+		return m_p;
+	}
+	void SetAddress(void* p) throw()
+	{
+		m_p = p;
+	}
+
+	int AddRefCopy() throw()
+	{
+		return atomic_increment((int&)m_shareCount);
+	}
+	bool AddRefLock() throw()
+	{
+		for( ; ; ) {
+			int tmp = m_shareCount;
+			if( tmp <= 0 )
+				return false;
+			if( atomic_compare_exchange((int&)m_shareCount, tmp, tmp + 1) == tmp )
+				return true;
+		}
+		return false;
+	}
+	int Release() throw()
+	{
+		return atomic_decrement((int&)m_shareCount);
+	}
+
+	int WeakAddRef() throw()
+	{
+		return atomic_increment((int&)m_weakCount);
+	}
+	int WeakRelease() throw()
+	{
+		return atomic_decrement((int&)m_weakCount);
+	}
+
+	int GetShareCount() const throw()
+	{
+		return m_shareCount;
+	}
+	int GetWeakCount() const throw()
+	{
+		return m_weakCount;
+	}
+
+protected:
+	i_memory_manager* m_pMgr;
+	void* m_p;
+	volatile int m_shareCount;
+	volatile int m_weakCount;
+
+private:
+	//noncopyable
+	share_block_base(const share_block_base&) throw();
+	share_block_base& operator=(const share_block_base&) throw();
+};
+
+typedef void  (* share_object_destruction_func)(void* p) throw();
+
+// share_ptr_block
+
+class share_ptr_block : public share_block_base
+{
+public:
+	share_ptr_block() throw() : m_pDestruction(NULL)
+	{
+	}
+	~share_ptr_block() throw()
+	{
+	}
+
+	void SetDestructionFunc(share_object_destruction_func pFunc) throw()
+	{
+		m_pDestruction = pFunc;
+	}
+
+	//destroy
+	void DestroyObject() throw()
+	{
+		assert( m_pDestruction != NULL );
+		assert( m_pMgr != NULL );
+		if( m_p != NULL ) {
+			//destruction
+			m_pDestruction(m_p);
+			//free
+			m_pMgr->Free((uintptr)m_p);
+			m_p = NULL;
+		}
+	}
+
+protected:
+	share_object_destruction_func m_pDestruction;
+
+private:
+	//noncopyable
+	share_ptr_block(const share_ptr_block&) throw();
+	share_ptr_block& operator=(const share_ptr_block&) throw();
+};
+
+// share_array_block
+
+class share_array_block : public share_block_base
+{
+public:
+	share_array_block() throw() : m_uLength(0), m_uAllocLength(0)
+	{
+	}
+	~share_array_block() throw()
+	{
+	}
+
+	uintptr GetLength() const throw()
+	{
+		return m_uLength;
+	}
+	void SetLength(uintptr uLength) throw()
+	{
+		m_uLength = uLength;
+	}
+	uintptr GetAllocLength() const throw()
+	{
+		return m_uAllocLength;
+	}
+	void SetAllocLength(uintptr uAllocLength) throw()
+	{
+		m_uAllocLength = uAllocLength;
+	}
+
+	//destroy
+	template <typename T>
+	void DestroyArray() throw()
+	{
+		assert( m_pMgr != NULL );
+		if( m_p == NULL ) {
+			assert( m_uLength == 0 && m_uAllocLength == 0 );
+			return ;
+		}
+		//destruction
+		T* pt = (T*)m_p;
+		for( uintptr i = 0; i < m_uLength; i ++ ) {
+			pt->~T();
+			++ pt;
+		}
+		//free
+		m_pMgr->Free((uintptr)m_p);
+		m_p = NULL;
+		m_uLength = 0;
+		m_uAllocLength = 0;
+	}
+
+protected:
+	uintptr m_uLength;
+	uintptr m_uAllocLength;
+
+private:
+	//noncopyable
+	share_array_block(const share_array_block&) throw();
+	share_array_block& operator=(const share_array_block&) throw();
+};
+
+typedef void* (* share_object_typecast_func)(const guid& iid) throw();
+
+// share_com_block
+
+class share_com_block : public share_ptr_block
+{
+public:
+	share_com_block() throw() : m_pTypeCast(NULL)
+	{
+	}
+	~share_com_block() throw()
+	{
+	}
+
+	share_object_typecast_func GetTypeCastFunc() const throw()
+	{
+		return m_pTypeCast;
+	}
+	void SetTypeCastFunc(share_object_typecast_func pFunc) throw()
+	{
+		m_pTypeCast = pFunc;
+	}
+
+protected:
+	share_object_typecast_func m_pTypeCast;
+
+private:
+	share_com_block(const share_com_block&) throw();
+	share_com_block& operator=(const share_com_block&) throw();
+};
+
+#pragma pack(pop)
+
 // -----File-----
 
 // file_open_types
@@ -461,7 +978,7 @@ template <typename Tchar>
 class const_string_t : public const_array<Tchar>
 {
 private:
-	typedef const_array<Tchar>    baseClass;
+	typedef const_array<Tchar>     baseClass;
 	typedef const_string_t<Tchar>  thisClass;
 
 public:

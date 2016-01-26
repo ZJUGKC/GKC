@@ -19,10 +19,6 @@ This file contains smart pointer classes.
 #define __GKC_PTR_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __GKC_BASE_H__
-	#error GkcPtr.h requires GkcBase.h to be included first.
-#endif
-
 #ifndef __GKC_SYS_H__
 	#error GkcPtr.h requires GkcSys.h to be included first.
 #endif

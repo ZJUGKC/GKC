@@ -19,8 +19,8 @@ This file contains collection classes.
 #define __GKC_COLL_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __GKC_BASE_H__
-	#error GkcColl.h requires GkcBase.h to be included first.
+#ifndef __GKC_DEF_H__
+	#error GkcColl.h requires GkcDef.h to be included first.
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,143 +28,6 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 // classes
-
-//------------------------------------------------------------------------------
-// TOOLS
-
-// FreeList<TNode>
-//  TNode : has a member named m_pNext (TNode*)
-
-template <class TNode>
-class FreeList
-{
-public:
-	FreeList(const RefPtr<IMemoryManager>& mgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: m_pool(mgr), m_pFree(NULL), m_uMinBlockElements(uMinElements), m_uMaxBlockElements(uMaxElements)
-	{
-		assert( uMinElements > 0 && uMaxElements > 0 && uMinElements <= uMaxElements );
-	}
-	~FreeList() throw()
-	{
-	}
-
-	//methods
-	void Clear() throw()
-	{
-		m_pFree = NULL;
-		m_pool.FreeDataChain();
-	}
-	//get a free node
-	TNode* GetFreeNode()  //may throw
-	{
-		if( m_pFree == NULL ) {
-			uintptr uActElements;
-			//may throw
-			TNode* pNode = (TNode*)m_pool.CreateBlock(m_uMinBlockElements, m_uMaxBlockElements, sizeof(TNode), uActElements);
-			pNode += (uActElements - 1);
-			for( uintptr uBlock = uActElements; uBlock > 0; uBlock -- ) {
-				pNode->m_pNext = m_pFree;
-				m_pFree = pNode;
-				pNode --;
-			}
-		}
-		assert( m_pFree != NULL );
-		return m_pFree;
-	}
-	//pick free node
-	void PickFreeNode() throw()
-	{
-		if( m_pFree != NULL )
-			m_pFree = m_pFree->m_pNext;
-	}
-	void PutFreeNode(TNode* pNode) throw()
-	{
-		pNode->m_pNext = m_pFree;
-		m_pFree = pNode;
-	}
-
-private:
-	//pool
-	FixedElementMemoryPool  m_pool;
-	TNode*  m_pFree;  //free list
-	uintptr m_uMinBlockElements, m_uMaxBlockElements;
-
-private:
-	FreeList(const FreeList&) throw();
-	FreeList& operator=(const FreeList&) throw();
-};
-
-// PairHelper<TNode, TPair>
-
-template <typename TNode, typename TPair>
-class PairHelper
-{
-public:
-	//tools
-	static TNode* ConstructNode(FreeList<TNode>& freelist)  //may throw
-	{
-		TNode* pNewNode = freelist.GetFreeNode();
-		call_constructor(*pNewNode);  //may throw
-		freelist.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey>
-	static TNode* ConstructNode(FreeList<TNode>& freelist, const TKey& key)  //may throw
-	{
-		TNode* pNewNode = freelist.GetFreeNode();
-		call_constructor(*pNewNode, key);  //may throw
-		freelist.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey>
-	static TNode* ConstructNode(FreeList<TNode>& freelist, TKey&& key)  //may throw
-	{
-		TNode* pNewNode = freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(key));  //may throw
-		freelist.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey, typename TValue>
-	static TNode* ConstructNode(FreeList<TNode>& freelist, const TKey& key, const TValue& val)  //may throw
-	{
-		TNode* pNewNode = freelist.GetFreeNode();
-		call_constructor(*pNewNode, key, val);  //may throw
-		freelist.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey, typename TValue>
-	static TNode* ConstructNode(FreeList<TNode>& freelist, TKey&& key, TValue&& val)  //may throw
-	{
-		TNode* pNewNode = freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(key), rv_forward(val));  //may throw
-		freelist.PickFreeNode();
-		return pNewNode;
-	}
-	static TNode* ConstructNode(FreeList<TNode>& freelist, const TPair& pair)  //may throw
-	{
-		TNode* pNewNode = freelist.GetFreeNode();
-		call_constructor(*pNewNode, pair);  //may throw
-		freelist.PickFreeNode();
-		return pNewNode;
-	}
-	static TNode* ConstructNode(FreeList<TNode>& freelist, TPair&& pair)  //may throw
-	{
-		TNode* pNewNode = freelist.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(pair));  //may throw
-		freelist.PickFreeNode();
-		return pNewNode;
-	}
-	static void DestructNode(FreeList<TNode>& freelist, TNode* pNode, uintptr& uElements) throw()
-	{
-		assert( pNode != NULL );
-		pNode->~TNode();
-		freelist.PutFreeNode(pNode);
-		assert( uElements > 0 );
-		uElements --;
-		if( uElements == 0 )
-			freelist.Clear();
-	}
-};
 
 //------------------------------------------------------------------------------
 // SingleList<T, TCompareTrait>
@@ -270,7 +133,7 @@ public:
 public:
 	SingleList(const RefPtr<IMemoryManager>& mgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
 			: m_pHead(NULL), m_uElements(0),
-			m_freelist(mgr, uMinElements, uMaxElements)
+			m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
 	~SingleList() throw()
@@ -395,26 +258,26 @@ private:
 	// nodes
 	_Node* new_node(_Node* pNext)  //may throw
 	{
-		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist);
+		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist);
 		fill_new_node(pNewNode, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(const T& t, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, t);
+		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, t);
 		fill_new_node(pNewNode, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(T&& t, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
+		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
 		fill_new_node(pNewNode, pNext);
 		return pNewNode;
 	}
 	// free
 	void free_node(_Node* pNode) throw()
 	{
-		PairHelper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
+		node_pair_helper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 
 	//iterator
@@ -429,7 +292,7 @@ private:
 	_Node*   m_pHead;  //head node
 	uintptr  m_uElements;
 	//free list
-	FreeList<_Node>  m_freelist;
+	free_list<_Node>  m_freelist;
 
 private:
 	//non-copyable
@@ -550,7 +413,7 @@ public:
 public:
 	List(const RefPtr<IMemoryManager>& mgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
 		: m_pHead(NULL), m_pTail(NULL), m_uElements(0),
-		m_freelist(mgr, uMinElements, uMaxElements)
+		m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
 	~List() throw()
@@ -1043,26 +906,26 @@ private:
 	//nodes
 	_Node* new_node(_Node* pPrev, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist);
+		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist);
 		fill_new_node(pNewNode, pPrev, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(const T& t, _Node* pPrev, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, t);
+		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, t);
 		fill_new_node(pNewNode, pPrev, pNext);
 		return pNewNode;
 	}
 	_Node* new_node(T&& t, _Node* pPrev, _Node* pNext)  //may throw
 	{
-		_Node* pNewNode = PairHelper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
+		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
 		fill_new_node(pNewNode, pPrev, pNext);
 		return pNewNode;
 	}
 	//free
 	void free_node(_Node* pNode) throw()
 	{
-		PairHelper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
+		node_pair_helper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 
 	//iterator
@@ -1079,7 +942,7 @@ private:
 	_Node*   m_pTail;  //tail node
 	uintptr  m_uElements;
 	//free list
-	FreeList<_Node>  m_freelist;
+	free_list<_Node>  m_freelist;
 
 private:
 	//non-copyable
@@ -1211,7 +1074,7 @@ public:
 			: m_mgr(mgr), m_ppBins(NULL), m_uBins(uBins), m_uElements(0),
 			m_fOptimalLoad(fOptimalLoad), m_fLowThreshold(fLowThreshold), m_fHighThreshold(fHighThreshold),
 			m_uHighRehashThreshold(Limits<uintptr>::Max), m_uLowRehashThreshold(0), m_uLockCount(0), // Start unlocked
-			m_freelist(mgr, uMinElements, uMaxElements)
+			m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 		assert( uBins > 0 );
 		assert( fOptimalLoad > 0.0f );
@@ -1564,14 +1427,14 @@ protected:
 	_Node* create_node(const _Key& key, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key);
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key);
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
 	_Node* create_node(_Key&& key, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
@@ -1579,7 +1442,7 @@ protected:
 	_Node* create_node(const TKey& key, const V& v, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key, v);
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key, v);
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
@@ -1587,21 +1450,21 @@ protected:
 	_Node* create_node(TKey&& key, V&& v, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
 	_Node* create_node(const TPair& pair, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, pair);
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, pair);
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
 	_Node* create_node(TPair&& pair, uintptr uBin, uintptr uHash)
 	{
 		bucket_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
 		fill_new_node(pNewNode, uBin, uHash);
 		return pNewNode;
 	}
@@ -1609,7 +1472,7 @@ protected:
 	// free
 	void free_node(_Node* pNode) throw()
 	{
-		PairHelper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
+		node_pair_helper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 	void remove_node(_Node* pNode, _Node* pPrev) throw()
 	{
@@ -1685,7 +1548,7 @@ private:
 	uintptr  m_uLowRehashThreshold;
 	uintptr  m_uLockCount;
 	//free list
-	FreeList<_Node>  m_freelist;
+	free_list<_Node>  m_freelist;
 
 private:
 	//non-copyable
@@ -1999,7 +1862,7 @@ public:
 	_RBTree(const RefPtr<IMemoryManager>& mgr,
 			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
 			: m_mgr(mgr), m_pRoot(NULL), m_uElements(0), m_pNil(NULL),
-			m_freelist(mgr, uMinElements, uMaxElements)
+			m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
 	~_RBTree() throw()
@@ -2306,7 +2169,7 @@ protected:
 	_Node* create_node(const _Key& key)  //may throw
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key);
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key);
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2315,7 +2178,7 @@ protected:
 	_Node* create_node(_Key&& key)  //may throw
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2325,7 +2188,7 @@ protected:
 	_Node* create_node(const TKey& key, const V& v)
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, key, v);
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key, v);
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2335,7 +2198,7 @@ protected:
 	_Node* create_node(TKey&& key, V&& v)
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2344,7 +2207,7 @@ protected:
 	_Node* create_node(const TPair& pair)
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, pair);
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, pair);
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2353,7 +2216,7 @@ protected:
 	_Node* create_node(TPair&& pair)
 	{
 		nil_node_allocate();
-		_Node* pNewNode = PairHelper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
+		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2363,7 +2226,7 @@ protected:
 	//free
 	void free_node(_Node* pNode) throw()
 	{
-		PairHelper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
+		node_pair_helper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 	void remove_by_post_order(_Node* pNode) throw()
 	{
@@ -2625,7 +2488,7 @@ private:
 	//sentinel node
 	_Node*   m_pNil;
 	//free list
-	FreeList<_Node>  m_freelist;
+	free_list<_Node>  m_freelist;
 
 private:
 	//non-copyable

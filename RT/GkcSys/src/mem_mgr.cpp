@@ -18,7 +18,7 @@ This file contains memory manager functions.
 
 #include "precomp.h"
 
-#include "gkc_sys.h"
+#include "_GkcSys.h"
 
 #include "globals.h"
 
@@ -28,7 +28,7 @@ This file contains memory manager functions.
 
 //CrtMemoryManager
 
-SA_FUNCTION GKC::IMemoryManager* CrtMemoryManager_Get() throw()
+SA_FUNCTION GKC::IMemoryManager* _CrtMemoryManager_Get() throw()
 {
 	return get_crt_mem_mgr();
 }

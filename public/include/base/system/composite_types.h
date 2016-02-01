@@ -642,7 +642,13 @@ public:
 	{
 		return arr.m_first;
 	}
+};
 
+// const_helper
+
+class const_helper
+{
+public:
 	//type cast (derived -> base or base -> derived)
 	template <class TSrc, class TDest>
 	static const TDest& TypeCast(const TSrc& src) throw()

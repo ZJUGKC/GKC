@@ -31,51 +31,61 @@ This file contains global variables.
 BEGIN_SA_GLOBAL_VARIABLE(CrtMemoryManager, crt_mem_mgr)
 END_SA_GLOBAL_VARIABLE(crt_mem_mgr)
 
-//SPB
-BEGIN_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-END_SA_GLOBAL_VARIABLE(spb_mgr)
+//Mutex
+BEGIN_SA_GLOBAL_VARIABLE(GKC::Mutex, g_mutex)
+END_SA_GLOBAL_VARIABLE(g_mutex)
 
-BEGIN_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
-END_SA_GLOBAL_VARIABLE(spb_mutex)
+//SPB
+BEGIN_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_ptr_block)>, spb_pool)
+END_SA_GLOBAL_VARIABLE(spb_pool)
 
 //SAB
-BEGIN_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>, sab_mgr)
-END_SA_GLOBAL_VARIABLE(sab_mgr)
+BEGIN_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_array_block)>, sab_pool)
+END_SA_GLOBAL_VARIABLE(sab_pool)
 
-BEGIN_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
-END_SA_GLOBAL_VARIABLE(sab_mutex)
+//SCB
+BEGIN_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_com_block)>, scb_pool)
+END_SA_GLOBAL_VARIABLE(scb_pool)
 
 //------------------------------------------------------------------------------
 //functions
 
 bool init_globals() throw()
 {
-	GKC::RefPtr<GKC::IMemoryManager> mgr(get_crt_mem_mgr());
 	GKC::CallResult cr;
 
-	//spb
-	cr = GET_SA_GLOBAL_VARIABLE(spb_mutex).Init();
+	//mutex
+	cr = GET_SA_GLOBAL_VARIABLE(g_mutex).Init();
 	if( cr.IsFailed() )
 		return false;
-	GET_SA_GLOBAL_VARIABLE(spb_mgr).SetMemoryManager(mgr);
+
+	//crt
+	GKC::IMemoryManager* pMgr = get_crt_mem_mgr();
+
+	//spb
+	GET_SA_GLOBAL_VARIABLE(spb_pool).SetMemoryManager(pMgr);
 
 	//sab
-	cr = GET_SA_GLOBAL_VARIABLE(sab_mutex).Init();
-	if( cr.IsFailed() ) {
-		GET_SA_GLOBAL_VARIABLE(spb_mutex).Term();
-		return false;
-	}
-	GET_SA_GLOBAL_VARIABLE(sab_mgr).SetMemoryManager(mgr);
+	GET_SA_GLOBAL_VARIABLE(sab_pool).SetMemoryManager(pMgr);
+
+	//scb
+	GET_SA_GLOBAL_VARIABLE(scb_pool).SetMemoryManager(pMgr);
 
 	return true;
 }
 
 void dump_globals() throw()
 {
-	//sab
-	GET_SA_GLOBAL_VARIABLE(sab_mutex).Term();
-	//spb
-	GET_SA_GLOBAL_VARIABLE(spb_mutex).Term();
+	//no destructions
+	// scb
+	GET_SA_GLOBAL_VARIABLE(scb_pool).Clear();
+	// sab
+	GET_SA_GLOBAL_VARIABLE(sab_pool).Clear();
+	// spb
+	GET_SA_GLOBAL_VARIABLE(spb_pool).Clear();
+
+	//mutex
+	GET_SA_GLOBAL_VARIABLE(g_mutex).Term();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

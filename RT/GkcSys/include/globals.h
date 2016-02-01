@@ -47,13 +47,17 @@ inline GKC::IMemoryManager* get_crt_mem_mgr() throw()
 	return static_cast<GKC::IMemoryManager*>(&(GET_SA_GLOBAL_VARIABLE(crt_mem_mgr)));
 }
 
-// SharedPtrBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedPtrBlock)>, spb_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, spb_mutex)
+// Mutex
+DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, g_mutex)
 
-// SharedArrayBlock
-DECLARE_SA_GLOBAL_VARIABLE(GKC::PoolMemoryManager<sizeof(GKC::SharedArrayBlock)>, sab_mgr)
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, sab_mutex)
+// share_ptr_block
+DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_ptr_block)>, spb_pool)
+
+// share_array_block
+DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_array_block)>, sab_pool)
+
+// share_com_block
+DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_com_block)>, scb_pool)
 
 //functions
 

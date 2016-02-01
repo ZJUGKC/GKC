@@ -541,8 +541,8 @@ template <class TNode>
 class free_list
 {
 public:
-	free_list(i_memory_manager* pMgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: m_pool(pMgr), m_pFree(NULL), m_uMinBlockElements(uMinElements), m_uMaxBlockElements(uMaxElements)
+	explicit free_list(i_memory_manager* pMgr = NULL, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+					: m_pool(pMgr), m_pFree(NULL), m_uMinBlockElements(uMinElements), m_uMaxBlockElements(uMaxElements)
 	{
 		assert( uMinElements > 0 && uMaxElements > 0 && uMinElements <= uMaxElements );
 	}
@@ -550,7 +550,17 @@ public:
 	{
 	}
 
-	//methods
+//methods
+
+	i_memory_manager* GetMemoryManager() const throw()
+	{
+		return m_pool.GetMemoryManager();
+	}
+	void SetMemoryManager(i_memory_manager* pMgr) throw()
+	{
+		m_pool.SetMemoryManager(pMgr);
+	}
+
 	void Clear() throw()
 	{
 		m_pFree = NULL;
@@ -681,12 +691,23 @@ private:
 	};
 
 public:
-	explicit fixed_size_memory_pool(i_memory_manager* pMgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+	explicit fixed_size_memory_pool(i_memory_manager* pMgr = NULL, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
 									: m_uElements(0), m_freelist(pMgr, uMinElements, uMaxElements)
 	{
 	}
 	~fixed_size_memory_pool() throw()
 	{
+	}
+
+//methods
+
+	i_memory_manager* GetMemoryManager() const throw()
+	{
+		return m_freelist.GetMemoryManager();
+	}
+	void SetMemoryManager(i_memory_manager* pMgr) throw()
+	{
+		m_freelist.SetMemoryManager(pMgr);
 	}
 
 	void* Allocate() //may throw
@@ -709,6 +730,12 @@ public:
 		m_uElements --;
 		if( m_uElements == 0 )
 			m_freelist.Clear();
+	}
+
+	void Clear() throw()
+	{
+		m_freelist.Clear();
+		m_uElements = 0;
 	}
 
 private:
@@ -754,6 +781,10 @@ public:
 	void SetAddress(void* p) throw()
 	{
 		m_p = p;
+	}
+	bool IsNull() const throw()
+	{
+		return m_p == NULL;
 	}
 
 	int AddRefCopy() throw()

@@ -18,66 +18,78 @@ This file contains shared-object-header-block pool functions.
 
 #include "precomp.h"
 
-#include "gkc_sys.h"
+#include "_GkcSys.h"
 
 #include "globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//internal
+
+template <class TElement>
+inline TElement* t_pool_allocate(fixed_size_memory_pool<sizeof(TElement)>& pool) throw()
+{
+	TElement* p = NULL;
+	try {
+		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(g_mutex));
+		p = (TElement*)pool.Allocate();
+	}
+	catch(...) {
+		p = NULL;
+	}
+	//constructor
+	if( p != NULL )
+		call_constructor(*p);  //no throw
+	return p;
+}
+template <class TElement>
+inline void t_pool_free(fixed_size_memory_pool<sizeof(TElement)>& pool, TElement* p) throw()
+{
+	if( p == NULL )
+		return ;
+	//destructor
+	p->~TElement();
+	try {
+		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(g_mutex));
+		pool.Free(p);
+	}
+	catch(...) {
+	}
+}
+
 //functions
 
 //SPB
 
-GKC::SharedPtrBlock* SpbPool_Allocate() throw()
+share_ptr_block* _SpbPool_Allocate() throw()
 {
-	GKC::SharedPtrBlock* p = NULL;
-	try {
-		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(spb_mutex));
-		p = (GKC::SharedPtrBlock*)(GET_SA_GLOBAL_VARIABLE(spb_mgr).Allocate(0));
-	}
-	catch(...) {
-		return NULL;
-	}
-	return p;
+	return t_pool_allocate<share_ptr_block>(GET_SA_GLOBAL_VARIABLE(spb_pool));
 }
-
-void SpbPool_Free(GKC::SharedPtrBlock* p) throw()
+void _SpbPool_Free(share_ptr_block* p) throw()
 {
-	if( p == NULL )
-		return ;
-	try {
-		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(spb_mutex));
-		GET_SA_GLOBAL_VARIABLE(spb_mgr).Free((uintptr)p);
-	}
-	catch(...) {
-	}
+	t_pool_free<share_ptr_block>(GET_SA_GLOBAL_VARIABLE(spb_pool), p);
 }
 
 //SAB
 
-GKC::SharedArrayBlock* SabPool_Allocate() throw()
+share_array_block* _SabPool_Allocate() throw()
 {
-	GKC::SharedArrayBlock* p = NULL;
-	try {
-		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(sab_mutex));
-		p = (GKC::SharedArrayBlock*)(GET_SA_GLOBAL_VARIABLE(sab_mgr).Allocate(0));
-	}
-	catch(...) {
-		return NULL;
-	}
-	return p;
+	return t_pool_allocate<share_array_block>(GET_SA_GLOBAL_VARIABLE(sab_pool));
+}
+void _SabPool_Free(share_array_block* p) throw()
+{
+	t_pool_free<share_array_block>(GET_SA_GLOBAL_VARIABLE(sab_pool), p);
 }
 
-void SabPool_Free(GKC::SharedArrayBlock* p) throw()
+//SCB
+
+share_com_block* _ScbPool_Allocate() throw()
 {
-	if( p == NULL )
-		return ;
-	try {
-		GKC::SyncLock<GKC::Mutex> lock(GET_SA_GLOBAL_VARIABLE(sab_mutex));
-		GET_SA_GLOBAL_VARIABLE(sab_mgr).Free((uintptr)p);
-	}
-	catch(...) {
-	}
+	return t_pool_allocate<share_com_block>(GET_SA_GLOBAL_VARIABLE(scb_pool));
+}
+void _ScbPool_Free(share_com_block* p) throw()
+{
+	t_pool_free<share_com_block>(GET_SA_GLOBAL_VARIABLE(scb_pool), p);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

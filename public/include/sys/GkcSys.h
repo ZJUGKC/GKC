@@ -19,7 +19,7 @@ This file contains GkcSys helper classes.
 #define __GKC_SYS_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "gkc_sys.h"
+#include "_GkcSys.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
@@ -34,24 +34,21 @@ class MemoryHelper
 public:
 	static RefPtr<IMemoryManager> GetCrtMemoryManager() throw()
 	{
-		return RefPtr<IMemoryManager>(::CrtMemoryManager_Get());
+		return RefPtr<IMemoryManager>(::_CrtMemoryManager_Get());
 	}
 };
 
-// SharedPtrBlockHelper
+// SharePtr<T>
+template <typename T>
+using SharePtr = _SharePtr<T>;
 
-class SharedPtrBlockHelper
-{
-public:
-	static SharedPtrBlock* Allocate() throw()
-	{
-		return ::SpbPool_Allocate();
-	}
-	static void Free(SharedPtrBlock* p) throw()
-	{
-		::SpbPool_Free(p);
-	}
-};
+// WeakPtr<T>
+template <typename T>
+using WeakPtr = _WeakPtr<T>;
+
+// SharePtrHelper
+typedef _SharePtrHelper  SharePtrHelper;
+
 
 // SharedArrayBlockHelper
 

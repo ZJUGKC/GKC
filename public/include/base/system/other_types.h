@@ -723,7 +723,7 @@ public:
 	void Free(void* p) throw()
 	{
 		//back to node
-		_Node* pNode = (_Node*)((byte*)p - ((byte*)(((_Node*)(0x128))->m_data) - 0x128));
+		_Node* pNode = (_Node*)((byte*)p - (intptr)((byte*)(((_Node*)(0x128))->m_data) - (byte*)(0x128)));
 		m_freelist.PutFreeNode(pNode);
 
 		assert( m_uElements > 0 );
@@ -940,7 +940,7 @@ private:
 	share_array_block& operator=(const share_array_block&) throw();
 };
 
-typedef void* (* share_object_typecast_func)(const guid& iid) throw();
+typedef void* (* share_object_typecast_func)(void* p, const guid& iid) throw();
 
 // share_com_block
 
@@ -1046,6 +1046,8 @@ typedef const_string_t<char_w>  const_string_w;   //wide version
 
 // macros
 
+// --<header file>--
+
 // define constant string by constant array in a method body
 
 #define DECLARE_LOCAL_CONST_STRING(char_type, array_name, len_name, x)  \
@@ -1079,20 +1081,26 @@ static const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  c_name;
 //DECLARE_CONST_STRING_ARRAY_TYPE(char_type)
 #define DECLARE_CONST_STRING_ARRAY_TYPE(char_type)  const_array<DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)>
 
+// --<.h end>--
+
+// --<source file>--
+
 // static constant string in .cpp
 //   STATIC_CONST_STRING_ENTRY(x) can be used repeatedly with or without CRLF
 //   "some" or L"some" or _S("some")
 
-#define BEGIN_STATIC_CONST_STRING(cls)   const GKC::cls::EType GKC::cls::c_array[] =
+#define BEGIN_STATIC_CONST_STRING(cls)   const cls::EType cls::c_array[] =
 #define STATIC_CONST_STRING_ENTRY(x)     x
 #define END_STATIC_CONST_STRING(cls)     ;  \
-		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;
+		const uintptr cls::c_size = sizeof(cls::c_array) / sizeof(cls::c_array[0]) - 1;
 
 //constant string member
 #define IMPLEMENT_CONST_STRING_ENTRY(char_type, x)   { x, sizeof(x) / sizeof(char_type) - 1 }  //this macro can be used for implementing constant string member
 
 #define IMPLEMENT_STATIC_CONST_STRING_MEMBER(cls, c_name, char_type, x)  \
-const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) GKC::cls::c_name = \
+const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) cls::c_name = \
 IMPLEMENT_CONST_STRING_ENTRY(char_type, x) ;
+
+// --<.cpp end>--
 
 ////////////////////////////////////////////////////////////////////////////////

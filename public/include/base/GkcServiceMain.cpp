@@ -24,7 +24,7 @@ This file contains main function for Service program.
 class ServiceMainLoop
 {
 public:
-	bool Prepare(const GKC::ConstArray<GKC::ConstStringS>& args) throw();
+	bool Prepare(const ConstArray<ConstStringS>& args) throw();
 	// return value : to be continued
 	bool OneLoop() throw();
 	int Cleanup() throw();

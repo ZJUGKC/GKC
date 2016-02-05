@@ -487,8 +487,8 @@ private:
 class _SharePtrHelper
 {
 protected:
-	BEGIN_NOINLINE
 	template <typename T>
+	BEGIN_NOINLINE
 	static void object_destruction(void* p) throw()
 	END_NOINLINE
 	{
@@ -510,7 +510,7 @@ public:
 		T* pT = (T*)((const_cast<GKC::RefPtr<GKC::IMemoryManager>&>(mgr)).Deref().Allocate(sizeof(T)));
 		if( pT == NULL ) {
 			::_SpbPool_Free(pB);
-			throw OutOfMemoryException();
+			throw GKC::OutOfMemoryException();
 		}
 
 		_SharePtr<T> ret;
@@ -596,7 +596,7 @@ public:
 	static _SharePtr<T> Clone(const _SharePtr<T>& sp)  //may throw
 	{
 		return ( !sp.IsBlockNull() )
-				? ( assert( m_pT != NULL ), MakeSharePtr((sp.m_pB)->GetMemoryManager(), sp.Deref()) )
+				? ( assert( sp.m_pT != NULL ), MakeSharePtr((sp.m_pB)->GetMemoryManager(), sp.Deref()) )
 				: SharePtr<T>();
 	}
 
@@ -624,6 +624,248 @@ public:
 		return sp.IsBlockNull() ? 0 : (sp.m_pB)->GetWeakCount();
 	}
 };
+
+// _ShareCom<T>
+
+template <class T>
+class _ShareCom : public _SharePtr<T>
+{
+private:
+	typedef _SharePtr<T>  baseClass;
+	typedef _ShareCom<T>  thisClass;
+
+public:
+	_ShareCom() throw()
+	{
+	}
+	_ShareCom(const _ShareCom& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	{
+	}
+	_ShareCom(_ShareCom&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	{
+	}
+	~_ShareCom() throw()
+	{
+	}
+
+	_ShareCom<T>& operator=(const _ShareCom<T>& src) throw()
+	{
+		baseClass::operator=(static_cast<const baseClass&>(src));
+		return *this;
+	}
+	_ShareCom<T>& operator=(_ShareCom<T>&& src) throw()
+	{
+		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
+		return *this;
+	}
+};
+
+// _WeakCom<T>
+
+template <class T>
+class _WeakCom : public _WeakPtr<T>
+{
+private:
+	typedef _WeakPtr<T>  baseClass;
+	typedef _WeakCom<T>  thisClass;
+
+public:
+	_WeakCom() throw()
+	{
+	}
+	_WeakCom(const _WeakCom& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	{
+	}
+	_WeakCom(_WeakCom&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	{
+	}
+	~_WeakCom() throw()
+	{
+	}
+
+	_WeakCom<T>& operator=(const _WeakCom<T>& src) throw()
+	{
+		baseClass::operator=(static_cast<const baseClass&>(src));
+		return *this;
+	}
+	_WeakCom<T>& operator=(_WeakCom<T>&& src) throw()
+	{
+		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
+		return *this;
+	}
+};
+
+// --only one component class can be defined in a pair of .h and .cpp files.--
+
+struct _Com_Interface_Offset_Item
+{
+	guid*   pid;
+	intptr  offset;
+};
+
+template <class T>
+class _Com_TypeCast_Func
+{
+};
+
+// --<header file>--
+
+#define DECLARE_COM_TYPECAST(cls)  \
+	DECLARE_STATIC_CONST_ARRAY(com_ca_##cls, _Com_Interface_Offset_Item)  \
+	class com_tc_##cls {  \
+	public:  \
+		BEGIN_NOINLINE  \
+		static void* _Com_TypeCast(void* p, const guid& iid) throw()  \
+		END_NOINLINE  \
+		{  const _Com_Interface_Offset_Item* pItem = com_ca_##cls ::GetAddress();  \
+		uintptr uCount = com_ca_##cls ::GetCount();  \
+		for( uintptr i = 0; i < uCount; i ++ ) {  \
+			if( guid_equal(*(pItem->pid), iid) ) {  \
+				return (void*)((byte*)p + pItem->offset); }  \
+			pItem ++; }  \
+		return NULL; }  \
+	};  \
+	template <> class _Com_TypeCast_Func<cls> { public:  \
+		static const share_object_typecast_func c_func;  \
+	};
+
+// --<.h end>--
+
+// --<source file>--
+
+#define BEGIN_COM_TYPECAST(cls)  \
+	typedef cls com_x_class;  \
+	typedef com_tc_##cls  com_tc_class;  \
+	BEGIN_STATIC_CONST_ARRAY(cls)
+
+// ifname : interface name, ibname : implemented base class name
+#define COM_TYPECAST_ENTRY(ifname, ibname)  \
+	BEGIN_STATIC_CONST_ARRAY_GROUP()  \
+		STATIC_CONST_ARRAY_ENTRY(&(USE_GUID(GUID_##ifname)))  \
+		STATIC_CONST_ARRAY_ENTRY_LAST( (intptr)( (byte*)(static_cast<ibname*>((com_x_class*)(0x128))) - (byte*)(0x128) ) )  \
+	END_STATIC_CONST_ARRAY_GROUP()
+
+#define END_COM_TYPECAST()  \
+	BEGIN_STATIC_CONST_ARRAY_GROUP()  \
+		STATIC_CONST_ARRAY_ENTRY(NULL)  \
+		STATIC_CONST_ARRAY_ENTRY_LAST(0)  \
+	END_STATIC_CONST_ARRAY_GROUP_LAST()  \
+	END_STATIC_CONST_ARRAY(com_x_class)  \
+	const share_object_typecast_func _Com_TypeCast_Func<com_x_class>::c_func = &(com_tc_class::_Com_TypeCast);
+
+// --<.cpp end>--
+
+// _ShareComHelper
+
+class _ShareComHelper : _SharePtrHelper
+{
+public:
+	//make share component object
+	template <class T, typename... Args>
+	static _ShareCom<T> MakeShareCom(const GKC::RefPtr<GKC::IMemoryManager>& mgr, Args&&... args)
+	{
+		assert( !mgr.IsNull() );
+
+		//allocate
+		share_com_block* pB = ::_ScbPool_Allocate();
+		if( pB == NULL )
+			throw GKC::OutOfMemoryException();
+
+		T* pT = (T*)((const_cast<GKC::RefPtr<GKC::IMemoryManager>&>(mgr)).Deref().Allocate(sizeof(T)));
+		if( pT == NULL ) {
+			::_ScbPool_Free(pB);
+			throw GKC::OutOfMemoryException();
+		}
+
+		_ShareCom<T> ret;
+		//constructor
+		try {
+			//may throw
+			call_constructor(*pT, rv_forward<Args>(args)...);
+		}
+		catch(...) {
+			(const_cast<GKC::RefPtr<GKC::IMemoryManager>&>(mgr)).Deref().Free((uintptr)pT);
+			::_ScbPool_Free(pB);
+			throw;  //re-throw
+		}
+
+		//initialize
+		pB->SetMemoryManager(mgr);
+		pB->SetAddress(pT);
+		pB->SetDestructionFunc(&(object_destruction<T>));
+		pB->SetTypeCastFunc(_Com_TypeCast_Func<T>::c_func);
+
+		//return value
+		ret.m_pB = static_cast<share_block_base*>(pB);
+		ret.m_pT = pT;
+
+		return ret;
+	}
+
+	//obtain weak com
+	template <class T>
+	static _WeakCom<T> ToWeakCom(const _ShareCom<T>& sp) throw()
+	{
+		_WeakCom<T> ret;
+		static_cast<_WeakPtr<T>&>(ret) = ToWeakPtr(static_cast<const _SharePtr<T>&>(sp));
+		return ret;
+	}
+	//to share com
+	template <class T>
+	static _ShareCom<T> ToShareCom(const _WeakCom<T>& sp) throw()
+	{
+		_ShareCom<T> ret;
+		static_cast<_SharePtr<T>&>(ret) = ToSharePtr(static_cast<const _WeakPtr<T>&>(sp));
+		return ret;
+	}
+
+	//type cast (derived -> base or base -> derived)
+	template <class TSrc, class TDest>
+	static _ShareCom<TDest> TypeCast(const _ShareCom<TSrc>& sp) throw()
+	{
+		_ShareCom<TDest> ret;
+		static_cast<_SharePtr<TDest>&>(ret) = TypeCast(static_cast<const _SharePtr<TSrc>&>(sp));
+		return ret;
+	}
+	//type query
+	// TSrc : interface, TDest : interface supported by component class (direct base class with first level)
+	template <class TSrc, class TDest>
+	static _ShareCom<TDest> TypeQuery(const _ShareCom<TSrc>& sp, const guid& iid) throw()
+	{
+		_ShareCom<TDest> ret;
+		ret.m_pB = sp.m_pB;
+		if( ret.m_pB != NULL ) {
+			assert( !((ret.m_pB)->IsNull()) );
+			ret.m_pT = (TDest*)(((static_cast<share_com_block*>(ret.m_pB))->GetTypeCastFunc())((ret.m_pB)->GetAddress(), iid));
+			if( ret.m_pT != NULL )
+				(ret.m_pB)->AddRefCopy();
+			else
+				ret.m_pB = NULL;
+		}
+		return ret;
+	}
+
+	//clone
+	// T : the component class
+	template <class T>
+	static _ShareCom<T> Clone(const _ShareCom<T>& sp)  //may throw
+	{
+		_ShareCom<T> ret;
+		static_cast<_SharePtr<T>&>(ret) = Clone(static_cast<const _SharePtr<T>&>(sp));
+		return ret;
+	}
+
+	//get internal pointer
+	template <class T>
+	static T* GetInternalPointer(const _ShareCom<T>& sp) throw()
+	{
+		return GetInternalPointer(static_cast<const _SharePtr<T>&>(sp));
+	}
+};
+
+#define CALL_COM_TYPECAST(src, ifname)  _ShareComHelper::TypeQuery(src, USE_GUID(GUID_##ifname))
+
+
 
 #pragma pack(pop)
 

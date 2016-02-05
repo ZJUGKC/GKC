@@ -22,7 +22,7 @@ This file contains main function for console program.
 class ProgramEntryPoint
 {
 public:
-	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env);
+	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env);
 };
 */
 

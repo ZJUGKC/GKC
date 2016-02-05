@@ -35,7 +35,7 @@
 
 //------------------------------------------------------------------------------
 
-#define program_entry_point  ProgramEntryPoint
-#define service_main_loop    ServiceMainLoop
+#define program_entry_point  GKC::ProgramEntryPoint
+#define service_main_loop    GKC::ServiceMainLoop
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -49,6 +49,16 @@ using WeakPtr = _WeakPtr<T>;
 // SharePtrHelper
 typedef _SharePtrHelper  SharePtrHelper;
 
+// ShareCom<T>
+template <class T>
+using ShareCom = _ShareCom<T>;
+
+// WeakCom<T>
+template <class T>
+using WeakCom = _WeakCom<T>;
+
+// ShareComHelper
+typedef _ShareComHelper  ShareComHelper;
 
 // SharedArrayBlockHelper
 

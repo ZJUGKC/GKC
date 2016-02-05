@@ -595,6 +595,8 @@ private:
 
 // macros
 
+// --<header file>--
+
 // define static constant array
 
 #define DECLARE_STATIC_CONST_ARRAY(cls, T)   class cls {  \
@@ -609,10 +611,14 @@ public:  \
 	static const uintptr  c_size;    \
 };
 
+// --<.h end>--
+
+// --<source file>--
+
 // for definitions in .cpp
 
 //static constant array
-#define BEGIN_STATIC_CONST_ARRAY(cls)    const GKC::cls::EType GKC::cls::c_array[] = {
+#define BEGIN_STATIC_CONST_ARRAY(cls)    const cls::EType cls::c_array[] = {
 
 #define STATIC_CONST_ARRAY_ENTRY(x)           x,
 #define STATIC_CONST_ARRAY_ENTRY_LAST(y)      y
@@ -622,7 +628,9 @@ public:  \
 #define END_STATIC_CONST_ARRAY_GROUP_LAST()   }
 
 #define END_STATIC_CONST_ARRAY(cls)   };  \
-		const uintptr GKC::cls::c_size = sizeof(GKC::cls::c_array) / sizeof(GKC::cls::c_array[0]) - 1;
+		const uintptr cls::c_size = sizeof(cls::c_array) / sizeof(cls::c_array[0]) - 1;
+
+// --<.cpp end>--
 
 // const_array_helper
 

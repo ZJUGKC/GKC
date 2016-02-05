@@ -20,7 +20,7 @@ This file contains main function for UI program.
 class ProgramEntryPoint
 {
 public:
-	static int UIMain(const GKC::ConstArray<GKC::ConstStringS>& args);
+	static int UIMain(const ConstArray<ConstStringS>& args);
 };
 */
 

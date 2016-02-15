@@ -102,7 +102,6 @@ using ReverseIterator = reverse_iterator<T>;
 // Array
 
 // ArrayIterator<T>
-
 template <typename T>
 using ArrayIterator = array_iterator<T>;
 
@@ -112,6 +111,13 @@ using ConstArray = const_array<T>;
 
 // ConstArrayHelper
 typedef const_array_helper  ConstArrayHelper;
+
+// FixedArray<T, t_size>
+template <typename T, uintptr t_size>
+using FixedArray = fixed_array<T, t_size>;
+
+// FixedArrayHelper
+typedef fixed_array_helper  FixedArrayHelper;
 
 //------------------------------------------------------------------------------
 // Character
@@ -496,6 +502,143 @@ public:
 	void SetValue(Pair<TKey, TValue>& pair, TValue&& t)  //may throw
 	{
 		pair.set_Second(rv_forward(t));
+	}
+};
+
+//------------------------------------------------------------------------------
+// Fixed Array
+
+// FixedArrayCompareTrait<T, TCompareTrait>
+//  T: FixedArray<...>
+
+template <class T, class TCompareTrait = DefaultCompareTrait<typename T::EType>>
+class FixedArrayCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = 0; i < T::c_size; i ++ ) {
+			if( TCompareTrait::IsNE(p1[i], p2[i]) )
+				return false;
+		}
+		return true;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = 0; i < T::c_size; i ++ ) {
+			if( TCompareTrait::IsNE(p1[i], p2[i]) )
+				return true;
+		}
+		return false;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = T::c_size; i > 0; i -- ) {
+			int res = TCompareTrait::Compare(p1[i - 1], p2[i - 1]);
+			if( res > 0 )
+				return true;
+			if( res < 0 )
+				return false;
+		}
+		return false;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = T::c_size; i > 0; i -- ) {
+			int res = TCompareTrait::Compare(p1[i - 1], p2[i - 1]);
+			if( res > 0 )
+				return false;
+			if( res < 0 )
+				return true;
+		}
+		return false;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return !IsLT(t1, t2);
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return !IsGT(t1, t2);
+	}
+	//Compare
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		if( IsLT(t1, t2 ) )
+			return -1;
+		if( IsEQ(t1, t2) )
+			return 0;
+		assert( IsGT(t1, t2) );
+		return 1;
+	}
+};
+
+// FixedArrayBigEndianCompareTrait<T, TCompareTrait>
+//  T: FixedArray<...>
+
+template <class T, class TCompareTrait = DefaultCompareTrait<typename T::EType>>
+class FixedArrayBigEndianCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return FixedArrayCompareTrait<T, TCompareTrait>::IsEQ(t1, t2);
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return FixedArrayCompareTrait<T, TCompareTrait>::IsNE(t1, t2);
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = 0; i < T::c_size; i ++ ) {
+			int res = TCompareTrait::Compare(p1[i], p2[i]);
+			if( res > 0 )
+				return true;
+			if( res < 0 )
+				return false;
+		}
+		return false;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = 0; i < T::c_size; i ++ ) {
+			int res = TCompareTrait::Compare(p1[i], p2[i]);
+			if( res > 0 )
+				return false;
+			if( res < 0 )
+				return true;
+		}
+		return false;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return !IsLT(t1, t2);
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return !IsGT(t1, t2);
+	}
+	//Compare
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		if( IsLT(t1, t2 ) )
+			return -1;
+		if( IsEQ(t1, t2) )
+			return 0;
+		assert( IsGT(t1, t2) );
+		return 1;
 	}
 };
 

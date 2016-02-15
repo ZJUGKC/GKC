@@ -107,7 +107,9 @@ inline void* mem_move(const void* src, uintptr count, void* dest) throw()
 #define CR_FROM_ERROR(err)  ((HRESULT)(((err) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000))
 
 //------------------------------------------------------------------------------
-//call_result
+//call result
+
+#pragma pack(push, 1)
 
 class call_result
 {
@@ -171,8 +173,10 @@ private:
 	HRESULT m_result;
 };
 
+#pragma pack(pop)
+
 //------------------------------------------------------------------------------
-// call_result constants
+// call result constants
 
 #define CR_S_EOF             (ERROR_HANDLE_EOF)
 #define CR_S_FALSE           (1)

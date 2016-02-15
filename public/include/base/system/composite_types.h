@@ -665,4 +665,136 @@ public:
 	}
 };
 
+// fixed_array<T, t_size>
+
+template <typename T, uintptr t_size>
+class fixed_array
+{
+public:
+	static const uintptr c_size = t_size;  //!< The number of elements.
+
+	typedef T EType;  //element type
+	//iterator
+	typedef array_iterator<T>  Iterator;
+
+private:
+	typedef fixed_array<T, t_size>  thisClass;
+
+public:
+	fixed_array() //may throw
+	{
+		assert( t_size > 0 );
+	}
+	fixed_array(const thisClass& src)  //may throw
+	{
+		assert( t_size > 0 );
+		copy_elements(src.m_data, m_data, t_size);
+	}
+	~fixed_array() throw()
+	{
+	}
+
+	//operators
+	thisClass& operator=(const thisClass& src)  //may throw
+	{
+		assert( t_size > 0 );
+		if( this != &src ) {
+			copy_elements(src.m_data, m_data, t_size);
+		}
+		return *this;
+	}
+
+	const Iterator operator[](uintptr index) const throw()
+	{
+		return GetAt(index);
+	}
+	Iterator operator[](uintptr index) throw()
+	{
+		return GetAt(index);
+	}
+
+	//iterator
+	const Iterator GetBegin() const throw()
+	{
+		return Iterator(ref_ptr<T>(m_data));
+	}
+	Iterator GetBegin() throw()
+	{
+		return Iterator(ref_ptr<T>(m_data));
+	}
+	const Iterator GetEnd() const throw()
+	{
+		return Iterator(ref_ptr<T>(m_data + t_size));
+	}
+	Iterator GetEnd() throw()
+	{
+		return Iterator(ref_ptr<T>(m_data + t_size));
+	}
+	const reverse_iterator<Iterator> GetReverseBegin() const throw()
+	{
+		return reverse_iterator<Iterator>(GetEnd());
+	}
+	reverse_iterator<Iterator> GetReverseBegin() throw()
+	{
+		return reverse_iterator<Iterator>(GetEnd());
+	}
+	const reverse_iterator<Iterator> GetReverseEnd() const throw()
+	{
+		return reverse_iterator<Iterator>(GetBegin());
+	}
+	reverse_iterator<Iterator> GetReverseEnd() throw()
+	{
+		return reverse_iterator<Iterator>(GetBegin());
+	}
+
+	const Iterator GetAt(uintptr index) const throw()
+	{
+		assert( index < t_size );
+		return Iterator(ref_ptr<T>(m_data + index));
+	}
+	Iterator GetAt(uintptr index) throw()
+	{
+		assert( index < t_size );
+		return Iterator(ref_ptr<T>(m_data + index));
+	}
+	void SetAt(uintptr index, const T& t)  //may throw
+	{
+		assert( index < t_size );
+		m_data[index] = t;
+	}
+	void SetAt(uintptr index, T&& t)  //may throw
+	{
+		assert( index < t_size );
+		m_data[index] = rv_forward(t);
+	}
+
+private:
+	static void copy_elements(const T* pSrc, T* pDest, uintptr size)
+	{
+		for( uintptr i = 0; i < size; i ++ ) {
+			pDest[i] = pSrc[i];  //may throw
+		}
+	}
+
+protected:
+	T m_data[t_size];  //array
+
+private:
+	friend class fixed_array_helper;
+};
+
+// fixed_array_helper
+
+class fixed_array_helper
+{
+public:
+	//internal pointer
+	//  T: fixed_array<...>
+	template <class T>
+	static typename T::EType* GetInternalPointer(const T& arr) throw()
+	{
+		return const_cast<typename T::EType*>(arr.m_data);
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////

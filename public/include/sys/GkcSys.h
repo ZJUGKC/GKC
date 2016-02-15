@@ -60,20 +60,16 @@ using WeakCom = _WeakCom<T>;
 // ShareComHelper
 typedef _ShareComHelper  ShareComHelper;
 
-// SharedArrayBlockHelper
+// ShareArray<T>
+template <typename T>
+using ShareArray = _ShareArray<T>;
 
-class SharedArrayBlockHelper
-{
-public:
-	static SharedArrayBlock* Allocate() throw()
-	{
-		return ::SabPool_Allocate();
-	}
-	static void Free(SharedArrayBlock* p) throw()
-	{
-		::SabPool_Free(p);
-	}
-};
+// WeakArray<T>
+template <typename T>
+using WeakArray = _WeakArray<T>;
+
+// ShareArrayHelper
+typedef _ShareArrayHelper  ShareArrayHelper;
 
 ////////////////////////////////////////////////////////////////////////////////
 }

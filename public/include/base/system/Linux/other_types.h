@@ -117,7 +117,9 @@ inline void* mem_move(const void* src, uintptr count, void* dest) throw()
 #define _OS_CR_FROM_ERRORNO()    CR_FROM_ERROR(errno)
 
 //------------------------------------------------------------------------------
-//call_result
+//call result
+
+#pragma pack(push, 1)
 
 class call_result
 {
@@ -181,8 +183,10 @@ private:
 	int m_result;
 };
 
+#pragma pack(pop)
+
 //------------------------------------------------------------------------------
-// call_result constants
+// call result constants
 
 #define CR_S_EOF             (38)
 #define CR_S_FALSE           (1)

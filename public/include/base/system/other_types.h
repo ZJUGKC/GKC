@@ -227,6 +227,9 @@ public:
 		exception_base::operator=(static_cast<const exception_base&>(src));
 		return *this;
 	}
+	~exception_t() throw()
+	{
+	}
 };
 
 // outofmemory_exception
@@ -405,6 +408,175 @@ inline call_result safe_operators::Multiply<uint>(IN const uint& left, IN const 
 	result = static_cast<uint>(result64);
 	return call_result(system_call_results::OK);
 }
+
+// -----traits-----
+
+// default_compare_trait<T>
+
+template <typename T>
+class default_compare_trait
+{
+public:
+	//common versions
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return t1 == t2;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return t1 != t2;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return t1 > t2;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return t1 < t2;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return t1 >= t2;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return t1 <= t2;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		if( IsLT(t1, t2 ) )
+			return -1;
+		if( IsEQ(t1, t2) )
+			return 0;
+		assert( IsGT(t1, t2) );
+		return 1;
+	}
+};
+
+//special versions
+#define _DECLARE_INT_COMPARE_TRAIT(T)  \
+	template <> class default_compare_trait<T> {  \
+	public:  \
+	static bool IsEQ(const T& t1, const T& t2) throw() { return t1 == t2; }  \
+	static bool IsNE(const T& t1, const T& t2) throw() { return t1 != t2; }  \
+	static bool IsGT(const T& t1, const T& t2) throw() { return t1 > t2; }  \
+	static bool IsLT(const T& t1, const T& t2) throw() { return t1 < t2; }  \
+	static bool IsGE(const T& t1, const T& t2) throw() { return t1 >= t2; }  \
+	static bool IsLE(const T& t1, const T& t2) throw() { return t1 <= t2; }  \
+	static int Compare(const T& t1, const T& t2) throw() { return (int)(t1 - t2); }  \
+	};
+
+_DECLARE_INT_COMPARE_TRAIT(char)
+_DECLARE_INT_COMPARE_TRAIT(uchar)
+_DECLARE_INT_COMPARE_TRAIT(short)
+_DECLARE_INT_COMPARE_TRAIT(ushort)
+_DECLARE_INT_COMPARE_TRAIT(int)
+_DECLARE_INT_COMPARE_TRAIT(uint)
+_DECLARE_INT_COMPARE_TRAIT(int64)
+_DECLARE_INT_COMPARE_TRAIT(uint64)
+_DECLARE_INT_COMPARE_TRAIT(bool)
+
+template <>
+class default_compare_trait<float>
+{
+public:
+	static bool IsEQ(const float& t1, const float& t2) throw()
+	{
+		return ::fabsf(t1 - t2) < FLT_EPSILON;
+	}
+	static bool IsNE(const float& t1, const float& t2) throw()
+	{
+		return ::fabsf(t1 - t2) >= FLT_EPSILON;
+	}
+	static bool IsGT(const float& t1, const float& t2) throw()
+	{
+		return IsLT(t2, t1);
+	}
+	static bool IsLT(const float& t1, const float& t2) throw()
+	{
+		return t1 + FLT_EPSILON <= t2;
+	}
+	static bool IsGE(const float& t1, const float& t2) throw()
+	{
+		return !IsLT(t1, t2);
+	}
+	static bool IsLE(const float& t1, const float& t2) throw()
+	{
+		return !IsGT(t1, t2);
+	}
+	static int Compare(const float& t1, const float& t2) throw()
+	{
+		return IsLT(t1, t2) ? -1 : IsGT(t1, t2) ? 1 : 0;
+	}
+};
+
+template <>
+class default_compare_trait<double>
+{
+public:
+	static bool IsEQ(const double& t1, const double& t2) throw()
+	{
+		return ::fabs(t1 - t2) < DBL_EPSILON;
+	}
+	static bool IsNE(const double& t1, const double& t2) throw()
+	{
+		return ::fabs(t1 - t2) >= DBL_EPSILON;
+	}
+	static bool IsGT(const double& t1, const double& t2) throw()
+	{
+		return IsLT(t2, t1);
+	}
+	static bool IsLT(const double& t1, const double& t2) throw()
+	{
+		return t1 + DBL_EPSILON <= t2;
+	}
+	static bool IsGE(const double& t1, const double& t2) throw()
+	{
+		return !IsLT(t1, t2);
+	}
+	static bool IsLE(const double& t1, const double& t2) throw()
+	{
+		return !IsGT(t1, t2);
+	}
+	static int Compare(const double& t1, const double& t2) throw()
+	{
+		return IsLT(t1, t2) ? -1 : IsGT(t1, t2) ? 1 : 0;
+	}
+};
+
+// default_hash_trait<T>
+
+template <typename T>
+class default_hash_trait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		return (uintptr)t;
+	}
+};
+
+//special versions
+template <>
+class default_hash_trait<float>
+{
+public:
+	static uintptr CalcHash(const float& t) throw()
+	{
+		return (uintptr)(*((uint*)(&t)));
+	}
+};
+
+template <>
+class default_hash_trait<double>
+{
+public:
+	static uintptr CalcHash(const double& t) throw()
+	{
+		uint* p = (uint*)(&t);
+		return (uintptr)(p[0] ^ p[1]);
+	}
+};
 
 // -----memory-----
 
@@ -1000,6 +1172,25 @@ struct storage_status
 	system_time  tmCreate;  //time of creation
 };
 
+// -----collection-----
+
+// coll_replace_elements<TIterator, TCompareTrait>
+
+template <class TIterator, class TCompareTrait = default_compare_trait<typename TIterator::EType>>
+inline uintptr coll_replace_elements(const typename TIterator::EType& tOld, const typename TIterator::EType& tNew,
+									TIterator& iterB, TIterator& iterE)
+{
+	uintptr uCount = 0;
+	//loop
+	for( auto iter(iterB); iter != iterE; iter.MoveNext() ) {
+		if( TCompareTrait::IsEQ(iter.get_Value(), tOld) ) {
+			iter.set_Value(tNew);  //may throw
+			uCount ++;
+		}
+	}
+	return uCount;
+}
+
 // -----constant string-----
 
 // const_string_t<Tchar>
@@ -1102,5 +1293,240 @@ const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) cls::c_name = \
 IMPLEMENT_CONST_STRING_ENTRY(char_type, x) ;
 
 // --<.cpp end>--
+
+// const_string_helper
+
+class const_string_helper
+{
+public:
+	//To C-style string
+	template <typename Tchar>
+	static ref_ptr<Tchar> To_C_Style(const const_string_t<Tchar>& str, uintptr uStart = 0) throw()
+	{
+		assert( uStart <= str.GetCount() );
+		return ref_ptr<Tchar>(const_array_helper::GetInternalPointer(str) + uStart);
+	}
+
+	//find (return value : check null)
+	template <typename Tchar>
+	static typename const_string_t<Tchar>::Iterator Find(const const_string_t<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetCount() );
+		assert( !str.IsNull() );
+		return typename const_string_t<Tchar>::Iterator(ref_ptr<Tchar>(find_string_char(const_array_helper::GetInternalPointer(str) + uStart, ch)));
+	}
+};
+
+// calc_sub_string_act_length
+//   for substring and deletion
+
+inline uintptr calc_sub_string_act_length(uintptr uSrcLength, uintptr uStart, uintptr uLength) throw()
+{
+	if( uStart >= uSrcLength )
+		return 0;
+	uintptr uRet = uSrcLength - uStart;
+	if( uRet > uLength )
+		uRet = uLength;
+	return uRet;
+}
+
+// -----fixed string-----
+
+// fixed_string_t<Tchar, t_size>
+//   Tchar: char_a char_h char_l, char_s char_w
+
+template <typename Tchar, uintptr t_size>
+class fixed_string_t : public fixed_array<Tchar, t_size>
+{
+private:
+	typedef fixed_array<Tchar, t_size>  baseClass;
+	typedef fixed_string_t<Tchar, t_size>  thisClass;
+
+public:
+	fixed_string_t() throw() : m_uLength(0)
+	{
+		baseClass::m_data[0] = 0;
+	}
+	fixed_string_t(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src)), m_uLength(src.m_uLength)
+	{
+		assert( m_uLength < t_size );
+		mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
+	}
+	~fixed_string_t() throw()
+	{
+	}
+
+	//operators
+	thisClass& operator=(const thisClass& src) throw()
+	{
+		if( this != &src ) {
+			m_uLength = src.m_uLength;
+			assert( m_uLength < t_size );
+			mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
+		}
+		return *this;
+	}
+
+	uintptr GetLength() const throw()
+	{
+		return m_uLength;
+	}
+	void SetLength(uintptr uLength) throw()
+	{
+		assert( uLength < t_size );
+		m_uLength = uLength;
+		baseClass::m_data[m_uLength] = 0;
+	}
+
+	bool IsEmpty() const throw()
+	{
+		return GetLength() == 0;
+	}
+
+	//iterators
+	const typename thisClass::Iterator GetEnd() const throw()
+	{
+		return Iterator(ref_ptr<Tchar>(baseClass::m_data + m_uLength));
+	}
+	typename thisClass::Iterator GetEnd() throw()
+	{
+		return Iterator(ref_ptr<Tchar>(baseClass::m_data + m_uLength));
+	}
+	const reverse_iterator<typename thisClass::Iterator> GetReverseBegin() const throw()
+	{
+		return reverse_iterator<typename thisClass::Iterator>(GetEnd());
+	}
+	reverse_iterator<typename thisClass::Iterator> GetReverseBegin() throw()
+	{
+		return reverse_iterator<typename thisClass::Iterator>(GetEnd());
+	}
+
+	//methods
+	void RecalcLength() throw()
+	{
+		m_uLength = calc_string_length(baseClass::m_data);
+	}
+
+private:
+	uintptr m_uLength;
+
+private:
+	//logical
+	bool operator==(const thisClass& right) const throw();
+	bool operator!=(const thisClass& right) const throw();
+	bool operator<(const thisClass& right) const throw();
+	bool operator>(const thisClass& right) const throw();
+	bool operator<=(const thisClass& right) const throw();
+	bool operator>=(const thisClass& right) const throw();
+};
+
+// fixed_string_helper
+
+class fixed_string_helper
+{
+public:
+	//To C-style string
+	template <typename Tchar, uintptr t_size>
+	static ref_ptr<Tchar> To_C_Style(const fixed_string_t<Tchar, t_size>& str, uintptr uStart = 0) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return ref_ptr<Tchar>(fixed_array_helper::GetInternalPointer(str) + uStart);
+	}
+
+	//append character
+	//  return: 0 or 1, whether the character is copied
+	template <typename Tchar, uintptr t_size>
+	static uintptr Append(const Tchar& ch, INOUT fixed_string_t<Tchar, t_size>& strDest) throw()
+	{
+		uintptr uCount = strDest.GetLength();
+		if( uCount >= t_size - 1 )
+			return 0;
+		strDest.SetLength(uCount + 1);
+		strDest.SetAt(uCount, ch);
+		return 1;
+	}
+
+	//insert character
+	template <typename Tchar, uintptr t_size>
+	static uintptr Insert(uintptr uPos, const Tchar& ch, fixed_string_t<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( uPos > uLength || uLength >= t_size - 1 )
+			return 0;
+		mem_move(fixed_array_helper::GetInternalPointer(str) + uPos, (uLength - uPos) * sizeof(Tchar), fixed_array_helper::GetInternalPointer(str) + uPos + 1);
+		str.SetLength(uLength + 1);
+		str.SetAt(uPos, ch);
+		return 1;
+	}
+
+	//delete
+	template <typename Tchar, uintptr t_size>
+	static uintptr Delete(uintptr uPos, uintptr uLength, fixed_string_t<Tchar, t_size>& str) throw()
+	{
+		uintptr uCount = str.GetLength();
+		uintptr uRet = calc_sub_string_act_length(uCount, uPos, uLength);
+		if( uRet == 0 )
+			return 0;
+		mem_move(GKC::FixedArrayHelper::GetInternalPointer(str) + uPos + uRet, (uCount - uPos - uRet) * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos);
+		str.SetLength(uCount - uRet);
+		return uRet;
+	}
+
+	//replace
+	template <typename Tchar, uintptr t_size, class TCompareTrait = default_compare_trait<Tchar>>
+	static uintptr Replace(const Tchar& chOld, const Tchar& chNew, INOUT fixed_string_t<Tchar, t_size>& str) throw()
+	{
+		assert( chOld != 0 && chNew != 0 && TCompareTrait::IsNE(chOld, chNew) );
+		if( str.IsEmpty() )
+			return 0;
+		return coll_replace_elements<typename fixed_string_t<Tchar, t_size>::Iterator, TCompareTrait>(chOld, chNew, str.GetBegin(), str.GetEnd());
+	}
+
+	//find (return value : check null)
+	template <typename Tchar, uintptr t_size>
+	static typename fixed_string_t<Tchar, t_size>::Iterator Find(const fixed_string_t<Tchar, t_size>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return typename fixed_string_t<Tchar, t_size>::Iterator(ref_ptr<Tchar>(find_string_char(fixed_array_helper::GetInternalPointer(str) + uStart, ch)));
+	}
+};
+
+// message_exception<t_size>
+
+template <uintptr t_size>
+class message_exception : public exception
+{
+public:
+	typedef fixed_string_t<char_s, t_size>  MessageBufferClass;
+
+public:
+	message_exception() throw()
+	{
+	}
+	message_exception(const message_exception<t_size>& src) throw() : exception(static_cast<const exception&>(src)), m_messageBuffer(src.m_messageBuffer)
+	{
+	}
+	message_exception<t_size>& operator=(const message_exception<t_size>& src) throw()
+	{
+		exception::operator=(static_cast<const exception&>(src));
+		m_messageBuffer = src.m_messageBuffer;  //no check self
+		return *this;
+	}
+	~message_exception() throw()
+	{
+	}
+
+	const MessageBufferClass& GetMessageBuffer() const throw()
+	{
+		return m_messageBuffer;
+	}
+	MessageBufferClass& GetMessageBuffer() throw()
+	{
+		return m_messageBuffer;
+	}
+
+private:
+	fixed_string_t<char_s, t_size>  m_messageBuffer;
+};
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -23,8 +23,6 @@ This is pre-compiled header file.
 #include "base/GkcColl.h"
 
 #include "sys/GkcSys.h"
-#include "sys/GkcArray.h"
-#include "sys/GkcString.h"
 #include "sys/GkcConsole.h"
 #include "sys/GkcPath.h"
 #include "sys/GkcCharset.h"

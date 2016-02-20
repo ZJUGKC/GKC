@@ -172,187 +172,51 @@ using Limits = limits_base<T>;
 typedef safe_operators  SafeOperators;
 
 //------------------------------------------------------------------------------
-// logic
-
-// LogicalOperators
-
-class LogicalOperators
-{
-public:
-	template <class T>
-	static bool IsEQ(const T& t1, const T& t2) throw()
-	{
-		return t1 == t2;
-	}
-	template <class T>
-	static bool IsNE(const T& t1, const T& t2) throw()
-	{
-		return t1 != t2;
-	}
-	template <class T>
-	static bool IsLT(const T& t1, const T& t2) throw()
-	{
-		return t1 < t2;
-	}
-	template <class T>
-	static bool IsGT(const T& t1, const T& t2) throw()
-	{
-		return t1 > t2;
-	}
-	template <class T>
-	static bool IsLE(const T& t1, const T& t2) throw()
-	{
-		return t1 <= t2;
-	}
-	template <class T>
-	static bool IsGE(const T& t1, const T& t2) throw()
-	{
-		return t1 >= t2;
-	}
-};
-
-//special versions
-template <>
-inline bool LogicalOperators::IsEQ<float>(const float& t1, const float& t2) throw()
-{
-	return ::fabsf(t1 - t2) < FLT_EPSILON;
-}
-
-template <>
-inline bool LogicalOperators::IsEQ<double>(const double& t1, const double& t2) throw()
-{
-	return ::fabs(t1 - t2) < DBL_EPSILON;
-}
-
-template <>
-inline bool LogicalOperators::IsNE<float>(const float& t1, const float& t2) throw()
-{
-	return ::fabsf(t1 - t2) >= FLT_EPSILON;
-}
-
-template <>
-inline bool LogicalOperators::IsNE<double>(const double& t1, const double& t2) throw()
-{
-	return ::fabs(t1 - t2) >= DBL_EPSILON;
-}
-
-template <>
-inline bool LogicalOperators::IsLT<float>(const float& t1, const float& t2) throw()
-{
-	return t1 + FLT_EPSILON <= t2;
-}
-
-template <>
-inline bool LogicalOperators::IsLT<double>(const double& t1, const double& t2) throw()
-{
-	return t1 + DBL_EPSILON <= t2;
-}
-
-template <>
-inline bool LogicalOperators::IsGT<float>(const float& t1, const float& t2) throw()
-{
-	return IsLT<float>(t2, t1);
-}
-
-template <>
-inline bool LogicalOperators::IsGT<double>(const double& t1, const double& t2) throw()
-{
-	return IsLT<double>(t2, t1);
-}
-
-template <>
-inline bool LogicalOperators::IsLE<float>(const float& t1, const float& t2) throw()
-{
-	return !IsGT<float>(t1, t2);
-}
-
-template <>
-inline bool LogicalOperators::IsLE<double>(const double& t1, const double& t2) throw()
-{
-	return !IsGT<double>(t1, t2);
-}
-
-template <>
-inline bool LogicalOperators::IsGE<float>(const float& t1, const float& t2) throw()
-{
-	return !IsLT<float>(t1, t2);
-}
-
-template <>
-inline bool LogicalOperators::IsGE<double>(const double& t1, const double& t2) throw()
-{
-	return !IsLT<double>(t1, t2);
-}
-
-//------------------------------------------------------------------------------
 //Traits
 
 // DefaultCompareTrait<T>
-
 template <typename T>
-class DefaultCompareTrait
+using DefaultCompareTrait = default_compare_trait<T>;
+
+// CharCaseIgnoreCompareTrait<Tchar>
+
+template <typename Tchar>
+class CharCaseIgnoreCompareTrait
 {
 public:
-	//common versions
-	static bool IsEQ(const T& t1, const T& t2) throw()
+	static bool IsEQ(const Tchar& t1, const Tchar& t2) throw()
 	{
-		return LogicalOperators::IsEQ(t1, t2);
+		return char_upper(t1) == char_upper(t2);
 	}
-	static bool IsNE(const T& t1, const T& t2) throw()
+	static bool IsNE(const Tchar& t1, const Tchar& t2) throw()
 	{
-		return LogicalOperators::IsNE(t1, t2);
+		return char_upper(t1) != char_upper(t2);
 	}
-	static bool IsGT(const T& t1, const T& t2) throw()
+	static bool IsGT(const Tchar& t1, const Tchar& t2) throw()
 	{
-		return LogicalOperators::IsGT(t1, t2);
+		return char_upper(t1) > char_upper(t2);
 	}
-	static bool IsLT(const T& t1, const T& t2) throw()
+	static bool IsLT(const Tchar& t1, const Tchar& t2) throw()
 	{
-		return LogicalOperators::IsLT(t1, t2);
+		return char_upper(t1) < char_upper(t2);
 	}
-	static bool IsGE(const T& t1, const T& t2) throw()
+	static bool IsGE(const Tchar& t1, const Tchar& t2) throw()
 	{
-		return LogicalOperators::IsGE(t1, t2);
+		return char_upper(t1) >= char_upper(t2);
 	}
-	static bool IsLE(const T& t1, const T& t2) throw()
+	static bool IsLE(const Tchar& t1, const Tchar& t2) throw()
 	{
-		return LogicalOperators::IsLE(t1, t2);
+		return char_upper(t1) <= char_upper(t2);
 	}
-	static int Compare(const T& t1, const T& t2) throw()
+	static int Compare(const Tchar& t1, const Tchar& t2) throw()
 	{
-		if( IsLT(t1, t2 ) )
-			return -1;
-		if( IsEQ(t1, t2) )
-			return 0;
-		assert( IsGT(t1, t2) );
-		return 1;
+		return (int)(char_upper(t1) - char_upper(t2));
 	}
 };
-
-//special versions
-
 
 // DefaultHashTrait<T>
-
 template <typename T>
-class DefaultHashTrait
-{
-public:
-	static uintptr CalcHash(const T& t) throw()
-	{
-		return (uintptr)t;
-	}
-};
-
-//special versions
-
-
-/*
-3 layers:
-native : == != ...
-LogicalOperators
-<Element>Trait
-*/
+using DefaultHashTrait = default_hash_trait<T>;
 
 //------------------------------------------------------------------------------
 //tuple
@@ -572,12 +436,16 @@ public:
 	//Compare
 	static int Compare(const T& t1, const T& t2) throw()
 	{
-		if( IsLT(t1, t2 ) )
-			return -1;
-		if( IsEQ(t1, t2) )
-			return 0;
-		assert( IsGT(t1, t2) );
-		return 1;
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = T::c_size; i > 0; i -- ) {
+			int res = TCompareTrait::Compare(p1[i - 1], p2[i - 1]);
+			if( res > 0 )
+				return 1;
+			if( res < 0 )
+				return -1;
+		}
+		return 0;
 	}
 };
 
@@ -633,12 +501,16 @@ public:
 	//Compare
 	static int Compare(const T& t1, const T& t2) throw()
 	{
-		if( IsLT(t1, t2 ) )
-			return -1;
-		if( IsEQ(t1, t2) )
-			return 0;
-		assert( IsGT(t1, t2) );
-		return 1;
+		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
+		typename T::EType* p2 = FixedArrayHelper::GetInternalPointer(t2);
+		for( uintptr i = 0; i < T::c_size; i ++ ) {
+			int res = TCompareTrait::Compare(p1[i], p2[i]);
+			if( res > 0 )
+				return 1;
+			if( res < 0 )
+				return -1;
+		}
+		return 0;
 	}
 };
 
@@ -815,6 +687,133 @@ public:
 		return uHash;
 	}
 };
+
+// ConsStringHelper
+typedef const_string_helper  ConstStringHelper;
+
+//------------------------------------------------------------------------------
+// Fixed String
+
+// FixedStringT<Tchar, t_size>
+template <typename Tchar, uintptr t_size>
+using FixedStringT = fixed_string_t<Tchar, t_size>;
+
+// FixedStringCompareTrait<T>
+
+template <class T>
+class FixedStringCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// FixedStringCaseIgnoreCompareTrait<T>
+
+template <class T>
+class FixedStringCaseIgnoreCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// FixedStringHashTrait<T>
+
+template <class T>
+class FixedStringHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = FixedArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// FixedStringCaseIgnoreHashTrait<T>
+
+template <class T>
+class FixedStringCaseIgnoreHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = FixedArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// FixedStringHelper
+typedef fixed_string_helper  FixedStringHelper;
+
+// MessageException<t_size>
+template <uintptr t_size>
+using MessageException = message_exception<t_size>;
 
 //------------------------------------------------------------------------------
 // Swap

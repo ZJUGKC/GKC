@@ -19,8 +19,8 @@ This file contains Path of FileSystem classes.
 #define __GKC_PATH_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __GKC_STRING_H__
-	#error GkcPath.h requires GkcString.h to be included first.
+#ifndef __GKC_SYS_H__
+	#error GkcPath.h requires GkcSys.h to be included first.
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

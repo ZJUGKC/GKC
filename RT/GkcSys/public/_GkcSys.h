@@ -1647,6 +1647,642 @@ public:
 	}
 };
 
+// _StringT<Tchar>
+//   Tchar: CharA CharH CharL, CharS CharW
+
+template <typename Tchar>
+class _StringT : public _ShareArray<Tchar>
+{
+private:
+	typedef _ShareArray<Tchar>  baseClass;
+	typedef _StringT<Tchar>  thisClass;
+
+public:
+	_StringT() throw()
+	{
+	}
+	_StringT(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	{
+	}
+	_StringT(thisClass&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	{
+	}
+	~_StringT() throw()
+	{
+	}
+
+	//operators
+	thisClass& operator=(const thisClass& src) throw()
+	{
+		return static_cast<thisClass&>(baseClass::operator=(static_cast<const baseClass&>(src)));
+	}
+	thisClass& operator=(thisClass&& src) throw()
+	{
+		return static_cast<thisClass&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+	}
+
+	uintptr GetLength() const throw()
+	{
+		uintptr uCount;
+		return (baseClass::IsBlockNull()) ? 0 :
+				( (uCount = (static_cast<share_array_block*>(baseClass::m_pB))->GetLength(), uCount == 0) ? 0 : uCount - 1 )
+				;
+	}
+	bool IsEmpty() const throw()
+	{
+		return GetLength() == 0;
+	}
+
+	//iterators
+	const typename thisClass::Iterator GetEnd() const throw()
+	{
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
+	}
+	typename thisClass::Iterator GetEnd() throw()
+	{
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
+	}
+	const typename thisClass::Iterator GetReverseBegin() const throw()
+	{
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+	}
+	typename thisClass::Iterator GetReverseBegin() throw()
+	{
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+	}
+
+	const typename thisClass::Iterator GetAt(uintptr index) const throw()
+	{
+		assert( index < GetLength() );
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+	}
+	typename thisClass::Iterator GetAt(uintptr index) throw()
+	{
+		assert( index < GetLength() );
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+	}
+	void SetAt(uintptr index, const Tchar& t)  //may throw
+	{
+		assert( index < GetLength() );
+		baseClass::get_array_address()[index] = t;
+	}
+	void SetAt(uintptr index, Tchar&& t)  //may throw
+	{
+		assert( index < GetLength() );
+		baseClass::get_array_address()[index] = rv_forward(t);
+	}
+
+	//methods
+	void SetLength(uintptr uLength)
+	{
+		uintptr uSize = SafeOperators::AddThrow(uLength, (uintptr)1);
+		baseClass::SetCount(uSize, 0);
+		baseClass::get_array_address()[uLength] = 0;
+	}
+	void RecalcLength() throw()
+	{
+		assert( !IsBlockNull() );  //must have a block for allocation
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
+		pB->SetLength(calc_string_length(baseClass::get_array_address()) + 1);
+	}
+
+	//clear content and free array
+	void Clear() throw()
+	{
+		baseClass::RemoveAll();
+	}
+
+private:
+	friend class _StringHelper;
+};
+
+// _String*
+typedef _StringT<GKC::CharA>  _StringA;
+typedef _StringT<GKC::CharH>  _StringH;
+typedef _StringT<GKC::CharL>  _StringL;
+typedef _StringT<GKC::CharS>  _StringS;
+typedef _StringT<GKC::CharW>  _StringW;
+
+// _StringCompareTrait<T>
+
+template <class T>
+class _StringCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// _StringCaseIgnoreCompareTrait<T>
+
+template <class T>
+class _StringCaseIgnoreCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// _StringHashTrait<T>
+
+template <class T>
+class _StringHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = ShareArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// _StringCaseIgnoreHashTrait<T>
+
+template <class T>
+class _StringCaseIgnoreHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = ShareArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// _StringHelper
+
+class _StringHelper
+{
+public:
+	//To C-style string
+	template <typename Tchar>
+	static GKC::RefPtr<Tchar> To_C_Style(const _StringT<Tchar>& str, uintptr uStart = 0) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return GKC::RefPtr<Tchar>(_ShareArrayHelper::GetInternalPointer(str) + uStart);
+	}
+
+	//make empty string
+	template <typename Tchar>
+	static _StringT<Tchar> MakeEmptyString(const GKC::RefPtr<IMemoryManager>& mgr)
+	{
+		_StringT<Tchar> ret;
+		static_cast<_ShareArray<Tchar>&>(ret) = _ShareArrayHelper::MakeShareArray<Tchar>(mgr);
+		return ret;
+	}
+
+	//clone
+	template <typename Tchar>
+	static _StringT<Tchar> Clone(const _StringT<Tchar>& str)
+	{
+		_StringT<Tchar> ret;
+		if( !str.IsBlockNull() ) {
+			ret = MakeEmptyString<Tchar>((static_cast<share_array_block*>(str.m_pB))->GetMemoryManager());
+			uintptr uCount = str.GetLength();
+			ret.SetLength(uCount);
+			if( uCount != 0 )
+				mem_copy(_ShareArrayHelper::GetInternalPointer(str), uCount * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(ret));
+		}
+		return ret;
+	}
+
+	//append character
+	template <typename Tchar>
+	static void Append(const Tchar& ch, INOUT _StringT<Tchar>& strDest)
+	{
+		uintptr uCount = strDest.GetLength();
+		uintptr uNew = GKC::SafeOperators::AddThrow(uCount, (uintptr)1);  //may throw
+		strDest.SetLength(uNew);  //may throw
+		strDest.SetAt(uCount, ch);
+	}
+	//insert character
+	template <typename Tchar>
+	static void Insert(uintptr uPos, const Tchar& ch, _StringT<Tchar>& str)
+	{
+		uintptr uLength = str.GetLength();
+		if( uPos > uLength )
+			return ;
+		str.InsertAt(uPos, 1, ch);
+	}
+	//delete
+	template <typename Tchar>
+	static void Delete(uintptr uPos, uintptr uLength, _StringT<Tchar>& str) throw()
+	{
+		uintptr uCount = str.GetLength();
+		uintptr uRet = calc_sub_string_act_length(uCount, uPos, uLength);
+		if( uRet == 0 )
+			return ;
+		str.RemoveAt(uPos, uRet);
+	}
+
+	//replace
+	template <typename Tchar, class TCompareTrait = GKC::DefaultCompareTrait<Tchar>>
+	static uintptr Replace(const Tchar& chOld, const Tchar& chNew, INOUT _StringT<Tchar>& str) throw()
+	{
+		assert( chOld != 0 && chNew != 0 && TCompareTrait::IsNE(chOld, chNew) );
+		if( str.IsEmpty() )
+			return 0;
+		return coll_replace_elements<typename _StringT<Tchar>::Iterator, TCompareTrait>(chOld, chNew, str.GetBegin(), str.GetEnd());
+	}
+
+	//find (return value : check null)
+	template <typename Tchar>
+	static typename _StringT<Tchar>::Iterator Find(const _StringT<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		assert( !str.IsBlockNull() );
+		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_char(_ShareArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
+};
+
+// _StringUtilHelper
+
+class _StringUtilHelper
+{
+public:
+	//To ConstStringT object (use carefully)
+	template <typename Tchar, uintptr t_size>
+	static GKC::ConstStringT<Tchar> To_ConstString(const GKC::FixedStringT<Tchar, t_size>& str, uintptr uStart = 0) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return GKC::ConstStringT<Tchar>(GKC::FixedArrayHelper::GetInternalPointer(str) + uStart, str.GetLength() - uStart);
+	}
+	template <typename Tchar>
+	static GKC::ConstStringT<Tchar> To_ConstString(const _StringT<Tchar>& str, uintptr uStart = 0) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return GKC::ConstStringT<Tchar>(_ShareArrayHelper::GetInternalPointer(str) + uStart, str.GetLength() - uStart);
+	}
+
+	//make string
+	template <typename Tchar, uintptr t_size>
+	static uintptr MakeString(const GKC::ConstStringT<Tchar>& strSrc, GKC::FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		assert( !strSrc.IsNull() );
+		uintptr uCount = strSrc.GetCount();
+		if( uCount == 0 ) {
+			strDest.SetLength(0);
+			return 0;
+		}
+		if( uCount > t_size - 1 )
+			uCount = t_size - 1;
+		strDest.SetLength(uCount);
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strSrc), uCount * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest));
+		return uCount;
+	}
+	template <typename Tchar>
+	static void MakeString(const GKC::ConstStringT<Tchar>& strSrc, _StringT<Tchar>& strDest)
+	{
+		assert( !strSrc.IsNull() );
+		uintptr uCount = strSrc.GetCount();
+		strDest.SetLength(uCount);
+		if( uCount == 0 )
+			return ;
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strSrc), uCount * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest));
+	}
+
+	template <typename Tchar, uintptr t_sizeS, uintptr t_sizeD>
+	static uintptr MakeString(const GKC::FixedStringT<Tchar, t_sizeS>& strSrc, GKC::FixedStringT<Tchar, t_sizeD>& strDest) throw()
+	{
+		assert( t_sizeS != t_sizeD );
+		uintptr uCount = strSrc.GetLength();
+		if( uCount == 0 ) {
+			strDest.SetLength(0);
+			return 0;
+		}
+		if( uCount > t_sizeD - 1 )
+			uCount = t_sizeD - 1;
+		strDest.SetLength(uCount);
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strSrc), uCount * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest));
+		return uCount;
+	}
+	template <typename Tchar, uintptr t_size>
+	static void MakeString(const GKC::FixedStringT<Tchar, t_size>& strSrc, _StringT<Tchar>& strDest)
+	{
+		uintptr uCount = strSrc.GetLength();
+		strDest.SetLength(uCount);
+		if( uCount == 0 )
+			return ;
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strSrc), uCount * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest));
+	}
+
+	template <typename Tchar, uintptr t_size>
+	static uintptr MakeString(const _StringT<Tchar>& strSrc, GKC::FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		uintptr uCount = strSrc.GetLength();
+		if( uCount == 0 ) {
+			strDest.SetLength(0);
+			return 0;
+		}
+		if( uCount > t_size - 1 )
+			uCount = t_size - 1;
+		strDest.SetLength(uCount);
+		mem_copy(_ShareArrayHelper::GetInternalPointer(strSrc), uCount * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest));
+		return uCount;
+	}
+
+	//append (use carefully)
+	//  return: the characters of strSrc are copied
+	template <typename Tchar, uintptr t_size>
+	static uintptr Append(const GKC::ConstStringT<Tchar>& strSrc, INOUT GKC::FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		assert( !strSrc.IsNull() );
+		uintptr uCount1 = strSrc.GetCount();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount;
+		CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
+		if( cr.IsFailed() || uCount > t_size - 1 )
+			uCount = t_size - 1;
+		strDest.SetLength(uCount);
+		uCount1 = uCount - uCount2;
+		if( uCount1 == 0 )
+			return 0;
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strSrc), uCount1 * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest) + uCount2);
+		return uCount1;
+	}
+	template <typename Tchar>
+	static void Append(const GKC::ConstStringT<Tchar>& strSrc, INOUT _StringT<Tchar>& strDest)
+	{
+		assert( !strSrc.IsNull() );
+		uintptr uCount1 = strSrc.GetCount();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount = GKC::SafeOperators::AddThrow(uCount1, uCount2);
+		strDest.SetLength(uCount);
+		if( uCount1 == 0 )
+			return ;
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strSrc), uCount1 * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest) + uCount2);
+	}
+
+	template <typename Tchar, uintptr t_sizeS, uintptr t_sizeD>
+	static uintptr Append(const GKC::FixedStringT<Tchar, t_sizeS>& strSrc, INOUT GKC::FixedStringT<Tchar, t_sizeD>& strDest) throw()
+	{
+		assert( &strSrc != &strDest );
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount;
+		CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
+		if( cr.IsFailed() || uCount > t_sizeD - 1 )
+			uCount = t_sizeD - 1;
+		strDest.SetLength(uCount);
+		uCount1 = uCount - uCount2;
+		if( uCount1 == 0 )
+			return 0;
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strSrc), uCount1 * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest) + uCount2);
+		return uCount1;
+	}
+	template <typename Tchar, uintptr t_size>
+	static void Append(const GKC::FixedStringT<Tchar, t_size>& strSrc, INOUT _StringT<Tchar>& strDest)
+	{
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount = GKC::SafeOperators::AddThrow(uCount1, uCount2);
+		strDest.SetLength(uCount);
+		if( uCount1 == 0 )
+			return ;
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strSrc), uCount1 * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest) + uCount2);
+	}
+
+	template <typename Tchar, uintptr t_size>
+	static uintptr Append(const _StringT<Tchar>& strSrc, INOUT GKC::FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount;
+		CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
+		if( cr.IsFailed() || uCount > t_size - 1 )
+			uCount = t_size - 1;
+		strDest.SetLength(uCount);
+		uCount1 = uCount - uCount2;
+		if( uCount1 == 0 )
+			return 0;
+		mem_copy(_ShareArrayHelper::GetInternalPointer(strSrc), uCount1 * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest) + uCount2);
+		return uCount1;
+	}
+	template <typename Tchar>
+	static void Append(const _StringT<Tchar>& strSrc, INOUT _StringT<Tchar>& strDest)
+	{
+		assert( &strSrc != &strDest && strSrc != strDest );
+		uintptr uCount1 = strSrc.GetLength();
+		uintptr uCount2 = strDest.GetLength();
+		uintptr uCount = GKC::SafeOperators::AddThrow(uCount1, uCount2);
+		strDest.SetLength(uCount);
+		if( uCount1 == 0 )
+			return ;
+		mem_copy(_ShareArrayHelper::GetInternalPointer(strSrc), uCount1 * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest) + uCount2);
+	}
+
+	//insert (use carefully)
+	template <typename Tchar, uintptr t_size>
+	static uintptr Insert(uintptr uPos, const GKC::ConstStringT<Tchar>& strAdd, GKC::FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		assert( t_size > uLength );
+		uintptr uAdd = strAdd.GetCount();
+		if( uAdd == 0 || uPos > uLength || t_size - 1 - uLength < uAdd )
+			return 0;
+		mem_move(GKC::FixedArrayHelper::GetInternalPointer(str) + uPos, (uLength - uPos) * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos + uAdd);
+		str.SetLength(uLength + uAdd);
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos);
+		return uAdd;
+	}
+	template <typename Tchar, uintptr t_size, uintptr t_sizeA>
+	static uintptr Insert(uintptr uPos, const GKC::FixedStringT<Tchar, t_sizeA>& strAdd, GKC::FixedStringT<Tchar, t_size>& str) throw()
+	{
+		assert( &strAdd != &str );
+		uintptr uLength = str.GetLength();
+		assert( t_size > uLength );
+		uintptr uAdd = strAdd.GetLength();
+		if( uAdd == 0 || uPos > uLength || t_size - 1 - uLength < uAdd )
+			return 0;
+		mem_move(GKC::FixedArrayHelper::GetInternalPointer(str) + uPos, (uLength - uPos) * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos + uAdd);
+		str.SetLength(uLength + uAdd);
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos);
+		return uAdd;
+	}
+	template <typename Tchar, uintptr t_size>
+	static uintptr Insert(uintptr uPos, const _StringT<Tchar>& strAdd, GKC::FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		assert( t_size > uLength );
+		uintptr uAdd = strAdd.GetLength();
+		if( uAdd == 0 || uPos > uLength || t_size - 1 - uLength < uAdd )
+			return 0;
+		mem_move(GKC::FixedArrayHelper::GetInternalPointer(str) + uPos, (uLength - uPos) * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos + uAdd);
+		str.SetLength(uLength + uAdd);
+		mem_copy(_ShareArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos);
+		return uAdd;
+	}
+
+	template <typename Tchar>
+	static void Insert(uintptr uPos, const GKC::ConstStringT<Tchar>& strAdd, _StringT<Tchar>& str)
+	{
+		uintptr uLength = str.GetLength();
+		uintptr uAdd = strAdd.GetCount();
+		if( uAdd == 0 || uPos > uLength )
+			return ;
+		str.InsertAt(uPos, uAdd);
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(str) + uPos);
+	}
+	template <typename Tchar, uintptr t_size>
+	static void Insert(uintptr uPos, const GKC::FixedStringT<Tchar, t_size>& strAdd, _StringT<Tchar>& str)
+	{
+		uintptr uLength = str.GetLength();
+		uintptr uAdd = strAdd.GetLength();
+		if( uAdd == 0 || uPos > uLength )
+			return ;
+		str.InsertAt(uPos, uAdd);
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(str) + uPos);
+	}
+	template <typename Tchar>
+	static void Insert(uintptr uPos, const _StringT<Tchar>& strAdd, _StringT<Tchar>& str)
+	{
+		assert( &strAdd != &str && strAdd != str );
+		uintptr uLength = str.GetLength();
+		uintptr uAdd = strAdd.GetLength();
+		if( uAdd == 0 || uPos > uLength )
+			return ;
+		str.InsertAt(uPos, uAdd);
+		mem_copy(_ShareArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(str) + uPos);
+	}
+
+	//sub-string (use carefully)
+	template <typename Tchar, uintptr t_size>
+	static uintptr Sub(const GKC::ConstStringT<Tchar>& strSrc, uintptr uStart, uintptr uLength, GKC::FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		strDest.SetLength(0);
+		uintptr uRet = calc_sub_string_act_length(strSrc.GetCount(), uStart, uLength);
+		if( uRet == 0 )
+			return 0;
+		if( uRet > t_size - 1 )
+			uRet = t_size - 1;
+		strDest.SetLength(uRet);
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest));
+		return uRet;
+	}
+	template <typename Tchar>
+	static void Sub(const GKC::ConstStringT<Tchar>& strSrc, uintptr uStart, uintptr uLength, _StringT<Tchar>& strDest)
+	{
+		strDest.SetLength(0);
+		uintptr uRet = calc_sub_string_act_length(strSrc.GetCount(), uStart, uLength);
+		if( uRet == 0 )
+			return ;
+		strDest.SetLength(uRet);
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest));
+	}
+	template <typename Tchar, uintptr t_sizeS, uintptr t_sizeD>
+	static uintptr Sub(const GKC::FixedStringT<Tchar, t_sizeS>& strSrc, uintptr uStart, uintptr uLength, GKC::FixedStringT<Tchar, t_sizeD>& strDest) throw()
+	{
+		assert( &strSrc != &strDest );
+		strDest.SetLength(0);
+		uintptr uRet = calc_sub_string_act_length(strSrc.GetLength(), uStart, uLength);
+		if( uRet == 0 )
+			return 0;
+		if( uRet > t_sizeD - 1 )
+			uRet = t_sizeD - 1;
+		strDest.SetLength(uRet);
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest));
+		return uRet;
+	}
+	template <typename Tchar, uintptr t_size>
+	static void Sub(const GKC::FixedStringT<Tchar, t_size>& strSrc, uintptr uStart, uintptr uLength, _StringT<Tchar>& strDest)
+	{
+		strDest.SetLength(0);
+		uintptr uRet = calc_sub_string_act_length(strSrc.GetLength(), uStart, uLength);
+		if( uRet == 0 )
+			return ;
+		strDest.SetLength(uRet);
+		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest));
+	}
+	template <typename Tchar, uintptr t_size>
+	static uintptr Sub(const _StringT<Tchar>& strSrc, uintptr uStart, uintptr uLength, GKC::FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		strDest.SetLength(0);
+		uintptr uRet = calc_sub_string_act_length(strSrc.GetLength(), uStart, uLength);
+		if( uRet == 0 )
+			return 0;
+		if( uRet > t_size - 1 )
+			uRet = t_size - 1;
+		strDest.SetLength(uRet);
+		mem_copy(_ShareArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(strDest));
+		return uRet;
+	}
+	template <typename Tchar>
+	static void Sub(const _StringT<Tchar>& strSrc, uintptr uStart, uintptr uLength, _StringT<Tchar>& strDest)
+	{
+		assert( &strSrc != &strDest && strSrc != strDest );
+		strDest.SetLength(0);
+		uintptr uRet = calc_sub_string_act_length(strSrc.GetLength(), uStart, uLength);
+		if( uRet == 0 )
+			return ;
+		strDest.SetLength(uRet);
+		mem_copy(_ShareArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest));
+	}
+};
+
 #pragma pack(pop)
 
 //------------------------------------------------------------------------------

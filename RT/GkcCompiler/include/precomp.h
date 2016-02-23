@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,19 +11,17 @@
 */
 
 /*
-This file contains classes for global variables of _os_window.
-
-Author: Lijuan Mei
+This is pre-compiled header file.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-// internal
+#ifndef __PRECOMP_H__
+#define __PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "base/GkcDef.h"
+#include "sys/GkcSys.h"
+
 ////////////////////////////////////////////////////////////////////////////////
-
-// static variables
-
-RECT _os_window::m_rcDefault = { CW_USEDEFAULT, CW_USEDEFAULT, 0, 0 };
-
+#endif //__PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////

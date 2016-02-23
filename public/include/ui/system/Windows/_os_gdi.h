@@ -19,13 +19,6 @@ Reference: WTL
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __IWIN_GDI_H__
-#define __IWIN_GDI_H__
-////////////////////////////////////////////////////////////////////////////////
-
-#ifndef __IWIN_WINDOW_H__
-	#error _Gdi.h requires _Window.h to be included first.
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,42 +40,42 @@ Reference: WTL
 ////////////////////////////////////////////////////////////////////////////////
 // Classes in this file:
 //
-// _GdiObject
+// _os_gdi_object
 //
-// _Pen
-// _Brush
-// _LogFont
-// _Font
-// _Bitmap
-// _Palette
-// _Rgn
+// _os_pen
+// _os_brush
+// _os_log_font
+// _os_font
+// _os_bitmap
+// _os_palette
+// _os_rgn
 //
-// _DC
-// _PaintDC
-// _ClientDC
-// _WindowDC
-// _MemoryDC
+// _os_dc
+// _os_paint_dc
+// _os_client_dc
+// _os_window_dc
+// _os_memory_dc
 //
-// _EnhMetaFileInfo
-// _EnhMetaFile
-// _EnhMetaFileDC
+// _os_enh_meta_file_info
+// _os_enh_meta_file
+// _os_enh_meta_file_dc
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// _GdiObject
+// _os_gdi_object
 
-class _GdiObject
+class _os_gdi_object
 {
 public:
-	explicit _GdiObject(HGDIOBJ h = NULL) throw() : m_hObj(h)
+	explicit _os_gdi_object(HGDIOBJ h = NULL) throw() : m_hObj(h)
 	{
 	}
-	_GdiObject(_GdiObject&& src) throw()
+	_os_gdi_object(_os_gdi_object&& src) throw()
 	{
 		m_hObj = src.m_hObj;
 		src.m_hObj = NULL;
 	}
-	~_GdiObject() throw()
+	~_os_gdi_object() throw()
 	{
 		Destroy();
 	}
@@ -97,7 +90,7 @@ public:
 	}
 
 	//operators
-	_GdiObject& operator=(_GdiObject&& src) throw()
+	_os_gdi_object& operator=(_os_gdi_object&& src) throw()
 	{
 		if( &src != this ) {
 			if( m_hObj != src.m_hObj ) {
@@ -137,35 +130,35 @@ protected:
 
 private:
 	//noncopyable
-	_GdiObject(const _GdiObject&) throw();
-	_GdiObject& operator=(const _GdiObject&) throw();
+	_os_gdi_object(const _os_gdi_object&) throw();
+	_os_gdi_object& operator=(const _os_gdi_object&) throw();
 };
 
 // weak_object_ref<T>
-//   T: _Pen, _Brush, _Font, _Bitmap, _Palette, _Rgn
+//   T: _os_pen, _os_brush, _os_font, _os_bitmap, _os_palette, _os_rgn
 
 ////////////////////////////////////////////////////////////////////////////////
-// _Pen
+// _os_pen
 
-class _Pen : public _GdiObject
+class _os_pen : public _os_gdi_object
 {
 private:
-	typedef _GdiObject  baseClass;
+	typedef _os_gdi_object  baseClass;
 
 public:
-	explicit _Pen(HPEN hPen = NULL) throw() : baseClass(hPen)
+	explicit _os_pen(HPEN hPen = NULL) throw() : baseClass(hPen)
 	{
 	}
-	_Pen(_Pen&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_os_pen(_os_pen&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
-	~_Pen() throw()
+	~_os_pen() throw()
 	{
 	}
 
-	_Pen& operator=(_Pen&& src) throw()
+	_os_pen& operator=(_os_pen&& src) throw()
 	{
-		return static_cast<_Pen&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+		return static_cast<_os_pen&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
 	}
 
 //methods
@@ -219,32 +212,32 @@ public:
 
 private:
 	//noncopyable
-	_Pen(const _Pen& src) throw();
-	_Pen& operator=(const _Pen& src) throw();
+	_os_pen(const _os_pen& src) throw();
+	_os_pen& operator=(const _os_pen& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// _Brush
+// _os_brush
 
-class _Brush : public _GdiObject
+class _os_brush : public _os_gdi_object
 {
 private:
-	typedef _GdiObject  baseClass;
+	typedef _os_gdi_object  baseClass;
 
 public:
-	explicit _Brush(HBRUSH hBrush = NULL) throw() : baseClass(hBrush)
+	explicit _os_brush(HBRUSH hBrush = NULL) throw() : baseClass(hBrush)
 	{
 	}
-	_Brush(_Brush&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_os_brush(_os_brush&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
-	~_Brush() throw()
+	~_os_brush() throw()
 	{
 	}
 
-	_Brush& operator=(_Brush&& src) throw()
+	_os_brush& operator=(_os_brush&& src) throw()
 	{
-		return static_cast<_Brush&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+		return static_cast<_os_brush&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
 	}
 
 	void Attach(HBRUSH hBrush) throw()
@@ -315,25 +308,25 @@ public:
 
 private:
 	//noncopyable
-	_Brush(const _Brush& src) throw();
-	_Brush& operator=(const _Brush& src) throw();
+	_os_brush(const _os_brush& src) throw();
+	_os_brush& operator=(const _os_brush& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// _Font
+// _os_font
 
-class _LogFont : public LOGFONTW
+class _os_log_font : public LOGFONTW
 {
 public:
-	_LogFont() throw()
+	_os_log_font() throw()
 	{
-		::memset(this, 0, sizeof(LOGFONTW));
+		mem_zero(this, sizeof(LOGFONTW));
 	}
-	_LogFont(const LOGFONTW& lf) throw()
+	explicit _os_log_font(const LOGFONTW& lf) throw()
 	{
 		Copy(&lf);
 	}
-	explicit _LogFont(HFONT hFont) throw()
+	explicit _os_log_font(HFONT hFont) throw()
 	{
 		assert( ::GetObjectType(hFont) == OBJ_FONT );
 		::GetObjectW(hFont, sizeof(LOGFONTW), (LOGFONTW*)this);  //no check
@@ -448,17 +441,19 @@ public:
 		*(LOGFONTW*)this = *pLogFont;
 	}
 
-	_LogFont& operator=(const _LogFont& src) throw()
+	_os_log_font& operator=(const _os_log_font& src) throw()
+	{
+		if( this != &src ) {
+			Copy(&src);
+		}
+		return *this;
+	}
+	_os_log_font& operator=(const LOGFONTW& src) throw()
 	{
 		Copy(&src);
 		return *this;
 	}
-	_LogFont& operator=(const LOGFONTW& src) throw()
-	{
-		Copy(&src);
-		return *this;
-	}
-	_LogFont& operator=(HFONT hFont) throw()
+	_os_log_font& operator=(HFONT hFont) throw()
 	{
 		assert( ::GetObjectType(hFont) == OBJ_FONT );
 		::GetObjectW(hFont, sizeof(LOGFONTW), (LOGFONTW*)this);  //no check
@@ -484,25 +479,25 @@ public:
 	}
 };
 
-class _Font : public _GdiObject
+class _os_font : public _os_gdi_object
 {
 private:
-	typedef _GdiObject  baseClass;
+	typedef _os_gdi_object  baseClass;
 
 public:
-	explicit _Font(HFONT hFont = NULL) throw() : baseClass(hFont)
+	explicit _os_font(HFONT hFont = NULL) throw() : baseClass(hFont)
 	{
 	}
-	_Font(_Font&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_os_font(_os_font&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
-	~_Font() throw()
+	~_os_font() throw()
 	{
 	}
 
-	_Font& operator=(_Font&& src) throw()
+	_os_font& operator=(_os_font&& src) throw()
 	{
-		return static_cast<_Font&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+		return static_cast<_os_font&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
 	}
 
 	void Attach(HFONT hFont) throw()
@@ -581,32 +576,32 @@ public:
 
 private:
 	//noncopyable
-	_Font(const _Font& src) throw();
-	_Font& operator=(const _Font& src) throw();
+	_os_font(const _os_font& src) throw();
+	_os_font& operator=(const _os_font& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// _Bitmap
+// _os_bitmap
 
-class _Bitmap : public _GdiObject
+class _os_bitmap : public _os_gdi_object
 {
 private:
-	typedef _GdiObject  baseClass;
+	typedef _os_gdi_object  baseClass;
 
 public:
-	explicit _Bitmap(HBITMAP hBitmap = NULL) throw() : baseClass(hBitmap)
+	explicit _os_bitmap(HBITMAP hBitmap = NULL) throw() : baseClass(hBitmap)
 	{
 	}
-	_Bitmap(_Bitmap&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_os_bitmap(_os_bitmap&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
-	~_Bitmap() throw()
+	~_os_bitmap() throw()
 	{
 	}
 
-	_Bitmap& operator=(_Bitmap&& src) throw()
+	_os_bitmap& operator=(_os_bitmap&& src) throw()
 	{
-		return static_cast<_Bitmap&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+		return static_cast<_os_bitmap&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
 	}
 
 	void Attach(HBITMAP hBitmap) throw()
@@ -623,13 +618,13 @@ public:
 	}
 
 // Create and load methods
-	bool LoadBitmap(_U_STRINGorID bitmap) throw()
+	bool LoadBitmap(_os_u_string_or_id bitmap) throw()
 	{
 		assert( IsNull() );
 		m_hObj = ::LoadBitmapW(_os_g_module.GetResourceInstance(), bitmap.m_lpstr);
 		return m_hObj != NULL;
 	}
-	bool LoadOEMBitmap(UINT uIDBitmap) throw() // for OBM_/OCR_/OIC_
+	bool LoadOEMBitmap(UINT uIDBitmap) throw()  // for OBM_/OCR_/OIC_
 	{
 		assert( IsNull() );
 		m_hObj = ::LoadBitmapW(NULL, MAKEINTRESOURCE(uIDBitmap));
@@ -731,32 +726,32 @@ public:
 
 private:
 	//noncopyable
-	_Bitmap(const _Bitmap& src) throw();
-	_Bitmap& operator=(const _Bitmap& src) throw();
+	_os_bitmap(const _os_bitmap& src) throw();
+	_os_bitmap& operator=(const _os_bitmap& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// _Palette
+// _os_palette
 
-class _Palette : public _GdiObject
+class _os_palette : public _os_gdi_object
 {
 private:
-	typedef _GdiObject  baseClass;
+	typedef _os_gdi_object  baseClass;
 
 public:
-	explicit _Palette(HPALETTE hPalette = NULL) throw() : baseClass(hPalette)
+	explicit _os_palette(HPALETTE hPalette = NULL) throw() : baseClass(hPalette)
 	{
 	}
-	_Palette(_Palette&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_os_palette(_os_palette&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
-	~_Palette() throw()
+	~_os_palette() throw()
 	{
 	}
 
-	_Palette& operator=(_Palette&& src) throw()
+	_os_palette& operator=(_os_palette&& src) throw()
 	{
-		return static_cast<_Palette&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+		return static_cast<_os_palette&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
 	}
 
 	void Attach(HPALETTE hPalette) throw()
@@ -825,32 +820,32 @@ public:
 
 private:
 	//noncopyable
-	_Palette(const _Palette& src) throw();
-	_Palette& operator=(const _Palette& src) throw();
+	_os_palette(const _os_palette& src) throw();
+	_os_palette& operator=(const _os_palette& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// _Rgn
+// _os_rgn
 
-class _Rgn : public _GdiObject
+class _os_rgn : public _os_gdi_object
 {
 private:
-	typedef _GdiObject  baseClass;
+	typedef _os_gdi_object  baseClass;
 
 public:
-	explicit _Rgn(HRGN hRgn = NULL) throw() : baseClass(hRgn)
+	explicit _os_rgn(HRGN hRgn = NULL) throw() : baseClass(hRgn)
 	{
 	}
-	_Rgn(_Rgn&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_os_rgn(_os_rgn&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
-	~_Rgn() throw()
+	~_os_rgn() throw()
 	{
 	}
 
-	_Rgn& operator=(_Rgn&& src) throw()
+	_os_rgn& operator=(_os_rgn&& src) throw()
 	{
-		return static_cast<_Rgn&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+		return static_cast<_os_rgn&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
 	}
 
 	void Attach(HRGN hRgn) throw()
@@ -994,25 +989,25 @@ public:
 
 private:
 	//noncopyable
-	_Rgn(const _Rgn& src) throw();
-	_Rgn& operator=(const _Rgn& src) throw();
+	_os_rgn(const _os_rgn& src) throw();
+	_os_rgn& operator=(const _os_rgn& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// _DC - The device context class
+// _os_dc - The device context class
 
-class _DC
+class _os_dc
 {
 public:
-	explicit _DC(HDC hDC = NULL) throw() : m_hDC(hDC)
+	explicit _os_dc(HDC hDC = NULL) throw() : m_hDC(hDC)
 	{
 	}
-	_DC(_DC&& src) throw()
+	_os_dc(_os_dc&& src) throw()
 	{
 		m_hDC = src.m_hDC;
 		src.m_hDC = NULL;
 	}
-	~_DC() throw()
+	~_os_dc() throw()
 	{
 		Destroy();
 	}
@@ -1026,7 +1021,7 @@ public:
 		}
 	}
 
-	_DC& operator=(_DC&& src) throw()
+	_os_dc& operator=(_os_dc&& src) throw()
 	{
 		if( this != &src ) {
 			if( m_hDC != src.m_hDC ) {
@@ -1067,30 +1062,30 @@ public:
 		return ::WindowFromDC(m_hDC);
 	}
 
-	weak_object_ref<_Pen> GetCurrentPen() const throw()
+	weak_object_ref<_os_pen> GetCurrentPen() const throw()
 	{
 		assert( !IsNull() );
-		return weak_object_ref<_Pen>(_Pen((HPEN)::GetCurrentObject(m_hDC, OBJ_PEN)));
+		return weak_object_ref<_os_pen>(_os_pen((HPEN)::GetCurrentObject(m_hDC, OBJ_PEN)));
 	}
-	weak_object_ref<_Brush> GetCurrentBrush() const throw()
+	weak_object_ref<_os_brush> GetCurrentBrush() const throw()
 	{
 		assert( !IsNull() );
-		return weak_object_ref<_Brush>(_Brush((HBRUSH)::GetCurrentObject(m_hDC, OBJ_BRUSH)));
+		return weak_object_ref<_os_brush>(_os_brush((HBRUSH)::GetCurrentObject(m_hDC, OBJ_BRUSH)));
 	}
-	weak_object_ref<_Palette> GetCurrentPalette() const throw()
+	weak_object_ref<_os_palette> GetCurrentPalette() const throw()
 	{
 		assert( !IsNull() );
-		return weak_object_ref<_Palette>(_Palette((HPALETTE)::GetCurrentObject(m_hDC, OBJ_PAL)));
+		return weak_object_ref<_os_palette>(_os_palette((HPALETTE)::GetCurrentObject(m_hDC, OBJ_PAL)));
 	}
-	weak_object_ref<_Font> GetCurrentFont() const throw()
+	weak_object_ref<_os_font> GetCurrentFont() const throw()
 	{
 		assert( !IsNull() );
-		return weak_object_ref<_Font>(_Font((HFONT)::GetCurrentObject(m_hDC, OBJ_FONT)));
+		return weak_object_ref<_os_font>(_os_font((HFONT)::GetCurrentObject(m_hDC, OBJ_FONT)));
 	}
-	weak_object_ref<_Bitmap> GetCurrentBitmap() const throw()
+	weak_object_ref<_os_bitmap> GetCurrentBitmap() const throw()
 	{
 		assert( !IsNull() );
-		return weak_object_ref<_Bitmap>(_Bitmap((HBITMAP)::GetCurrentObject(m_hDC, OBJ_BITMAP)));
+		return weak_object_ref<_os_bitmap>(_os_bitmap((HBITMAP)::GetCurrentObject(m_hDC, OBJ_BITMAP)));
 	}
 
 	bool CreateDC(LPCWSTR lpszDriverName, LPCWSTR lpszDeviceName, LPCWSTR lpszOutput, const DEVMODEW* lpInitData) throw()
@@ -1529,7 +1524,7 @@ public:
 		assert( !IsNull() );
 		return ::GetClipBox(m_hDC, lpRect);
 	}
-	int GetClipRgn(_Rgn& region) const throw()
+	int GetClipRgn(_os_rgn& region) const throw()
 	{
 		assert( !IsNull() );
 		if( region.IsNull() )
@@ -1943,12 +1938,12 @@ public:
 		assert( iWidth > 0 && iHeight > 0 );
 
 		// Create a generic DC for all BitBlts
-		weak_object_ref<_DC> dc( _DC((hSrcDC != NULL) ? hSrcDC : ::CreateCompatibleDC(m_hDC)) );
+		weak_object_ref<_os_dc> dc( _os_dc((hSrcDC != NULL) ? hSrcDC : ::CreateCompatibleDC(m_hDC)) );
 		if( dc.IsNull() )
 			return FALSE;
 
 		// Create a DC for the monochrome DIB section
-		_DC dcBW(::CreateCompatibleDC(m_hDC));
+		_os_dc dcBW(::CreateCompatibleDC(m_hDC));
 		if( dcBW.IsNull() ) {
 			if( hSrcDC == NULL )
 				dc.GetObject().Destroy();
@@ -1968,7 +1963,7 @@ public:
 		};
 
 		VOID* pbitsBW;
-		_Bitmap bmpBW( ::CreateDIBSection(dcBW, (LPBITMAPINFO)&rgbBWBitmapInfo, DIB_RGB_COLORS, &pbitsBW, NULL, 0) );
+		_os_bitmap bmpBW( ::CreateDIBSection(dcBW, (LPBITMAPINFO)&rgbBWBitmapInfo, DIB_RGB_COLORS, &pbitsBW, NULL, 0) );
 		if( bmpBW.IsNull() ) {
 			if( hSrcDC == NULL )
 				dc.GetObject().Destroy();
@@ -1983,11 +1978,11 @@ public:
 
 		// Block: Dark gray removal: we want (128, 128, 128) pixels to become black and not white
 		{
-			_DC dcTemp1(::CreateCompatibleDC(m_hDC));
-			_DC dcTemp2(::CreateCompatibleDC(m_hDC));
-			_Bitmap bmpTemp1;
+			_os_dc dcTemp1(::CreateCompatibleDC(m_hDC));
+			_os_dc dcTemp2(::CreateCompatibleDC(m_hDC));
+			_os_bitmap bmpTemp1;
 			bmpTemp1.CreateCompatibleBitmap(dc, iWidth, iHeight);
-			_Bitmap bmpTemp2;
+			_os_bitmap bmpTemp2;
 			bmpTemp2.CreateBitmap(iWidth, iHeight, 1, 1, NULL);
 			HBITMAP hOldBmp1 = dcTemp1.SelectBitmap(bmpTemp1);
 			HBITMAP hOldBmp2 = dcTemp2.SelectBitmap(bmpTemp2);
@@ -2319,7 +2314,7 @@ public:
 	// Special handling for metafile playback
 	static int CALLBACK EnumMetaFileProc(HDC hDC, HANDLETABLE* pHandleTable, METARECORD* pMetaRec, int iHandles, LPARAM lParam) throw()
 	{
-		_DC* pDC = (_DC*)lParam;
+		_os_dc* pDC = (_os_dc*)lParam;
 
 		switch( pMetaRec->rdFunction ) {
 		case META_SETMAPMODE:
@@ -2483,26 +2478,26 @@ public:
 	void DrawDragRect(const RECT* lpRect, const SIZE& size, const RECT* lpRectLast, const SIZE& sizeLast, HBRUSH hBrush = NULL, HBRUSH hBrushLast = NULL) throw()
 	{
 		// first, determine the update region and select it
-		_Rgn rgnOutside;
+		_os_rgn rgnOutside;
 		rgnOutside.CreateRectRgn(lpRect);
 		RECT rect = *lpRect;
 		::InflateRect(&rect, -size.cx, -size.cy);
 		::IntersectRect(&rect, &rect, lpRect);
-		_Rgn rgnInside;
+		_os_rgn rgnInside;
 		rgnInside.CreateRectRgn(&rect);
-		_Rgn rgnNew;
+		_os_rgn rgnNew;
 		rgnNew.CreateRectRgn(0, 0, 0, 0);
 		rgnNew.CombineRgn(rgnOutside, rgnInside, RGN_XOR);
 
 		HBRUSH hBrushOld = NULL;
-		_Brush brushHalftone;
+		_os_brush brushHalftone;
 		if( hBrush == NULL )
-			brushHalftone(hBrush = _DC::GetHalftoneBrush());
+			brushHalftone(hBrush = _os_dc::GetHalftoneBrush());
 		if( hBrushLast == NULL )
 			hBrushLast = hBrush;
 
-		_Rgn rgnLast;
-		_Rgn rgnUpdate;
+		_os_rgn rgnLast;
+		_os_rgn rgnUpdate;
 		if( lpRectLast != NULL ) {
 			// find difference between new region and old region
 			rgnLast.CreateRectRgn(0, 0, 0, 0);
@@ -2552,7 +2547,6 @@ public:
 	}
 	void FillSolidRect(int x, int y, int cx, int cy, COLORREF clr) throw()
 	{
-		assert( !IsNull() );
 		RECT rect = { x, y, x + cx, y + cy };
 		FillSolidRect(&rect, clr);
 	}
@@ -2732,25 +2726,25 @@ protected:
 
 private:
 	//noncopyable
-	_DC(const _DC& src) throw();
-	_DC& operator=(const _DC& src) throw();
+	_os_dc(const _os_dc& src) throw();
+	_os_dc& operator=(const _os_dc& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// _DC Helpers
+// DC Helpers
 
-// _PaintDC
+// _os_paint_dc
 
-class _PaintDC : public _DC
+class _os_paint_dc : public _os_dc
 {
 public:
-	_PaintDC(HWND hWnd) throw()
+	explicit _os_paint_dc(HWND hWnd) throw()
 	{
 		assert( ::IsWindow(hWnd) );
 		m_hWnd = hWnd;
 		m_hDC = ::BeginPaint(hWnd, &m_ps);
 	}
-	~_PaintDC() throw()
+	~_os_paint_dc() throw()
 	{
 		assert( !IsNull() );
 		assert( ::IsWindow(m_hWnd) );
@@ -2764,22 +2758,22 @@ protected:
 
 private:
 	//noncopyable
-	_PaintDC(const _PaintDC& src) throw();
-	_PaintDC& operator=(const _PaintDC& src) throw();
+	_os_paint_dc(const _os_paint_dc& src) throw();
+	_os_paint_dc& operator=(const _os_paint_dc& src) throw();
 };
 
-// _ClientDC
+// _os_client_dc
 
-class _ClientDC : public _DC
+class _os_client_dc : public _os_dc
 {
 public:
-	_ClientDC(HWND hWnd) throw()
+	explicit _os_client_dc(HWND hWnd) throw()
 	{
 		assert( hWnd == NULL || ::IsWindow(hWnd) );
 		m_hWnd = hWnd;
 		m_hDC = ::GetDC(hWnd);
 	}
-	~_ClientDC() throw()
+	~_os_client_dc() throw()
 	{
 		assert( !IsNull() );
 		::ReleaseDC(m_hWnd, Detach());  //no check
@@ -2790,22 +2784,22 @@ protected:
 
 private:
 	//noncopyable
-	_ClientDC(const _ClientDC& src) throw();
-	_ClientDC& operator=(const _ClientDC& src) throw();
+	_os_client_dc(const _os_client_dc& src) throw();
+	_os_client_dc& operator=(const _os_client_dc& src) throw();
 };
 
-// _WindowDC
+// _os_window_dc
 
-class _WindowDC : public _DC
+class _os_window_dc : public _os_dc
 {
 public:
-	_WindowDC(HWND hWnd) throw()
+	explicit _os_window_dc(HWND hWnd) throw()
 	{
 		assert( hWnd == NULL || ::IsWindow(hWnd) );
 		m_hWnd = hWnd;
 		m_hDC = ::GetWindowDC(hWnd);
 	}
-	~_WindowDC() throw()
+	~_os_window_dc() throw()
 	{
 		assert( !IsNull() );
 		::ReleaseDC(m_hWnd, Detach());  //no check
@@ -2816,16 +2810,16 @@ protected:
 
 private:
 	//noncopyable
-	_WindowDC(const _WindowDC& src) throw();
-	_WindowDC& operator=(const _WindowDC& src) throw();
+	_os_window_dc(const _os_window_dc& src) throw();
+	_os_window_dc& operator=(const _os_window_dc& src) throw();
 };
 
-// _MemoryDC
+// _os_memory_dc
 
-class _MemoryDC : public _DC
+class _os_memory_dc : public _os_dc
 {
 public:
-	_MemoryDC(HDC hDC, const RECT& rcPaint) throw() : m_hDCOriginal(hDC), m_hBmpOld(NULL)
+	_os_memory_dc(HDC hDC, const RECT& rcPaint) throw() : m_hDCOriginal(hDC), m_hBmpOld(NULL)
 	{
 		m_rcPaint = rcPaint;
 		CreateCompatibleDC(m_hDCOriginal);
@@ -2835,7 +2829,7 @@ public:
 		m_hBmpOld = SelectBitmap(m_bmp);
 		SetViewportOrg(-m_rcPaint.left, -m_rcPaint.top);
 	}
-	~_MemoryDC() throw()
+	~_os_memory_dc() throw()
 	{
 		::BitBlt(m_hDCOriginal, m_rcPaint.left, m_rcPaint.top, m_rcPaint.right - m_rcPaint.left, m_rcPaint.bottom - m_rcPaint.top, m_hDC, m_rcPaint.left, m_rcPaint.top, SRCCOPY);
 		SelectBitmap(m_hBmpOld);
@@ -2844,29 +2838,29 @@ public:
 protected:
 	HDC m_hDCOriginal;
 	RECT m_rcPaint;
-	_Bitmap m_bmp;
+	_os_bitmap m_bmp;
 	HBITMAP m_hBmpOld;
 
 private:
 	//noncopyable
-	_MemoryDC(const _MemoryDC& src) throw();
-	_MemoryDC& operator=(const _MemoryDC& src) throw();
+	_os_memory_dc(const _os_memory_dc& src) throw();
+	_os_memory_dc& operator=(const _os_memory_dc& src) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Enhanced metafile support
 
-// _EnhMetaFileInfo
+// _os_enh_meta_file_info
 
-class _EnhMetaFileInfo
+class _os_enh_meta_file_info
 {
 public:
 
 // Constructor/destructor
-	explicit _EnhMetaFileInfo(HENHMETAFILE hEMF) throw() : m_pBits(NULL), m_pDesc(NULL), m_hEMF(hEMF)
+	explicit _os_enh_meta_file_info(HENHMETAFILE hEMF) throw() : m_pBits(NULL), m_pDesc(NULL), m_hEMF(hEMF)
 	{
 	}
-	~_EnhMetaFileInfo() throw()
+	~_os_enh_meta_file_info() throw()
 	{
 		if( m_pDesc != NULL )
 			crt_free(m_pDesc);
@@ -2900,7 +2894,7 @@ public:
 	ENHMETAHEADER* GetEnhMetaFileHeader() throw()
 	{
 		assert( m_hEMF != NULL );
-		::memset(&m_header, 0, sizeof(m_header));
+		mem_zero(&m_header, sizeof(m_header));
 		m_header.iType = EMR_HEADER;
 		m_header.nSize = sizeof(ENHMETAHEADER);
 		UINT u = ::GetEnhMetaFileHeader(m_hEMF, sizeof(ENHMETAHEADER), &m_header);
@@ -2909,7 +2903,7 @@ public:
 	PIXELFORMATDESCRIPTOR* GetEnhMetaFilePixelFormat() throw()
 	{
 		assert( m_hEMF != NULL );
-		::memset(&m_pfd, 0, sizeof(m_pfd));
+		mem_zero(&m_pfd, sizeof(m_pfd));
 		UINT u = ::GetEnhMetaFilePixelFormat(m_hEMF, sizeof(m_pfd), &m_pfd);
 		return (u != 0) ? &m_pfd : NULL;
 	}
@@ -2923,24 +2917,24 @@ private:
 
 private:
 	//noncopyable
-	_EnhMetaFileInfo(const _EnhMetaFileInfo& src) throw();
-	_EnhMetaFileInfo& operator=(const _EnhMetaFileInfo& src) throw();
+	_os_enh_meta_file_info(const _os_enh_meta_file_info& src) throw();
+	_os_enh_meta_file_info& operator=(const _os_enh_meta_file_info& src) throw();
 };
 
-// _EnhMetaFile
+// _os_enh_meta_file
 
-class _EnhMetaFile
+class _os_enh_meta_file
 {
 public:
-	explicit _EnhMetaFile(HENHMETAFILE hEMF = NULL) throw() : m_hEMF(hEMF)
+	explicit _os_enh_meta_file(HENHMETAFILE hEMF = NULL) throw() : m_hEMF(hEMF)
 	{
 	}
-	_EnhMetaFile(_EnhMetaFile&& src) throw()
+	_os_enh_meta_file(_os_enh_meta_file&& src) throw()
 	{
 		m_hEMF = src.m_hEMF;
 		src.m_hEMF = NULL;
 	}
-	~_EnhMetaFile() throw()
+	~_os_enh_meta_file() throw()
 	{
 		Destroy();
 	}
@@ -2955,7 +2949,7 @@ public:
 	}
 
 // Operations
-	_EnhMetaFile& operator=(_EnhMetaFile&& src) throw()
+	_os_enh_meta_file& operator=(_os_enh_meta_file&& src) throw()
 	{
 		if( this != &src ) {
 			if( m_hEMF != src.m_hEMF ) {
@@ -3021,29 +3015,29 @@ private:
 	HENHMETAFILE m_hEMF;
 
 private:
-	_EnhMetaFile(const _EnhMetaFile& src) throw();
-	_EnhMetaFile& operator=(const _EnhMetaFile& src) throw();
+	_os_enh_meta_file(const _os_enh_meta_file& src) throw();
+	_os_enh_meta_file& operator=(const _os_enh_meta_file& src) throw();
 };
 
-// _EnhMetaFileDC
+// _os_enh_meta_file_dc
 
-class _EnhMetaFileDC : public _DC
+class _os_enh_meta_file_dc : public _os_dc
 {
 public:
-	_EnhMetaFileDC() throw()
+	_os_enh_meta_file_dc() throw()
 	{
 	}
-	_EnhMetaFileDC(HDC hdc, const RECT* lpRect) throw()
+	_os_enh_meta_file_dc(HDC hdc, const RECT* lpRect) throw()
 	{
 		Create(hdc, NULL, lpRect, NULL);
 		assert( m_hDC != NULL );
 	}
-	_EnhMetaFileDC(HDC hdcRef, LPCWSTR lpFilename, const RECT* lpRect, LPCWSTR lpDescription) throw()
+	_os_enh_meta_file_dc(HDC hdcRef, LPCWSTR lpFilename, const RECT* lpRect, LPCWSTR lpDescription) throw()
 	{
 		Create(hdcRef, lpFilename, lpRect, lpDescription);
 		assert( m_hDC != NULL );
 	}
-	~_EnhMetaFileDC() throw()
+	~_os_enh_meta_file_dc() throw()
 	{
 		HENHMETAFILE hEMF = Close();
 		if( hEMF != NULL )
@@ -3067,10 +3061,8 @@ public:
 	}
 
 private:
-	_EnhMetaFileDC(const _EnhMetaFileDC& src) throw();
-	_EnhMetaFileDC& operator=(const _EnhMetaFileDC& src) throw();
+	_os_enh_meta_file_dc(const _os_enh_meta_file_dc& src) throw();
+	_os_enh_meta_file_dc& operator=(const _os_enh_meta_file_dc& src) throw();
 };
 
-////////////////////////////////////////////////////////////////////////////////
-#endif //__IWIN_GDI_H__
 ////////////////////////////////////////////////////////////////////////////////

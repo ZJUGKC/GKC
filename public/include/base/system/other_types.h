@@ -1467,7 +1467,7 @@ public:
 		uintptr uRet = calc_sub_string_act_length(uCount, uPos, uLength);
 		if( uRet == 0 )
 			return 0;
-		mem_move(GKC::FixedArrayHelper::GetInternalPointer(str) + uPos + uRet, (uCount - uPos - uRet) * sizeof(Tchar), GKC::FixedArrayHelper::GetInternalPointer(str) + uPos);
+		mem_move(fixed_array_helper::GetInternalPointer(str) + uPos + uRet, (uCount - uPos - uRet) * sizeof(Tchar), fixed_array_helper::GetInternalPointer(str) + uPos);
 		str.SetLength(uCount - uRet);
 		return uRet;
 	}

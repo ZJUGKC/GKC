@@ -38,14 +38,13 @@ public:
 	template <typename Tchar, uintptr t_size>
 	static void ConvertPathStringToPlatform(INOUT FixedStringT<Tchar, t_size>& str) throw()
 	{
-		assert( !str.IsNull() );
 		cvt_path_string_to_platform(FixedArrayHelper::GetInternalPointer(str));
 	}
 	template <typename Tchar>
 	static void ConvertPathStringToPlatform(INOUT StringT<Tchar>& str) throw()
 	{
-		assert( !str.IsNull() );
-		cvt_path_string_to_platform(SharedArrayHelper::GetInternalPointer(str));
+		assert( !str.IsBlockNull() );
+		cvt_path_string_to_platform(ShareArrayHelper::GetInternalPointer(str));
 	}
 
 	//relative
@@ -60,12 +59,12 @@ public:
 	template <typename Tchar>
 	static void AppendSeparator(StringT<Tchar>& str)
 	{
-		assert( !str.IsNull() );
+		assert( !str.IsBlockNull() );
 		uintptr uLength = str.GetLength();
 		if( uLength == 0 || !check_path_separator(str.GetAt(uLength - 1).get_Value()) ) {
 			Tchar ch;
 			get_path_separator(ch);
-			StringUtilHelper::Append(str, ch);
+			StringHelper::Append(ch, str);
 		}
 	}
 	template <typename Tchar>
@@ -73,7 +72,7 @@ public:
 	{
 		uintptr uLength = str.GetLength();
 		if( uLength > 0 && check_path_separator(str.GetAt(uLength - 1).get_Value()) ) {
-			StringUtilHelper::Delete(uLength - 1, 1, str);
+			StringHelper::Delete(uLength - 1, 1, str);
 		}
 	}
 
@@ -118,7 +117,7 @@ public:
 	template <typename Tchar>
 	static void AppendCurrentPathPrefix(StringT<Tchar>& str)
 	{
-		assert( !str.IsNull() );
+		assert( !str.IsBlockNull() );
 		uintptr uLength = str.GetLength();
 		if( uLength == 0 )
 			return ;
@@ -130,20 +129,20 @@ public:
 		Tchar* sz;
 		get_current_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
-		StringUtilHelper::Insert(0, c_strPrefix, str);
+		StringHelper::Insert(0, c_strPrefix, str);
 	}
 	//called after ConvertPathStringToPlatform with absolute path
 	template <typename Tchar>
 	static void AppendAbsolutePathPrefix(StringT<Tchar>& str)
 	{
-		assert( !str.IsNull() );
+		assert( !str.IsBlockNull() );
 		uintptr uLength = str.GetLength();
 		if( uLength == 0 )
 			return ;
 		Tchar* sz;
 		get_absolute_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
-		StringUtilHelper::Insert(0, c_strPrefix, str);
+		StringHelper::Insert(0, c_strPrefix, str);
 	}
 };
 

@@ -27,8 +27,8 @@ namespace GKC {
 
 inline void process_md(const StringS& strSrc, const StringS& strDest)
 {
-	StringS strCurrentPath(StringUtilHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
-	StringS strFile(StringUtilHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+	StringS strCurrentPath(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+	StringS strFile(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 
 	List<StringS> stack(MemoryHelper::GetCrtMemoryManager());
 	while( stack.GetCount() > 0 ) {

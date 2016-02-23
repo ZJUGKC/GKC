@@ -24,19 +24,21 @@ This file contains entry point function.
 #include "process.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
 
 // version
 inline
-void _print_version() throw()
+void print_version() throw()
 {
-	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(_const_array_version::GetAddress(), _const_array_version::GetCount()));
 }
 
 // help
 inline
-void _print_help() throw()
+void print_help() throw()
 {
-	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(GKC::_const_array_help::GetAddress(), GKC::_const_array_help::GetCount()));
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(_const_array_help::GetAddress(), _const_array_help::GetCount()));
 }
 
 // ProgramEntryPoint
@@ -44,35 +46,37 @@ void _print_help() throw()
 class ProgramEntryPoint
 {
 public:
-	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env)
+	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env)
 	{
 		uintptr uArgCount = args.GetCount();
 		//args
 		if( uArgCount != 3 ) {
-			_print_version();
-			_print_help();
+			print_version();
+			print_help();
 			return 0;
 		}
-		if( compare_string(GKC::ConstArrayHelper::GetInternalPointer(args[1].get_Value()), GKC::ConstArrayHelper::GetInternalPointer(args[2].get_Value())) == 0 ) {
-			GKC::ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S("Error: The source directory and the destination directory cannot be the same!\n")));
+		if( compare_string(ConstArrayHelper::GetInternalPointer(args[1].get_Value()), ConstArrayHelper::GetInternalPointer(args[2].get_Value())) == 0 ) {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The source directory and the destination directory cannot be the same!\n")));
 			return 0;
 		}
-		GKC::StringS strSrc(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
-		GKC::StringUtilHelper::MakeString(args[1].get_Value(), strSrc);
-		GKC::StringS strDest(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
-		GKC::StringUtilHelper::MakeString(args[2].get_Value(), strDest);
+		StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+		StringUtilHelper::MakeString(args[1].get_Value(), strSrc);
+		StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+		StringUtilHelper::MakeString(args[2].get_Value(), strDest);
 		//file name
-		GKC::FsPathHelper::ConvertPathStringToPlatform(strSrc);
-		GKC::FsPathHelper::ConvertPathStringToPlatform(strDest);
+		FsPathHelper::ConvertPathStringToPlatform(strSrc);
+		FsPathHelper::ConvertPathStringToPlatform(strDest);
 
 		//process
-		_print_version();
-		GKC::process_md(strSrc, strDest);
+		print_version();
+		process_md(strSrc, strDest);
 
 		return 0;
 	}
 };
 
+////////////////////////////////////////////////////////////////////////////////
+}
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

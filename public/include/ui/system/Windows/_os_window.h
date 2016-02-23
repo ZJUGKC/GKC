@@ -22,65 +22,60 @@ Reference: ATL (ATL is not open source, so this file is re-written)
 // internal header
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __IWIN_WINDOW_H__
-#define __IWIN_WINDOW_H__
-
-////////////////////////////////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////////////////////////////////
 
 //internal
 
-class _U_RECT
+class _os_u_rect
 {
 public:
-	_U_RECT(IN LPRECT lpRect) throw() : m_lpRect(lpRect)
+	explicit _os_u_rect(IN LPRECT lpRect) throw() : m_lpRect(lpRect)
 	{
 	}
-	_U_RECT(IN RECT& rc) throw() : m_lpRect(&rc)
+	explicit _os_u_rect(IN RECT& rc) throw() : m_lpRect(&rc)
 	{
 	}
 	LPRECT m_lpRect;
 };
 
-class _U_MENUorID
+class _os_u_menu_or_id
 {
 public:
-	_U_MENUorID(IN HMENU hMenu) throw() : m_hMenu(hMenu)
+	explicit _os_u_menu_or_id(IN HMENU hMenu) throw() : m_hMenu(hMenu)
 	{
 	}
-	_U_MENUorID(IN UINT nID) throw() : m_hMenu((HMENU)(UINT_PTR)nID)
+	explicit _os_u_menu_or_id(IN UINT nID) throw() : m_hMenu((HMENU)(UINT_PTR)nID)
 	{
 	}
 	HMENU m_hMenu;
 };
 
-class _U_STRINGorID
+class _os_u_string_or_id
 {
 public:
-	_U_STRINGorID(LPCWSTR lpString) : m_lpstr(lpString)
+	explicit _os_u_string_or_id(LPCWSTR lpString) throw() : m_lpstr(lpString)
 	{
 	}
-	_U_STRINGorID(UINT nID) : m_lpstr(MAKEINTRESOURCE(nID))
+	explicit _os_u_string_or_id(UINT nID) throw() : m_lpstr(MAKEINTRESOURCE(nID))
 	{
 	}
 	LPCWSTR m_lpstr;
 };
 
-// _Window
+// _os_window
 
-class _Window
+class _os_window
 {
 public:
 	HWND m_hWnd;
 
 	static RECT m_rcDefault;
 
-	explicit _Window(IN HWND hWnd = NULL) throw() : m_hWnd(hWnd)
+	explicit _os_window(IN HWND hWnd = NULL) throw() : m_hWnd(hWnd)
 	{
 	}
 
-	_Window& operator=(IN HWND hWnd) throw()
+	_os_window& operator=(IN HWND hWnd) throw()
 	{
 		m_hWnd = hWnd;
 		return *this;
@@ -108,11 +103,11 @@ public:
 	HWND Create(
 		IN LPCWSTR lpstrWndClass,
 		IN HWND hWndParent,
-		IN _U_RECT rect = NULL,
+		IN _os_u_rect rect = NULL,
 		IN LPCWSTR szWindowName = NULL,
 		IN DWORD dwStyle = 0,
 		IN DWORD dwExStyle = 0,
-		IN _U_MENUorID MenuOrID = 0U,
+		IN _os_u_menu_or_id MenuOrID = 0U,
 		IN LPVOID lpCreateParam = NULL) throw()
 	{
 		assert( m_hWnd == NULL );
@@ -702,20 +697,20 @@ public:
 		return ::GetDlgItemTextW(m_hWnd, nID, lpStr, nMaxCount);
 	}
 
-	_Window GetNextDlgGroupItem(
+	_os_window GetNextDlgGroupItem(
 		IN HWND hWndCtl,
 		IN BOOL bPrevious = FALSE) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::GetNextDlgGroupItem(m_hWnd, hWndCtl, bPrevious));
+		return _os_window(::GetNextDlgGroupItem(m_hWnd, hWndCtl, bPrevious));
 	}
 
-	_Window GetNextDlgTabItem(
+	_os_window GetNextDlgTabItem(
 		IN HWND hWndCtl,
 		IN BOOL bPrevious = FALSE) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::GetNextDlgTabItem(m_hWnd, hWndCtl, bPrevious));
+		return _os_window(::GetNextDlgTabItem(m_hWnd, hWndCtl, bPrevious));
 	}
 
 	UINT IsDlgButtonChecked(IN int nIDButton) const throw()
@@ -841,36 +836,36 @@ public:
 
 // Window Access Functions
 
-	_Window ChildWindowFromPoint(IN const POINT& point) const throw()
+	_os_window ChildWindowFromPoint(IN const POINT& point) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::ChildWindowFromPoint(m_hWnd, point));
+		return _os_window(::ChildWindowFromPoint(m_hWnd, point));
 	}
 
-	_Window ChildWindowFromPointEx(
+	_os_window ChildWindowFromPointEx(
 		IN const POINT& point,
 		IN UINT uFlags) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::ChildWindowFromPointEx(m_hWnd, point, uFlags));
+		return _os_window(::ChildWindowFromPointEx(m_hWnd, point, uFlags));
 	}
 
-	_Window GetTopWindow() const throw()
+	_os_window GetTopWindow() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::GetTopWindow(m_hWnd));
+		return _os_window(::GetTopWindow(m_hWnd));
 	}
 
-	_Window GetWindow(IN UINT nCmd) const throw()
+	_os_window GetWindow(IN UINT nCmd) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::GetWindow(m_hWnd, nCmd));
+		return _os_window(::GetWindow(m_hWnd, nCmd));
 	}
 
-	_Window GetLastActivePopup() const throw()
+	_os_window GetLastActivePopup() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::GetLastActivePopup(m_hWnd));
+		return _os_window(::GetLastActivePopup(m_hWnd));
 	}
 
 	BOOL IsChild(IN HWND hWnd) const throw()
@@ -879,16 +874,16 @@ public:
 		return ::IsChild(m_hWnd, hWnd);
 	}
 
-	_Window GetParent() const throw()
+	_os_window GetParent() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::GetParent(m_hWnd));
+		return _os_window(::GetParent(m_hWnd));
 	}
 
-	_Window SetParent(IN HWND hWndNewParent) throw()
+	_os_window SetParent(IN HWND hWndNewParent) throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::SetParent(m_hWnd, hWndNewParent));
+		return _os_window(::SetParent(m_hWnd, hWndNewParent));
  	}
 
 // Window Tree Access
@@ -905,10 +900,10 @@ public:
 		return (int)::SetWindowLongPtrW(m_hWnd, GWL_ID, nID);
 	}
 
-	_Window GetDlgItem(IN int nID) const throw()
+	_os_window GetDlgItem(IN int nID) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
-		return _Window(::GetDlgItem(m_hWnd, nID));
+		return _os_window(::GetDlgItem(m_hWnd, nID));
 	}
 
 // Alert Functions
@@ -1181,7 +1176,7 @@ public:
 		return ::ShowWindowAsync(m_hWnd, nCmdShow);
 	}
 
-	_Window GetDescendantWindow(IN int nID) const throw()
+	_os_window GetDescendantWindow(IN int nID) const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 
@@ -1193,24 +1188,24 @@ public:
 		if( (hWndChild = ::GetDlgItem(m_hWnd, nID)) != NULL ) {
 			if( ::GetTopWindow(hWndChild) != NULL ) {
 				// children with the same ID as their parent have priority
-				_Window wnd(hWndChild);
+				_os_window wnd(hWndChild);
 				hWndTmp = wnd.GetDescendantWindow(nID);
 				if( hWndTmp != NULL )
-					return _Window(hWndTmp);
+					return _os_window(hWndTmp);
 			}
-			return _Window(hWndChild);
+			return _os_window(hWndChild);
 		}
 
 		// walk each child
 		for( hWndChild = ::GetTopWindow(m_hWnd); hWndChild != NULL;
 			hWndChild = ::GetNextWindow(hWndChild, GW_HWNDNEXT) ) {
-			_Window wnd(hWndChild);
+			_os_window wnd(hWndChild);
 			hWndTmp = wnd.GetDescendantWindow(nID);
 			if( hWndTmp != NULL )
-				return _Window(hWndTmp);
+				return _os_window(hWndTmp);
 		}
 
-		return _Window(NULL);    // not found
+		return _os_window(NULL);    // not found
 	}
 
 	void SendMessageToDescendants(
@@ -1225,7 +1220,7 @@ public:
 
 			if( bDeep && ::GetTopWindow(hWndChild) != NULL ) {
 				// send to child windows after parent
-				_Window wnd(hWndChild);
+				_os_window wnd(hWndChild);
 				wnd.SendMessageToDescendants(message, wParam, lParam, bDeep);
 			}
 		} //end for
@@ -1363,7 +1358,7 @@ public:
 		return TRUE;
 	}
 
-	_Window GetTopLevelParent() const throw()
+	_os_window GetTopLevelParent() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 
@@ -1372,10 +1367,10 @@ public:
 		while( (hWndTmp = ::GetParent(hWndParent)) != NULL )
 			hWndParent = hWndTmp;
 
-		return _Window(hWndParent);
+		return _os_window(hWndParent);
 	}
 
-	_Window GetTopLevelWindow() const throw()
+	_os_window GetTopLevelWindow() const throw()
 	{
 		assert( ::IsWindow(m_hWnd) );
 
@@ -1387,10 +1382,8 @@ public:
 			hWndTmp = ((DWORD)::GetWindowLongPtrW(hWndParent, GWL_STYLE) & WS_CHILD) ? ::GetParent(hWndParent) : ::GetWindow(hWndParent, GW_OWNER);
 		} while( hWndTmp != NULL );
 
-		return _Window(hWndParent);
+		return _os_window(hWndParent);
 	}
 };
 
-////////////////////////////////////////////////////////////////////////////////
-#endif //__IWIN_WINDOW_H__
 ////////////////////////////////////////////////////////////////////////////////

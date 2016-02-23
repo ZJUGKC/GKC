@@ -136,7 +136,7 @@ public:
 	{
 	}
 	template <typename... Args>
-	_CS_CVT(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
+	explicit _CS_CVT(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
 	{
 		Init(str, rv_forward<Args>(args)...);
 	}
@@ -152,16 +152,12 @@ public:
 
 	thisClass& operator=(const thisClass& src) throw()
 	{
-		if( this != &src ) {
-			m_str = src.m_str;
-		}
+		m_str = src.m_str;
 		return *this;
 	}
 	thisClass& operator=(thisClass&& src) throw()
 	{
-		if( this != &src ) {
-			m_str = rv_forward(src.m_str);
-		}
+		m_str = rv_forward(src.m_str);
 		return *this;
 	}
 
@@ -194,13 +190,13 @@ protected:
 		if( uDestTotalBytes > (uintptr)(Limits<int>::Max) )
 			throw OverflowException();
 		//try
-		if( SharedArrayHelper::GetBlockPointer(strDest) == NULL )
-			strDest = StringUtilHelper::MakeEmptyString<Tchar2>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		if( strDest.IsBlockNull() )
+			strDest = StringHelper::MakeEmptyString<Tchar2>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		strDest.SetLength(uDestTotalBytes / sizeof(Tchar2) - 1);  //may throw
-		mem_zero(SharedArrayHelper::GetInternalPointer(strDest), uDestTotalBytes);
+		mem_zero(ShareArrayHelper::GetInternalPointer(strDest), uDestTotalBytes);
 		while( true ) {
 			int ret = cc.Convert(ConstArrayHelper::GetInternalPointer(str), (int)(uSrcTotalBytes - sizeof(Tchar1)),
-								SharedArrayHelper::GetInternalPointer(strDest), (int)(uDestTotalBytes - sizeof(Tchar2)));
+								ShareArrayHelper::GetInternalPointer(strDest), (int)(uDestTotalBytes - sizeof(Tchar2)));
 			if( ret < 0 )
 				throw Exception(CallResult(SystemCallResults::Fail));
 			if( ret > 0 ) {
@@ -213,7 +209,7 @@ protected:
 			if( uDestTotalBytes > (uintptr)(Limits<int>::Max) )
 				throw OverflowException();
 			strDest.SetLength(uDestTotalBytes / sizeof(Tchar2) - 1);  //may throw
-			mem_zero(SharedArrayHelper::GetInternalPointer(strDest), uDestTotalBytes);
+			mem_zero(ShareArrayHelper::GetInternalPointer(strDest), uDestTotalBytes);
 		} // end while
 	}
 
@@ -221,7 +217,7 @@ protected:
 	StringT<Tchar2> m_str;
 };
 
-class _init_A2A
+class _Init_A2A
 {
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP1, const ConstStringS& strCP2) throw()
@@ -229,7 +225,7 @@ public:
 		return cc.InitializeAnsiToAnsi(ConstArrayHelper::GetInternalPointer(strCP1), ConstArrayHelper::GetInternalPointer(strCP2));
 	}
 };
-class _init_A2U
+class _Init_A2U
 {
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
@@ -237,7 +233,7 @@ public:
 		return cc.InitializeAnsiToUTF8(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
-class _init_A2H
+class _Init_A2H
 {
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
@@ -245,7 +241,7 @@ public:
 		return cc.InitializeAnsiToUTF16(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
-class _init_A2L
+class _Init_A2L
 {
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
@@ -253,7 +249,7 @@ public:
 		return cc.InitializeAnsiToUTF32(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
-class _init_U2A
+class _Init_U2A
 {
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
@@ -261,7 +257,7 @@ public:
 		return cc.InitializeUTF8ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
-class _init_U2H
+class _Init_U2H
 {
 public:
 	static bool DoInit(charset_converter& cc) throw()
@@ -269,7 +265,7 @@ public:
 		return cc.InitializeUTF8ToUTF16();
 	}
 };
-class _init_U2L
+class _Init_U2L
 {
 public:
 	static bool DoInit(charset_converter& cc) throw()
@@ -277,7 +273,7 @@ public:
 		return cc.InitializeUTF8ToUTF32();
 	}
 };
-class _init_H2A
+class _Init_H2A
 {
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
@@ -285,7 +281,7 @@ public:
 		return cc.InitializeUTF16ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
-class _init_H2U
+class _Init_H2U
 {
 public:
 	static bool DoInit(charset_converter& cc) throw()
@@ -293,7 +289,7 @@ public:
 		return cc.InitializeUTF16ToUTF8();
 	}
 };
-class _init_H2L
+class _Init_H2L
 {
 public:
 	static bool DoInit(charset_converter& cc) throw()
@@ -301,7 +297,7 @@ public:
 		return cc.InitializeUTF16ToUTF32();
 	}
 };
-class _init_L2A
+class _Init_L2A
 {
 public:
 	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
@@ -309,7 +305,7 @@ public:
 		return cc.InitializeUTF32ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
 	}
 };
-class _init_L2U
+class _Init_L2U
 {
 public:
 	static bool DoInit(charset_converter& cc) throw()
@@ -317,7 +313,7 @@ public:
 		return cc.InitializeUTF32ToUTF8();
 	}
 };
-class _init_L2H
+class _Init_L2H
 {
 public:
 	static bool DoInit(charset_converter& cc) throw()
@@ -327,31 +323,31 @@ public:
 };
 
 // CS_A2A
-typedef _CS_CVT<CharA, CharA, _init_A2A>  CS_A2A;
+typedef _CS_CVT<CharA, CharA, _Init_A2A>  CS_A2A;
 // CS_A2U
-typedef _CS_CVT<CharA, CharA, _init_A2U>  CS_A2U;
+typedef _CS_CVT<CharA, CharA, _Init_A2U>  CS_A2U;
 // CS_A2H
-typedef _CS_CVT<CharA, CharH, _init_A2H>  CS_A2H;
+typedef _CS_CVT<CharA, CharH, _Init_A2H>  CS_A2H;
 // CS_A2L
-typedef _CS_CVT<CharA, CharL, _init_A2L>  CS_A2L;
+typedef _CS_CVT<CharA, CharL, _Init_A2L>  CS_A2L;
 // CS_U2A
-typedef _CS_CVT<CharA, CharA, _init_U2A>  CS_U2A;
+typedef _CS_CVT<CharA, CharA, _Init_U2A>  CS_U2A;
 // CS_U2H
-typedef _CS_CVT<CharA, CharH, _init_U2H>  CS_U2H;
+typedef _CS_CVT<CharA, CharH, _Init_U2H>  CS_U2H;
 // CS_U2L
-typedef _CS_CVT<CharA, CharL, _init_U2L>  CS_U2L;
+typedef _CS_CVT<CharA, CharL, _Init_U2L>  CS_U2L;
 // CS_H2A
-typedef _CS_CVT<CharH, CharA, _init_H2A>  CS_H2A;
+typedef _CS_CVT<CharH, CharA, _Init_H2A>  CS_H2A;
 // CS_H2U
-typedef _CS_CVT<CharH, CharA, _init_H2U>  CS_H2U;
+typedef _CS_CVT<CharH, CharA, _Init_H2U>  CS_H2U;
 // CS_H2L
-typedef _CS_CVT<CharH, CharL, _init_H2L>  CS_H2L;
+typedef _CS_CVT<CharH, CharL, _Init_H2L>  CS_H2L;
 // CS_L2A
-typedef _CS_CVT<CharL, CharA, _init_L2A>  CS_L2A;
+typedef _CS_CVT<CharL, CharA, _Init_L2A>  CS_L2A;
 // CS_L2U
-typedef _CS_CVT<CharL, CharA, _init_L2U>  CS_L2U;
+typedef _CS_CVT<CharL, CharA, _Init_L2U>  CS_L2U;
 // CS_L2H
-typedef _CS_CVT<CharL, CharH, _init_L2H>  CS_L2H;
+typedef _CS_CVT<CharL, CharH, _Init_L2H>  CS_L2H;
 
 //system
 
@@ -367,7 +363,7 @@ public:
 	{
 	}
 	template <typename... Args>
-	_CS_CVT_S(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
+	explicit _CS_CVT_S(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
 	{
 		Init(str, rv_forward<Args>(args)...);
 	}
@@ -386,17 +382,13 @@ public:
 	thisClass& operator=(const thisClass& src) throw()
 	{
 		baseClass::operator=(static_cast<const baseClass&>(src));
-		if( this != &src ) {
-			m_strC = src.m_strC;
-		}
+		m_strC = src.m_strC;
 		return *this;
 	}
 	thisClass& operator=(thisClass&& src) throw()
 	{
 		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
-		if( this != &src ) {
-			m_strC = rv_forward(src.m_strC);
-		}
+		m_strC = rv_forward(src.m_strC);
 		return *this;
 	}
 
@@ -404,8 +396,8 @@ public:
 	{
 		if( m_strC.IsNull() )
 			return baseClass::GetV();
-		if( SharedArrayHelper::GetBlockPointer(baseClass::m_str) == NULL ) {
-			baseClass::m_str = StringUtilHelper::MakeEmptyString<Tchar2>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		if( (baseClass::m_str).IsBlockNull() ) {
+			baseClass::m_str = StringHelper::MakeEmptyString<Tchar2>(MemoryHelper::GetCrtMemoryManager());  //may throw
 			StringUtilHelper::MakeString(m_strC, baseClass::m_str);  //may throw
 		}
 		return StringT<Tchar2>(baseClass::m_str);
@@ -435,7 +427,7 @@ private:
 	ConstStringT<Tchar2> m_strC;
 };
 
-class _init_A2S
+class _Init_A2S
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame, const ConstStringS& strCP) throw()
@@ -443,7 +435,7 @@ public:
 		return cc.InitializeAnsiToSystem(ConstArrayHelper::GetInternalPointer(strCP), bSame);
 	}
 };
-class _init_U2S
+class _Init_U2S
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame) throw()
@@ -451,7 +443,7 @@ public:
 		return cc.InitializeUTF8ToSystem(bSame);
 	}
 };
-class _init_H2S
+class _Init_H2S
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame) throw()
@@ -459,7 +451,7 @@ public:
 		return cc.InitializeUTF16ToSystem(bSame);
 	}
 };
-class _init_L2S
+class _Init_L2S
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame) throw()
@@ -467,7 +459,7 @@ public:
 		return cc.InitializeUTF32ToSystem(bSame);
 	}
 };
-class _init_S2A
+class _Init_S2A
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame, const ConstStringS& strCP) throw()
@@ -475,7 +467,7 @@ public:
 		return cc.InitializeSystemToAnsi(ConstArrayHelper::GetInternalPointer(strCP), bSame);
 	}
 };
-class _init_S2U
+class _Init_S2U
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame) throw()
@@ -483,7 +475,7 @@ public:
 		return cc.InitializeSystemToUTF8(bSame);
 	}
 };
-class _init_S2H
+class _Init_S2H
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame) throw()
@@ -491,7 +483,7 @@ public:
 		return cc.InitializeSystemToUTF16(bSame);
 	}
 };
-class _init_S2L
+class _Init_S2L
 {
 public:
 	static bool DoInit(charset_converter& cc, bool& bSame) throw()
@@ -501,21 +493,21 @@ public:
 };
 
 // CS_A2S
-typedef _CS_CVT_S<CharA, CharS, _init_A2S>  CS_A2S;
+typedef _CS_CVT_S<CharA, CharS, _Init_A2S>  CS_A2S;
 // CS_U2S
-typedef _CS_CVT_S<CharA, CharS, _init_U2S>  CS_U2S;
+typedef _CS_CVT_S<CharA, CharS, _Init_U2S>  CS_U2S;
 // CS_H2S
-typedef _CS_CVT_S<CharH, CharS, _init_H2S>  CS_H2S;
+typedef _CS_CVT_S<CharH, CharS, _Init_H2S>  CS_H2S;
 // CS_L2S
-typedef _CS_CVT_S<CharL, CharS, _init_L2S>  CS_L2S;
+typedef _CS_CVT_S<CharL, CharS, _Init_L2S>  CS_L2S;
 // CS_S2A
-typedef _CS_CVT_S<CharS, CharA, _init_S2A>  CS_S2A;
+typedef _CS_CVT_S<CharS, CharA, _Init_S2A>  CS_S2A;
 // CS_S2U
-typedef _CS_CVT_S<CharS, CharA, _init_S2U>  CS_S2U;
+typedef _CS_CVT_S<CharS, CharA, _Init_S2U>  CS_S2U;
 // CS_S2H
-typedef _CS_CVT_S<CharS, CharH, _init_S2H>  CS_S2H;
+typedef _CS_CVT_S<CharS, CharH, _Init_S2H>  CS_S2H;
 // CS_S2L
-typedef _CS_CVT_S<CharS, CharL, _init_S2L>  CS_S2L;
+typedef _CS_CVT_S<CharS, CharL, _Init_S2L>  CS_S2L;
 
 ////////////////////////////////////////////////////////////////////////////////
 }

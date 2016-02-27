@@ -256,9 +256,9 @@ public:
 		pNew[uNewCount] = 0;
 		return pNew;
 	}
-	static void free_global_name(const char_h* p) throw()
+	static void free_global_name(char_h* p) throw()
 	{
-		crt_free(p);
+		crt_free((void*)p);
 	}
 	//tools
 	static char_h* gen_sync_name(const char_h* pSrc, bool bGlobal) throw()
@@ -268,7 +268,7 @@ public:
 			psz = gen_global_name(psz);
 		return psz;
 	}
-	static void free_sync_name(const char_h* p, bool bGlobal) throw()
+	static void free_sync_name(char_h* p, bool bGlobal) throw()
 	{
 		if( bGlobal )
 			free_global_name(p);
@@ -576,14 +576,14 @@ public:
 	void Wait(inprocess_mutex& mtx) throw()
 	{
 		assert( m_bInitialized );
-		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &mtx.m_sec, INFINITE);
+		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &(mtx.m_sect.GetCS()), INFINITE);
 		assert( bRet );
 	}
 	// uTimeout: 0 or number (ms)
 	bool TryWait(inprocess_mutex& mtx, uint uTimeout) throw()
 	{
 		assert( m_bInitialized );
-		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &mtx.m_sec, uTimeout);  //::GetLastError()==ERROR_TIMEOUT, failed
+		BOOL bRet = ::SleepConditionVariableCS(&m_cv, &(mtx.m_sect.GetCS()), uTimeout);  //::GetLastError()==ERROR_TIMEOUT, failed
 		return bRet ? true : false;
 	}
 	void Signal() throw()

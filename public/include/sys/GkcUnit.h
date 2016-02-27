@@ -163,11 +163,9 @@ public:
 	}
 
 	//find
-	_UnitTestFunc Find(const ConstStringS& strName) const
+	_UnitTestFunc Find(const StringS& strName) const throw()
 	{
-		StringS strM(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
-		StringUtilHelper::MakeString(strName, strM);
-		auto iter(m_map.Find(strM));
+		auto iter(m_map.Find(strName));
 		if( iter == m_map.GetEnd() )
 			return NULL;
 		return iter.get_Value().get_Second();
@@ -246,6 +244,7 @@ public:
 			}
 		}
 		else {
+			StringS strM(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 			//specified tests
 			auto iter(args.GetBegin());
 			assert( iter != args.GetEnd() );
@@ -255,12 +254,15 @@ public:
 				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
 				ConsoleHelper::Write(iter.get_Value());
 				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_iColonLen));
-				_UnitTestFunc pFunc = pMap->Find(iter.get_Value());  //may throw
+				//find
+				StringUtilHelper::MakeString(iter.get_Value(), strM);
+				_UnitTestFunc pFunc = pMap->Find(strM);
 				if( pFunc == NULL ) {
 					ConsoleHelper::WriteLine(ConstStringS(l_szNoTest, l_iNoTestLen));
 					uFailed ++;
 				}
 				else {
+					//run test
 					if( !pFunc(buffer) ) {
 						ConsoleHelper::WriteLine(buffer);
 						uFailed ++;

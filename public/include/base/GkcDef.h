@@ -695,8 +695,162 @@ typedef const_string_helper  ConstStringHelper;
 // Fixed String
 
 // FixedStringT<Tchar, t_size>
+//   Tchar: CharA CharH CharL, CharS CharW
 template <typename Tchar, uintptr t_size>
-using FixedStringT = fixed_string_t<Tchar, t_size>;
+class FixedStringT : public FixedArray<Tchar, t_size>
+{
+private:
+	typedef FixedArray<Tchar, t_size>  baseClass;
+	typedef FixedStringT<Tchar, t_size>  thisClass;
+
+public:
+	FixedStringT() throw() : m_uLength(0)
+	{
+		baseClass::m_data[0] = 0;
+	}
+	FixedStringT(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src)), m_uLength(src.m_uLength)
+	{
+		assert( m_uLength < t_size );
+		mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
+	}
+	~FixedStringT() throw()
+	{
+	}
+
+	//operators
+	thisClass& operator=(const thisClass& src) throw()
+	{
+		if( this != &src ) {
+			m_uLength = src.m_uLength;
+			assert( m_uLength < t_size );
+			mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
+		}
+		return *this;
+	}
+
+	uintptr GetLength() const throw()
+	{
+		return m_uLength;
+	}
+	void SetLength(uintptr uLength) throw()
+	{
+		assert( uLength < t_size );
+		m_uLength = uLength;
+		baseClass::m_data[m_uLength] = 0;
+	}
+
+	bool IsEmpty() const throw()
+	{
+		return GetLength() == 0;
+	}
+
+	//iterators
+	const typename thisClass::Iterator GetEnd() const throw()
+	{
+		return Iterator(RefPtr<Tchar>(baseClass::m_data + m_uLength));
+	}
+	typename thisClass::Iterator GetEnd() throw()
+	{
+		return Iterator(RefPtr<Tchar>(baseClass::m_data + m_uLength));
+	}
+	const ReverseIterator<typename thisClass::Iterator> GetReverseBegin() const throw()
+	{
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+	}
+	ReverseIterator<typename thisClass::Iterator> GetReverseBegin() throw()
+	{
+		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+	}
+
+	//methods
+	void RecalcLength() throw()
+	{
+		m_uLength = calc_string_length(baseClass::m_data);
+	}
+
+private:
+	uintptr m_uLength;
+
+private:
+	//logical
+	bool operator==(const thisClass& right) const throw();
+	bool operator!=(const thisClass& right) const throw();
+	bool operator<(const thisClass& right) const throw();
+	bool operator>(const thisClass& right) const throw();
+	bool operator<=(const thisClass& right) const throw();
+	bool operator>=(const thisClass& right) const throw();
+};
+
+// FixedStringHelper
+
+class FixedStringHelper
+{
+public:
+	//To C-style string
+	template <typename Tchar, uintptr t_size>
+	static RefPtr<Tchar> To_C_Style(const FixedStringT<Tchar, t_size>& str, uintptr uStart = 0) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return RefPtr<Tchar>(FixedArrayHelper::GetInternalPointer(str) + uStart);
+	}
+
+	//append character
+	//  return: 0 or 1, whether the character is copied
+	template <typename Tchar, uintptr t_size>
+	static uintptr Append(const Tchar& ch, INOUT FixedStringT<Tchar, t_size>& strDest) throw()
+	{
+		uintptr uCount = strDest.GetLength();
+		if( uCount >= t_size - 1 )
+			return 0;
+		strDest.SetLength(uCount + 1);
+		strDest.SetAt(uCount, ch);
+		return 1;
+	}
+
+	//insert character
+	template <typename Tchar, uintptr t_size>
+	static uintptr Insert(uintptr uPos, const Tchar& ch, FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( uPos > uLength || uLength >= t_size - 1 )
+			return 0;
+		mem_move(FixedArrayHelper::GetInternalPointer(str) + uPos, (uLength - uPos) * sizeof(Tchar), FixedArrayHelper::GetInternalPointer(str) + uPos + 1);
+		str.SetLength(uLength + 1);
+		str.SetAt(uPos, ch);
+		return 1;
+	}
+
+	//delete
+	template <typename Tchar, uintptr t_size>
+	static uintptr Delete(uintptr uPos, uintptr uLength, FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uCount = str.GetLength();
+		uintptr uRet = calc_sub_string_act_length(uCount, uPos, uLength);
+		if( uRet == 0 )
+			return 0;
+		mem_move(FixedArrayHelper::GetInternalPointer(str) + uPos + uRet, (uCount - uPos - uRet) * sizeof(Tchar), FixedArrayHelper::GetInternalPointer(str) + uPos);
+		str.SetLength(uCount - uRet);
+		return uRet;
+	}
+
+	//replace
+	template <typename Tchar, uintptr t_size, class TCompareTrait = DefaultCompareTrait<Tchar>>
+	static uintptr Replace(const Tchar& chOld, const Tchar& chNew, INOUT FixedStringT<Tchar, t_size>& str) throw()
+	{
+		assert( chOld != 0 && chNew != 0 && TCompareTrait::IsNE(chOld, chNew) );
+		if( str.IsEmpty() )
+			return 0;
+		return coll_replace_elements<typename FixedStringT<Tchar, t_size>::Iterator, TCompareTrait>(chOld, chNew, str.GetBegin(), str.GetEnd());
+	}
+
+	//find (return value : check null)
+	template <typename Tchar, uintptr t_size>
+	static typename FixedStringT<Tchar, t_size>::Iterator Find(const FixedStringT<Tchar, t_size>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return typename FixedStringT<Tchar, t_size>::Iterator(RefPtr<Tchar>(find_string_char(FixedArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
+};
 
 // FixedStringCompareTrait<T>
 
@@ -808,12 +962,44 @@ public:
 	}
 };
 
-// FixedStringHelper
-typedef fixed_string_helper  FixedStringHelper;
-
 // MessageException<t_size>
+
 template <uintptr t_size>
-using MessageException = message_exception<t_size>;
+class MessageException : public Exception
+{
+public:
+	typedef FixedStringT<CharS, t_size>  MessageBufferClass;
+
+public:
+	MessageException() throw()
+	{
+	}
+	MessageException(const MessageException<t_size>& src) throw() : Exception(static_cast<const Exception&>(src)), m_messageBuffer(src.m_messageBuffer)
+	{
+	}
+	~MessageException() throw()
+	{
+	}
+
+	MessageException<t_size>& operator=(const MessageException<t_size>& src) throw()
+	{
+		Exception::operator=(static_cast<const Exception&>(src));
+		m_messageBuffer = src.m_messageBuffer;  //no check self
+		return *this;
+	}
+
+	const MessageBufferClass& GetMessageBuffer() const throw()
+	{
+		return m_messageBuffer;
+	}
+	MessageBufferClass& GetMessageBuffer() throw()
+	{
+		return m_messageBuffer;
+	}
+
+private:
+	MessageBufferClass  m_messageBuffer;
+};
 
 //------------------------------------------------------------------------------
 // Swap

@@ -24,6 +24,8 @@
 	#error Error OS type!
 #endif
 
+#include <assert.h>
+
 // enumerator
 
 #define BEGIN_ENUM(E)    struct E { \
@@ -104,6 +106,8 @@ struct system_time
 // -----Pointers-----
 
 // ref_ptr<T>
+
+#pragma pack(push, 1)
 
 template <typename T>
 class ref_ptr
@@ -193,6 +197,8 @@ private:
 private:
 	friend class ref_ptr_helper;
 };
+
+#pragma pack(pop)
 
 // ref_ptr_helper
 

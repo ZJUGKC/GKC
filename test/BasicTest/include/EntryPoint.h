@@ -15,10 +15,12 @@ This file contains entry point function.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __ENTRY_H__
-#define __ENTRY_H__
+#ifndef __ENTRY_POINT_H__
+#define __ENTRY_POINT_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 // ProgramEntryPoint
@@ -26,20 +28,20 @@ This file contains entry point function.
 class ProgramEntryPoint
 {
 public:
-	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env)
+	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env)
 	{
 		//const strings
 		DECLARE_LOCAL_CONST_STRING(CharS, c_szSep, c_iSepLen, _S("======================="))
 
 		//output argments
-		GKC::ConsoleHelper::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
-		for( auto iter = args.GetBegin(); iter != args.GetEnd(); iter.MoveNext() ) {
-			GKC::ConsoleHelper::WriteLine(iter.get_Value());
+		ConsoleHelper::WriteLine(ConstStringS(c_szSep, c_iSepLen));
+		for( auto iter(args.GetBegin()); iter != args.GetEnd(); iter.MoveNext() ) {
+			ConsoleHelper::WriteLine(iter.get_Value());
 		}
 		//output environments
-		GKC::ConsoleHelper::WriteLine(GKC::ConstStringS(c_szSep, c_iSepLen));
-		for( auto iter = env.GetBegin(); iter != env.GetEnd(); iter.MoveNext() ) {
-			GKC::ConsoleHelper::WriteLine(iter.get_Value());
+		ConsoleHelper::WriteLine(ConstStringS(c_szSep, c_iSepLen));
+		for( auto iter(env.GetBegin()); iter != env.GetEnd(); iter.MoveNext() ) {
+			ConsoleHelper::WriteLine(iter.get_Value());
 		}
 
 		//unit test
@@ -49,6 +51,8 @@ public:
 	}
 };
 
+////////////////////////////////////////////////////////////////////////////////
+}
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

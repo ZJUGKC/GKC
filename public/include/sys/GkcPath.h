@@ -126,7 +126,7 @@ public:
 			if( check_path_separator(ch) || check_drive_separator(ch) )
 				return ;
 		}
-		Tchar* sz;
+		const Tchar* sz;
 		get_current_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
 		StringHelper::Insert(0, c_strPrefix, str);
@@ -139,7 +139,7 @@ public:
 		uintptr uLength = str.GetLength();
 		if( uLength == 0 )
 			return ;
-		Tchar* sz;
+		const Tchar* sz;
 		get_absolute_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
 		StringHelper::Insert(0, c_strPrefix, str);

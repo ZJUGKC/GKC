@@ -19,7 +19,7 @@ This file contains entry point function for SA.
 #define __ENTRY_POINT_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "globals.h"
+#include "Globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
@@ -34,12 +34,12 @@ public:
 	{
 		if( bInitOrDump ) {
 			//init
-			if( !init_globals() )
+			if( !_InitGlobals() )
 				return false;
 		}
 		else {
 			//dump
-			dump_globals();
+			_DumpGlobals();
 		}
 		return true;
 	}

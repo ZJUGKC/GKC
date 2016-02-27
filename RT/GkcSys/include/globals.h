@@ -19,9 +19,13 @@ This file contains global variables.
 #define __GLOBALS_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
+
 // CrtMemoryManager
 
-class CrtMemoryManager : public GKC::IMemoryManager
+class CrtMemoryManager : public IMemoryManager
 {
 public:
 	// IMemoryManager methods
@@ -40,30 +44,32 @@ public:
 };
 
 // CrtMemoryManager
-DECLARE_SA_GLOBAL_VARIABLE(CrtMemoryManager, crt_mem_mgr)
+DECLARE_SA_GLOBAL_VARIABLE(CrtMemoryManager, g_crt_mem_mgr)
 
-inline GKC::IMemoryManager* get_crt_mem_mgr() throw()
+inline IMemoryManager* get_crt_mem_mgr() throw()
 {
-	return static_cast<GKC::IMemoryManager*>(&(GET_SA_GLOBAL_VARIABLE(crt_mem_mgr)));
+	return static_cast<IMemoryManager*>(&(GET_SA_GLOBAL_VARIABLE(g_crt_mem_mgr)));
 }
 
 // Mutex
-DECLARE_SA_GLOBAL_VARIABLE(GKC::Mutex, g_mutex)
+DECLARE_SA_GLOBAL_VARIABLE(Mutex, g_mutex)
 
 // share_ptr_block
-DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_ptr_block)>, spb_pool)
+DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_ptr_block)>, g_spb_pool)
 
 // share_array_block
-DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_array_block)>, sab_pool)
+DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_array_block)>, g_sab_pool)
 
 // share_com_block
-DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_com_block)>, scb_pool)
+DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_com_block)>, g_scb_pool)
 
 //functions
 
-bool init_globals() throw();
-void dump_globals() throw();
+bool _InitGlobals() throw();
+void _DumpGlobals() throw();
 
+////////////////////////////////////////////////////////////////////////////////
+}
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

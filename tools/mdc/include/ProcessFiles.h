@@ -15,8 +15,8 @@ This file contains a process function.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __MDC_PROCESS_H__
-#define __MDC_PROCESS_H__
+#ifndef __MDC_PROCESS_FILES_H__
+#define __MDC_PROCESS_FILES_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ namespace GKC {
 
 //process
 
-inline void process_md(const StringS& strSrc, const StringS& strDest)
+inline void ProcessFiles(const StringS& strSrc, const StringS& strDest)
 {
 	StringS strCurrentPath(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 	StringS strFile(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));

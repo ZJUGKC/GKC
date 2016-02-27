@@ -19,9 +19,9 @@ This file contains entry point function.
 #define __ENTRY_POINT_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "global.h"
+#include "Global.h"
 
-#include "process.h"
+#include "ProcessFiles.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
@@ -29,16 +29,16 @@ namespace GKC {
 
 // version
 inline
-void print_version() throw()
+void _PrintVersion() throw()
 {
-	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(_const_array_version::GetAddress(), _const_array_version::GetCount()));
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_version::GetAddress(), g_const_array_version::GetCount()));
 }
 
 // help
 inline
-void print_help() throw()
+void _PrintHelp() throw()
 {
-	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(_const_array_help::GetAddress(), _const_array_help::GetCount()));
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
 }
 
 // ProgramEntryPoint
@@ -51,11 +51,11 @@ public:
 		uintptr uArgCount = args.GetCount();
 		//args
 		if( uArgCount != 3 ) {
-			print_version();
-			print_help();
+			_PrintVersion();
+			_PrintHelp();
 			return 0;
 		}
-		if( compare_string(ConstArrayHelper::GetInternalPointer(args[1].get_Value()), ConstArrayHelper::GetInternalPointer(args[2].get_Value())) == 0 ) {
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), args[2].get_Value()) ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The source directory and the destination directory cannot be the same!\n")));
 			return 0;
 		}
@@ -63,13 +63,13 @@ public:
 		StringUtilHelper::MakeString(args[1].get_Value(), strSrc);
 		StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 		StringUtilHelper::MakeString(args[2].get_Value(), strDest);
-		//file name
+		//directory name
 		FsPathHelper::ConvertPathStringToPlatform(strSrc);
 		FsPathHelper::ConvertPathStringToPlatform(strDest);
 
 		//process
-		print_version();
-		process_md(strSrc, strDest);
+		_PrintVersion();
+		ProcessFiles(strSrc, strDest);
 
 		return 0;
 	}

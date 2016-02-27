@@ -17,10 +17,10 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/public/include")
 LINK_DIRECTORIES("${PROJECT_BINARY_DIR}/bin")
 SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
-SET(SRC_PCH_LIST "src/precomp.cpp")
-SET(SRC_LIST "src/main.cpp" "src/global.cpp")
+SET(SRC_PCH_LIST "src/PreComp.cpp")
+SET(SRC_LIST "src/Main.cpp" "src/Global.cpp")
 ADD_EXECUTABLE(wlc ${SRC_PCH_LIST} ${SRC_LIST})
-SET_PCH(wlc "exe" "precomp.h" ${SRC_PCH_LIST} ${SRC_LIST})
+SET_PCH(wlc "exe" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Foreground")
 SET_TARGET_PROPERTIES(wlc PROPERTIES OUTPUT_NAME "wlc"
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")

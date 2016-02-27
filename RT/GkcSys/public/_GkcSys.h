@@ -163,7 +163,7 @@ protected:
 	}
 	_ShareObjectBase(_ShareObjectBase&& src) throw()
 	{
-		_SObjHelper::MoveDirect(m_pB, src.m_pB);
+		_SObjHelper::MoveDirect((void*&)(m_pB), (void*&)(src.m_pB));
 	}
 	~_ShareObjectBase() throw()
 	{
@@ -200,7 +200,7 @@ protected:
 	}
 	_WeakObjectBase(_WeakObjectBase&& src) throw()
 	{
-		_SObjHelper::MoveDirect(m_pB, src.m_pB);
+		_SObjHelper::MoveDirect((void*&)(m_pB), (void*&)(src.m_pB));
 	}
 	~_WeakObjectBase() throw()
 	{
@@ -246,15 +246,15 @@ protected:
 	{
 	}
 
-	thusClass& operator=(const thisClass& src) throw()
+	thisClass& operator=(const thisClass& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pB != m_pB ) {
+			if( src.m_pB != baseClass::m_pB ) {
 				//release
 				T* pT = static_cast<T*>(this);
 				pT->Release();
 				//assign
-				m_pB = src.m_pB;
+				baseClass::m_pB = src.m_pB;
 				pT->do_assign(src);
 				//add ref
 				baseClass::AddRef();
@@ -265,13 +265,13 @@ protected:
 	thisClass& operator=(thisClass&& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pB != m_pB ) {
+			if( src.m_pB != baseClass::m_pB ) {
 				//release
 				T* pT = static_cast<T*>(this);
 				pT->Release();
 				//move
-				_SObjHelper::MoveDirect(m_pB, src.m_pB);
-				pT->do_move(src);
+				_SObjHelper::MoveDirect((void*&)(baseClass::m_pB), (void*&)(src.m_pB));
+				pT->do_move(rv_forward(src));
 			}
 		}
 		return *this;
@@ -290,19 +290,20 @@ template <class TBlock>
 class _ShareSoloBase : public _SObjT<_ShareSoloBase<TBlock>, _ShareObjectBase>
 {
 private:
-	typedef _SObjT<_ShareSoloBase<TBlock>, _ShareObjectBase>  baseClass;
+#define _SHARESOLOBASE_BASE_CLASS  _SObjT<_ShareSoloBase<TBlock>, _ShareObjectBase>
+
 	typedef _ShareSoloBase<TBlock>  thisClass;
 
 protected:
 	_ShareSoloBase() throw() : m_pT(NULL)
 	{
 	}
-	_ShareSoloBase(const _ShareSoloBase& src) throw() : baseClass(static_cast<const baseClass&>(src)), m_pT(src.m_pT)
+	_ShareSoloBase(const _ShareSoloBase& src) throw() : _SHARESOLOBASE_BASE_CLASS(static_cast<const _SHARESOLOBASE_BASE_CLASS&>(src)), m_pT(src.m_pT)
 	{
 	}
-	_ShareSoloBase(_ShareSoloBase&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_ShareSoloBase(_ShareSoloBase&& src) throw() : _SHARESOLOBASE_BASE_CLASS(rv_forward(static_cast<_SHARESOLOBASE_BASE_CLASS&>(src)))
 	{
-		_SObjHelper::MoveDirect(m_pT, src.m_pT);
+		_SObjHelper::MoveDirect((void*&)(m_pT), (void*&)(src.m_pT));
 	}
 	~_ShareSoloBase() throw()
 	{
@@ -311,12 +312,12 @@ protected:
 
 	_ShareSoloBase<TBlock>& operator=(const _ShareSoloBase<TBlock>& src) throw()
 	{
-		baseClass::operator=(static_cast<const baseClass&>(src));
+		_SHARESOLOBASE_BASE_CLASS::operator=(static_cast<const _SHARESOLOBASE_BASE_CLASS&>(src));
 		return *this;
 	}
 	_ShareSoloBase<TBlock>& operator=(_ShareSoloBase<TBlock>&& src) throw()
 	{
-		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
+		_SHARESOLOBASE_BASE_CLASS::operator=(rv_forward(static_cast<_SHARESOLOBASE_BASE_CLASS&>(src)));
 		return *this;
 	}
 
@@ -325,9 +326,9 @@ protected:
 public:
 	void Release() throw()
 	{
-		if( m_pB != NULL ) {
-			_SObjRelease<TBlock>::ShareRelease(m_pB);
-			m_pB = NULL;
+		if( _SHARESOLOBASE_BASE_CLASS::m_pB != NULL ) {
+			_SObjRelease<TBlock>::ShareRelease(_SHARESOLOBASE_BASE_CLASS::m_pB);
+			_SHARESOLOBASE_BASE_CLASS::m_pB = NULL;
 			m_pT = NULL;
 		}
 		else {
@@ -336,20 +337,20 @@ public:
 	}
 
 protected:
-	void do_assign(const baseClass& src) throw()
+	void do_assign(const _SHARESOLOBASE_BASE_CLASS& src) throw()
 	{
 		m_pT = (static_cast<const thisClass&>(src)).m_pT;
 	}
-	void do_move(baseClass&& src) throw()
+	void do_move(_SHARESOLOBASE_BASE_CLASS&& src) throw()
 	{
-		_SObjHelper::MoveDirect(m_pT, (static_cast<thisClass&>(src)).m_pT);
+		_SObjHelper::MoveDirect((void*&)(m_pT), (void*&)((static_cast<thisClass&>(src)).m_pT));
 	}
 
 protected:
 	void* m_pT;  //A pointer to object
 
 private:
-	friend class baseClass;
+	friend class _SHARESOLOBASE_BASE_CLASS;
 };
 
 // _WeakSoloBase<TBlock>
@@ -358,19 +359,20 @@ template <class TBlock>
 class _WeakSoloBase : public _SObjT<_WeakSoloBase<TBlock>, _WeakObjectBase>
 {
 private:
-	typedef _SObjT<_WeakSoloBase<TBlock>, _WeakObjectBase>  baseClass;
+#define _WEAKSOLOBASE_BASE_CLASS  _SObjT<_WeakSoloBase<TBlock>, _WeakObjectBase>
+
 	typedef _WeakSoloBase<TBlock>  thisClass;
 
 protected:
 	_WeakSoloBase() throw() : m_pT(NULL)
 	{
 	}
-	_WeakSoloBase(const _WeakSoloBase& src) throw() : baseClass(static_cast<const baseClass&>(src)), m_pT(src.m_pT)
+	_WeakSoloBase(const _WeakSoloBase& src) throw() : _WEAKSOLOBASE_BASE_CLASS(static_cast<const _WEAKSOLOBASE_BASE_CLASS&>(src)), m_pT(src.m_pT)
 	{
 	}
-	_WeakSoloBase(_WeakSoloBase&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_WeakSoloBase(_WeakSoloBase&& src) throw() : _WEAKSOLOBASE_BASE_CLASS(rv_forward(static_cast<_WEAKSOLOBASE_BASE_CLASS&>(src)))
 	{
-		_SObjHelper::MoveDirect(m_pT, src.m_pT);
+		_SObjHelper::MoveDirect((void*&)(m_pT), (void*&)(src.m_pT));
 	}
 	~_WeakSoloBase() throw()
 	{
@@ -379,12 +381,12 @@ protected:
 
 	_WeakSoloBase<TBlock>& operator=(const _WeakSoloBase<TBlock>& src) throw()
 	{
-		baseClass::operator=(static_cast<const baseClass&>(src));
+		_WEAKSOLOBASE_BASE_CLASS::operator=(static_cast<const _WEAKSOLOBASE_BASE_CLASS&>(src));
 		return *this;
 	}
 	_WeakSoloBase<TBlock>& operator=(_WeakSoloBase<TBlock>&& src) throw()
 	{
-		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
+		_WEAKSOLOBASE_BASE_CLASS::operator=(rv_forward(static_cast<_WEAKSOLOBASE_BASE_CLASS&>(src)));
 		return *this;
 	}
 
@@ -393,10 +395,10 @@ protected:
 public:
 	void Release() throw()
 	{
-		if( m_pB != NULL ) {
+		if( _WEAKSOLOBASE_BASE_CLASS::m_pB != NULL ) {
 			//weak
-			_SObjRelease<TBlock>::WeakRelease(m_pB);
-			m_pB = NULL;
+			_SObjRelease<TBlock>::WeakRelease(_WEAKSOLOBASE_BASE_CLASS::m_pB);
+			_WEAKSOLOBASE_BASE_CLASS::m_pB = NULL;
 			m_pT = NULL;
 		}
 		else {
@@ -405,20 +407,20 @@ public:
 	}
 
 protected:
-	void do_assign(const baseClass& src) throw()
+	void do_assign(const _WEAKSOLOBASE_BASE_CLASS& src) throw()
 	{
 		m_pT = (static_cast<const thisClass&>(src)).m_pT;
 	}
-	void do_move(baseClass&& src) throw()
+	void do_move(_WEAKSOLOBASE_BASE_CLASS&& src) throw()
 	{
-		_SObjHelper::MoveDirect(m_pT, (static_cast<thisClass&>(src)).m_pT);
+		_SObjHelper::MoveDirect((void*&)(m_pT), (void*&)((static_cast<thisClass&>(src)).m_pT));
 	}
 
 protected:
 	void* m_pT;  //A pointer to object
 
 private:
-	friend class baseClass;
+	friend class _WEAKSOLOBASE_BASE_CLASS;
 };
 
 // _SharePtr<T>
@@ -476,6 +478,7 @@ public:
 	}
 
 private:
+	friend class _SObjSoloHelper;
 	friend class _SharePtrHelper;
 };
 
@@ -523,7 +526,7 @@ public:
 	}
 
 private:
-	friend class _SharePtrHelper;
+	friend class _SObjSoloHelper;
 };
 
 // _SObjSoloHelper
@@ -602,21 +605,20 @@ public:
 	{
 		return sp.IsBlockNull() ? 0 : (sp.m_pB)->GetWeakCount();
 	}
+
+	//for internal
+	//  no-inline
+	template <typename T>
+	static void object_destruction(void* p) throw()
+	{
+		((T*)p)->~T();
+	}
 };
 
 // _SharePtrHelper
 
 class _SharePtrHelper
 {
-protected:
-	template <typename T>
-	BEGIN_NOINLINE
-	static void object_destruction(void* p) throw()
-	END_NOINLINE
-	{
-		((T*)p)->~T();
-	}
-
 public:
 	//make share object
 	template <typename T, typename... Args>
@@ -648,9 +650,9 @@ public:
 		}
 
 		//initialize
-		pB->SetMemoryManager(mgr);
+		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
 		pB->SetAddress(pT);
-		pB->SetDestructionFunc(&(object_destruction<T>));
+		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
 
 		//return value
 		ret.m_pB = static_cast<share_block_base*>(pB);
@@ -689,7 +691,7 @@ public:
 	static _SharePtr<T> Clone(const _SharePtr<T>& sp)  //may throw
 	{
 		return ( !sp.IsBlockNull() )
-				? ( assert( sp.m_pT != NULL ), MakeSharePtr((sp.m_pB)->GetMemoryManager(), sp.Deref()) )
+				? ( assert( sp.m_pT != NULL ), MakeSharePtr(GKC::RefPtr<GKC::IMemoryManager>((sp.m_pB)->GetMemoryManager()), sp.Deref()) )
 				: _SharePtr<T>();
 	}
 
@@ -783,6 +785,7 @@ public:
 	}
 
 private:
+	friend class _SObjSoloHelper;
 	friend class _ShareComHelper;
 };
 
@@ -830,7 +833,7 @@ public:
 	}
 
 private:
-	friend class _ShareComHelper;
+	friend class _SObjSoloHelper;
 };
 
 // --only one component class can be defined in a pair of .h and .cpp files.--
@@ -850,7 +853,7 @@ class _Com_TypeCast_Func
 
 #define DECLARE_COM_TYPECAST(cls)  \
 	DECLARE_STATIC_CONST_ARRAY(com_ca_##cls, _Com_Interface_Offset_Item)  \
-	class com_tc_##cls {  \
+	class _Com_TC_##cls {  \
 	public:  \
 		BEGIN_NOINLINE  \
 		static void* _Com_TypeCast(void* p, const guid& iid) throw()  \
@@ -873,7 +876,7 @@ class _Com_TypeCast_Func
 
 #define BEGIN_COM_TYPECAST(cls)  \
 	typedef cls com_x_class;  \
-	typedef com_tc_##cls  com_tc_class;  \
+	typedef _Com_TC_##cls  com_tc_class;  \
 	BEGIN_STATIC_CONST_ARRAY(cls)
 
 // ifname : interface name, ibname : implemented base class name
@@ -928,9 +931,9 @@ public:
 		}
 
 		//initialize
-		pB->SetMemoryManager(mgr);
+		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
 		pB->SetAddress(pT);
-		pB->SetDestructionFunc(&(object_destruction<T>));
+		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
 		pB->SetTypeCastFunc(_Com_TypeCast_Func<T>::c_func);
 
 		//return value
@@ -989,7 +992,7 @@ public:
 	static _ShareCom<T> Clone(const _ShareCom<T>& sp)  //may throw
 	{
 		return ( !sp.IsBlockNull() )
-				? ( assert( sp.m_pT != NULL ), MakeShareCom((sp.m_pB)->GetMemoryManager(), sp.Deref()) )
+				? ( assert( sp.m_pT != NULL ), MakeShareCom(GKC::RefPtr<GKC::IMemoryManager>((sp.m_pB)->GetMemoryManager()), sp.Deref()) )
 				: _ShareCom<T>();
 	}
 
@@ -1036,17 +1039,18 @@ template <typename T>
 class _ShareArrayBase : public _SObjT<_ShareArrayBase<T>, _ShareObjectBase>
 {
 private:
-	typedef _SObjT<_ShareArrayBase<T>, _ShareObjectBase>  baseClass;
+#define _SHAREARRAYBASE_BASE_CLASS  _SObjT<_ShareArrayBase<T>, _ShareObjectBase>
+
 	typedef _ShareArrayBase<T>  thisClass;
 
 protected:
 	_ShareArrayBase() throw()
 	{
 	}
-	_ShareArrayBase(const _ShareArrayBase& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	_ShareArrayBase(const _ShareArrayBase& src) throw() : _SHAREARRAYBASE_BASE_CLASS(static_cast<const _SHAREARRAYBASE_BASE_CLASS&>(src))
 	{
 	}
-	_ShareArrayBase(_ShareArrayBase&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_ShareArrayBase(_ShareArrayBase&& src) throw() : _SHAREARRAYBASE_BASE_CLASS(rv_forward(static_cast<_SHAREARRAYBASE_BASE_CLASS&>(src)))
 	{
 	}
 	~_ShareArrayBase() throw()
@@ -1056,12 +1060,12 @@ protected:
 
 	_ShareArrayBase<T>& operator=(const _ShareArrayBase<T>& src) throw()
 	{
-		baseClass::operator=(static_cast<const baseClass&>(src));
+		_SHAREARRAYBASE_BASE_CLASS::operator=(static_cast<const _SHAREARRAYBASE_BASE_CLASS&>(src));
 		return *this;
 	}
 	_ShareArrayBase<T>& operator=(_ShareArrayBase<T>&& src) throw()
 	{
-		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
+		_SHAREARRAYBASE_BASE_CLASS::operator=(rv_forward(static_cast<_SHAREARRAYBASE_BASE_CLASS&>(src)));
 		return *this;
 	}
 
@@ -1070,19 +1074,22 @@ protected:
 public:
 	void Release() throw()
 	{
-		if( m_pB != NULL ) {
-			_SObjRelease<share_array_block>::ShareRelease<T>(m_pB);
-			m_pB = NULL;
+		if( _SHAREARRAYBASE_BASE_CLASS::m_pB != NULL ) {
+			_SObjRelease<share_array_block>::ShareRelease<T>(_SHAREARRAYBASE_BASE_CLASS::m_pB);
+			_SHAREARRAYBASE_BASE_CLASS::m_pB = NULL;
 		} //end if
 	}
 
 protected:
-	void do_assign(const baseClass& src) throw()
+	void do_assign(const _SHAREARRAYBASE_BASE_CLASS& src) throw()
 	{
 	}
-	void do_move(baseClass&& src) throw()
+	void do_move(_SHAREARRAYBASE_BASE_CLASS&& src) throw()
 	{
 	}
+
+private:
+	friend class _SHAREARRAYBASE_BASE_CLASS;
 };
 
 // _WeakArrayBase
@@ -1090,17 +1097,18 @@ protected:
 class _WeakArrayBase : public _SObjT<_WeakArrayBase, _WeakObjectBase>
 {
 private:
-	typedef _SObjT<_WeakArrayBase, _WeakObjectBase>  baseClass;
+#define _WEAKARRAYBASE_BASE_CLASS  _SObjT<_WeakArrayBase, _WeakObjectBase>
+
 	typedef _WeakArrayBase  thisClass;
 
 protected:
 	_WeakArrayBase() throw()
 	{
 	}
-	_WeakArrayBase(const _WeakArrayBase& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	_WeakArrayBase(const _WeakArrayBase& src) throw() : _WEAKARRAYBASE_BASE_CLASS(static_cast<const _WEAKARRAYBASE_BASE_CLASS&>(src))
 	{
 	}
-	_WeakArrayBase(_WeakArrayBase&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	_WeakArrayBase(_WeakArrayBase&& src) throw() : _WEAKARRAYBASE_BASE_CLASS(rv_forward(static_cast<_WEAKARRAYBASE_BASE_CLASS&>(src)))
 	{
 	}
 	~_WeakArrayBase() throw()
@@ -1110,12 +1118,12 @@ protected:
 
 	_WeakArrayBase& operator=(const _WeakArrayBase& src) throw()
 	{
-		baseClass::operator=(static_cast<const baseClass&>(src));
+		_WEAKARRAYBASE_BASE_CLASS::operator=(static_cast<const _WEAKARRAYBASE_BASE_CLASS&>(src));
 		return *this;
 	}
 	_WeakArrayBase& operator=(_WeakArrayBase&& src) throw()
 	{
-		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
+		_WEAKARRAYBASE_BASE_CLASS::operator=(rv_forward(static_cast<_WEAKARRAYBASE_BASE_CLASS&>(src)));
 		return *this;
 	}
 
@@ -1124,20 +1132,23 @@ protected:
 public:
 	void Release() throw()
 	{
-		if( m_pB != NULL ) {
+		if( _WEAKARRAYBASE_BASE_CLASS::m_pB != NULL ) {
 			//weak
-			_SObjRelease<share_array_block>::WeakRelease(m_pB);
-			m_pB = NULL;
+			_SObjRelease<share_array_block>::WeakRelease(_WEAKARRAYBASE_BASE_CLASS::m_pB);
+			_WEAKARRAYBASE_BASE_CLASS::m_pB = NULL;
 		} //end if
 	}
 
 protected:
-	void do_assign(const baseClass& src) throw()
+	void do_assign(const _WEAKARRAYBASE_BASE_CLASS& src) throw()
 	{
 	}
-	void do_move(baseClass&& src) throw()
+	void do_move(_WEAKARRAYBASE_BASE_CLASS&& src) throw()
 	{
 	}
+
+private:
+	friend class _WEAKARRAYBASE_BASE_CLASS;
 };
 
 // _ShareArray<T>
@@ -1180,7 +1191,7 @@ public:
 
 	bool operator==(const _ShareArray<T>& right) const throw()
 	{
-		return m_pB == right.m_pB;
+		return baseClass::m_pB == right.m_pB;
 	}
 	bool operator!=(const _ShareArray<T>& right) const throw()
 	{
@@ -1191,7 +1202,7 @@ public:
 
 	uintptr GetCount() const throw()
 	{
-		return IsBlockNull() ? 0 : (static_cast<share_array_block*>(m_pB))->GetLength();
+		return baseClass::IsBlockNull() ? 0 : (static_cast<share_array_block*>(baseClass::m_pB))->GetLength();
 	}
 	bool IsEmpty() const throw()
 	{
@@ -1267,9 +1278,9 @@ public:
 	template <typename... Args>
 	void SetCount(uintptr uCount, uintptr uGrowBy, Args&&... args)  //may throw
 	{
-		assert( !IsBlockNull() );  //must have a block for allocation
-		share_array_block* pB = static_cast<share_array_block*>(m_pB);
-		assert( !(pB->GetMemoryManager().IsNull()) );
+		assert( !(baseClass::IsBlockNull()) );  //must have a block for allocation
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
+		assert( pB->GetMemoryManager() != NULL );
 		uintptr uOldSize = pB->GetLength();
 		if( uCount == 0 ) {
 			// shrink to nothing
@@ -1300,15 +1311,15 @@ public:
 	//clear
 	void RemoveAll() throw()
 	{
-		assert( !IsBlockNull() );  //must have a block for free
-		(static_cast<share_array_block*>(m_pB))->DestroyArray<T>();
+		assert( !(baseClass::IsBlockNull()) );  //must have a block for free
+		(static_cast<share_array_block*>(baseClass::m_pB))->DestroyArray<T>();
 	}
 
 	void FreeExtra() throw()
 	{
-		assert( !IsBlockNull() );
-		share_array_block* pB = static_cast<share_array_block*>(m_pB);
-		assert( !(pB->GetMemoryManager().IsNull()) );
+		assert( !(baseClass::IsBlockNull()) );
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
+		assert( pB->GetMemoryManager() != NULL );
 		uintptr uSize = pB->GetLength();
 		if( uSize == pB->GetAllocLength() )
 			return ;
@@ -1320,7 +1331,7 @@ public:
 		}
 		uintptr uBytes;
 		GKC::SafeOperators::Multiply(uSize, (uintptr)(sizeof(T)), uBytes);  //no check
-		T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)get_array_address(), uBytes));
+		T* pNew = (T*)(pB->GetMemoryManager()->Reallocate((uintptr)get_array_address(), uBytes));
 		if( pNew == NULL )
 			return ;
 		set_array_address(pNew);
@@ -1331,8 +1342,8 @@ public:
 	template <typename... Args>
 	Iterator Add(Args&&... args)  //may throw
 	{
-		assert( !IsBlockNull() );
-		share_array_block* pB = static_cast<share_array_block*>(m_pB);
+		assert( !(baseClass::IsBlockNull()) );
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		uintptr uElement = pB->GetLength();
 		SetCount(uElement + 1, 0, rv_forward<Args>(args)...);
 		return GetAt(uElement);
@@ -1340,8 +1351,8 @@ public:
 	void Append(const _ShareArray<T>& src)  //may throw
 	{
 		assert( this != &src );  // cannot append to itself
-		assert( !IsBlockNull() );
-		share_array_block* pB = static_cast<share_array_block*>(m_pB);
+		assert( !(baseClass::IsBlockNull()) );
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		uintptr uOldSize = pB->GetLength();
 		SetCount(uOldSize + src.GetCount(), 0);
 		copy_elements(src.get_array_address(), get_array_address() + uOldSize, src.GetCount());
@@ -1360,8 +1371,8 @@ public:
 	void InsertAt(uintptr index, uintptr count, Args&&... args)  //may throw
 	{
 		assert( count > 0 );  // zero size not allowed
-		assert( !IsBlockNull() );
-		share_array_block* pB = static_cast<share_array_block*>(m_pB);
+		assert( !(baseClass::IsBlockNull()) );
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		uintptr uSize = pB->GetLength();
 		if( index >= uSize ) {
 			// adding after the end of the array
@@ -1408,8 +1419,8 @@ public:
 	void RemoveAt(uintptr index, uintptr count = 1) throw()
 	{
 		assert( count > 0 );  // zero size not allowed
-		assert( !IsBlockNull() );
-		share_array_block* pB = static_cast<share_array_block*>(m_pB);
+		assert( !(baseClass::IsBlockNull()) );
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		uintptr uSize = pB->GetLength();
 		uintptr uCut = index + count;
 		assert( uCut >= index && uCut >= count && uCut <= uSize );  //no overflow
@@ -1427,18 +1438,18 @@ public:
 protected:
 	T* get_array_address() const throw()
 	{
-		return (T*)((static_cast<share_array_block*>(m_pB))->GetAddress());
+		return (T*)((static_cast<share_array_block*>(baseClass::m_pB))->GetAddress());
 	}
 	void set_array_address(T* p) throw()
 	{
-		(static_cast<share_array_block*>(m_pB))->SetAddress(p);
+		(static_cast<share_array_block*>(baseClass::m_pB))->SetAddress(p);
 	}
 
 private:
 	//grow
 	void grow_buffer(uintptr uNewSize, uintptr uGrowBy)  //may throw
 	{
-		share_array_block* pB = static_cast<share_array_block*>(m_pB);
+		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		if( uNewSize <= pB->GetAllocLength() )
 			return ;
 		uintptr uAllocSize;
@@ -1449,7 +1460,7 @@ private:
 			if( GKC::SafeOperators::Multiply(uAllocSize, (uintptr)(sizeof(T)), uBytes).IsFailed() )
 				throw GKC::OverflowException();
 			//allocate
-			T* pNew = (T*)(pB->GetMemoryManager().Deref().Allocate(uBytes));
+			T* pNew = (T*)(pB->GetMemoryManager()->Allocate(uBytes));
 			if( pNew == NULL )
 				throw GKC::OutOfMemoryException();
 			set_array_address(pNew);
@@ -1472,7 +1483,7 @@ private:
 				throw GKC::OverflowException();
 			//reallocate
 			//  because uBytes != 0, m_p is not freed
-			T* pNew = (T*)(pB->GetMemoryManager().Deref().Reallocate((uintptr)get_array_address(), uBytes));
+			T* pNew = (T*)(pB->GetMemoryManager()->Reallocate((uintptr)get_array_address(), uBytes));
 			if( pNew == NULL )
 				throw GKC::OutOfMemoryException();
 			set_array_address(pNew);
@@ -1580,7 +1591,7 @@ class _ShareArrayHelper
 public:
 	//make share array
 	template <typename T>
-	static _SharedArray<T> MakeShareArray(const GKC::RefPtr<GKC::IMemoryManager>& mgr)
+	static _ShareArray<T> MakeShareArray(const GKC::RefPtr<GKC::IMemoryManager>& mgr)
 	{
 		assert( !mgr.IsNull() );
 
@@ -1590,7 +1601,7 @@ public:
 			throw GKC::OutOfMemoryException();
 
 		_ShareArray<T> ret;
-		pB->SetMemoryManager(mgr);
+		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
 		ret.m_pB = static_cast<share_block_base*>(pB);
 
 		return ret;
@@ -1628,7 +1639,7 @@ public:
 	{
 		_ShareArray<T> ret;
 		if( !sp.IsBlockNull() ) {
-			ret = MakeShareArray<T>((sp.m_pB)->GetMemoryManager());
+			ret = MakeShareArray<T>(GKC::RefPtr<GKC::IMemoryManager>((sp.m_pB)->GetMemoryManager()));
 			ret.Copy(sp);
 		}
 		return ret;
@@ -1644,6 +1655,28 @@ public:
 	static T* GetInternalPointer(const _WeakArray<T>& sp) throw()
 	{
 		return (sp.m_pB == NULL) ? NULL : (T*)((sp.m_pB)->GetAddress());
+	}
+
+	//only for test
+	template <typename T>
+	static int test_get_share_count(const _ShareArray<T>& sp) throw()
+	{
+		return (sp.m_pB == NULL) ? 0 : (sp.m_pB)->GetShareCount();
+	}
+	template <typename T>
+	static int test_get_weak_count(const _ShareArray<T>& sp) throw()
+	{
+		return (sp.m_pB == NULL) ? 0 : (sp.m_pB)->GetWeakCount();
+	}
+	template <typename T>
+	static int test_get_share_count(const _WeakArray<T>& sp) throw()
+	{
+		return (sp.m_pB == NULL) ? 0 : (sp.m_pB)->GetShareCount();
+	}
+	template <typename T>
+	static int test_get_weak_count(const _WeakArray<T>& sp) throw()
+	{
+		return (sp.m_pB == NULL) ? 0 : (sp.m_pB)->GetWeakCount();
 	}
 };
 
@@ -1704,11 +1737,11 @@ public:
 	}
 	const typename thisClass::Iterator GetReverseBegin() const throw()
 	{
-		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
 	}
 	typename thisClass::Iterator GetReverseBegin() throw()
 	{
-		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
 	}
 
 	const typename thisClass::Iterator GetAt(uintptr index) const throw()
@@ -1735,13 +1768,13 @@ public:
 	//methods
 	void SetLength(uintptr uLength)
 	{
-		uintptr uSize = SafeOperators::AddThrow(uLength, (uintptr)1);
+		uintptr uSize = GKC::SafeOperators::AddThrow(uLength, (uintptr)1);
 		baseClass::SetCount(uSize, 0);
 		baseClass::get_array_address()[uLength] = 0;
 	}
 	void RecalcLength() throw()
 	{
-		assert( !IsBlockNull() );  //must have a block for allocation
+		assert( !(baseClass::IsBlockNull()) );  //must have a block for allocation
 		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		pB->SetLength(calc_string_length(baseClass::get_array_address()) + 1);
 	}
@@ -1771,31 +1804,31 @@ class _StringCompareTrait
 public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
-		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) == 0;
+		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) == 0;
 	}
 	static bool IsNE(const T& t1, const T& t2) throw()
 	{
-		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) != 0;
+		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) != 0;
 	}
 	static bool IsGT(const T& t1, const T& t2) throw()
 	{
-		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) > 0;
+		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) > 0;
 	}
 	static bool IsLT(const T& t1, const T& t2) throw()
 	{
-		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) < 0;
+		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) < 0;
 	}
 	static bool IsGE(const T& t1, const T& t2) throw()
 	{
-		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) >= 0;
+		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) >= 0;
 	}
 	static bool IsLE(const T& t1, const T& t2) throw()
 	{
-		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) <= 0;
+		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) <= 0;
 	}
 	static int Compare(const T& t1, const T& t2) throw()
 	{
-		return compare_string(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2));
+		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2));
 	}
 };
 
@@ -1807,31 +1840,31 @@ class _StringCaseIgnoreCompareTrait
 public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
-		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) == 0;
+		return compare_string_case_insensitive(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) == 0;
 	}
 	static bool IsNE(const T& t1, const T& t2) throw()
 	{
-		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) != 0;
+		return compare_string_case_insensitive(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) != 0;
 	}
 	static bool IsGT(const T& t1, const T& t2) throw()
 	{
-		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) > 0;
+		return compare_string_case_insensitive(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) > 0;
 	}
 	static bool IsLT(const T& t1, const T& t2) throw()
 	{
-		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) < 0;
+		return compare_string_case_insensitive(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) < 0;
 	}
 	static bool IsGE(const T& t1, const T& t2) throw()
 	{
-		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) >= 0;
+		return compare_string_case_insensitive(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) >= 0;
 	}
 	static bool IsLE(const T& t1, const T& t2) throw()
 	{
-		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2)) <= 0;
+		return compare_string_case_insensitive(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) <= 0;
 	}
 	static int Compare(const T& t1, const T& t2) throw()
 	{
-		return compare_string_case_insensitive(ShareArrayHelper::GetInternalPointer(t1), ShareArrayHelper::GetInternalPointer(t2));
+		return compare_string_case_insensitive(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2));
 	}
 };
 
@@ -1844,7 +1877,7 @@ public:
 	static uintptr CalcHash(const T& t) throw()
 	{
 		uintptr uHash = 0;
-		const typename T::EType* pch = ShareArrayHelper::GetInternalPointer(t);
+		const typename T::EType* pch = _ShareArrayHelper::GetInternalPointer(t);
 		assert( pch != NULL );
 		while( *pch != 0 ) {
 			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
@@ -1863,7 +1896,7 @@ public:
 	static uintptr CalcHash(const T& t) throw()
 	{
 		uintptr uHash = 0;
-		const typename T::EType* pch = ShareArrayHelper::GetInternalPointer(t);
+		const typename T::EType* pch = _ShareArrayHelper::GetInternalPointer(t);
 		assert( pch != NULL );
 		while( *pch != 0 ) {
 			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
@@ -1888,7 +1921,7 @@ public:
 
 	//make empty string
 	template <typename Tchar>
-	static _StringT<Tchar> MakeEmptyString(const GKC::RefPtr<IMemoryManager>& mgr)
+	static _StringT<Tchar> MakeEmptyString(const GKC::RefPtr<GKC::IMemoryManager>& mgr)
 	{
 		_StringT<Tchar> ret;
 		static_cast<_ShareArray<Tchar>&>(ret) = _ShareArrayHelper::MakeShareArray<Tchar>(mgr);
@@ -1901,7 +1934,7 @@ public:
 	{
 		_StringT<Tchar> ret;
 		if( !str.IsBlockNull() ) {
-			ret = MakeEmptyString<Tchar>((static_cast<share_array_block*>(str.m_pB))->GetMemoryManager());
+			ret = MakeEmptyString<Tchar>(GKC::RefPtr<GKC::IMemoryManager>((static_cast<share_array_block*>(str.m_pB))->GetMemoryManager()));
 			uintptr uCount = str.GetLength();
 			ret.SetLength(uCount);
 			if( uCount != 0 )
@@ -2054,7 +2087,7 @@ public:
 		uintptr uCount1 = strSrc.GetCount();
 		uintptr uCount2 = strDest.GetLength();
 		uintptr uCount;
-		CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
+		GKC::CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
 		if( cr.IsFailed() || uCount > t_size - 1 )
 			uCount = t_size - 1;
 		strDest.SetLength(uCount);
@@ -2084,7 +2117,7 @@ public:
 		uintptr uCount1 = strSrc.GetLength();
 		uintptr uCount2 = strDest.GetLength();
 		uintptr uCount;
-		CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
+		GKC::CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
 		if( cr.IsFailed() || uCount > t_sizeD - 1 )
 			uCount = t_sizeD - 1;
 		strDest.SetLength(uCount);
@@ -2112,7 +2145,7 @@ public:
 		uintptr uCount1 = strSrc.GetLength();
 		uintptr uCount2 = strDest.GetLength();
 		uintptr uCount;
-		CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
+		GKC::CallResult cr = GKC::SafeOperators::Add(uCount1, uCount2, uCount);
 		if( cr.IsFailed() || uCount > t_size - 1 )
 			uCount = t_size - 1;
 		strDest.SetLength(uCount);

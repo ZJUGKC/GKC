@@ -94,6 +94,12 @@ public:
 		return ::SetCriticalSectionSpinCount(&m_sect, uSpinCount);
 	}
 
+	//internal structure
+	CRITICAL_SECTION& GetCS() throw()
+	{
+		return m_sect;
+	}
+
 private:
 	CRITICAL_SECTION m_sect;
 	bool m_bInitialized;
@@ -567,7 +573,7 @@ class _os_module
 {
 public:	
 	_os_module() throw();
-	~_os_Module() throw()
+	~_os_module() throw()
 	{
 	}
 

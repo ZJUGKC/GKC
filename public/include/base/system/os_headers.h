@@ -27,8 +27,6 @@
 //CRT
 
 #include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 

@@ -297,7 +297,7 @@ inline char_a* _os_convert_unified_format_string(const char_a* szFormat) throw()
 			{
 			if( state != 0 )
 				state = 1;
-			mem_copy(ps, len * sizeof(CharA), pd);
+			mem_copy(ps, len * sizeof(char_a), pd);
 			ps += len;
 			pd += len;
 			}
@@ -622,23 +622,23 @@ inline bool check_path_extension_start(const char_l& ch) throw()
 	return ch == L'.';
 }
 
-inline void get_current_path_prefix(char_a*& sz, uintptr& len) throw()
+inline void get_current_path_prefix(const char_a*& sz, uintptr& len) throw()
 {
 	sz = "./";
 	len = 2;
 }
-inline void get_current_path_prefix(char_l*& sz, uintptr& len) throw()
+inline void get_current_path_prefix(const char_l*& sz, uintptr& len) throw()
 {
 	sz = L"./";
 	len = 2;
 }
 
-inline void get_absolute_path_prefix(char_a*& sz, uintptr& len) throw()
+inline void get_absolute_path_prefix(const char_a*& sz, uintptr& len) throw()
 {
 	sz = "";
 	len = 0;
 }
-inline void get_absolute_path_prefix(char_l*& sz, uintptr& len) throw()
+inline void get_absolute_path_prefix(const char_l*& sz, uintptr& len) throw()
 {
 	sz = L"";
 	len = 0;

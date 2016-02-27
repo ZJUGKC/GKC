@@ -16,11 +16,11 @@ This file contains memory manager functions.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "precomp.h"
+#include "PreComp.h"
 
 #include "_GkcSys.h"
 
-#include "globals.h"
+#include "Globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +30,7 @@ This file contains memory manager functions.
 
 SA_FUNCTION GKC::IMemoryManager* _CrtMemoryManager_Get() throw()
 {
-	return get_crt_mem_mgr();
+	return GKC::get_crt_mem_mgr();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

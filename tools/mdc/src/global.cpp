@@ -16,23 +16,25 @@ This file contains global variables.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "global.h"
+#include "PreComp.h"
+
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 //version
-BEGIN_STATIC_CONST_ARRAY(_const_array_version)
+BEGIN_STATIC_CONST_ARRAY(g_const_array_version)
 	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("Markdown Document compiler (mdc) version : 1.0.1.1001")))
 	STATIC_CONST_ARRAY_ENTRY_LAST(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("")))
-END_STATIC_CONST_ARRAY(_const_array_version)
+END_STATIC_CONST_ARRAY(g_const_array_version)
 
 //help
-BEGIN_STATIC_CONST_ARRAY(_const_array_help)
+BEGIN_STATIC_CONST_ARRAY(g_const_array_help)
 	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  Usage : mdc source-dir destination-dir")))
 	STATIC_CONST_ARRAY_ENTRY_LAST(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("")))
-END_STATIC_CONST_ARRAY(_const_array_help)
+END_STATIC_CONST_ARRAY(g_const_array_help)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

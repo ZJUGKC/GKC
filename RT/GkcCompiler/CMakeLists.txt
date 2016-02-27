@@ -17,10 +17,10 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/RT/GkcSys/public"
 	"${PROJECT_SOURCE_DIR}/public/include")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
-SET(SRC_PCH_LIST "src/precomp.cpp")
-SET(SRC_LIST "src/main.cpp")
+SET(SRC_PCH_LIST "src/PreComp.cpp")
+SET(SRC_LIST "src/Main.cpp")
 ADD_LIBRARY(GkcCompiler SHARED ${SRC_PCH_LIST} ${SRC_LIST})
-SET_PCH(GkcCompiler "shared" "precomp.h" ${SRC_PCH_LIST} ${SRC_LIST})
+SET_PCH(GkcCompiler "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")
 SET_TARGET_PROPERTIES(GkcCompiler PROPERTIES OUTPUT_NAME "GkcCompiler"
 	VERSION 1.0 SOVERSION 1

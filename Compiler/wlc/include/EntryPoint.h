@@ -21,22 +21,24 @@ This file contains entry point function.
 
 #include "cmd/compile_single_file.h"
 
-#include "global.h"
+#include "Global.h"
 
+////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 // version
 inline
-void _print_version() throw()
+void _PrintVersion() throw()
 {
-	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(GKC::_const_array_version::GetAddress(), GKC::_const_array_version::GetCount()));
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_version::GetAddress(), g_const_array_version::GetCount()));
 }
 
 // help
 inline
-void _print_help() throw()
+void _PrintHelp() throw()
 {
-	GKC::ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(GKC::_const_array_help::GetAddress(), GKC::_const_array_help::GetCount()));
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
 }
 
 // ProgramEntryPoint
@@ -44,53 +46,55 @@ void _print_help() throw()
 class ProgramEntryPoint
 {
 public:
-	static int ConsoleMain(const GKC::ConstArray<GKC::ConstStringS>& args, const GKC::ConstArray<GKC::ConstStringS>& env)
+	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env)
 	{
 		uintptr uArgCount = args.GetCount();
 		//args
 		if( uArgCount <= 2 ) {
-			_print_version();
-			_print_help();
+			_PrintVersion();
+			_PrintHelp();
 			return 0;
 		}
 		int ret = 0;
 		//-c
-		if( compare_string(GKC::ConstArrayHelper::GetInternalPointer(args[1].get_Value()), _S("-c")) == 0 ) {
+		if( ConstStringCompareTrait::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
 			if( uArgCount > 4 ) {
-				_print_version();
-				_print_help();
+				_PrintVersion();
+				_PrintHelp();
 				return 0;
 			}
-			GKC::StringS strSrc(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
-			GKC::StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
-			GKC::StringS strDest(GKC::StringUtilHelper::MakeEmptyString<CharS>(GKC::MemoryHelper::GetCrtMemoryManager()));
+			StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+			StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
+			StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 			if( uArgCount == 4 ) {
-				GKC::StringUtilHelper::MakeString(args[3].get_Value(), strDest);
+				StringUtilHelper::MakeString(args[3].get_Value(), strDest);
 			}
 			else {
-				strDest = GKC::StringUtilHelper::Clone(strSrc);
+				strDest = StringHelper::Clone(strSrc);
 				uintptr uPos;
-				if( GKC::FsPathHelper::FindExtensionStart(GKC::StringUtilHelper::To_ConstString(strDest), uPos) ) {
-					GKC::StringUtilHelper::Delete(uPos, strDest.GetLength() - uPos, strDest);
-					GKC::StringUtilHelper::Insert(uPos, DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S(".wo")), strDest);
+				if( FsPathHelper::FindExtensionStart(StringUtilHelper::To_ConstString(strDest), uPos) ) {
+					StringHelper::Delete(uPos, strDest.GetLength() - uPos, strDest);
+					StringUtilHelper::Insert(uPos, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".wo")), strDest);
 				}
 				else {
-					GKC::StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S(".wo")), strDest);
+					StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".wo")), strDest);
 				}
 			}
 			//file name
-			GKC::FsPathHelper::ConvertPathStringToPlatform(strSrc);
-			GKC::FsPathHelper::ConvertPathStringToPlatform(strDest);
+			FsPathHelper::ConvertPathStringToPlatform(strSrc);
+			FsPathHelper::ConvertPathStringToPlatform(strDest);
 
 			//process
-			_print_version();
-			ret = GKC::compile_single_file(strSrc, strDest);
+			_PrintVersion();
+			ret = compile_single_file(strSrc, strDest);
 		}
 
 		return ret;
 	}
 };
 
+////////////////////////////////////////////////////////////////////////////////
+}
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

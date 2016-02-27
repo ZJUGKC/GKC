@@ -467,7 +467,7 @@ public:
 	};
 
 _DECLARE_INT_COMPARE_TRAIT(char)
-_DECLARE_INT_COMPARE_TRAIT(uchar)
+_DECLARE_INT_COMPARE_TRAIT(byte)
 _DECLARE_INT_COMPARE_TRAIT(short)
 _DECLARE_INT_COMPARE_TRAIT(ushort)
 _DECLARE_INT_COMPARE_TRAIT(int)
@@ -1009,7 +1009,7 @@ private:
 	share_block_base& operator=(const share_block_base&) throw();
 };
 
-typedef void  (* share_object_destruction_func)(void* p) throw();
+typedef void  (* share_object_destruction_func)(void* p);
 
 // share_ptr_block
 
@@ -1112,7 +1112,7 @@ private:
 	share_array_block& operator=(const share_array_block&) throw();
 };
 
-typedef void* (* share_object_typecast_func)(void* p, const guid& iid) throw();
+typedef void* (* share_object_typecast_func)(void* p, const guid& iid);
 
 // share_com_block
 
@@ -1329,204 +1329,5 @@ inline uintptr calc_sub_string_act_length(uintptr uSrcLength, uintptr uStart, ui
 		uRet = uLength;
 	return uRet;
 }
-
-// -----fixed string-----
-
-// fixed_string_t<Tchar, t_size>
-//   Tchar: char_a char_h char_l, char_s char_w
-
-template <typename Tchar, uintptr t_size>
-class fixed_string_t : public fixed_array<Tchar, t_size>
-{
-private:
-	typedef fixed_array<Tchar, t_size>  baseClass;
-	typedef fixed_string_t<Tchar, t_size>  thisClass;
-
-public:
-	fixed_string_t() throw() : m_uLength(0)
-	{
-		baseClass::m_data[0] = 0;
-	}
-	fixed_string_t(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src)), m_uLength(src.m_uLength)
-	{
-		assert( m_uLength < t_size );
-		mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
-	}
-	~fixed_string_t() throw()
-	{
-	}
-
-	//operators
-	thisClass& operator=(const thisClass& src) throw()
-	{
-		if( this != &src ) {
-			m_uLength = src.m_uLength;
-			assert( m_uLength < t_size );
-			mem_copy(src.m_data, sizeof(Tchar) * (m_uLength + 1), baseClass::m_data);
-		}
-		return *this;
-	}
-
-	uintptr GetLength() const throw()
-	{
-		return m_uLength;
-	}
-	void SetLength(uintptr uLength) throw()
-	{
-		assert( uLength < t_size );
-		m_uLength = uLength;
-		baseClass::m_data[m_uLength] = 0;
-	}
-
-	bool IsEmpty() const throw()
-	{
-		return GetLength() == 0;
-	}
-
-	//iterators
-	const typename thisClass::Iterator GetEnd() const throw()
-	{
-		return Iterator(ref_ptr<Tchar>(baseClass::m_data + m_uLength));
-	}
-	typename thisClass::Iterator GetEnd() throw()
-	{
-		return Iterator(ref_ptr<Tchar>(baseClass::m_data + m_uLength));
-	}
-	const reverse_iterator<typename thisClass::Iterator> GetReverseBegin() const throw()
-	{
-		return reverse_iterator<typename thisClass::Iterator>(GetEnd());
-	}
-	reverse_iterator<typename thisClass::Iterator> GetReverseBegin() throw()
-	{
-		return reverse_iterator<typename thisClass::Iterator>(GetEnd());
-	}
-
-	//methods
-	void RecalcLength() throw()
-	{
-		m_uLength = calc_string_length(baseClass::m_data);
-	}
-
-private:
-	uintptr m_uLength;
-
-private:
-	//logical
-	bool operator==(const thisClass& right) const throw();
-	bool operator!=(const thisClass& right) const throw();
-	bool operator<(const thisClass& right) const throw();
-	bool operator>(const thisClass& right) const throw();
-	bool operator<=(const thisClass& right) const throw();
-	bool operator>=(const thisClass& right) const throw();
-};
-
-// fixed_string_helper
-
-class fixed_string_helper
-{
-public:
-	//To C-style string
-	template <typename Tchar, uintptr t_size>
-	static ref_ptr<Tchar> To_C_Style(const fixed_string_t<Tchar, t_size>& str, uintptr uStart = 0) throw()
-	{
-		assert( uStart <= str.GetLength() );
-		return ref_ptr<Tchar>(fixed_array_helper::GetInternalPointer(str) + uStart);
-	}
-
-	//append character
-	//  return: 0 or 1, whether the character is copied
-	template <typename Tchar, uintptr t_size>
-	static uintptr Append(const Tchar& ch, INOUT fixed_string_t<Tchar, t_size>& strDest) throw()
-	{
-		uintptr uCount = strDest.GetLength();
-		if( uCount >= t_size - 1 )
-			return 0;
-		strDest.SetLength(uCount + 1);
-		strDest.SetAt(uCount, ch);
-		return 1;
-	}
-
-	//insert character
-	template <typename Tchar, uintptr t_size>
-	static uintptr Insert(uintptr uPos, const Tchar& ch, fixed_string_t<Tchar, t_size>& str) throw()
-	{
-		uintptr uLength = str.GetLength();
-		if( uPos > uLength || uLength >= t_size - 1 )
-			return 0;
-		mem_move(fixed_array_helper::GetInternalPointer(str) + uPos, (uLength - uPos) * sizeof(Tchar), fixed_array_helper::GetInternalPointer(str) + uPos + 1);
-		str.SetLength(uLength + 1);
-		str.SetAt(uPos, ch);
-		return 1;
-	}
-
-	//delete
-	template <typename Tchar, uintptr t_size>
-	static uintptr Delete(uintptr uPos, uintptr uLength, fixed_string_t<Tchar, t_size>& str) throw()
-	{
-		uintptr uCount = str.GetLength();
-		uintptr uRet = calc_sub_string_act_length(uCount, uPos, uLength);
-		if( uRet == 0 )
-			return 0;
-		mem_move(fixed_array_helper::GetInternalPointer(str) + uPos + uRet, (uCount - uPos - uRet) * sizeof(Tchar), fixed_array_helper::GetInternalPointer(str) + uPos);
-		str.SetLength(uCount - uRet);
-		return uRet;
-	}
-
-	//replace
-	template <typename Tchar, uintptr t_size, class TCompareTrait = default_compare_trait<Tchar>>
-	static uintptr Replace(const Tchar& chOld, const Tchar& chNew, INOUT fixed_string_t<Tchar, t_size>& str) throw()
-	{
-		assert( chOld != 0 && chNew != 0 && TCompareTrait::IsNE(chOld, chNew) );
-		if( str.IsEmpty() )
-			return 0;
-		return coll_replace_elements<typename fixed_string_t<Tchar, t_size>::Iterator, TCompareTrait>(chOld, chNew, str.GetBegin(), str.GetEnd());
-	}
-
-	//find (return value : check null)
-	template <typename Tchar, uintptr t_size>
-	static typename fixed_string_t<Tchar, t_size>::Iterator Find(const fixed_string_t<Tchar, t_size>& str, const Tchar& ch, uintptr uStart) throw()
-	{
-		assert( uStart <= str.GetLength() );
-		return typename fixed_string_t<Tchar, t_size>::Iterator(ref_ptr<Tchar>(find_string_char(fixed_array_helper::GetInternalPointer(str) + uStart, ch)));
-	}
-};
-
-// message_exception<t_size>
-
-template <uintptr t_size>
-class message_exception : public exception
-{
-public:
-	typedef fixed_string_t<char_s, t_size>  MessageBufferClass;
-
-public:
-	message_exception() throw()
-	{
-	}
-	message_exception(const message_exception<t_size>& src) throw() : exception(static_cast<const exception&>(src)), m_messageBuffer(src.m_messageBuffer)
-	{
-	}
-	message_exception<t_size>& operator=(const message_exception<t_size>& src) throw()
-	{
-		exception::operator=(static_cast<const exception&>(src));
-		m_messageBuffer = src.m_messageBuffer;  //no check self
-		return *this;
-	}
-	~message_exception() throw()
-	{
-	}
-
-	const MessageBufferClass& GetMessageBuffer() const throw()
-	{
-		return m_messageBuffer;
-	}
-	MessageBufferClass& GetMessageBuffer() throw()
-	{
-		return m_messageBuffer;
-	}
-
-private:
-	fixed_string_t<char_s, t_size>  m_messageBuffer;
-};
 
 ////////////////////////////////////////////////////////////////////////////////

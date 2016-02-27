@@ -19,10 +19,10 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 //version
-DECLARE_STATIC_CONST_ARRAY(_const_array_version, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
+DECLARE_STATIC_CONST_ARRAY(g_const_array_version, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
 
 //help
-DECLARE_STATIC_CONST_ARRAY(_const_array_help, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
+DECLARE_STATIC_CONST_ARRAY(g_const_array_help, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
 
 ////////////////////////////////////////////////////////////////////////////////
 }

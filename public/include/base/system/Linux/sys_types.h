@@ -294,9 +294,9 @@ public:
 		pNew[uNewCount] = 0;
 		return pNew;
 	}
-	static void free_global_name(const char_a* p) throw()
+	static void free_global_name(char_a* p) throw()
 	{
-		crt_free(p);
+		crt_free((void*)p);
 	}
 	//tools
 	static char_a* gen_sync_name(const char_a* pSrc, bool bGlobal) throw()
@@ -306,7 +306,7 @@ public:
 			psz = gen_global_name(psz);
 		return psz;
 	}
-	static void free_sync_name(const char_a* p, bool bGlobal) throw()
+	static void free_sync_name(char_a* p, bool bGlobal) throw()
 	{
 		if( bGlobal )
 			free_global_name(p);

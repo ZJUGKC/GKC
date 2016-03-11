@@ -115,7 +115,7 @@ private:
 class _os_event
 {
 public:
-	_os_event() throw() : m_evt(NULL)
+	explicit _os_event(HANDLE h = NULL) throw() : m_h(h)
 	{
 	}
 	~_os_event() throw()
@@ -125,16 +125,85 @@ public:
 
 	void Close() throw()
 	{
-		if( m_evt != NULL ) {
-			BOOL bRet = ::CloseHandle(m_evt);
+		if( m_h != NULL ) {
+			BOOL bRet = ::CloseHandle(m_h);
 			assert( bRet );
-			m_evt = NULL;
+			m_h = NULL;
 		}
 	}
 
+	void Attach(HANDLE h) throw()
+	{
+		if( m_h != h )
+			Close();
+		m_h = h;
+	}
+	HANDLE Detach() throw()
+	{
+		HANDLE h = m_h;
+		m_h = NULL;
+		return h;
+	}
+
+	HANDLE GetHandle() const throw()
+	{
+		return m_h;
+	}
+	bool IsNull() const throw()
+	{
+		return m_h == NULL;
+	}
+
+	// Create a new event
+	call_result Create(LPSECURITY_ATTRIBUTES pSecurity, BOOL bManualReset, BOOL bInitialState, LPCWSTR pszName) throw()
+	{
+		assert( IsNull() );
+		HRESULT hRes = S_OK;
+		m_h = ::CreateEventW(pSecurity, bManualReset, bInitialState, pszName);  //::GetLastError() may return ERROR_ALREADY_EXISTS
+		if( m_h == NULL )
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		return call_result((int)hRes);
+	}
+	// Open an existing named event
+	call_result Open(DWORD dwAccess, BOOL bInheritHandle, LPCWSTR pszName) throw()
+	{
+		assert( IsNull() );
+		HRESULT hRes = S_OK;
+		m_h = ::OpenEventW(dwAccess, bInheritHandle, pszName);
+		if( m_h == NULL )
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		return call_result((int)hRes);
+	}
+
+	// Pulse the event (signals waiting objects, then resets)
+	BOOL Pulse() throw()
+	{
+		assert( !IsNull() );
+		return ::PulseEvent(m_h);
+	}
+	// Set the event to the non-signaled state
+	BOOL Reset() throw()
+	{
+		assert( !IsNull() );
+		return ::ResetEvent(m_h);
+	}
+	// Set the event to the signaled state
+	BOOL Set() throw()
+	{
+		assert( !IsNull() );
+		return ::SetEvent(m_h);
+	}
+
+	//wait
+	//  return : WAIT_OBJECT_0, WAIT_TIMEOUT, WAIT_FAILED
+	DWORD Wait(DWORD dwMilliseconds = INFINITE) throw()
+	{
+		assert( !IsNull() );
+		return ::WaitForSingleObject(m_h, dwMilliseconds);
+	}
 
 private:
-	HANDLE m_evt;  //event
+	HANDLE m_h;  //event
 
 private:
 	//noncopyable

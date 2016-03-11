@@ -57,6 +57,23 @@ public:
 		return m_fd >= 0;
 	}
 
+	uintptr GetHandle() const throw()
+	{
+		return (uintptr)m_fd;
+	}
+	void Attach(uintptr h) throw()
+	{
+		if( (uintptr)m_fd != h )
+			Close();
+		m_fd = (int)h;
+	}
+	uintptr Detach() throw()
+	{
+		uintptr h = (uintptr)m_fd;
+		m_fd = -1;
+		return h;
+	}
+
 	//close
 	void Close() throw()
 	{
@@ -96,6 +113,19 @@ public:
 			uWritten = (uint)uRet;
 		return call_result(res);
 	}
+	//dup (a new reference, inherited)
+	call_result Duplicate(io_handle& hd) throw()
+	{
+		assert( IsValid() );
+		assert( !hd.IsValid() );
+		int res = 0;
+		int fdup = ::dup(m_fd);
+		if( fdup == -1 )
+			res = _OS_CR_FROM_ERRORNO();
+		else
+			hd.m_fd = fdup;
+		return call_result(res);
+	}
 
 protected:
 	int m_fd;
@@ -103,9 +133,6 @@ protected:
 private:
 	io_handle(const io_handle&) throw();
 	io_handle& operator=(const io_handle&) throw();
-
-private:
-	friend class io_handle_helper;
 };
 
 // io_handle_helper
@@ -151,7 +178,7 @@ public:
 		if( fd < 0 )
 			res = _OS_CR_FROM_ERRORNO();
 		else
-			hd.m_fd = fd;
+			hd.Attach((uintptr)fd);
 
 		return call_result(res);
 	}
@@ -162,7 +189,7 @@ public:
 	{
 		assert( hd.IsValid() );
 		assert( sizeof(off_t) == 8 );
-		off_t npos = ::lseek(hd.m_fd, (off_t)iOffset, (int)uMethod);  //64 bits
+		off_t npos = ::lseek((int)(hd.GetHandle()), (off_t)iOffset, (int)uMethod);  //64 bits
 		int res = 0;
 		if( npos < 0 )
 			res = _OS_CR_FROM_ERRORNO();
@@ -177,7 +204,7 @@ public:
 #ifdef DEBUG
 		int res =
 #endif
-		::fsync(hd.m_fd);
+		::fsync((int)(hd.GetHandle()));
 		assert( res == 0 );
 	}
 	//set size
@@ -185,7 +212,7 @@ public:
 	{
 		assert( hd.IsValid() );
 		int res = 0;
-		if( ::ftruncate(hd.m_fd, iSize) < 0 )
+		if( ::ftruncate((int)(hd.GetHandle()), iSize) < 0 )
 			res = _OS_CR_FROM_ERRORNO();
 		return call_result(res);
 	}
@@ -197,7 +224,7 @@ public:
 		int res = 0;
 		//stat
 		struct stat st;
-		if( ::fstat(hd.m_fd, &st) < 0 ) {
+		if( ::fstat((int)(hd.GetHandle()), &st) < 0 ) {
 			res = _OS_CR_FROM_ERRORNO();
 			return call_result(res);
 		}
@@ -246,7 +273,7 @@ public:
 		fl.l_whence = SEEK_SET;
 		fl.l_start  = iOffset;
 		fl.l_len    = iLen;
-		if( ::fcntl(hd.m_fd, bBlock ? F_SETLKW : F_SETLK, &fl) < 0 )
+		if( ::fcntl((int)(hd.GetHandle()), bBlock ? F_SETLKW : F_SETLK, &fl) < 0 )
 			res = _OS_CR_FROM_ERRORNO();
 		return call_result(res);
 	}
@@ -262,7 +289,7 @@ public:
 #ifdef DEBUG
 		int rv =
 #endif
-		::fcntl(hd.m_fd, F_SETLK, &fl);  //nonblocking
+		::fcntl((int)(hd.GetHandle()), F_SETLK, &fl);  //nonblocking
 		assert( rv >= 0 );
 	}
 };

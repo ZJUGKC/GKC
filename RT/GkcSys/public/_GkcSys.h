@@ -637,7 +637,6 @@ public:
 			throw GKC::OutOfMemoryException();
 		}
 
-		_SharePtr<T> ret;
 		//constructor
 		try {
 			//may throw
@@ -654,6 +653,7 @@ public:
 		pB->SetAddress(pT);
 		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
 
+		_SharePtr<T> ret;
 		//return value
 		ret.m_pB = static_cast<share_block_base*>(pB);
 		ret.m_pT = pT;
@@ -918,7 +918,6 @@ public:
 			throw GKC::OutOfMemoryException();
 		}
 
-		_ShareCom<T> ret;
 		//constructor
 		try {
 			//may throw
@@ -936,6 +935,7 @@ public:
 		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
 		pB->SetTypeCastFunc(_Com_TypeCast_Func<T>::c_func);
 
+		_ShareCom<T> ret;
 		//return value
 		ret.m_pB = static_cast<share_block_base*>(pB);
 		ret.m_pT = pT;
@@ -1600,8 +1600,11 @@ public:
 		if( pB == NULL )
 			throw GKC::OutOfMemoryException();
 
-		_ShareArray<T> ret;
+		//initialize
 		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
+
+		_ShareArray<T> ret;
+		//return value
 		ret.m_pB = static_cast<share_block_base*>(pB);
 
 		return ret;
@@ -2315,6 +2318,26 @@ public:
 		mem_copy(_ShareArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest));
 	}
 };
+
+// _IComFactory
+
+class NOVTABLE _IComFactory
+{
+public:
+	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IComFactory)
+
+// _IComSA
+
+class NOVTABLE _IComSA
+{
+public:
+	virtual void LockServer(bool bLock) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IComSA)
 
 #pragma pack(pop)
 

@@ -58,6 +58,23 @@ public:
 		return m_h != NULL;
 	}
 
+	uintptr GetHandle() const throw()
+	{
+		return (uintptr)m_h;
+	}
+	void Attach(uintptr h) throw()
+	{
+		if( (uintptr)m_h != h )
+			Close();
+		m_h = (HANDLE)h;
+	}
+	uintptr Detach() throw()
+	{
+		uintptr h = (uintptr)m_h;
+		m_h = NULL;
+		return h;
+	}
+
 	//close
 	void Close() throw()
 	{
@@ -86,16 +103,26 @@ public:
 			hr = HRESULT_FROM_WIN32(::GetLastError());
 		return call_result((int)hr);
 	}
+	//dup (a new reference, inherited)
+	call_result Duplicate(io_handle& hd) throw()
+	{
+		assert( IsValid() );
+		assert( !hd.IsValid() );
+		HRESULT hRes = S_OK;
+		HANDLE hDup;
+		if( !::DuplicateHandle(::GetCurrentProcess(), m_h, ::GetCurrentProcess(), &hDup, 0, TRUE, DUPLICATE_SAME_ACCESS) )
+			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		else
+			hd.m_h = hDup;
+		return call_result((int)hRes);
+	}
 
 protected:
-	HANDLE  m_h;
+	HANDLE m_h;
 
 private:
 	io_handle(const io_handle&) throw();
 	io_handle& operator=(const io_handle&) throw();
-
-private:
-	friend class io_handle_helper;
 };
 
 // io_handle_helper
@@ -112,7 +139,7 @@ public:
 		assert( !hd.IsValid() );
 		HANDLE  hFile;
 		HRESULT hRes = _os_open_file(szFile, iOpenType, _os_file_share_modes::DenyNone, iCreateType, hFile);
-		hd.m_h = hFile;
+		hd.Attach((uintptr)hFile);
 		return call_result((int)hRes);
 	}
 	//seek
@@ -125,7 +152,7 @@ public:
 		liMove.QuadPart = iOffset;
 		LARGE_INTEGER liNew;
 		HRESULT hr = S_OK;
-		if( !::SetFilePointerEx(hd.m_h, liMove, &liNew, uMethod) ) {
+		if( !::SetFilePointerEx((HANDLE)(hd.GetHandle()), liMove, &liNew, uMethod) ) {
 			hr = HRESULT_FROM_WIN32(::GetLastError());
 		}
 		else {
@@ -137,7 +164,7 @@ public:
 	static void Flush(io_handle& hd) throw()
 	{
 		assert( hd.IsValid() );
-		BOOL bRet = ::FlushFileBuffers(hd.m_h);
+		BOOL bRet = ::FlushFileBuffers((HANDLE)(hd.GetHandle()));
 		assert( bRet );
 	}
 	//set size
@@ -148,7 +175,7 @@ public:
 		call_result cr = Seek(hd, iSize, iNewPos, IO_SEEK_BEGIN);
 		if( cr.IsFailed() )
 			return cr;
-		if( !::SetEndOfFile(hd.m_h) )
+		if( !::SetEndOfFile((HANDLE)(hd.GetHandle())) )
 			cr.SetResult((int)(HRESULT_FROM_WIN32(::GetLastError())));
 		return cr;
 	}
@@ -160,7 +187,7 @@ public:
 		HRESULT hRes = S_OK;
 		//size
 		LARGE_INTEGER li;
-		if( !::GetFileSizeEx(hd.m_h, &li) ) {
+		if( !::GetFileSizeEx((HANDLE)(hd.GetHandle()), &li) ) {
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 			return call_result((int)hRes);
 		}
@@ -168,7 +195,7 @@ public:
 
 		FILETIME   ftA, ftM, ftC;
 		SYSTEMTIME st;
-		if( !::GetFileTime(hd.m_h, &ftC, &ftA, &ftM) ) {
+		if( !::GetFileTime((HANDLE)(hd.GetHandle()), &ftC, &ftA, &ftM) ) {
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 			return call_result((int)hRes);
 		}
@@ -208,8 +235,8 @@ public:
 		ov.Offset     = li.LowPart;
 		ov.OffsetHigh = li.HighPart;
 		li.QuadPart = iLen;
-		if( !::LockFileEx(hd.m_h, ((!bShare) ? LOCKFILE_EXCLUSIVE_LOCK : 0) | ((!bBlock) ? LOCKFILE_FAIL_IMMEDIATELY : 0),
-							0, li.LowPart, li.HighPart, &ov) )
+		if( !::LockFileEx((HANDLE)(hd.GetHandle()), ((!bShare) ? LOCKFILE_EXCLUSIVE_LOCK : 0) | ((!bBlock) ? LOCKFILE_FAIL_IMMEDIATELY : 0),
+						0, li.LowPart, li.HighPart, &ov) )
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 		return call_result((int)hRes);
 	}
@@ -224,7 +251,7 @@ public:
 		ov.Offset     = li.LowPart;
 		ov.OffsetHigh = li.HighPart;
 		li.QuadPart = iLen;
-		BOOL bRet = ::UnlockFileEx(hd.m_h, 0, li.LowPart, li.HighPart, &ov);
+		BOOL bRet = ::UnlockFileEx((HANDLE)(hd.GetHandle()), 0, li.LowPart, li.HighPart, &ov);
 		assert( bRet );
 	}
 };

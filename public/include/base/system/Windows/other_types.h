@@ -234,9 +234,11 @@ public:
 	sa_handle& operator=(sa_handle&& src) throw()
 	{
 		if( &src != this ) {
-			Free();
-			m_hd = src.m_hd;
-			src.m_hd = NULL;
+			if( m_hd != src.m_hd ) {
+				Free();
+				m_hd = src.m_hd;
+				src.m_hd = NULL;
+			}
 		}
 		return *this;
 	}

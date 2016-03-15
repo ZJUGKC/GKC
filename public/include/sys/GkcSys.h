@@ -110,6 +110,21 @@ typedef _StringHelper  StringHelper;
 // StringUtilHelper
 typedef _StringUtilHelper  StringUtilHelper;
 
+// IByteSequentialStream
+typedef _IByteSequentialStream  IByteSequentialStream;
+
+#define GUID_IByteSequentialStream  GUID__IByteSequentialStream
+
+// IByteStream
+typedef _IByteStream  IByteStream;
+
+#define GUID_IByteStream  GUID__IByteStream
+
+// IFileUtility
+typedef _IFileUtility  IFileUtility;
+
+#define GUID_IFileUtility  GUID__IFileUtility
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

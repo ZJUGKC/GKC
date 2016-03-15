@@ -1162,6 +1162,8 @@ BEGIN_ENUM(file_creation_types)
 	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
 END_ENUM()
 
+#pragma pack(push, 1)
+
 // storage_status
 
 struct storage_status
@@ -1171,6 +1173,8 @@ struct storage_status
 	system_time  tmModify;  //time of last modification
 	system_time  tmCreate;  //time of creation
 };
+
+#pragma pack(pop)
 
 // -----collection-----
 

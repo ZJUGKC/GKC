@@ -19,9 +19,9 @@
 //------------------------------------------------------------------------------
 // file IO
 
-// io_handle_helper
+// file_io_handle_helper
 
-class io_handle_helper
+class file_io_handle_helper
 {
 public:
 	//open
@@ -82,14 +82,13 @@ public:
 		return call_result(res);
 	}
 	//flush
-	static void Flush(io_handle& hd) throw()
+	static call_result Flush(io_handle& hd) throw()
 	{
 		assert( hd.IsValid() );
-#ifdef DEBUG
-		int res =
-#endif
-		::fsync((int)(hd.GetHandle()));
-		assert( res == 0 );
+		int res = 0;
+		if( ::fsync((int)(hd.GetHandle())) == -1 )
+			res = _OS_CR_FROM_ERRORNO();
+		return call_result(res);
 	}
 	//set size
 	static call_result SetSize(io_handle& hd, int64 iSize) throw()

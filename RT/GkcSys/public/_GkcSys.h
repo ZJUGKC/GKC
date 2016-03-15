@@ -2339,7 +2339,48 @@ public:
 
 DECLARE_GUID(GUID__IComSA)
 
+// _IByteSequentialStream
+
+class NOVTABLE _IByteSequentialStream
+{
+public:
+	virtual GKC::CallResult Read(GKC::RefPtr<void>& pv, uint uBytes, uint& uRead) throw() = 0;
+	virtual GKC::CallResult Write(const GKC::RefPtr<void>& pv, uint uBytes, uint& uWritten) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IByteSequentialStream)
+
+// _IByteStream
+
+class NOVTABLE _IByteStream : public _IByteSequentialStream
+{
+public:
+	virtual GKC::CallResult Commit() throw() = 0;
+	virtual GKC::CallResult Seek(uint uMethod, int64 iOffset, int64& iNewPos) throw() = 0;
+	virtual GKC::CallResult SetSize(int64 iSize) throw() = 0;
+	virtual GKC::CallResult GetStatus(GKC::StorageStatus& status) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IByteStream)
+
+// _IFileUtility
+
+class NOVTABLE _IFileUtility
+{
+public:
+	virtual GKC::CallResult Open(const GKC::RefPtr<GKC::CharS>& szFile, int iOpenType, int iCreateType) throw() = 0;
+	virtual void Close() throw() = 0;
+	virtual bool IsOpened() throw() = 0;
+};
+
+DECLARE_GUID(GUID__IFileUtility)
+
 #pragma pack(pop)
+
+//------------------------------------------------------------------------------
+// Stream
+
+SA_FUNCTION GKC::CallResult _FileStream_Create(const GKC::RefPtr<GKC::CharS>& szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp) throw();
 
 //------------------------------------------------------------------------------
 

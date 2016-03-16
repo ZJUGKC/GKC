@@ -54,7 +54,7 @@ typedef struct _tag_os_guid
 // in cpp file
 #define IMPLEMENT_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)  \
 	const _os_guid _os_g_guid_##name = { (l), (w1), (w2), { (b1), (b2), (b3), (b4), (b5), (b6), (b7), (b8) } };  \
-	const guid* name = (const guid*)(uintptr)(&_os_g_guid_##name);
+	extern "C" const guid* name = (const guid*)(uintptr)(&_os_g_guid_##name);
 
 // use
 #define USE_GUID(name)  (*(name))
@@ -199,6 +199,7 @@ private:
 #define CR_NOTIMPL           CR_FROM_ERROR(ENOSYS)
 #define CR_NAMETOOLONG       CR_FROM_ERROR(ENAMETOOLONG)
 #define CR_DISKFULL          CR_FROM_ERROR(ENOSPC)
+#define CR_FDBAD             CR_FROM_ERROR(EBADF)
 
 //------------------------------------------------------------------------------
 // Service

@@ -39,7 +39,7 @@ inline bool guid_equal(const guid& id1, const guid& id2) throw()
 
 // in cpp file
 #define IMPLEMENT_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)  \
-	const GUID FAR name = { (l), (w1), (w2), { (b1), (b2), (b3), (b4), (b5), (b6), (b7), (b8) } };
+	extern "C" const GUID FAR name = { (l), (w1), (w2), { (b1), (b2), (b3), (b4), (b5), (b6), (b7), (b8) } };
 
 // use
 #define USE_GUID(name)  (name)
@@ -189,6 +189,7 @@ private:
 #define CR_NOTIMPL           E_NOTIMPL
 #define CR_NAMETOOLONG       CO_E_PATHTOOLONG
 #define CR_DISKFULL          CR_FROM_ERROR(ERROR_DISK_FULL)
+#define CR_FDBAD             E_HANDLE
 
 //------------------------------------------------------------------------------
 // Service

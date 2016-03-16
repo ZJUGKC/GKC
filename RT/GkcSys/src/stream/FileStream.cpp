@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains memory manager functions.
+This file contains global variables for file stream component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,17 +20,21 @@ This file contains memory manager functions.
 
 #include "_GkcSys.h"
 
-#include "Globals.h"
+#include "base/SysDef.h"
+
+#include "stream/FileStream.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// file stream
 
-//CrtMemoryManager
+BEGIN_COM_TYPECAST(FileStream)
+	COM_TYPECAST_ENTRY(_IByteStream, _IByteStream)
+	COM_TYPECAST_ENTRY(_IFileUtility, _IFileUtility)
+END_COM_TYPECAST()
 
-GKC::IMemoryManager* _CrtMemoryManager_Get() throw()
-{
-	return GKC::get_crt_mem_mgr();
+////////////////////////////////////////////////////////////////////////////////
 }
-
 ////////////////////////////////////////////////////////////////////////////////

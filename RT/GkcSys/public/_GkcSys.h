@@ -840,14 +840,16 @@ private:
 
 struct _Com_Interface_Offset_Item
 {
-	guid*   pid;
-	intptr  offset;
+	const guid*  pid;
+	intptr       offset;
 };
 
+namespace GKC {
 template <class T>
 class _Com_TypeCast_Func
 {
 };
+}
 
 // --<header file>--
 
@@ -876,14 +878,15 @@ class _Com_TypeCast_Func
 
 #define BEGIN_COM_TYPECAST(cls)  \
 	typedef cls com_x_class;  \
+	typedef com_ca_##cls  com_ca_class;  \
 	typedef _Com_TC_##cls  com_tc_class;  \
-	BEGIN_STATIC_CONST_ARRAY(cls)
+	BEGIN_STATIC_CONST_ARRAY(com_ca_class)
 
 // ifname : interface name, ibname : implemented base class name
 #define COM_TYPECAST_ENTRY(ifname, ibname)  \
 	BEGIN_STATIC_CONST_ARRAY_GROUP()  \
 		STATIC_CONST_ARRAY_ENTRY(&(USE_GUID(GUID_##ifname)))  \
-		STATIC_CONST_ARRAY_ENTRY_LAST( (intptr)( (byte*)(static_cast<ibname*>((com_x_class*)(0x128))) - (byte*)(0x128) ) )  \
+		STATIC_CONST_ARRAY_ENTRY_LAST( (intptr)( (byte*)(static_cast<ifname*>(static_cast<ibname*>((com_x_class*)(0x128)))) - (byte*)(0x128) ) )  \
 	END_STATIC_CONST_ARRAY_GROUP()
 
 #define END_COM_TYPECAST()  \
@@ -891,7 +894,7 @@ class _Com_TypeCast_Func
 		STATIC_CONST_ARRAY_ENTRY(NULL)  \
 		STATIC_CONST_ARRAY_ENTRY_LAST(0)  \
 	END_STATIC_CONST_ARRAY_GROUP_LAST()  \
-	END_STATIC_CONST_ARRAY(com_x_class)  \
+	END_STATIC_CONST_ARRAY(com_ca_class)  \
 	const share_object_typecast_func _Com_TypeCast_Func<com_x_class>::c_func = &(com_tc_class::_Com_TypeCast);
 
 // --<.cpp end>--
@@ -933,7 +936,7 @@ public:
 		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
 		pB->SetAddress(pT);
 		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
-		pB->SetTypeCastFunc(_Com_TypeCast_Func<T>::c_func);
+		pB->SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
 
 		_ShareCom<T> ret;
 		//return value
@@ -1031,7 +1034,7 @@ public:
 	}
 };
 
-#define CALL_COM_TYPECAST(src, ifname)  _ShareComHelper::Query(src, USE_GUID(GUID_##ifname))
+#define CALL_COM_TYPECAST(src, src_type, ifname)  _ShareComHelper::Query<src_type, ifname>(src, USE_GUID(GUID_##ifname))
 
 // _ShareArrayBase<T>
 
@@ -2334,7 +2337,7 @@ DECLARE_GUID(GUID__IComFactory)
 class NOVTABLE _IComSA
 {
 public:
-	virtual void LockServer(bool bLock) throw() = 0;
+	virtual void LockServer(const bool& bLock) throw() = 0;
 };
 
 DECLARE_GUID(GUID__IComSA)
@@ -2344,8 +2347,8 @@ DECLARE_GUID(GUID__IComSA)
 class NOVTABLE _IByteSequentialStream
 {
 public:
-	virtual GKC::CallResult Read(GKC::RefPtr<void>& pv, uint uBytes, uint& uRead) throw() = 0;
-	virtual GKC::CallResult Write(const GKC::RefPtr<void>& pv, uint uBytes, uint& uWritten) throw() = 0;
+	virtual GKC::CallResult Read(const uintptr& pv, const uint& uBytes, uint& uRead) throw() = 0;
+	virtual GKC::CallResult Write(const uintptr& pv, const uint& uBytes, uint& uWritten) throw() = 0;
 };
 
 DECLARE_GUID(GUID__IByteSequentialStream)
@@ -2356,8 +2359,8 @@ class NOVTABLE _IByteStream : public _IByteSequentialStream
 {
 public:
 	virtual GKC::CallResult Commit() throw() = 0;
-	virtual GKC::CallResult Seek(uint uMethod, int64 iOffset, int64& iNewPos) throw() = 0;
-	virtual GKC::CallResult SetSize(int64 iSize) throw() = 0;
+	virtual GKC::CallResult Seek(const uint& uMethod, const int64& iOffset, int64& iNewPos) throw() = 0;
+	virtual GKC::CallResult SetSize(const int64& iSize) throw() = 0;
 	virtual GKC::CallResult GetStatus(GKC::StorageStatus& status) throw() = 0;
 };
 
@@ -2368,7 +2371,7 @@ DECLARE_GUID(GUID__IByteStream)
 class NOVTABLE _IFileUtility
 {
 public:
-	virtual GKC::CallResult Open(const GKC::RefPtr<GKC::CharS>& szFile, int iOpenType, int iCreateType) throw() = 0;
+	virtual GKC::CallResult Open(const GKC::RefPtr<GKC::CharS>& szFile, const int& iOpenType, const int& iCreateType) throw() = 0;
 	virtual void Close() throw() = 0;
 	virtual bool IsOpened() throw() = 0;
 };
@@ -2380,7 +2383,7 @@ DECLARE_GUID(GUID__IFileUtility)
 //------------------------------------------------------------------------------
 // Stream
 
-SA_FUNCTION GKC::CallResult _FileStream_Create(const GKC::RefPtr<GKC::CharS>& szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp) throw();
+SA_FUNCTION int _FileStream_Create(const GKC::RefPtr<GKC::CharS>& szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp) throw();
 
 //------------------------------------------------------------------------------
 

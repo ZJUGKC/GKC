@@ -190,6 +190,7 @@ private:
 #define CR_NAMETOOLONG       CO_E_PATHTOOLONG
 #define CR_DISKFULL          CR_FROM_ERROR(ERROR_DISK_FULL)
 #define CR_FDBAD             E_HANDLE
+#define CR_CORRUPT           STG_E_DOCFILECORRUPT
 
 //------------------------------------------------------------------------------
 // Service

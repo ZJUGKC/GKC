@@ -63,6 +63,7 @@ BEGIN_ENUM(system_call_results)
 	ENUM_VALUE_ENTRY(NameTooLong, CR_NAMETOOLONG)
 	ENUM_VALUE_ENTRY(DiskFull, CR_DISKFULL)
 	ENUM_VALUE_ENTRY(FDBad, CR_FDBAD)
+	ENUM_VALUE_ENTRY(Corrupt, CR_CORRUPT)
 END_ENUM()
 
 // byte_order_helper
@@ -1294,7 +1295,7 @@ static const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type)  c_name;
 #define IMPLEMENT_CONST_STRING_ENTRY(char_type, x)   { x, sizeof(x) / sizeof(char_type) - 1 }  //this macro can be used for implementing constant string member
 
 #define IMPLEMENT_STATIC_CONST_STRING_MEMBER(cls, c_name, char_type, x)  \
-const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) cls::c_name = \
+const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) cls::c_name =  \
 IMPLEMENT_CONST_STRING_ENTRY(char_type, x) ;
 
 // --<.cpp end>--

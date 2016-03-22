@@ -2322,6 +2322,13 @@ public:
 	}
 };
 
+#pragma pack(pop)
+
+//------------------------------------------------------------------------------
+// Component
+
+#pragma pack(push, 1)
+
 // _IComFactory
 
 class NOVTABLE _IComFactory
@@ -2341,6 +2348,50 @@ public:
 };
 
 DECLARE_GUID(GUID__IComSA)
+
+#pragma pack(pop)
+
+// create component
+//   return : CallResult (no throw)
+#define _CREATE_COMPONENT_INSTANCE(com_type, if_type, sp, cr)  \
+	{ cr.SetResult(SystemCallResults::OK);  \
+	_ShareCom<if_type> spI;  \
+	try {  \
+		_ShareCom<com_type> spC(_ShareComHelper::MakeShareCom<com_type>(RefPtr<IMemoryManager>(_CrtMemoryManager_Get())));  \
+		spI = CALL_COM_TYPECAST(spC, com_type, if_type);  \
+	} catch(Exception& e) { cr = e.GetResult(); }  \
+	catch(...) { cr.SetResult(SystemCallResults::Fail); }  \
+	if( cr.IsSucceeded() ) {  \
+		if( spI.IsBlockNull() ) cr.SetResult(SystemCallResults::Fail);  \
+		else sp = spI;  \
+	} }
+
+// _Com_SA_Module
+
+class _Com_SA_Module
+{
+public:
+	int LockCount() throw()
+	{
+		return atomic_increment(m_iLockCount);
+	}
+	int UnlockCount() throw()
+	{
+		return atomic_decrement(m_iLockCount);
+	}
+	int GetLockCount() const throw()
+	{
+		return m_iLockCount;
+	}
+
+private:
+	int m_iLockCount;
+};
+
+//------------------------------------------------------------------------------
+// Stream
+
+#pragma pack(push, 1)
 
 // _IByteSequentialStream
 
@@ -2378,12 +2429,61 @@ public:
 
 DECLARE_GUID(GUID__IFileUtility)
 
+// _IMemoryUtility
+
+class NOVTABLE _IMemoryUtility
+{
+public:
+	virtual void SetArray(const _ShareArray<byte>& sp) throw() = 0;
+	virtual GKC::CallResult GetArray(_ShareArray<byte>& sp) throw() = 0;
+	virtual GKC::CallResult CloneTo(_ShareCom<_IByteStream>& sp) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IMemoryUtility)
+
+// _IBufferUtility
+
+class NOVTABLE _IBufferUtility
+{
+public:
+	virtual GKC::CallResult SetBuffer(const uintptr& p, const uintptr& uBytes) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IBufferUtility)
+
+// _BOMTypes
+
+BEGIN_ENUM(_BOMTypes)
+	ENUM_VALUE_ENTRY(None, 0)
+	ENUM_VALUE_ENTRY(Ansi, 1)
+	ENUM_VALUE_ENTRY(UTF8, 2)
+	ENUM_VALUE_ENTRY(UTF16LE, 3)
+	ENUM_VALUE_ENTRY(UTF16BE, 4)
+	ENUM_VALUE_ENTRY(UTF32LE, 5)
+	ENUM_VALUE_ENTRY(UTF32BE, 6)
+END_ENUM()
+
+// _ITextStream
+
+class NOVTABLE _ITextStream
+{
+public:
+	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw() = 0;
+	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
+	// The return value SystemCallResult::S_EOF means the end of file is reached.
+	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
+	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
+};
+
+DECLARE_GUID(GUID__ITextStream)
+
 #pragma pack(pop)
 
-//------------------------------------------------------------------------------
-// Stream
+//functions
 
-SA_FUNCTION int _FileStream_Create(const GKC::RefPtr<GKC::CharS>& szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp) throw();
+SA_FUNCTION void _FileStream_Create(const GKC::CharS* szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _BufferStream_Create(const void* p, uintptr uBytes, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _TextStream_Create(_ShareCom<_ITextStream>& sp, GKC::CallResult& cr) throw();
 
 //------------------------------------------------------------------------------
 

@@ -125,6 +125,52 @@ typedef _IFileUtility  IFileUtility;
 
 #define GUID_IFileUtility  GUID__IFileUtility
 
+// IMemoryUtility
+typedef _IMemoryUtility  IMemoryUtility;
+
+#define GUID_IMemoryUtility  GUID__IMemoryUtility
+
+// IBufferUtility
+typedef _IBufferUtility  IBufferUtility;
+
+#define GUID_IBufferUtility  GUID__IBufferUtility
+
+// BOMTypes
+typedef _BOMTypes  BOMTypes;
+
+// ITextStream
+typedef _ITextStream  ITextStream;
+
+#define GUID_ITextStream  GUID__ITextStream
+
+// StreamHelper
+
+class StreamHelper
+{
+public:
+	// file stream
+	static CallResult CreateFileStream(const ConstStringS& strFile, int iOpenType, int iCreateType, ShareCom<IByteStream>& sp) throw()
+	{
+		CallResult cr;
+		::_FileStream_Create(ConstArrayHelper::GetInternalPointer(strFile), iOpenType, iCreateType, sp, cr);
+		return cr;
+	}
+	// buffer stream
+	static CallResult CreateBufferStream(const uintptr pv, uintptr uBytes, ShareCom<IByteStream>& sp) throw()
+	{
+		CallResult cr;
+		::_BufferStream_Create((const void*)pv, uBytes, sp, cr);
+		return cr;
+	}
+	// text stream
+	static CallResult CreateTextStream(ShareCom<ITextStream>& sp) throw()
+	{
+		CallResult cr;
+		::_TextStream_Create(sp, cr);
+		return cr;
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES(
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Globals.cpp" "src/SobPool.cpp" "src/MemMgr.cpp" "src/Stream.cpp"
-	"src/stream/FileStream.cpp" "src/stream/BufferStream.cpp" "src/stream/TextStream.cpp")
+	"src/stream/FileStream.cpp" "src/stream/MemoryStream.cpp" "src/stream/BufferStream.cpp" "src/stream/TextStream.cpp")
 ADD_LIBRARY(GkcSys SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcSys "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")

@@ -1045,6 +1045,53 @@ typedef inprocess_condition  Condition;
 // RWLock
 typedef inprocess_rwlock  RWLock;
 
+// MutexLock
+
+class MutexLock
+{
+public:
+	MutexLock(Mutex& t, bool bInitialLock = true) throw() : m_mtx(t), m_bLocked(false)
+	{
+		if( bInitialLock )
+			Lock();
+	}
+	~MutexLock() throw()
+	{
+		if( m_bLocked )
+			Unlock();
+	}
+
+	void Lock() throw()
+	{
+		assert( !m_bLocked );
+		m_mtx.Deref().Lock();
+		m_bLocked = true;
+	}
+	void Unlock() throw()
+	{
+		assert( m_bLocked );
+		m_mtx.Deref().Unlock();
+		m_bLocked = false;
+	}
+	bool TryLock() throw()
+	{
+		assert( !m_bLocked );
+		bool bRet = m_mtx.Deref().TryLock();
+		if( bRet )
+			m_bLocked = true;
+		return bRet;
+	}
+
+private:
+	RefPtr<Mutex>  m_mtx;
+	bool  m_bLocked;
+
+private:
+	//noncopyable
+	MutexLock(const MutexLock&) throw();
+	MutexLock& operator=(const MutexLock&) throw();
+};
+
 // SyncLock<T>
 
 template <class T>

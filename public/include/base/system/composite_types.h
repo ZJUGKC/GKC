@@ -489,6 +489,8 @@ private:
 // .h:   class C { ... public: static const T c_name; };
 // .cpp: const T C::c_name=...;
 
+#pragma pack(push, 1)
+
 // const_array_base<T>
 
 template <typename T>
@@ -599,6 +601,8 @@ private:
 	friend class const_array_helper;
 };
 
+#pragma pack(pop)
+
 // macros
 
 // --<header file>--
@@ -608,13 +612,13 @@ private:
 #define DECLARE_STATIC_CONST_ARRAY(cls, T)   class cls {  \
 public:  \
 	typedef T  EType;  \
-	static uintptr GetCount() throw() \
-	{ return c_size; } \
-	static const T* GetAddress() throw() \
-	{ return c_array; } \
+	static uintptr GetCount() throw()  \
+	{ return c_size; }  \
+	static const T* GetAddress() throw()  \
+	{ return c_array; }  \
 public:  \
-	static const T        c_array[]; \
-	static const uintptr  c_size;    \
+	static const T        c_array[];  \
+	static const uintptr  c_size;  \
 };
 
 // --<.h end>--

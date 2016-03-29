@@ -1199,6 +1199,8 @@ inline uintptr coll_replace_elements(const typename TIterator::EType& tOld, cons
 
 // -----constant string-----
 
+#pragma pack(push, 1)
+
 // const_string_t<Tchar>
 //   Tchar : char_a char_h char_l, char_s char_w
 
@@ -1233,6 +1235,8 @@ public:
 		return *this;
 	}
 };
+
+#pragma pack(pop)
 
 // const_string_*
 typedef const_string_t<char_a>  const_string_a;   //ansi or UTF8

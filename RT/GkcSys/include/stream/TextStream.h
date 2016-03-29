@@ -221,6 +221,11 @@ private:
 	int64  m_iReadTotal;  //the total bytes have been read
 	uint   m_uRead;       //the actual bytes have been read in buffer
 	uint   m_uPos;        //the current position in buffer
+
+private:
+	//noncopyable
+	TextStream(const TextStream&) throw();
+	TextStream& operator=(const TextStream&) throw();
 };
 
 DECLARE_COM_TYPECAST(TextStream)

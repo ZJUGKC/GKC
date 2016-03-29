@@ -110,6 +110,10 @@ typedef _StringHelper  StringHelper;
 // StringUtilHelper
 typedef _StringUtilHelper  StringUtilHelper;
 
+// ComFactory<T>
+template <class T>
+using ComFactory = _ComFactory<T>;
+
 // IByteSequentialStream
 typedef _IByteSequentialStream  IByteSequentialStream;
 
@@ -153,6 +157,13 @@ public:
 	{
 		CallResult cr;
 		::_FileStream_Create(ConstArrayHelper::GetInternalPointer(strFile), iOpenType, iCreateType, sp, cr);
+		return cr;
+	}
+	// memory stream
+	static CallResult CreateMemoryStream(ShareCom<IByteStream>& sp) throw()
+	{
+		CallResult cr;
+		::_MemoryStream_Create(sp, cr);
 		return cr;
 	}
 	// buffer stream

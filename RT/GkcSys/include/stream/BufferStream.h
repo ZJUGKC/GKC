@@ -67,7 +67,7 @@ public:
 		CallResult cr;
 		int64 iNow = m_iPos;
 		if( uMethod == IO_SEEK_BEGIN ) {
-			if( iOffset > m_iSize ) {
+			if( iOffset < 0 || iOffset > m_iSize ) {
 				cr.SetResult(SystemCallResults::Invalid);
 				return cr;
 			}
@@ -134,6 +134,11 @@ private:
 	void*  m_pBuffer;
 	int64  m_iSize;
 	int64  m_iPos;  //the current position in buffer
+
+private:
+	//noncopyable
+	BufferStream(const BufferStream&) throw();
+	BufferStream& operator=(const BufferStream&) throw();
 };
 
 DECLARE_COM_TYPECAST(BufferStream)

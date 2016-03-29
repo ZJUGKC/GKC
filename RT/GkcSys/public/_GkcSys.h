@@ -789,6 +789,54 @@ private:
 	friend class _ShareComHelper;
 };
 
+// _ShareCom<void>
+
+template <>
+class _ShareCom<void> : public _ShareSoloBase<share_com_block>
+{
+private:
+	typedef _ShareSoloBase<share_com_block>  baseClass;
+	typedef _ShareCom<void>  thisClass;
+
+public:
+	_ShareCom() throw()
+	{
+	}
+	_ShareCom(const _ShareCom& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	{
+	}
+	_ShareCom(_ShareCom&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	{
+	}
+	~_ShareCom() throw()
+	{
+	}
+
+	_ShareCom<void>& operator=(const _ShareCom<void>& src) throw()
+	{
+		baseClass::operator=(static_cast<const baseClass&>(src));
+		return *this;
+	}
+	_ShareCom<void>& operator=(_ShareCom<void>&& src) throw()
+	{
+		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
+		return *this;
+	}
+
+	bool operator==(const _ShareCom<void>& right) const throw()
+	{
+		return m_pT == right.m_pT;
+	}
+	bool operator!=(const _ShareCom<void>& right) const throw()
+	{
+		return !operator==(right);
+	}
+
+private:
+	friend class _SObjSoloHelper;
+	friend class _ShareComHelper;
+};
+
 // _WeakCom<T>
 
 template <class T>
@@ -973,20 +1021,25 @@ public:
 
 	//query type
 	// TSrc : interface, TDest : interface supported by component class (direct base class with first level)
-	template <class TSrc, class TDest>
-	static _ShareCom<TDest> Query(const _ShareCom<TSrc>& sp, const guid& iid) throw()
+	template <class TSrc>
+	static _ShareCom<void> Query(const _ShareCom<TSrc>& sp, const guid& iid) throw()
 	{
-		_ShareCom<TDest> ret;
+		_ShareCom<void> ret;
 		ret.m_pB = sp.m_pB;
 		if( ret.m_pB != NULL ) {
 			assert( !((ret.m_pB)->IsNull()) );
-			ret.m_pT = (TDest*)(((static_cast<share_com_block*>(ret.m_pB))->GetTypeCastFunc())((ret.m_pB)->GetAddress(), iid));
+			ret.m_pT = ((static_cast<share_com_block*>(ret.m_pB))->GetTypeCastFunc())((ret.m_pB)->GetAddress(), iid);
 			if( ret.m_pT != NULL )
 				(ret.m_pB)->AddRefCopy();
 			else
 				ret.m_pB = NULL;
 		}
 		return ret;
+	}
+	template <class TSrc, class TDest>
+	static _ShareCom<TDest> Query(const _ShareCom<TSrc>& sp, const guid& iid) throw()
+	{
+		return TypeCast<void, TDest>(Query<TSrc>(sp, iid));
 	}
 
 	//clone
@@ -2353,40 +2406,277 @@ DECLARE_GUID(GUID__IComSA)
 
 // create component
 //   return : CallResult (no throw)
+template <class T>
+inline GKC::CallResult _Create_Component_Instance(_ShareCom<T>& sp) throw()
+{
+	GKC::CallResult cr;
+	try {
+		_ShareCom<T> spC(_ShareComHelper::MakeShareCom<T>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get())));
+		sp = spC;
+	}
+	catch(GKC::Exception& e) {
+		cr = e.GetResult();
+	}
+	catch(...) {
+		cr.SetResult(GKC::SystemCallResults::Fail);
+	}
+	return cr;
+}
+
+template <class T>
+inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const guid& iid, _ShareCom<void>& sp) throw()
+{
+	_ShareCom<void> spI(_ShareComHelper::Query<T>(spC, iid));
+	if( spI.IsBlockNull() )
+		return GKC::CallResult(GKC::SystemCallResults::Fail);
+	sp = spI;
+	return GKC::CallResult();
+}
+
+#define _COMPONENT_INSTANCE_INTERFACE(com_type, if_type, spC, sp, cr)  \
+	do { _ShareCom<void> __sp_I__;  \
+		cr = _Component_Instance_Query<com_type>(spC, USE_GUID(GUID_##if_type), __sp_I__);  \
+		if( cr.IsSucceeded() )  \
+			sp = _ShareComHelper::TypeCast<void, if_type>(__sp_I__);  \
+	} while(0)
+
 #define _CREATE_COMPONENT_INSTANCE(com_type, if_type, sp, cr)  \
-	{ cr.SetResult(SystemCallResults::OK);  \
-	_ShareCom<if_type> spI;  \
-	try {  \
-		_ShareCom<com_type> spC(_ShareComHelper::MakeShareCom<com_type>(RefPtr<IMemoryManager>(_CrtMemoryManager_Get())));  \
-		spI = CALL_COM_TYPECAST(spC, com_type, if_type);  \
-	} catch(Exception& e) { cr = e.GetResult(); }  \
-	catch(...) { cr.SetResult(SystemCallResults::Fail); }  \
+	do { _ShareCom<com_type> __sp_C__;  \
+	cr = _Create_Component_Instance<com_type>(__sp_C__);  \
 	if( cr.IsSucceeded() ) {  \
-		if( spI.IsBlockNull() ) cr.SetResult(SystemCallResults::Fail);  \
-		else sp = spI;  \
-	} }
+		_COMPONENT_INSTANCE_INTERFACE(com_type, if_type, __sp_C__, sp, cr);  \
+	} } while(0)
+
+typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp) throw();
+
+// _ComFactory<T>
+
+template <class T>
+class _ComFactory : public _IComFactory
+{
+public:
+	_ComFactory() throw()
+	{
+	}
+	~_ComFactory() throw()
+	{
+	}
+
+// _IComFactory methods
+	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw()
+	{
+		GKC::CallResult cr;
+		_ShareCom<T> spC;
+		cr = _Create_Component_Instance<T>(spC);
+		if( cr.IsSucceeded() ) {
+			_ShareCom<void> spI;
+			cr = _Component_Instance_Query<T>(spC, iid, spI);
+			if( cr.IsSucceeded() )
+				sp = spI;
+		}
+		return cr;
+	}
+
+public:
+	static GKC::CallResult Create(_ShareCom<_IComFactory>& sp) throw()
+	{
+		GKC::CallResult cr;
+		_CREATE_COMPONENT_INSTANCE(_ComFacory<T>, _IComFactory, sp, cr);
+		return cr;
+	}
+
+private:
+	//noncopyable
+	_ComFactory(const _ComFactory&) throw();
+	_ComFactory& operator=(const _ComFactory&) throw();
+};
+
+// _ComSAFactory<T>
+
+template <class T>
+class _ComSAFactory : public _ComFactory<T>,
+					public _IComSA
+{
+public:
+	_ComSAFactory() throw()
+	{
+	}
+	~_ComSAFactory() throw()
+	{
+	}
+
+// _IComSA methods
+	virtual void LockServer(const bool& bLock) throw()
+	{
+		bLock ? USE_COM_SA_MODULE().LockCount() : USE_COM_SA_MODULE().UnlockCount();
+	}
+
+public:
+	static GKC::CallResult Create(_ShareCom<_IComFactory>& sp) throw()
+	{
+		GKC::CallResult cr;
+		_CREATE_COMPONENT_INSTANCE(_ComSAFacory<T>, _IComFactory, sp, cr);
+		return cr;
+	}
+
+private:
+	//noncopyable
+	_ComSAFactory(const _ComSAFactory&) throw();
+	_ComSAFactory& operator=(const _ComSAFactory&) throw();
+};
+
+#define _SHARE_COM_FACTORY_SIZE  (sizeof(_ShareCom<_IComFactory>))
+
+// _Com_SA_Factory_Item
+
+struct _Com_SA_Factory_Item
+{
+	const guid* cid;
+	_Com_SA_Create_Factory_Func pFunc;
+	byte btFactory[_SHARE_COM_FACTORY_SIZE];
+};
 
 // _Com_SA_Module
-
+//   for global variable in SA of components
 class _Com_SA_Module
 {
 public:
+	_Com_SA_Module() throw() : m_iLockCount(0)
+	{
+		//map
+		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
+		if( pItem != NULL ) {
+			while( pItem->cid != NULL ) {
+				mem_zero(pItem->btFactory, _SHARE_COM_FACTORY_SIZE);
+				pItem ++;
+			}
+		}
+	}
+	~_Com_SA_Module() throw()
+	{
+		//map
+		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
+		if( pItem != NULL ) {
+			while( pItem->cid != NULL ) {
+				_ShareCom<_IComFactory>& sp = *((_ShareCom<_IComFactory>*)(pItem->btFactory));
+				sp.Release();
+				pItem ++;
+			}
+		}
+	}
+
+	//lock count
 	int LockCount() throw()
 	{
-		return atomic_increment(m_iLockCount);
+		return atomic_increment((int&)m_iLockCount);
 	}
 	int UnlockCount() throw()
 	{
-		return atomic_decrement(m_iLockCount);
+		return atomic_decrement((int&)m_iLockCount);
 	}
 	int GetLockCount() const throw()
 	{
 		return m_iLockCount;
 	}
 
+	//mutex
+	GKC::CallResult InitMutex() throw()
+	{
+		return m_mtx.Init();
+	}
+	void TermMutex() throw()
+	{
+		m_mtx.Term();
+	}
+	void LockMutex() throw()
+	{
+		m_mtx.Lock();
+	}
+	void UnlockMutex() throw()
+	{
+		m_mtx.Unlock();
+	}
+
+	//for SA export functions
+	void SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()
+	{
+		cr.SetResult(GKC::SystemCallResults::OK);
+		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
+		if( pItem == NULL ) {
+			cr.SetResult(GKC::SystemCallResults::NotImpl);
+			return ;
+		}
+		_Com_SA_Factory_Item* pFound = NULL;
+		while( pItem->cid != NULL ) {
+			if( guid_equal(*(pItem->cid), cid) ) {
+				pFound = pItem;
+				break;
+			}
+			pItem ++;
+		}
+		if( pFound == NULL ) {
+			cr.SetResult(GKC::SystemCallResults::NotImpl);
+			return ;
+		}
+		_ShareCom<_IComFactory>& spI = *((_ShareCom<_IComFactory>*)(pFound->btFactory));
+		if( spI.IsBlockNull() ) {
+			GKC::CallResult crCreate;
+			//lock
+			LockMutex();
+			//double check
+			if( spI.IsBlockNull() )
+				crCreate = pFound->pFunc(spI);
+			UnlockMutex();
+			if( crCreate.IsFailed() ) {
+				cr = crCreate;
+				return ;
+			}
+		}
+		sp = spI;
+	}
+	bool SA_Com_CanUnloadNow() const throw()
+	{
+		return GetLockCount() == 0;
+	}
+
 private:
-	int m_iLockCount;
+	volatile int m_iLockCount;
+	GKC::Mutex m_mtx;
+
+	static _Com_SA_Factory_Item* get_com_sa_factory_map() throw();
+
+private:
+	//noncopyable
+	_Com_SA_Module(const _Com_SA_Module&) throw();
+	_Com_SA_Module& operator=(const _Com_SA_Module&) throw();
 };
+
+// --<header file>--
+
+#define DECLARE_COM_SA_MODULE  DECLARE_SA_GLOBAL_VARIABLE(_Com_SA_Module, _g_com_sa_module)
+
+#define USE_COM_SA_MODULE()  GET_SA_GLOBAL_VARIABLE(_g_com_sa_module)
+
+// --<.h end>---
+
+// --<source file>--
+
+#define IMPLEMENT_COM_SA_MODULE  \
+	BEGIN_SA_GLOBAL_VARIABLE(_Com_SA_Module, _g_com_sa_module)  \
+	END_SA_GLOBAL_VARIABLE(_g_com_sa_module)
+
+#define BEGIN_COM_SA_FACTORY_MAP()  \
+	_Com_SA_Factory_Item* _Com_SA_Module::get_com_sa_factory_map() throw()  \
+	{ static _Com_SA_Factory_Item l_com_sa_factory_map[] = {
+
+#define COM_SA_FACTORY_ENTRY(com_class)  \
+	{ &(USE_GUID(GUID_##com_class)), &(_ComSAFactory<com_class>::Create), { 0 } },
+
+#define END_COM_SA_FACTORY_MAP()  \
+	{ NULL, NULL, { 0 } } };  \
+	return l_com_sa_factory_map; }
+
+// --<.cpp end>---
 
 //------------------------------------------------------------------------------
 // Stream
@@ -2434,7 +2724,8 @@ DECLARE_GUID(GUID__IFileUtility)
 class NOVTABLE _IMemoryUtility
 {
 public:
-	virtual void SetArray(const _ShareArray<byte>& sp) throw() = 0;
+	virtual GKC::CallResult Initialize() throw() = 0;
+	virtual GKC::CallResult SetArray(const _ShareArray<byte>& sp) throw() = 0;
 	virtual GKC::CallResult GetArray(_ShareArray<byte>& sp) throw() = 0;
 	virtual GKC::CallResult CloneTo(_ShareCom<_IByteStream>& sp) throw() = 0;
 };
@@ -2482,6 +2773,7 @@ DECLARE_GUID(GUID__ITextStream)
 //functions
 
 SA_FUNCTION void _FileStream_Create(const GKC::CharS* szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _MemoryStream_Create(_ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _BufferStream_Create(const void* p, uintptr uBytes, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _TextStream_Create(_ShareCom<_ITextStream>& sp, GKC::CallResult& cr) throw();
 

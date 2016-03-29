@@ -31,7 +31,7 @@ inline TElement* _PoolAllocate(fixed_size_memory_pool<sizeof(TElement)>& pool) t
 {
 	TElement* p = NULL;
 	try {
-		GKC::SyncLock<GKC::Mutex> lock(GKC::GET_SA_GLOBAL_VARIABLE(g_mutex));
+		GKC::MutexLock lock(GKC::GET_SA_GLOBAL_VARIABLE(g_mutex));
 		p = (TElement*)pool.Allocate();
 	}
 	catch(...) {
@@ -49,12 +49,10 @@ inline void _PoolFree(fixed_size_memory_pool<sizeof(TElement)>& pool, TElement* 
 		return ;
 	//destructor
 	p->~TElement();
-	try {
-		GKC::SyncLock<GKC::Mutex> lock(GKC::GET_SA_GLOBAL_VARIABLE(g_mutex));
+	{
+		GKC::MutexLock lock(GKC::GET_SA_GLOBAL_VARIABLE(g_mutex));
 		pool.Free(p);
-	}
-	catch(...) {
-	}
+	} //end block
 }
 
 //functions

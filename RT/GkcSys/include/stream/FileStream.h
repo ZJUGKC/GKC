@@ -94,6 +94,11 @@ public:
 
 private:
 	io_handle m_hd;
+
+private:
+	//noncopyable
+	FileStream(const FileStream&) throw();
+	FileStream& operator=(const FileStream&) throw();
 };
 
 DECLARE_COM_TYPECAST(FileStream)

@@ -101,6 +101,9 @@ using ReverseIterator = reverse_iterator<T>;
 //------------------------------------------------------------------------------
 // Array
 
+// ArrayPosition
+typedef array_position  ArrayPosition;
+
 // ArrayIterator<T>
 template <typename T>
 using ArrayIterator = array_iterator<T>;
@@ -742,6 +745,12 @@ public:
 	bool IsEmpty() const throw()
 	{
 		return GetLength() == 0;
+	}
+
+	//position
+	typename thisClass::Position GetTailPosition() const throw()
+	{
+		return typename thisClass::Position(m_uLength - 1);
 	}
 
 	//iterators

@@ -1218,6 +1218,7 @@ private:
 
 public:
 	typedef T  EType;
+	typedef GKC::ArrayPosition  Position;
 	typedef GKC::ArrayIterator<T>  Iterator;
 
 public:
@@ -1272,6 +1273,28 @@ public:
 	Iterator operator[](uintptr index) throw()
 	{
 		return GetAt(index);
+	}
+
+	//position
+	Position GetStartPosition() const throw()
+	{
+		return Position(0);
+	}
+	Position GetTailPosition() const throw()
+	{
+		return Position(GetCount() - 1);
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
+	}
+	Position ToPosition(const Iterator& iter) const throw()
+	{
+		return Position(GKC::RefPtrHelper::GetInternalPointer(iter.get_Ref()) - get_array_address());
 	}
 
 	//iterator
@@ -1783,6 +1806,12 @@ public:
 	bool IsEmpty() const throw()
 	{
 		return GetLength() == 0;
+	}
+
+	//position
+	typename thisClass::Position GetTailPosition() const throw()
+	{
+		return typename thisClass::Position(GetLength() - 1);
 	}
 
 	//iterators
@@ -2447,83 +2476,54 @@ inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const 
 		_COMPONENT_INSTANCE_INTERFACE(com_type, if_type, __sp_C__, sp, cr);  \
 	} } while(0)
 
-typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp) throw();
+typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp);
 
-// _ComFactory<T>
+#define DECLARE_COM_FACTORY_CLASS(com_class)  \
+	class _ComFactory_##com_class : public _IComFactory  \
+	{ public:  \
+	_ComFactory_##com_class() throw() {}  \
+	~_ComFactory_##com_class() throw() {}  \
+	/* _IComFactory methods */  \
+	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw()  \
+	{ CallResult cr;  \
+	_ShareCom<com_class> spC;  \
+	cr = _Create_Component_Instance<com_class>(spC);  \
+	if( cr.IsSucceeded() ) {  \
+		_ShareCom<void> spI;  \
+		cr = _Component_Instance_Query<com_class>(spC, iid, spI);  \
+		if( cr.IsSucceeded() ) sp = spI;  \
+	} return cr; }  \
+	public:  \
+	static CallResult Create(_ShareCom<_IComFactory>& sp) throw()  \
+	{ CallResult cr;  \
+	_CREATE_COMPONENT_INSTANCE(_ComFactory_##com_class, _IComFactory, sp, cr);  \
+	return cr; }  \
+	private: /* noncopyable */  \
+	_ComFactory_##com_class(const _ComFactory_##com_class&) throw();  \
+	_ComFactory_##com_class& operator=(const _ComFactory_##com_class&) throw();  \
+	};
 
-template <class T>
-class _ComFactory : public _IComFactory
-{
-public:
-	_ComFactory() throw()
-	{
-	}
-	~_ComFactory() throw()
-	{
-	}
+#define USE_COM_FACTORY_CLASS_NAME(com_class)  _ComFactory_##com_class
 
-// _IComFactory methods
-	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw()
-	{
-		GKC::CallResult cr;
-		_ShareCom<T> spC;
-		cr = _Create_Component_Instance<T>(spC);
-		if( cr.IsSucceeded() ) {
-			_ShareCom<void> spI;
-			cr = _Component_Instance_Query<T>(spC, iid, spI);
-			if( cr.IsSucceeded() )
-				sp = spI;
-		}
-		return cr;
-	}
+#define DECLARE_COM_SA_FACTORY_CLASS(com_class)  \
+	class _ComSAFactory_##com_class : public _ComFactory_##com_class, public _IComSA  \
+	{ public:  \
+	_ComSAFactory_##com_class() throw() {}  \
+	~_ComSAFactory_##com_class() throw() {}  \
+	/* _IComSA methods */  \
+	virtual void LockServer(const bool& bLock) throw()  \
+	{ bLock ? USE_COM_SA_MODULE().LockCount() : USE_COM_SA_MODULE().UnlockCount(); }  \
+	public:  \
+	static CallResult Create(_ShareCom<_IComFactory>& sp) throw()  \
+	{ CallResult cr;  \
+	_CREATE_COMPONENT_INSTANCE(_ComSAFactory_##com_class, _IComFactory, sp, cr);  \
+	return cr; }  \
+	private: /* noncopyable */  \
+	_ComSAFactory_##com_class(const _ComSAFactory_##com_class&) throw();  \
+	_ComSAFactory_##com_class& operator=(const _ComSAFactory_##com_class&) throw();  \
+	};
 
-public:
-	static GKC::CallResult Create(_ShareCom<_IComFactory>& sp) throw()
-	{
-		GKC::CallResult cr;
-		_CREATE_COMPONENT_INSTANCE(_ComFacory<T>, _IComFactory, sp, cr);
-		return cr;
-	}
-
-private:
-	//noncopyable
-	_ComFactory(const _ComFactory&) throw();
-	_ComFactory& operator=(const _ComFactory&) throw();
-};
-
-// _ComSAFactory<T>
-
-template <class T>
-class _ComSAFactory : public _ComFactory<T>,
-					public _IComSA
-{
-public:
-	_ComSAFactory() throw()
-	{
-	}
-	~_ComSAFactory() throw()
-	{
-	}
-
-// _IComSA methods
-	virtual void LockServer(const bool& bLock) throw()
-	{
-		bLock ? USE_COM_SA_MODULE().LockCount() : USE_COM_SA_MODULE().UnlockCount();
-	}
-
-public:
-	static GKC::CallResult Create(_ShareCom<_IComFactory>& sp) throw()
-	{
-		GKC::CallResult cr;
-		_CREATE_COMPONENT_INSTANCE(_ComSAFacory<T>, _IComFactory, sp, cr);
-		return cr;
-	}
-
-private:
-	//noncopyable
-	_ComSAFactory(const _ComSAFactory&) throw();
-	_ComSAFactory& operator=(const _ComSAFactory&) throw();
-};
+#define USE_COM_SA_FACTORY_CLASS_NAME(com_class)  _ComSAFactory_##com_class
 
 #define _SHARE_COM_FACTORY_SIZE  (sizeof(_ShareCom<_IComFactory>))
 
@@ -2558,8 +2558,8 @@ public:
 		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
 		if( pItem != NULL ) {
 			while( pItem->cid != NULL ) {
-				_ShareCom<_IComFactory>& sp = *((_ShareCom<_IComFactory>*)(pItem->btFactory));
-				sp.Release();
+				_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pItem->btFactory);
+				pF->Release();
 				pItem ++;
 			}
 		}
@@ -2618,21 +2618,21 @@ public:
 			cr.SetResult(GKC::SystemCallResults::NotImpl);
 			return ;
 		}
-		_ShareCom<_IComFactory>& spI = *((_ShareCom<_IComFactory>*)(pFound->btFactory));
-		if( spI.IsBlockNull() ) {
+		_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pFound->btFactory);
+		if( pF->IsBlockNull() ) {
 			GKC::CallResult crCreate;
 			//lock
 			LockMutex();
 			//double check
-			if( spI.IsBlockNull() )
-				crCreate = pFound->pFunc(spI);
+			if( pF->IsBlockNull() )
+				crCreate = pFound->pFunc(*pF);
 			UnlockMutex();
 			if( crCreate.IsFailed() ) {
 				cr = crCreate;
 				return ;
 			}
 		}
-		sp = spI;
+		sp = *pF;
 	}
 	bool SA_Com_CanUnloadNow() const throw()
 	{
@@ -2670,13 +2670,20 @@ private:
 	{ static _Com_SA_Factory_Item l_com_sa_factory_map[] = {
 
 #define COM_SA_FACTORY_ENTRY(com_class)  \
-	{ &(USE_GUID(GUID_##com_class)), &(_ComSAFactory<com_class>::Create), { 0 } },
+	{ &(USE_GUID(GUID_##com_class)), &(USE_COM_SA_FACTORY_CLASS_NAME(com_class)::Create), { 0 } },
 
 #define END_COM_SA_FACTORY_MAP()  \
 	{ NULL, NULL, { 0 } } };  \
 	return l_com_sa_factory_map; }
 
 // --<.cpp end>---
+
+/*
+export functions in COM SA:
+
+SA_FUNCTION void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION bool _SA_Com_CanUnloadNow() throw();
+*/
 
 //------------------------------------------------------------------------------
 // Stream

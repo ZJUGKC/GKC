@@ -315,9 +315,7 @@ public:
 	//operators
 	reverse_iterator<T>& operator=(const reverse_iterator<T>& src) throw()
 	{
-		if( this != &src ) {
-			m_iter = src.m_iter;
-		}
+		m_iter = src.m_iter;
 		return *this;
 	}
 
@@ -385,6 +383,91 @@ private:
 
 // -----Array-----
 
+// array_position
+
+class array_position
+{
+public:
+	array_position() throw()
+	{
+	}
+	explicit array_position(uintptr uIndex) throw() : m_uIndex(uIndex)
+	{
+	}
+	array_position(const array_position& src) throw() : m_uIndex(src.m_uIndex)
+	{
+	}
+	~array_position() throw()
+	{
+	}
+
+	//operators
+	array_position& operator=(const array_position& src) throw()
+	{
+		if( this != &src ) {
+			m_uIndex = src.m_uIndex;
+		}
+		return *this;
+	}
+
+	bool IsValid() const throw()
+	{
+		return ((intptr)m_uIndex) >= 0;
+	}
+
+	uintptr GetIndex() const throw()
+	{
+		return m_uIndex;
+	}
+
+	//logical
+	bool operator==(const array_position& right) const throw()
+	{
+		return m_uIndex == right.m_uIndex;
+	}
+	bool operator!=(const array_position& right) const throw()
+	{
+		return m_uIndex != right.m_uIndex;
+	}
+	bool operator<(const array_position& right) const throw()
+	{
+		return m_uIndex < right.m_uIndex;
+	}
+	bool operator>(const array_position& right) const throw()
+	{
+		return right < *this;
+	}
+	bool operator<=(const array_position& right) const throw()
+	{
+		return !(*this > right);
+	}
+	bool operator>=(const array_position& right) const throw()
+	{
+		return !(*this < right);
+	}
+
+	//methods
+	void MoveNext() throw()
+	{
+		m_uIndex ++;
+	}
+	void MovePrev() throw()
+	{
+		m_uIndex --;
+	}
+	void MoveDelta(intptr iDelta) throw()
+	{
+		m_uIndex += iDelta;
+	}
+	intptr CalcDelta(const array_position& second) const throw()
+	{
+		return (intptr)(m_uIndex - second.m_uIndex);
+	}
+
+private:
+	uintptr  m_uIndex;
+};
+
 // array_iterator<T>
 
 template <typename T>
@@ -409,9 +492,7 @@ public:
 
 	array_iterator<T>& operator=(const array_iterator<T>& src) throw()
 	{
-		if( this != &src ) {
-			m_element = src.m_element;
-		}
+		m_element = src.m_element;
 		return *this;
 	}
 
@@ -435,6 +516,15 @@ public:
 	void set_Value(T&& t)
 	{
 		m_element.Deref() = rv_forward(t);
+	}
+
+	const ref_ptr<T> get_Ref() const throw()
+	{
+		return m_element;
+	}
+	ref_ptr<T> get_Ref() throw()
+	{
+		return m_element;
 	}
 
 	//logical
@@ -510,6 +600,7 @@ private:
 
 public:
 	typedef T  EType;
+	typedef array_position  Position;
 	typedef array_iterator<T>  Iterator;
 
 public:
@@ -571,6 +662,24 @@ public:
 	bool IsNull() const throw()
 	{
 		return baseClass::m_first == NULL;
+	}
+
+	//position
+	Position GetStartPosition() const throw()
+	{
+		return Position(0);
+	}
+	Position GetTailPosition() const throw()
+	{
+		return Position(GetCount() - 1);
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return Iterator(ref_ptr<T>(baseClass::m_first + pos.GetIndex()));
+	}
+	Position ToPosition(const Iterator& iter) const throw()
+	{
+		return Position(ref_ptr_helper::GetInternalPointer(iter.get_Ref()) - baseClass::m_first);
 	}
 
 	//iterator
@@ -684,6 +793,8 @@ public:
 	static const uintptr c_size = t_size;  //!< The number of elements.
 
 	typedef T EType;  //element type
+	//position
+	typedef array_position  Position;
 	//iterator
 	typedef array_iterator<T>  Iterator;
 
@@ -721,6 +832,28 @@ public:
 	Iterator operator[](uintptr index) throw()
 	{
 		return GetAt(index);
+	}
+
+	//position
+	Position GetStartPosition() const throw()
+	{
+		return Position(0);
+	}
+	Position GetTailPosition() const throw()
+	{
+		return Position(c_size - 1);
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return Iterator(ref_ptr<T>(m_data + pos.GetIndex()));
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return Iterator(ref_ptr<T>(m_data + pos.GetIndex()));
+	}
+	Position ToPosition(const Iterator& iter) const throw()
+	{
+		return Position(ref_ptr_helper::GetInternalPointer(iter.get_Ref()) - m_data);
 	}
 
 	//iterator

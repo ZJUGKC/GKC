@@ -44,10 +44,10 @@ private:
 		_Node()
 		{
 		}
-		_Node(const T& t) : m_t(t)
+		explicit _Node(const T& t) : m_t(t)
 		{
 		}
-		_Node(T&& t) : m_t(rv_forward(t))
+		explicit _Node(T&& t) : m_t(rv_forward(t))
 		{
 		}
 		~_Node() throw()
@@ -62,25 +62,27 @@ private:
 	};
 
 public:
-	//iterator
-	class Iterator
+	//position
+	class Position
 	{
 	public:
-		Iterator() throw()
+		Position() throw()
 		{
 		}
-		Iterator(const Iterator& src) throw() : m_refNode(src.m_refNode)
+		Position(const Position& src) throw() : m_refNode(src.m_refNode)
 		{
 		}
-		~Iterator() throw()
+		~Position() throw()
 		{
 		}
-		Iterator& operator=(const Iterator& src) throw()
+		Position& operator=(const Position& src) throw()
 		{
-			if( &src != this ) {
-				m_refNode = src.m_refNode;
-			}
+			m_refNode = src.m_refNode;
 			return *this;
+		}
+		bool IsNull() const throw()
+		{
+			return m_refNode.IsNull();
 		}
 		//properties
 		const RefPtr<T> get_Ref() const throw()
@@ -110,11 +112,11 @@ public:
 			m_refNode.Deref().m_t = rv_forward(t);
 		}
 		//compare
-		bool operator==(const Iterator& right) const throw()
+		bool operator==(const Position& right) const throw()
 		{
 			return m_refNode == right.m_refNode;
 		}
-		bool operator!=(const Iterator& right) const throw()
+		bool operator!=(const Position& right) const throw()
 		{
 			return m_refNode != right.m_refNode;
 		}
@@ -127,6 +129,82 @@ public:
 	private:
 		RefPtr<_Node>  m_refNode;
 
+	private:
+		friend thisClass;
+	};
+
+	//iterator
+	class Iterator
+	{
+	public:
+		Iterator() throw()
+		{
+		}
+		Iterator(const Iterator& src) throw() : m_pos(src.m_pos)
+		{
+		}
+		~Iterator() throw()
+		{
+		}
+		Iterator& operator=(const Iterator& src) throw()
+		{
+			m_pos = src.m_pos;
+			return *this;
+		}
+		const Position GetPosition() const throw()
+		{
+			return m_pos;
+		}
+		Position GetPosition() throw()
+		{
+			return m_pos;
+		}
+		//properties
+		const RefPtr<T> get_Ref() const throw()
+		{
+			return m_pos.get_Ref();
+		}
+		RefPtr<T> get_Ref() throw()
+		{
+			return m_pos.get_Ref();
+		}
+		const T& get_Value() const throw()
+		{
+			return m_pos.get_Value();
+		}
+		T& get_Value() throw()
+		{
+			return m_pos.get_Value();
+		}
+		void set_Value(const T& t)  //may throw
+		{
+			//may throw
+			m_pos.set_Value(t);
+		}
+		void set_Value(T&& t)  //may throw
+		{
+			//may throw
+			m_pos.set_Value(rv_forward(t));
+		}
+		//compare
+		bool operator==(const Iterator& right) const throw()
+		{
+			return m_pos == right.m_pos;
+		}
+		bool operator!=(const Iterator& right) const throw()
+		{
+			return m_pos != right.m_pos;
+		}
+		//next
+		void MoveNext() throw()
+		{
+			m_pos.MoveNext();
+		}
+
+	private:
+		Position  m_pos;
+
+	private:
 		friend thisClass;
 	};
 
@@ -148,6 +226,24 @@ public:
 	bool IsEmpty() const throw()
 	{
 		return m_uElements == 0;
+	}
+
+	//position
+	const Position GetHeadPosition() const throw()
+	{
+		return get_position(m_pHead);
+	}
+	Position GetHeadPosition() throw()
+	{
+		return get_position(m_pHead);
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return get_iterator(pos);
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return get_iterator(pos);
 	}
 
 	//iterator
@@ -280,12 +376,23 @@ private:
 		node_pair_helper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 
+	//position
+	static Position get_position(_Node* pNode) throw()
+	{
+		Position pos;
+		pos.m_refNode = pNode;
+		return pos;
+	}
 	//iterator
-	static Iterator get_iterator(_Node* pNode) throw()
+	static Iterator get_iterator(const Position& pos) throw()
 	{
 		Iterator iter;
-		iter.m_refNode = pNode;
+		iter.m_pos = pos;
 		return iter;
+	}
+	static Iterator get_iterator(_Node* pNode) throw()
+	{
+		return get_iterator(get_position(pNode));
 	}
 
 private:
@@ -314,10 +421,10 @@ private:
 		_Node()
 		{
 		}
-		_Node(const T& t) : m_t(t)
+		explicit _Node(const T& t) : m_t(t)
 		{
 		}
-		_Node(T&& t) : m_t(rv_forward(t))
+		explicit _Node(T&& t) : m_t(rv_forward(t))
 		{
 		}
 		~_Node() throw()
@@ -333,26 +440,27 @@ private:
 	};
 
 public:
-	//iterator
-	class Iterator
+	//position
+	class Position
 	{
 	public:
-		Iterator() throw()
+		Position() throw()
 		{
 		}
-		Iterator(const Iterator& src) throw() : m_refList(src.m_refList), m_refNode(src.m_refNode)
+		Position(const Position& src) throw() : m_refNode(src.m_refNode)
 		{
 		}
-		~Iterator() throw()
+		~Position() throw()
 		{
 		}
-		Iterator& operator=(const Iterator& src) throw()
+		Position& operator=(const Position& src) throw()
 		{
-			if( &src != this ) {
-				m_refList = src.m_refList;
-				m_refNode = src.m_refNode;
-			}
+			m_refNode = src.m_refNode;
 			return *this;
+		}
+		bool IsNull() const throw()
+		{
+			return m_refNode.IsNull();
 		}
 		//properties
 		const RefPtr<T> get_Ref() const throw()
@@ -382,13 +490,13 @@ public:
 			m_refNode.Deref().m_t = rv_forward(t);
 		}
 		//compare
-		bool operator==(const Iterator& right) const throw()
+		bool operator==(const Position& right) const throw()
 		{
-			return m_refList == right.m_refList && m_refNode == right.m_refNode;
+			return m_refNode == right.m_refNode;
 		}
-		bool operator!=(const Iterator& right) const throw()
+		bool operator!=(const Position& right) const throw()
 		{
-			return m_refList != right.m_refList || m_refNode != right.m_refNode;
+			return m_refNode != right.m_refNode;
 		}
 		//next
 		void MoveNext() throw()
@@ -398,15 +506,96 @@ public:
 		//prev
 		void MovePrev() throw()
 		{
+			m_refNode = m_refNode.Deref().m_pPrev;
+		}
+
+	private:
+		RefPtr<_Node>  m_refNode;
+
+	private:
+		friend thisClass;
+	};
+
+	//iterator
+	class Iterator
+	{
+	public:
+		Iterator() throw()
+		{
+		}
+		Iterator(const Iterator& src) throw() : m_refList(src.m_refList), m_pos(src.m_pos)
+		{
+		}
+		~Iterator() throw()
+		{
+		}
+		Iterator& operator=(const Iterator& src) throw()
+		{
+			m_refList = src.m_refList;
+			m_pos = src.m_pos;
+			return *this;
+		}
+		const Position GetPosition() const throw()
+		{
+			return m_pos;
+		}
+		Position GetPosition() throw()
+		{
+			return m_pos;
+		}
+		//properties
+		const RefPtr<T> get_Ref() const throw()
+		{
+			return m_pos.get_Ref();
+		}
+		RefPtr<T> get_Ref() throw()
+		{
+			return m_pos.get_Ref();
+		}
+		const T& get_Value() const throw()
+		{
+			return m_pos.get_Value();
+		}
+		T& get_Value() throw()
+		{
+			return m_pos.get_Value();
+		}
+		void set_Value(const T& t)  //may throw
+		{
+			//may throw
+			m_pos.set_Value(t);
+		}
+		void set_Value(T&& t)  //may throw
+		{
+			//may throw
+			m_pos.set_Value(rv_forward(t));
+		}
+		//compare
+		bool operator==(const Iterator& right) const throw()
+		{
+			return m_refList == right.m_refList && m_pos == right.m_pos;
+		}
+		bool operator!=(const Iterator& right) const throw()
+		{
+			return m_refList != right.m_refList || m_pos != right.m_pos;
+		}
+		//next
+		void MoveNext() throw()
+		{
+			m_pos.MoveNext();
+		}
+		//prev
+		void MovePrev() throw()
+		{
 			//NULL node -> Tail
-			m_refNode = ( m_refNode.IsNull() ) ? m_refList.Deref().GetTail().m_refNode
-												: RefPtr<_Node>(m_refNode.Deref().m_pPrev);
+			m_pos.IsNull() ? (m_pos = m_refList.Deref().GetTailPosition()) : m_pos.MovePrev();
 		}
 
 	private:
 		RefPtr<thisClass>  m_refList;
-		RefPtr<_Node>      m_refNode;
+		Position  m_pos;
 
+	private:
 		friend thisClass;
 	};
 
@@ -428,6 +617,32 @@ public:
 	bool IsEmpty() const throw()
 	{
 		return m_uElements == 0;
+	}
+
+	//position
+	const Position GetHeadPosition() const throw()
+	{
+		return get_position(m_pHead);
+	}
+	Position GetHeadPosition() throw()
+	{
+		return get_position(m_pHead);
+	}
+	const Position GetTailPosition() const throw()
+	{
+		return get_position(m_pTail);
+	}
+	Position GetTailPosition() throw()
+	{
+		return get_position(m_pTail);
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return get_iterator(pos);
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return get_iterator(pos);
 	}
 
 	//iterator
@@ -928,13 +1143,24 @@ private:
 		node_pair_helper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 
+	//position
+	static Position get_position(_Node* pNode) throw()
+	{
+		Position pos;
+		pos.m_refNode = pNode;
+		return pos;
+	}
 	//iterator
-	Iterator get_iterator(_Node* pNode) const throw()
+	Iterator get_iterator(const Position& pos) const throw()
 	{
 		Iterator iter;
 		iter.m_refList = const_cast<thisClass*>(this);
-		iter.m_refNode = pNode;
+		iter.m_pos = pos;
 		return iter;
+	}
+	Iterator get_iterator(_Node* pNode) const throw()
+	{
+		return get_iterator(get_position(pNode));
 	}
 
 private:
@@ -988,10 +1214,10 @@ private:
 		_Node(TKey&& key, V&& v) : m_t(rv_forward(key), rv_forward(v))
 		{
 		}
-		_Node(const TPair& t) : m_t(t)
+		explicit _Node(const TPair& t) : m_t(t)
 		{
 		}
-		_Node(TPair&& t) : m_t(rv_forward(t))
+		explicit _Node(TPair&& t) : m_t(rv_forward(t))
 		{
 		}
 		~_Node() throw()
@@ -1007,26 +1233,27 @@ private:
 	};
 
 public:
-	//iterator
-	class Iterator
+	//position
+	class Position
 	{
 	public:
-		Iterator() throw()
+		Position() throw()
 		{
 		}
-		Iterator(const Iterator& src) throw() : m_refTable(src.m_refTable), m_refNode(src.m_refNode)
+		Position(const Position& src) throw() : m_refNode(src.m_refNode)
 		{
 		}
-		~Iterator() throw()
+		~Position() throw()
 		{
 		}
-		Iterator& operator=(const Iterator& src) throw()
+		Position& operator=(const Position& src) throw()
 		{
-			if( &src != this ) {
-				m_refTable = src.m_refTable;
-				m_refNode  = src.m_refNode;
-			}
+			m_refNode = src.m_refNode;
 			return *this;
+		}
+		bool IsNull() const throw()
+		{
+			return m_refNode.IsNull();
 		}
 		//properties
 		const RefPtr<TPair> get_Ref() const throw()
@@ -1046,23 +1273,83 @@ public:
 			return m_refNode.Deref().m_t;
 		}
 		//compare
+		bool operator==(const Position& right) const throw()
+		{
+			return m_refNode == right.m_refNode;
+		}
+		bool operator!=(const Position& right) const throw()
+		{
+			return m_refNode != right.m_refNode;
+		}
+
+	private:
+		RefPtr<_Node>  m_refNode;
+
+		friend thisClass;
+	};
+
+	//iterator
+	class Iterator
+	{
+	public:
+		Iterator() throw()
+		{
+		}
+		Iterator(const Iterator& src) throw() : m_refTable(src.m_refTable), m_pos(src.m_pos)
+		{
+		}
+		~Iterator() throw()
+		{
+		}
+		Iterator& operator=(const Iterator& src) throw()
+		{
+			m_refTable = src.m_refTable;
+			m_pos = src.m_pos;
+			return *this;
+		}
+		const Position GetPosition() const throw()
+		{
+			return m_pos;
+		}
+		Position GetPosition() throw()
+		{
+			return m_pos;
+		}
+		//properties
+		const RefPtr<TPair> get_Ref() const throw()
+		{
+			return m_pos.get_Ref();
+		}
+		RefPtr<TPair> get_Ref() throw()
+		{
+			return m_pos.get_Ref();
+		}
+		const TPair& get_Value() const throw()
+		{
+			return m_pos.get_Value();
+		}
+		TPair& get_Value() throw()
+		{
+			return m_pos.get_Value();
+		}
+		//compare
 		bool operator==(const Iterator& right) const throw()
 		{
-			return m_refTable == right.m_refTable && m_refNode == right.m_refNode;
+			return m_refTable == right.m_refTable && m_pos == right.m_pos;
 		}
 		bool operator!=(const Iterator& right) const throw()
 		{
-			return m_refTable != right.m_refTable || m_refNode != right.m_refNode;
+			return m_refTable != right.m_refTable || m_pos != right.m_pos;
 		}
 		//next
 		void MoveNext() throw()
 		{
-			m_refNode = m_refTable.Deref().to_next_node(RefPtrHelper::GetInternalPointer(m_refNode));
+			m_pos = get_position(m_refTable.Deref().to_next_node(thisClass::position_to_node(m_pos)));
 		}
 
 	private:
 		RefPtr<thisClass>  m_refTable;
-		RefPtr<_Node>      m_refNode;
+		Position  m_pos;
 
 		friend thisClass;
 	};
@@ -1101,28 +1388,32 @@ public:
 		return m_uBins;
 	}
 
+	//position
+	const Position GetHeadPosition() const throw()
+	{
+		return get_position(get_first_node());
+	}
+	Position GetHeadPosition() throw()
+	{
+		return get_position(get_first_node());
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return get_iterator(pos);
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return get_iterator(pos);
+	}
+
 	//iterator
 	const Iterator GetBegin() const throw()
 	{
-		if( IsEmpty() )
-			return get_iterator(NULL);
-		for( uintptr uBin = 0; uBin < m_uBins; uBin ++ ) {
-			if( m_ppBins[uBin] != NULL )
-				return get_iterator(m_ppBins[uBin]);
-		}
-		assert(false);
-		return get_iterator(NULL);
+		return get_iterator(get_first_node());
 	}
 	Iterator GetBegin() throw()
 	{
-		if( IsEmpty() )
-			return get_iterator(NULL);
-		for( uintptr uBin = 0; uBin < m_uBins; uBin ++ ) {
-			if( m_ppBins[uBin] != NULL )
-				return get_iterator(m_ppBins[uBin]);
-		}
-		assert(false);
-		return get_iterator(NULL);
+		return get_iterator(get_first_node());
 	}
 	const Iterator GetEnd() const throw()
 	{
@@ -1525,13 +1816,40 @@ protected:
 		return pNext;
 	}
 
+	//first
+	_Node* get_first_node() const throw()
+	{
+		if( IsEmpty() )
+			return NULL;
+		for( uintptr uBin = 0; uBin < m_uBins; uBin ++ ) {
+			if( m_ppBins[uBin] != NULL )
+				return m_ppBins[uBin];
+		}
+		assert(false);
+		return NULL;
+	}
+	//position
+	static Position get_position(_Node* pNode) throw()
+	{
+		Position pos;
+		pos.m_refNode = pNode;
+		return pos;
+	}
+	static _Node* position_to_node(const Position& pos) throw()
+	{
+		return RefPtrHelper::GetInternalPointer(pos.m_refNode);
+	}
 	//iterator
-	Iterator get_iterator(_Node* pNode) const throw()
+	Iterator get_iterator(const Position& pos) const throw()
 	{
 		Iterator iter;
 		iter.m_refTable = const_cast<thisClass*>(this);
-		iter.m_refNode  = pNode;
+		iter.m_pos = pos;
 		return iter;
+	}
+	Iterator get_iterator(_Node* pNode) const throw()
+	{
+		return get_iterator(get_position(pNode));
 	}
 
 private:
@@ -1757,10 +2075,10 @@ private:
 		_Node(TKey&& key, V&& v) : m_t(rv_forward(key), rv_forward(v))
 		{
 		}
-		_Node(const TPair& t) : m_t(t)
+		explicit _Node(const TPair& t) : m_t(t)
 		{
 		}
-		_Node(TPair&& t) : m_t(rv_forward(t))
+		explicit _Node(TPair&& t) : m_t(rv_forward(t))
 		{
 		}
 		~_Node() throw()
@@ -1778,7 +2096,7 @@ private:
 		}
 
 		enum {
-			RB_RED = 0,  RB_BLACK
+			RB_RED = 0, RB_BLACK
 		};
 		int    m_iColor;  //color, RB_*
 		_Node* m_pNext;   //used as parent
@@ -1791,26 +2109,27 @@ private:
 	};
 
 public:
-	//iterator
-	class Iterator
+	//position
+	class Position
 	{
 	public:
-		Iterator() throw()
+		Position() throw()
 		{
 		}
-		Iterator(const Iterator& src) throw() : m_refTree(src.m_refTree), m_refNode(src.m_refNode)
+		Position(const Position& src) throw() : m_refNode(src.m_refNode)
 		{
 		}
-		~Iterator() throw()
+		~Position() throw()
 		{
 		}
-		Iterator& operator=(const Iterator& src) throw()
+		Position& operator=(const Position& src) throw()
 		{
-			if( &src != this ) {
-				m_refTree = src.m_refTree;
-				m_refNode = src.m_refNode;
-			}
+			m_refNode = src.m_refNode;
 			return *this;
+		}
+		bool IsNull() const throw()
+		{
+			return m_refNode.IsNull();
 		}
 		//properties
 		const RefPtr<TPair> get_Ref() const throw()
@@ -1830,30 +2149,90 @@ public:
 			return m_refNode.Deref().m_t;
 		}
 		//compare
+		bool operator==(const Position& right) const throw()
+		{
+			return m_refNode == right.m_refNode;
+		}
+		bool operator!=(const Position& right) const throw()
+		{
+			return m_refNode != right.m_refNode;
+		}
+
+	private:
+		RefPtr<_Node>  m_refNode;
+
+		friend thisClass;
+	};
+
+	//iterator
+	class Iterator
+	{
+	public:
+		Iterator() throw()
+		{
+		}
+		Iterator(const Iterator& src) throw() : m_refTree(src.m_refTree), m_pos(src.m_pos)
+		{
+		}
+		~Iterator() throw()
+		{
+		}
+		Iterator& operator=(const Iterator& src) throw()
+		{
+			m_refTree = src.m_refTree;
+			m_pos = src.m_pos;
+			return *this;
+		}
+		const Position GetPosition() const throw()
+		{
+			return m_pos;
+		}
+		Position GetPosition() throw()
+		{
+			return m_pos;
+		}
+		//properties
+		const RefPtr<TPair> get_Ref() const throw()
+		{
+			return m_pos.get_Ref();
+		}
+		RefPtr<TPair> get_Ref() throw()
+		{
+			return m_pos.get_Ref();
+		}
+		const TPair& get_Value() const throw()
+		{
+			return m_pos.get_Value();
+		}
+		TPair& get_Value() throw()
+		{
+			return m_pos.get_Value();
+		}
+		//compare
 		bool operator==(const Iterator& right) const throw()
 		{
-			return m_refTree == right.m_refTree && m_refNode == right.m_refNode;
+			return m_refTree == right.m_refTree && m_pos == right.m_pos;
 		}
 		bool operator!=(const Iterator& right) const throw()
 		{
-			return m_refTree != right.m_refTree || m_refNode != right.m_refNode;
+			return m_refTree != right.m_refTree || m_pos != right.m_pos;
 		}
 		//next
 		void MoveNext() throw()
 		{
-			m_refNode = m_refTree.Deref().to_successor_node(RefPtrHelper::GetInternalPointer(m_refNode));
+			m_pos = get_position(m_refTree.Deref().to_successor_node(thisClass::position_to_node(m_pos)));
 		}
 		//prev
 		void MovePrev() throw()
 		{
 			//NULL node -> Tail
-			m_refNode = ( m_refNode.IsNull() ) ? m_refTree.Deref().GetTail().m_refNode
-												: m_refTree.Deref().to_predecessor_node(RefPtrHelper::GetInternalPointer(m_refNode));
+			m_pos = ( m_pos.IsNull() ) ? m_refTree.Deref().GetTailPosition()
+						: get_position(m_refTree.Deref().to_predecessor_node(thisClass::position_to_node(m_pos)));
 		}
 
 	private:
 		RefPtr<thisClass>  m_refTree;
-		RefPtr<_Node>      m_refNode;
+		Position  m_pos;
 
 		friend thisClass;
 	};
@@ -1881,22 +2260,48 @@ public:
 		return m_uElements == 0;
 	}
 
+	//position
+	const Position GetHeadPosition() const throw()
+	{
+		return get_position(to_minimum_node(m_pRoot));
+	}
+	Position GetHeadPosition() throw()
+	{
+		return get_position(to_minimum_node(m_pRoot));
+	}
+	const Position GetTailPosition() const throw()
+	{
+		return get_position(to_maximum_node(m_pRoot));
+	}
+	Position GetTailPosition() throw()
+	{
+		return get_position(to_maximum_node(m_pRoot));
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return get_iterator(pos);
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return get_iterator(pos);
+	}
+
 	//iterator
 	const Iterator GetHead() const throw()
 	{
-		return to_minimum_node(m_pRoot);
+		return get_iterator(to_minimum_node(m_pRoot));
 	}
 	Iterator GetHead() throw()
 	{
-		return to_minimum_node(m_pRoot);
+		return get_iterator(to_minimum_node(m_pRoot));
 	}
 	const Iterator GetTail() const throw()
 	{
-		return to_maximum_node(m_pRoot);
+		return get_iterator(to_maximum_node(m_pRoot));
 	}
 	Iterator GetTail() throw()
 	{
-		return to_maximum_node(m_pRoot);
+		return get_iterator(to_maximum_node(m_pRoot));
 	}
 	const Iterator GetBegin() const throw()
 	{
@@ -2471,13 +2876,29 @@ protected:
 		return pKey;
 	}
 
+	//position
+	static Position get_position(_Node* pNode) throw()
+	{
+		Position pos;
+		pos.m_refNode = pNode;
+		return pos;
+	}
+	static _Node* position_to_node(const Position& pos) throw()
+	{
+		return RefPtrHelper::GetInternalPointer(pos.m_refNode);
+	}
+
 	//iterator
-	Iterator get_iterator(_Node* pNode) const throw()
+	Iterator get_iterator(const Position& pos) const throw()
 	{
 		Iterator iter;
-		iter.m_refTree = this;
-		iter.m_refNode = pNode;
+		iter.m_refTree = const_cast<thisClass*>(this);
+		iter.m_pos = pos;
 		return iter;
+	}
+	Iterator get_iterator(_Node* pNode) const throw()
+	{
+		return get_iterator(get_position(pNode));
 	}
 
 private:

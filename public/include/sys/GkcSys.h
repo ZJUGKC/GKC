@@ -110,10 +110,6 @@ typedef _StringHelper  StringHelper;
 // StringUtilHelper
 typedef _StringUtilHelper  StringUtilHelper;
 
-// ComFactory<T>
-template <class T>
-using ComFactory = _ComFactory<T>;
-
 // IByteSequentialStream
 typedef _IByteSequentialStream  IByteSequentialStream;
 

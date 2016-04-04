@@ -1448,6 +1448,7 @@ template <typename T>
 class unique_array
 {
 public:
+	typedef array_position  Position;
 	typedef array_iterator<T>  Iterator;
 
 public:
@@ -1514,6 +1515,29 @@ public:
 		}
 	}
 
+	//position
+	Position GetStartPosition() const throw()
+	{
+		return Position(0);
+	}
+	Position GetTailPosition() const throw()
+	{
+		return Position(GetCount() - 1);
+	}
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return Iterator(ref_ptr<T>(m_p + pos.GetIndex()));
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return Iterator(ref_ptr<T>(m_p + pos.GetIndex()));
+	}
+	Position ToPosition(const Iterator& iter) const throw()
+	{
+		return Position(ref_ptr_helper::GetInternalPointer(iter.get_Ref()) - m_p);
+	}
+
+	//iterator
 	const Iterator GetBegin() const throw()
 	{
 		return Iterator(ref_ptr<T>(m_p));

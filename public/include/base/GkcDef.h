@@ -61,6 +61,9 @@ for cross-platform.
 //console APIs
 #include "system/console_api.h"
 
+//file management
+#include "system/fm_api.h"
+
 //------------------------------------------------------------------------------
 //system types which can use exceptions
 

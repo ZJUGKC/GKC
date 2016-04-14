@@ -24,4 +24,6 @@ This file contains main function.
 
 #include "base/GkcConsoleMain.cpp"
 
+#include "sys/GkcSys.cpp"
+
 ///////////////////////////////////////////////////////////////////////////////

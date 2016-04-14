@@ -139,6 +139,13 @@ inline char_h* find_string_last_char(const char_h* s, char_h c) throw()
 	return (char_h*)::wcsrchr(s, c);
 }
 
+// find_string_charset
+
+inline char_h* find_string_charset(const char_h* s, const char_h* z) throw()
+{
+	return (char_h*)::wcspbrk(s, z);
+}
+
 // find_string_string
 
 inline char_h* find_string_string(const char_h* s, const char_h* z) throw()
@@ -346,14 +353,7 @@ inline void cvt_path_string_to_platform(char_h* szBuffer) throw()
 //------------------------------------------------------------------------------
 // path
 
-inline bool path_is_relative(const char_a* szPath) throw()
-{
-	return ::PathIsRelativeA(szPath) ? true : false;
-}
-inline bool path_is_relative(const char_h* szPath) throw()
-{
-	return ::PathIsRelativeW(szPath) ? true : false;
-}
+#define MAX_FULL_PATH  (32767)
 
 inline void get_path_separator(char_a& ch) throw()
 {
@@ -388,6 +388,133 @@ inline void get_path_extension_start(char_h& ch) throw()
 inline bool check_path_extension_start(const char_h& ch) throw()
 {
 	return ch == L'.';
+}
+
+template <typename t_char>
+inline int get_path_type(const t_char* szPath) throw()
+{
+	int iRes = path_types::None;
+	int iState = 1;
+	const t_char* ps = szPath;
+	while( *ps != 0 ) {
+		switch(iState) {
+		case 1:
+			if( check_path_separator(*ps) ) {
+				iState = 2;
+			}
+			else if( check_path_extension_start(*ps) ) {
+				iState = 3;
+			}
+			else {
+				iState = 4;
+			}
+			break;
+		case 2:
+			if( check_path_separator(*ps) ) {
+				// "\\"
+				iState = 5;
+			}
+			else {
+				// "\X..."
+				iRes = path_types::Relative;
+				return iRes;
+			}
+			break;
+		case 3:
+			if( check_path_separator(*ps) ) {
+				// ".\..."
+				iRes = path_types::Relative;
+				return iRes;
+			}
+			else if( check_path_extension_start(*ps) ) {
+				iState = 6;
+			}
+			else {
+				iState = 4;
+			}
+			break;
+		case 4:
+			if( check_path_separator(*ps) ) {
+				// "X..\.."
+				iRes = path_types::Relative;
+				return iRes;
+			}
+			else if( check_drive_separator(*ps) ) {
+				iState = 7;
+			}
+			break;
+		case 5:
+			if( check_path_separator(*ps) ) {
+				iState = 8;
+			}
+			break;
+		case 6:
+			if( check_path_separator(*ps) ) {
+				// "..\"
+				iRes = path_types::Relative;
+				return iRes;
+			}
+			else {
+				iState = 4;
+			}
+			break;
+		case 7:
+			if( check_path_separator(*ps) ) {
+				iState = 5;
+			}
+			else {
+				// "X...:X..."
+				iRes = path_types::Relative;
+				return iRes;
+			}
+			break;
+		case 8:
+			if( check_path_extension_start(*ps) ) {
+				iState = 9;
+			}
+			else if( check_path_separator(*ps) ) {
+			}
+			else {
+				iState = 5;
+			}
+			break;
+		case 9:
+			if( check_path_separator(*ps) ) {
+				// "...\.\..."
+				iRes = path_types::Relative;
+				return iRes;
+			}
+			else if( check_path_extension_start(*ps) ) {
+				iState = 10;
+			}
+			else {
+				iState = 5;
+			}
+			break;
+		case 10:
+			if( check_path_separator(*ps) ) {
+				// "...\..\..."
+				iRes = path_types::Relative;
+				return iRes;
+			}
+			else {
+				iState = 5;
+			}
+			break;
+		default:
+			assert(false);
+			break;
+		} //end switch
+		ps ++;
+	} //end while
+	//middle states
+	if( iState != 1 && iState != 4 ) {
+		if( iState == 2 || iState == 3 || iState == 6 || iState == 7 || iState == 9 || iState == 10 )
+			iRes = path_types::Relative;
+		else
+			iRes = path_types::Absolute;
+	}
+	return iRes;
 }
 
 inline void get_current_path_prefix(const char_a*& sz, uintptr& len) throw()

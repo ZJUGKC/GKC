@@ -65,6 +65,13 @@ inline char_a* find_string_last_char(const char_a* s, int c) throw()
 	return (char_a*)::strrchr(s, c);
 }
 
+// find_string_charset
+
+inline char_a* find_string_charset(const char_a* s, const char_a* z) throw()
+{
+	return (char_a*)::strpbrk(s, z);
+}
+
 // find_string_string
 
 inline char_a* find_string_string(const char_a* s, const char_a* z) throw()
@@ -236,6 +243,15 @@ inline char_a* string_to_value(const char_a* szString, int iBase, uint& v, bool&
 	bOK = (errno == 0);  // ERANGE or EINVAL
 	return pN;
 }
+
+//------------------------------------------------------------------------------
+// path types
+
+BEGIN_ENUM(path_types)
+	ENUM_VALUE_ENTRY(None, 0)
+	ENUM_VALUE_ENTRY(Relative, 1)
+	ENUM_VALUE_ENTRY(Absolute, 2)
+END_ENUM()
 
 //------------------------------------------------------------------------------
 //OS

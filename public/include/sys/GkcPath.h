@@ -47,14 +47,6 @@ public:
 		cvt_path_string_to_platform(ShareArrayHelper::GetInternalPointer(str));
 	}
 
-	//relative
-	template <typename Tchar>
-	static bool IsRelative(IN const ConstStringT<Tchar>& str) throw()
-	{
-		assert( !str.IsNull() );
-		return path_is_relative(ConstArrayHelper::GetInternalPointer(str));
-	}
-
 	//separator
 	template <typename Tchar>
 	static void AppendSeparator(StringT<Tchar>& str)

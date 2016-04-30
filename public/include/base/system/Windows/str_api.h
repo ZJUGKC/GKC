@@ -191,7 +191,7 @@ inline bool char_is_print(const char_h& ch) throw()
 
 // value_to_string
 //   uSize : buffer size in typed characters.
-//   return value : the number of typed characters, -1 means fail.
+//   return value : the number of typed characters, <0 means fail.
 inline int value_to_string(char_a* szBuffer, uintptr uSize, const char_a* szFormat, ...) throw()
 {
 	va_list ap;
@@ -215,7 +215,7 @@ inline int string_to_value(const char_a* szString, const char_a* szFormat, ...) 
 {
 	va_list ap;
 	va_start(ap, szFormat);
-	int ret = ::vsscanf(szString, szFormat, ap);
+	int ret = ::vsscanf(szString, szFormat, ap);  //EOF or -1 as error
 	va_end(ap);
 	return ret;
 }
@@ -223,7 +223,7 @@ inline int string_to_value(const char_h* szString, const char_h* szFormat, ...) 
 {
 	va_list ap;
 	va_start(ap, szFormat);
-	int ret = ::vswscanf(szString, szFormat, ap);
+	int ret = ::vswscanf(szString, szFormat, ap);  //EOF or -1 as error
 	va_end(ap);
 	return ret;
 }
@@ -353,6 +353,7 @@ inline void cvt_path_string_to_platform(char_h* szBuffer) throw()
 //------------------------------------------------------------------------------
 // path
 
+//including the terminating null character
 #define MAX_FULL_PATH  (32767)
 
 inline void get_path_separator(char_a& ch) throw()

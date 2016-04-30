@@ -169,6 +169,108 @@ public:
 	}
 };
 
+// se_type<T>
+//   T: short ushort int uint int64 uint64 float double
+template <typename T>
+class se_type
+{
+public:
+	se_type() throw()
+	{
+	}
+	se_type(const se_type<T>& src) throw() : m_t(src.m_t)
+	{
+	}
+	~se_type() throw()
+	{
+	}
+	se_type<T>& operator=(const se_type<T>& src) throw()
+	{
+		m_t = src.m_t;
+		return *this;
+	}
+
+	const T get_Value() const throw()
+	{
+		return m_t;
+	}
+	void set_Value(const T& t) throw()
+	{
+		m_t = t;
+	}
+
+private:
+	T m_t;
+};
+
+// le_type<T>
+//   T: short ushort int uint int64 uint64 float double
+template <typename T>
+class le_type
+{
+public:
+	le_type() throw()
+	{
+	}
+	le_type(const le_type<T>& src) throw() : m_t(src.m_t)
+	{
+	}
+	~le_type() throw()
+	{
+	}
+	le_type<T>& operator=(const le_type<T>& src) throw()
+	{
+		m_t = src.m_t;
+		return *this;
+	}
+
+	const T get_Value() const throw()
+	{
+		return ( byte_order_helper::IsBigEndianHost() ) ? byte_order_helper::Swap(m_t) : m_t;
+	}
+	void set_Value(const T& t) throw()
+	{
+		m_t = ( byte_order_helper::IsBigEndianHost() ) ? byte_order_helper::Swap(t) : t;
+	}
+
+private:
+	T m_t;
+};
+
+// be_type<T>
+//   T: short ushort int uint int64 uint64 float double
+template <typename T>
+class be_type
+{
+public:
+	be_type() throw()
+	{
+	}
+	be_type(const be_type<T>& src) throw() : m_t(src.m_t)
+	{
+	}
+	~be_type() throw()
+	{
+	}
+	be_type<T>& operator=(const be_type<T>& src) throw()
+	{
+		m_t = src.m_t;
+		return *this;
+	}
+
+	const T get_Value() const throw()
+	{
+		return ( !byte_order_helper::IsBigEndianHost() ) ? byte_order_helper::Swap(m_t) : m_t;
+	}
+	void set_Value(const T& t) throw()
+	{
+		m_t = ( !byte_order_helper::IsBigEndianHost() ) ? byte_order_helper::Swap(t) : t;
+	}
+
+private:
+	T m_t;
+};
+
 // -----exception-----
 
 // exception_base
@@ -597,7 +699,58 @@ public:
 	virtual void    Free(const uintptr& p) throw() = 0;
 };
 
+// i_memory_allocator_ref_32
+
+class NOVTABLE i_memory_allocator_ref_32
+{
+public:
+	virtual uint    Allocate(const uint& uBytes) throw() = 0;
+	virtual uintptr ToPointer(const uint& p) throw() = 0;
+};
+
+// i_memory_allocator_ref_32_full
+
+class NOVTABLE i_memory_allocator_ref_32_full : public i_memory_allocator_ref_32
+{
+public:
+	// p == 0 : the same as Allocate
+	// uBytes == 0 : free p, return 0
+	// return 0, failed, and p unchanged
+	virtual uint Reallocate(const uint& p, const uint& uBytes) throw() = 0;
+	virtual void Free(const uint& p) throw() = 0;
+};
+
+// i_memory_allocator_ref_64
+
+class NOVTABLE i_memory_allocator_ref_64
+{
+public:
+	virtual int64   Allocate(const int64& uBytes) throw() = 0;
+	virtual uintptr ToPointer(const int64& p) throw() = 0;
+};
+
+// i_memory_allocator_ref_64_full
+
+class NOVTABLE i_memory_allocator_ref_64_full : public i_memory_allocator_ref_64
+{
+public:
+	// p == 0 : the same as Allocate
+	// uBytes == 0 : free p, return 0
+	// return 0, failed, and p unchanged
+	virtual int64 Reallocate(const int64& p, const int64& uBytes) throw() = 0;
+	virtual void  Free(const int64& p) throw() = 0;
+};
+
 #pragma pack(pop)
+
+// memory_allocator_ref_to_object<T, TAllocator, TPointer>
+//   TAllocator : i_memory_allocator_ref_*
+//   TPointer : uint or int64
+template <typename T, class TAllocator, typename TPointer>
+inline T& memory_allocator_ref_to_object(const ref_ptr<TAllocator>& allocator, const TPointer& p) throw()
+{
+	return *((T*)(allocator.Deref().ToPointer(p)));
+}
 
 // fixed_element_memory_pool
 

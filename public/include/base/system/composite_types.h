@@ -818,7 +818,6 @@ public:
 	//operators
 	thisClass& operator=(const thisClass& src)  //may throw
 	{
-		assert( t_size > 0 );
 		if( this != &src ) {
 			copy_elements(src.m_data, m_data, t_size);
 		}

@@ -2666,15 +2666,15 @@ private:
 	END_SA_GLOBAL_VARIABLE(_g_com_sa_module)
 
 #define BEGIN_COM_SA_FACTORY_MAP()  \
-	_Com_SA_Factory_Item* _Com_SA_Module::get_com_sa_factory_map() throw()  \
-	{ static _Com_SA_Factory_Item l_com_sa_factory_map[] = {
+	_Com_SA_Factory_Item l_com_sa_factory_map[] = {
 
 #define COM_SA_FACTORY_ENTRY(com_class)  \
 	{ &(USE_GUID(GUID_##com_class)), &(USE_COM_SA_FACTORY_CLASS_NAME(com_class)::Create), { 0 } },
 
 #define END_COM_SA_FACTORY_MAP()  \
 	{ NULL, NULL, { 0 } } };  \
-	return l_com_sa_factory_map; }
+	_Com_SA_Factory_Item* _Com_SA_Module::get_com_sa_factory_map() throw()  \
+	{ return l_com_sa_factory_map; }
 
 // --<.cpp end>---
 

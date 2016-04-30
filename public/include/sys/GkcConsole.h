@@ -106,7 +106,6 @@ private:
 	template <uintptr t_size>
 	static void read_with_pre_format_string(FixedStringT<CharS, t_size>& str, const CharS* szPreFormatString) throw()
 	{
-		assert( t_size > 0 );
 		str.SetLength(0);
 		CharS szFormat[256];
 		szFormat[0] = 0;

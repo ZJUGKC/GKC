@@ -11,8 +11,8 @@
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __POOL_H__
-#define __POOL_H__
+#ifndef __DATA_COLL_H__
+#define __DATA_COLL_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,68 +21,69 @@ namespace GKC {
 
 // Storage : Big Endian
 
-// functions
+// _RefAllocatorHelper
 
-inline uint _cpl_process_byte_order(uint v) throw()
-{
-	if( !ByteOrderHelper::IsBigEndianHost() ) {
-		v = ByteOrderHelper::Swap(v);
-	}
-	return v;
-}
-
-// DataPoolAllocator
-
-class DataPoolAllocator
+class _RefAllocatorHelper
 {
 public:
-	DataPoolAllocator() throw()
+	template <typename T>
+	static T& ToObject(const RefPtr<IMemoryAllocatorRef32>& allocator, uint p) throw()
+	{
+		return memory_allocator_ref_to_object<T, IMemoryAllocatorRef32, uint>(allocator, p);
+	}
+};
+
+// ArrayPoolAllocator
+
+class ArrayPoolAllocator : public IMemoryAllocatorRef32
+{
+public:
+	ArrayPoolAllocator() throw()
 	{
 	}
-	~DataPoolAllocator() throw()
+	~ArrayPoolAllocator() throw()
 	{
 	}
 
-	//return : the index of pool array
-	uint Allocate(uint uBytes)  //may throw
+// IMemoryAllocatorRef32 methods
+
+	virtual uint    Allocate(const uint& uBytes) throw()
 	{
 		assert( uBytes > 0 );
-		if( SharedArrayHelper::GetBlockPointer(m_arr) == NULL ) {
-			m_arr = SharedArrayHelper::MakeSharedArray<byte>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		uint uRet = 0;
+		try {
+			if( SharedArrayHelper::GetBlockPointer(m_arr) == NULL ) {
+				m_arr = SharedArrayHelper::MakeSharedArray<byte>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			}
+			uintptr uCount = m_arr.GetCount();
+			//overflow
+			if( uCount > (uintptr)(Limits<uint>::Max) )
+				throw OverflowException();  //throw
+			//add a room for count number
+			if( uCount < (uintptr)sizeof(uint) )
+				uCount = (uintptr)sizeof(uint);
+			//align
+			uBytes = AlignHelper::RoundUpThrow(uBytes, (uint)sizeof(uint));  //may throw
+			//new size
+			uint uNew = SafeOperators::AddThrow((uint)uCount, uBytes);  //may throw
+			m_arr.SetCount((uintptr)uNew, 0);  //may throw
+			//fill the count number
+			to_object<BeType<uint>>(0).set_Value(uNew - ((uint)sizeof(uint)));
+			//return a nonzero value
+			uRet = (uint)uCount;
 		}
-		uintptr uCount = m_arr.GetCount();
-		//overflow
-		if( uCount > (uintptr)(Limits<uint>::Max) )
-			throw OverflowException();  //throw
-		//add a room for count number
-		if( uCount < (uintptr)sizeof(uint) )
-			uCount = (uintptr)sizeof(uint);
-		//align
-		uBytes = AlignHelper::RoundUpThrow(uBytes, (uint)sizeof(uint));  //may throw
-		//new size
-		uint uNew = SafeOperators::AddThrow((uint)uCount, uBytes);  //may throw
-		m_arr.SetCount((uintptr)uNew, 0);  //may throw
-		//fill the count number
-		*((uint*)ToPtr(0)) = _cpl_process_byte_order(uNew - ((uint)sizeof(uint)));
-		//return a nonzero value
-		return (uint)uCount;
+		catch(...) {
+		}
+		return uRet;
 	}
-	//get the pointer
-	void* ToPtr(uint index) const throw()
+	virtual uintptr ToPointer(const uint& p) throw()
 	{
-		assert( index < (uint)m_arr.GetCount() );
-		return SharedArrayHelper::GetInternalPointer(m_arr) + index;
+		assert( p < (uint)m_arr.GetCount() );
+		return (uintptr)(SharedArrayHelper::GetInternalPointer(m_arr) + p);
 	}
-	template <typename T>
-	const T& ToObject(uint index) const throw()
-	{
-		return *((T*)ToPtr(index));
-	}
-	template <typename T>
-	T& ToObject(uint index) throw()
-	{
-		return *((T*)ToPtr(index));
-	}
+
+//methods
+
 	//get the size
 	uint GetSize() const throw()
 	{
@@ -90,7 +91,14 @@ public:
 		if( uCount == 0 )
 			return 0;
 		assert( uCount >= (uintptr)sizeof(uint) );
-		return _cpl_process_byte_order(*((uint*)ToPtr(0)));
+		return to_object<BeType<uint>>(0).get_Value();
+	}
+
+private:
+	template <typename T>
+	T& to_object(uint p) throw()
+	{
+		return _RefAllocatorHelper::ToObject<T>(RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(this)), p);
 	}
 
 private:
@@ -98,6 +106,8 @@ private:
 
 private:
 	//noncopyable
+	ArrayPoolAllocator(const ArrayPoolAllocator&) throw();
+	ArrayPoolAllocator& operator=(const ArrayPoolAllocator&) throw();
 };
 
 // StringPool
@@ -105,17 +115,17 @@ private:
 class StringPool
 {
 public:
-	StringPool() throw()
+	explicit StringPool(const RefPtr<IMemoryAllocatorRef32>& allocator) throw() : m_allocator(allocator)
 	{
 	}
 	~StringPool() throw()
 	{
 	}
 
-	ConstStringA GetString(uint uIndex) const throw()
+	ConstStringA GetString(uint p) const throw()
 	{
-		uint uLen = _cpl_process_byte_order(m_alloc.ToObject<uint>(uIndex));
-		return ConstStringA((CharA*)m_alloc.ToPtr(uIndex + sizeof(uint)), uLen);
+		uint uLen = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, p).get_Value();
+		return ConstStringA((CharA*)(m_allocator.Deref().ToPointer(p + sizeof(uint))), uLen);
 	}
 
 	//nonempty string
@@ -128,19 +138,23 @@ public:
 			throw OverflowException();  //throw
 		//allocate
 		uint uBytes = SafeOperators::AddThrow((uint)sizeof(uint), (uint)((uLen + 1) * sizeof(CharA)));  //may throw
-		uint uIndex = m_alloc.Allocate(uBytes);  //may throw
+		uint uP = m_allocator.Deref().Allocate(uBytes);
+		if( uP == 0 )
+			throw OutOfMemoryException();  //throw
 		//length
-		m_alloc.ToObject<uint>(uIndex) = _cpl_process_byte_order((uint)uLen);
+		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, uP).set_Value((uint)uLen);
 		//copy
-		mem_copy(ConstArrayHelper::GetInternalPointer(str), (uLen + 1) * sizeof(CharA), m_alloc.ToPtr(uIndex + sizeof(uint)));
-		return uIndex;
+		mem_copy(ConstArrayHelper::GetInternalPointer(str), (uLen + 1) * sizeof(CharA), (void*)(m_allocator.Deref().ToPointer(uP + sizeof(uint))));
+		return uP;
 	}
 
 private:
-	DataPoolAllocator m_alloc;
+	RefPtr<IMemoryAllocatorRef32>  m_allocator;
 
 private:
 	//noncopyable
+	StringPool(const StringPool&) throw();
+	StringPool& operator=(const StringPool&) throw();
 };
 
 // SymbolPool
@@ -160,73 +174,77 @@ private:
 		~_Node() throw()
 		{
 		}
-		//These are not necessary
-		//_Node(const _Node& src) throw()
-		//_Node& operator=(const _Node& src) throw()
 		void Init() throw()
 		{
-			uHashNext = uLevelNext = 0;
-			uStringIndex = uHashCode = 0;
-			uType = uLevel = 0;
+			uHashNext.set_Value(0);
+			uLevelNext.set_Value(0);
+			uStringAddr.set_Value(0);
+			uHashCode.set_Value(0);
+			uType.set_Value(0);
+			uLevel.set_Value(0);
 		}
 		//properties
 		uint GetHashNext() const throw()
 		{
-			return _cpl_process_byte_order(uHashNext);
+			return uHashNext.get_Value();
 		}
 		void SetHashNext(uint uValue) throw()
 		{
-			uHashNext = _cpl_process_byte_order(uValue);
+			uHashNext.set_Value(uValue);
 		}
 		uint GetLevelNext() const throw()
 		{
-			return _cpl_process_byte_order(uLevelNext);
+			return uLevelNext.get_Value();
 		}
 		void SetLevelNext(uint uValue) throw()
 		{
-			uLevelNext = _cpl_process_byte_order(uValue);
+			uLevelNext.set_Value(uValue);
 		}
-		uint GetStringIndex() const throw()
+		uint GetStringAddr() const throw()
 		{
-			return _cpl_process_byte_order(uStringIndex);
+			return uStringAddr.get_Value();
 		}
-		void SetStringIndex(uint uValue) throw()
+		void SetStringAddr(uint uValue) throw()
 		{
-			uStringIndex = _cpl_process_byte_order(uValue);
+			uStringAddr.set_Value(uValue);
 		}
 		uint GetHashCode() const throw()
 		{
-			return _cpl_process_byte_order(uHashCode);
+			return uHashCode.get_Value();
 		}
 		void SetHashCode(uint uValue) throw()
 		{
-			uHashCode = _cpl_process_byte_order(uValue);
+			uHashCode.set_Value(uValue);
 		}
 		uint GetType() const throw()
 		{
-			return _cpl_process_byte_order(uType);
+			return uType.get_Value();
 		}
 		void SetType(uint uValue) throw()
 		{
-			uType = _cpl_process_byte_order(uValue);
+			uType.set_Value(uValue);
 		}
 		uint GetLevel() const throw()
 		{
-			return _cpl_process_byte_order(uLevel);
+			return uLevel.get_Value();
 		}
 		void SetLevel(uint uValue) throw()
 		{
-			uLevel = _cpl_process_byte_order(uValue);
+			uLevel.set_Value(uValue);
 		}
 
 	private:
-		uint uHashNext;     //the next node of hash list
-		uint uLevelNext;    //the next node of current level
-		uint uStringIndex;  //index for string (key)
-		uint uHashCode;     //the original hash code
-		uint uType;   //data type
-		uint uLevel;  //level (30 bits) and flags
+		BeType<uint> uHashNext;     //the next node of hash list
+		BeType<uint> uLevelNext;    //the next node of current level
+		BeType<uint> uStringAddr;   //address for string (key)
+		BeType<uint> uHashCode;     //the original hash code
+		BeType<uint> uType;   //data type
+		BeType<uint> uLevel;  //level (30 bits) and flags
 		// Data block is located after the node
+
+	private:
+		_Node(const _Node& src) throw();
+		_Node& operator=(const _Node& src) throw();
 	};
 
 public:
@@ -267,80 +285,80 @@ public:
 		ConstStringA GetKey() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pPool->ToPtr(m_uNode);
-			return m_pPool->GetStringPool().GetString(pNode->GetStringIndex());
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
+			return m_pPool->GetStringPool().GetString(pNode->GetStringAddr());
 		}
-		uint GetNodeIndex() const throw()
+		uint GetNodeAddr() const throw()
 		{
 			return m_uNode;
 		}
 		uint GetType() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pPool->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
 			return pNode->GetType();
 		}
 		void SetType(uint uType) throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pPool->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
 			pNode->SetType(uType);
 		}
 		uint GetLevel() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pPool->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
 			return (pNode->GetLevel()) & MASK_LEVEL;
 		}
 		bool IsAnalysis() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pPool->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
 			return ((pNode->GetLevel()) & MASK_ANALYSIS) != 0;
 		}
 		//clear analysis flag
 		void ClearAnalysisFlag() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pPool->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
 			uint uLevel = pNode->GetLevel();
 			uLevel &= (~MASK_ANALYSIS);
 			pNode->SetLevel(uLevel);
 		}
 
 		//user data
-		void* GetDataPtr() const throw()
+		void* GetDataPointer() const throw()
 		{
 			assert( !IsNull() );
 			//after node
-			return m_pPool->ToPtr(m_uNode + sizeof(_Node));
+			return m_pPool->ToPointer(m_uNode + sizeof(_Node));
 		}
 		template <typename T>
 		const T& GetData() const throw()
 		{
-			return *((T*)GetDataPtr());
+			return *((T*)GetDataPointer());
 		}
 		template <typename T>
 		T& GetData() throw()
 		{
-			return *((T*)GetDataPtr());
+			return *((T*)GetDataPointer());
 		}
 
 		//methods
 		void MoveLevelNext() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pPool->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
 			m_uNode = pNode->GetLevelNext();
 		}
 
 	private:
 		thisClass* m_pPool;
-		uint m_uNode;  //index for node
+		uint m_uNode;  //address for node
 	};
 
 public:
-	explicit SymbolPool(StringPool& pool, uint uBins = 17) throw() : m_string_pool(pool), m_uStart(0)
+	SymbolPool(StringPool& pool, const RefPtr<IMemoryAllocatorRef32>& allocator, uint uBins = 17) throw() : m_string_pool(pool), m_allocator(allocator), m_uStart(0)
 	{
 		m_uBins = _pick_bucket_size(uBins);
 	}
@@ -360,20 +378,10 @@ public:
 	}
 
 // Data Block or Node
-	void* ToPtr(uint uIndex) const throw()
+	void* ToPointer(uint uAddr) const throw()
 	{
-		assert( uIndex != 0 );
-		return m_alloc.ToPtr(uIndex);
-	}
-	template <typename T>
-	const T& ToObject(uint uIndex) const throw()
-	{
-		return *((T*)ToPtr(uIndex));
-	}
-	template <typename T>
-	T& ToObject(uint uIndex) throw()
-	{
-		return *((T*)ToPtr(uIndex));
+		assert( uAddr != 0 );
+		return (void*)(m_allocater.Deref().ToPointer(uAddr));
 	}
 
 // Node
@@ -384,7 +392,7 @@ public:
 			return Iterator(const_cast<thisClass*>(this), 0);  //null
 		uint uHash = _calc_hash(ConstArrayHelper::GetInternalPointer(str));
 		uint uBin = uHash % m_uBins;
-		uint uNode = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)));
+		uint uNode = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)).get_Value();
 		//first node
 		return Iterator(const_cast<thisClass*>(this), get_first_node(uNode, uHash, str));
 	}
@@ -393,8 +401,8 @@ public:
 		assert( !iter.IsNull() );
 		assert( !IsNull() );
 		ConstStringA str(iter.GetKey());
-		uint uNode = iter.GetNodeIndex();
-		const _Node& node = m_alloc.ToObject<_Node>(uNode);
+		uint uNode = iter.GetNodeAddr();
+		const _Node& node = *((const _Node*)ToPointer(uNode));
 		uint uHash = node.GetHashCode();
 		uNode = node.GetHashNext();
 		//next first node
@@ -413,43 +421,48 @@ public:
 		if( IsNull() ) {
 			uint uBytes = SafeOperators::MultiplyThrow((uint)sizeof(uint), m_uBins);  //may throw
 			uBytes = SafeOperators::AddThrow(uBytes, (uint)IDX_BUCKET_FIRST);  //may throw
-			m_uStart = m_alloc.Allocate(uBytes);  //may throw
+			m_uStart = m_allocator.Deref().Allocate(uBytes);
+			if( m_uStart == 0 )
+				throw OutOfMemoryException();
 			assert( m_uStart == ((uint)sizeof(uint)) );
 			//count
-			m_alloc.ToObject<uint>(m_uStart + IDX_COUNT) = 0;
+			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).set_Value(0);
 			//zero level
-			m_alloc.ToObject<uint>(m_uStart + IDX_ZERO_LEVEL_HEAD) = 0;
+			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ZERO_LEVEL_HEAD).set_Value(0);
 			//bucket size
-			m_alloc.ToObject<uint>(m_uStart + IDX_BUCKET_SIZE) = _cpl_process_byte_order(m_uBins);
+			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_BUCKET_SIZE).set_Value(m_uBins);
 			//bins
 			for( uint i = 0; i < m_uBins; i ++ ) {
-				m_alloc.ToObject<uint>(m_uStart + IDX_BUCKET_FIRST + i * sizeof(uint)) = 0;
+				_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_BUCKET_FIRST + i * sizeof(uint)).set_Value(0);
 			}
 		}
 		//hash
 		uint uHash = _calc_hash(ConstArrayHelper::GetInternalPointer(str));
 		uint uBin = uHash % m_uBins;
-		uint uFirstNode = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)));
+		uint uFirstNode = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)).get_Value();
 		//node
 		uint uBytes = SafeOperators::AddThrow((uint)sizeof(_Node), uDataSize);  //may throw
-		uint uNode = m_alloc.Allocate(uBytes);  //may throw
+		uint uNode = m_allocator.Deref().Allocate(uBytes);
+		if( uNode == 0 )
+			throw OutOfMemoryException();
 		//key
-		uint uIndex = m_string_pool.PutString(str);  //may throw
+		uint uKeyAddr = m_string_pool.PutString(str);  //may throw
 		//fill
-		_Node& node = m_alloc.ToObject<_Node>(uNode);
+		_Node& node = *((_Node*)ToPointer(uNode));
 		node.Init();
-		node.SetStringIndex(uIndex);
+		node.SetStringAddr(uKeyAddr);
 		node.SetHashCode(uHash);
 		node.SetType(uType);
 		node.SetLevel(uLevel | MASK_ANALYSIS);
 		//fill list
 		node.SetHashNext(uFirstNode);
-		m_alloc.ToObject<uint>(m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)) = _cpl_process_byte_order(uNode);
+		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)).set_Value(uNode);
 		node.SetLevelNext(uLevelHead);
 		uLevelHead = uNode;
 		//count
-		uIndex = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_COUNT));
-		m_alloc.ToObject<uint>(m_uStart + IDX_COUNT) = _cpl_process_byte_order(uIndex + 1);
+		uint uCount = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
+		uCount = SafeOperators::AddThrow(uCount, (uint)1);  //may throw
+		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).set_Value(uCount);
 		//iterator
 		return Iterator(this, uNode);
 	}
@@ -459,21 +472,21 @@ public:
 	{
 		if( IsNull() )
 			return Iterator(const_cast<thisClass*>(this), 0);  //null
-		uint uHead = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_ZERO_LEVEL_HEAD));
+		uint uHead = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ZERO_LEVEL_HEAD).get_Value();
 		return Iterator(const_cast<thisClass*>(this), uHead);
 	}
 	void SetZeroLevelHead(uint uHead) throw()
 	{
 		assert( !IsNull() );
-		m_alloc.ToObject<uint>(m_uStart + IDX_ZERO_LEVEL_HEAD) = _cpl_process_byte_order(uHead);
+		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ZERO_LEVEL_HEAD).set_Value(uHead);
 	}
 
 private:
 	//pool
 	StringPool&  m_string_pool;
 	//allocator
-	DataPoolAllocator  m_alloc;
-	uint  m_uStart;  //index in data pool, indicating the hash header ( this value is sizeof(uint) )
+	RefPtr<IMemoryAllocatorRef32>  m_allocator;
+	uint  m_uStart;  //address in data pool, indicating the hash header ( this value is sizeof(uint) )
 	/*
 	uCount (the number of nodes)
 	uZeroLevelHead (list head of 0 level)
@@ -490,15 +503,15 @@ private:
 	{
 		if( IsNull() )
 			return 0;
-		return _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_COUNT));
+		return _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
 	}
 	// get first node in a bin from uNode
 	uint get_first_node(uint uNode, uint uHash, const ConstStringA& str) const throw()
 	{
 		while( uNode != 0 ) {
-			const _Node& node = m_alloc.ToObject<_Node>(uNode);
+			const _Node& node = *((const _Node*)ToPointer(uNode));
 			//case sensitive
-			if( node.GetHashCode() == uHash && ConstStringCompareTrait<ConstStringA>::IsEQ(m_string_pool.GetString(node.GetStringIndex()), str) ) {
+			if( node.GetHashCode() == uHash && ConstStringCompareTrait<ConstStringA>::IsEQ(m_string_pool.GetString(node.GetStringAddr()), str) ) {
 				break;
 			}
 			uNode = node.GetHashNext();
@@ -558,6 +571,8 @@ private:
 
 private:
 	//noncopyable
+	SymbolPool(const SymbolPool&) throw();
+	SymbolPool& operator=(const SymbolPool&) throw();
 };
 
 // Abstract Syntax Tree
@@ -579,53 +594,58 @@ private:
 		~_Node() throw()
 		{
 		}
-		//assignment is not necessary
 		void Init() throw()
 		{
-			uParent = uChild = uNext = 0;
-			uType = 0;
+			uParent.set_Value(0);
+			uChild.set_Value(0);
+			uNext.set_Value(0);
+			uType.set_Value(0);
 		}
 		//properties
 		uint GetParent() const throw()
 		{
-			return _cpl_process_byte_order(uParent);
+			return uParent.get_Value();
 		}
 		void SetParent(uint uValue) throw()
 		{
-			uParent = _cpl_process_byte_order(uValue);
+			uParent.set_Value(uValue);
 		}
 		uint GetChild() const throw()
 		{
-			return _cpl_process_byte_order(uChild);
+			return uChild.get_Value();
 		}
 		void SetChild(uint uValue) throw()
 		{
-			uChild = _cpl_process_byte_order(uValue);
+			uChild.set_Value(uValue);
 		}
 		uint GetNext() const throw()
 		{
-			return _cpl_process_byte_order(uNext);
+			return uNext.get_Value();
 		}
 		void SetNext(uint uValue) throw()
 		{
-			uNext = _cpl_process_byte_order(uValue);
+			uNext.set_Value(uValue);
 		}
 		//type
 		uint GetType() const throw()
 		{
-			return _cpl_process_byte_order(uType);
+			return uType.get_Value();
 		}
 		void SetType(uint uValue) throw()
 		{
-			uType = _cpl_process_byte_order(uValue);
+			uType.set_Value(uValue);
 		}
 
 	private:
-		uint uParent;
-		uint uChild;
-		uint uNext;
-		uint uType;  //AST node type
+		BeType<uint> uParent;
+		BeType<uint> uChild;
+		BeType<uint> uNext;
+		BeType<uint> uType;  //AST node type
 		//data block
+
+	private:
+		_Node(const _Node&) throw();
+		_Node& operator=(const _Node&) throw();
 	};
 
 public:
@@ -657,7 +677,7 @@ public:
 			return m_uNode == 0;
 		}
 
-		uint GetNodeIndex() const throw()
+		uint GetNodeAddr() const throw()
 		{
 			return m_uNode;
 		}
@@ -666,60 +686,60 @@ public:
 		uint GetType() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pTree->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
 			return pNode->GetType();
 		}
 		void SetType(uint uType) throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pTree->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
 			pNode->SetType(uType);
 		}
 
 		//user data
-		void* GetDataPtr() const throw()
+		void* GetDataPointer() const throw()
 		{
 			assert( !IsNull() );
-			return m_pTree->ToPtr(m_uNode + sizeof(_Node));
+			return m_pTree->ToPointer(m_uNode + sizeof(_Node));
 		}
 		template <typename T>
 		const T& GetData() const throw()
 		{
-			return *((T*)GetDataPtr());
+			return *((T*)GetDataPointer());
 		}
 		template <typename T>
 		T& GetData() throw()
 		{
-			return *((T*)GetDataPtr());
+			return *((T*)GetDataPointer());
 		}
 
 		//methods
 		void MoveParent() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pTree->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
 			m_uNode = pNode->GetParent();
 		}
 		void MoveChild() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pTree->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
 			m_uNode = pNode->GetChild();
 		}
 		void MoveNext() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)m_pTree->ToPtr(m_uNode);
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
 			m_uNode = pNode->GetNext();
 		}
 
 	private:
 		thisClass* m_pTree;
-		uint m_uNode;  //node index
+		uint m_uNode;  //node address
 	};
 
 public:
-	explicit AstTree(DataPoolAllocator& pool, uint uStart = 0) throw() : m_alloc(pool), m_uStart(uStart)
+	explicit AstTree(const RefPtr<IMemoryAllocatorRef32>& allocator, uint uStart = 0) throw() : m_allocator(allocator), m_uStart(uStart)
 	{
 	}
 	~AstTree() throw()
@@ -732,20 +752,10 @@ public:
 	}
 
 //data block or node
-	void* ToPtr(uint uIndex) const throw()
+	void* ToPointer(uint uAddr) const throw()
 	{
-		assert( uIndex != 0 );
-		return m_alloc.ToPtr(uIndex);
-	}
-	template <typename T>
-	const T& ToObject(uint uIndex) const throw()
-	{
-		return *((T*)ToPtr(uIndex));
-	}
-	template <typename T>
-	T& ToObject(uint uIndex) throw()
-	{
-		return *((T*)ToPtr(uIndex));
+		assert( uAddr != 0 );
+		return (void*)(m_allocator.Deref().ToPointer(uAddr));
 	}
 
 //header
@@ -763,34 +773,40 @@ public:
 	{
 		if( IsNull() )
 			return GetNullIterator();
-		uint uRoot = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_ROOT));
+		uint uRoot = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).get_Value();
 		return Iterator(const_cast<thisClass*>(this), uRoot);
 	}
 	Iterator Insert(const Iterator& iterParent, const Iterator& iterAfter, uint uDataSize, uint uType)
 	{
 		if( IsNull() ) {
 			//header
-			m_uStart = m_alloc.Allocate(SIZE_HEADER);  //may throw
-			m_alloc.ToObject<uint>(m_uStart + IDX_COUNT) = 0;
-			m_alloc.ToObject<uint>(m_uStart + IDX_ROOT) = 0;
+			m_uStart = m_allocator.Deref().Allocate(SIZE_HEADER);
+			if( m_uStart == 0 )
+				throw OutOfMemoryException();
+			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).set_Value(0);
+			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).set_Value(0);
 		}
 		//root
-		uint uRoot = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_ROOT));
+		uint uRoot = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).get_Value();
 		if( uRoot == 0 ) {
 			//root has not any data
-			uRoot = m_alloc.Allocate(sizeof(_Node));  //may throw
-			m_alloc.ToObject<uint>(m_uStart + IDX_ROOT) = _cpl_process_byte_order(uRoot);
+			uRoot = m_allocator.Deref().Allocate(sizeof(_Node));
+			if( uRoot == 0 )
+				throw OutOfMemoryException();
+			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).set_Value(uRoot);
 		}
 		//allocate
 		uint uBytes = SafeOperators::AddThrow((uint)sizeof(_Node), uDataSize);  //may throw
-		uint uNode = m_alloc.Allocate(uBytes);  //may throw
+		uint uNode = m_allocator.Deref().Allocate(uBytes);
+		if( uNode == 0 )
+			throw OutOfMemoryException();
 		//node
-		_Node& node = m_alloc.ToObject<_Node>(uNode);
+		_Node& node = *((_Node*)ToPointer(uNode));
 		node.Init();
 		node.SetType(uType);
 		//list
-		uint uParent = iterParent.IsNull() ? uRoot : iterParent.GetNodeIndex();
-		_Node& nodeParent = m_alloc.ToObject<_Node>(uParent);
+		uint uParent = iterParent.IsNull() ? uRoot : iterParent.GetNodeAddr();
+		_Node& nodeParent = *((_Node*)ToPointer(uParent));
 		node.SetParent(uParent);
 		if( iterAfter.IsNull() ) {
 			//first child
@@ -801,21 +817,22 @@ public:
 			nodeParent.SetChild(uNode);
 		}
 		else {
-			uint uAfter = iterAfter.GetNodeIndex();
-			_Node& nodeAfter = m_alloc.ToObject<_Node>(uAfter);
+			uint uAfter = iterAfter.GetNodeAddr();
+			_Node& nodeAfter = *((_Node*)ToPointer(uAfter));
 			assert( nodeAfter.GetParent() == uParent );
 			node.SetNext(nodeAfter.GetNext());
 			nodeAfter.SetNext(uNode);
 		} //end if
 		//count
-		uint uIndex = _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_COUNT));
-		m_alloc.ToObject<uint>(m_uStart + IDX_COUNT) = _cpl_process_byte_order(uIndex + 1);
+		uint uCount = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
+		uCount = SafeOperators::AddThrow(uCount, (uint)1);  //may throw
+		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).set_Value(uCount);
 		//iterator
 		return Iterator(this, uNode);
 	}
 
 private:
-	DataPoolAllocator& m_alloc;  //a pool for all AST trees
+	RefPtr<IMemoryAllocatorRef32> m_allocator;  //allocator for all AST trees
 	uint m_uStart;  //header block
 	/*
 	count
@@ -829,15 +846,17 @@ private:
 	{
 		if( IsNull() )
 			return 0;
-		return _cpl_process_byte_order(m_alloc.ToObject<uint>(m_uStart + IDX_COUNT));
+		return _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
 	}
 
 private:
 	//noncopyable
+	AstTree(const AstTree&) throw();
+	AstTree& operator=(const AstTree&) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__POOL_H__
+#endif //__DATA_COLL_H__
 ////////////////////////////////////////////////////////////////////////////////

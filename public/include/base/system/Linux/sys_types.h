@@ -55,7 +55,7 @@ public:
 
 	bool IsValid() const throw()
 	{
-		return m_fd >= 0;
+		return m_fd != -1;
 	}
 
 	uintptr GetHandle() const throw()
@@ -95,7 +95,7 @@ public:
 		assert( uBytes <= SSIZE_MAX );
 		ssize_t uRet = ::read(m_fd, pBuffer, (size_t)uBytes);
 		int res = 0;
-		if( uRet < 0 )
+		if( uRet == -1 )
 			res = _OS_CR_FROM_ERRORNO();
 		else
 			uRead = (uint)uRet;
@@ -108,7 +108,7 @@ public:
 		assert( IsValid() );
 		ssize_t uRet = ::write(m_fd, pBuffer, (size_t)uBytes);
 		int res = 0;
-		if( uRet < 0 )
+		if( uRet == -1 )
 			res = _OS_CR_FROM_ERRORNO();
 		else
 			uWritten = (uint)uRet;
@@ -224,7 +224,7 @@ public:
 	{
 		assert( !m_bInitialized );
 		int res = ::sem_init(&m_sem, 0, (unsigned int)iCount);
-		if( res < 0 ) {
+		if( res == -1 ) {
 			res = _OS_CR_FROM_ERRORNO();
 		}
 		else if( res == 0 ) {

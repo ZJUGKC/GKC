@@ -2905,7 +2905,7 @@ public:
 		assert( m_hEMF != NULL );
 		mem_zero(&m_pfd, sizeof(m_pfd));
 		UINT u = ::GetEnhMetaFilePixelFormat(m_hEMF, sizeof(m_pfd), &m_pfd);
-		return (u != 0) ? &m_pfd : NULL;
+		return (u != 0 && u != GDI_ERROR) ? &m_pfd : NULL;
 	}
 
 private:

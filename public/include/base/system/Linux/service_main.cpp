@@ -44,12 +44,12 @@ int main(int argc, char *argv[], char *envp[])
 	::signal(SIGHUP, SIG_IGN);
 	//fork
 	pid_t pid = ::fork();
-	if( pid < 0 ) {
+	if( pid == -1 ) {
 		::perror("cannot fork!\n");
 		exit(EXIT_FAILURE);
 		//return -1;
 	}
-	if( pid > 0 ) {
+	if( pid != 0 ) {
 		exit(EXIT_SUCCESS);  //parent process
 		//return 0;
 	}
@@ -57,12 +57,12 @@ int main(int argc, char *argv[], char *envp[])
 //in child
 	//setsid
 	pid = ::setsid();
-	if( pid < 0 ) {
+	if( pid == (pid_t)-1 ) {
 		::perror("cannot initialize session!\n");
 		return -1;
 	}
 	//cwd
-	if( ::chdir("/") < 0 ) {
+	if( ::chdir("/") == -1 ) {
 		::perror("cannot change dir!\n");
 		return -1;
 	}

@@ -29,7 +29,7 @@
 #
 
 NAME=GkcHostSvc
-BINPATH=/usr/.GKC/public/assemblies/GkcHostSvc-1-0
+BINPATH=/usr/.GKC/public/assemblies/GkcHostSvc
 PIDFILE=/var/run/$NAME.pid
 
 RETVAL=0

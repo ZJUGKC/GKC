@@ -23,11 +23,11 @@ int main(int argc, char *argv[], char *envp[])
 //start
 	//fork
 	pid_t pid = ::fork();
-	if( pid < 0 ) {
+	if( pid == -1 ) {
 		::perror("cannot fork!\n");
 		return -1;
 	}
-	if( pid > 0 ) {
+	if( pid != 0 ) {
 		//parent process
 		return 0;
 	}
@@ -35,7 +35,7 @@ int main(int argc, char *argv[], char *envp[])
 //in child
 	//setsid
 	pid = ::setsid();
-	if( pid < 0 ) {
+	if( pid == (pid_t)-1 ) {
 		::perror("cannot initialize session!\n");
 		return -1;
 	}

@@ -151,6 +151,18 @@ typedef system_call_results  SystemCallResults;
 // ByteOrderHelper
 typedef byte_order_helper  ByteOrderHelper;
 
+// SeType<T>
+template <typename T>
+using SeType = se_type<T>;
+
+// LeType<T>
+template <typename T>
+using LeType = le_type<T>;
+
+// BeType<T>
+template <typename T>
+using BeType = be_type<T>;
+
 //------------------------------------------------------------------------------
 // Exceptions
 
@@ -526,6 +538,22 @@ public:
 // IMemoryManager
 
 typedef i_memory_manager  IMemoryManager;
+
+// IMemoryAllocatorRef32
+
+typedef i_memory_allocator_ref_32  IMemoryAllocatorRef32;
+
+// IMemoryAllocatorRef32Full
+
+typedef i_memory_allocator_ref_32_full  IMemoryAllocatorRef32Full;
+
+// IMemoryAllocatorRef64
+
+typedef i_memory_allocator_ref_64  IMemoryAllocatorRef64;
+
+// IMemoryAllocatorRef64Full
+
+typedef i_memory_allocator_ref_64_full  IMemoryAllocatorRef64Full;
 
 // AlignHelper
 

@@ -59,7 +59,7 @@ public:
 		//open
 		int res = 0;
 		int fd = ::open(szFile, flags, S_IRWXU | S_IRWXG | S_IRWXO);
-		if( fd < 0 )
+		if( fd == -1 )
 			res = _OS_CR_FROM_ERRORNO();
 		else
 			hd.Attach((uintptr)fd);
@@ -75,7 +75,7 @@ public:
 		assert( sizeof(off_t) == 8 );
 		off_t npos = ::lseek((int)(hd.GetHandle()), (off_t)iOffset, (int)uMethod);  //64 bits
 		int res = 0;
-		if( npos < 0 )
+		if( npos == (off_t)-1 )
 			res = _OS_CR_FROM_ERRORNO();
 		else
 			iNewPos = npos;
@@ -95,7 +95,7 @@ public:
 	{
 		assert( hd.IsValid() );
 		int res = 0;
-		if( ::ftruncate((int)(hd.GetHandle()), iSize) < 0 )
+		if( ::ftruncate((int)(hd.GetHandle()), iSize) == -1 )
 			res = _OS_CR_FROM_ERRORNO();
 		return call_result(res);
 	}
@@ -107,7 +107,7 @@ public:
 		int res = 0;
 		//stat
 		struct stat st;
-		if( ::fstat((int)(hd.GetHandle()), &st) < 0 ) {
+		if( ::fstat((int)(hd.GetHandle()), &st) == -1 ) {
 			res = _OS_CR_FROM_ERRORNO();
 			return call_result(res);
 		}
@@ -156,7 +156,7 @@ public:
 		fl.l_whence = SEEK_SET;
 		fl.l_start  = iOffset;
 		fl.l_len    = iLen;
-		if( ::fcntl((int)(hd.GetHandle()), bBlock ? F_SETLKW : F_SETLK, &fl) < 0 )
+		if( ::fcntl((int)(hd.GetHandle()), bBlock ? F_SETLKW : F_SETLK, &fl) == -1 )
 			res = _OS_CR_FROM_ERRORNO();
 		return call_result(res);
 	}
@@ -173,7 +173,7 @@ public:
 		int rv =
 #endif
 		::fcntl((int)(hd.GetHandle()), F_SETLK, &fl);  //nonblocking
-		assert( rv >= 0 );
+		assert( rv != -1 );
 	}
 };
 

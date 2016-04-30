@@ -282,7 +282,7 @@ private:
 			else if( ch == 'x' ) {
 				bool bOK;
 				uint v;
-				string_to_value(SharedArrayHelper::GetInternalPointer(str) + 2, 16, v, bOK);
+				string_to_value(SharedArrayHelper::GetInternalPointer(str) + 2, 16, v, bOK);  //no check
 				assert( bOK );
 				str.GetAt(0).set_Value((CharA)v);
 			}

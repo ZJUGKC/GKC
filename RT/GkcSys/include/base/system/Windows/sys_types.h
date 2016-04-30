@@ -31,6 +31,7 @@ END_ENUM()
 //  iOpenType   : file_open_types::*
 //  iShareMode  : _os_file_share_modes::*
 //  iCreateType : file_creation_types::*
+//  use platform path prefix
 inline HRESULT _os_open_file(const char_s* szFile, int iOpenType, int iShareMode, int iCreateType, HANDLE& hd) throw()
 {
 	// access
@@ -113,6 +114,7 @@ public:
 	//  The default behavior is sharing between processes and threads.
 	//  iOpenType   : file_open_types::*
 	//  iCreateType : file_creation_types::*
+	//  use platform path prefix
 	static call_result Open(const char_s* szFile, int iOpenType, int iCreateType, io_handle& hd) throw()
 	{
 		assert( !hd.IsValid() );

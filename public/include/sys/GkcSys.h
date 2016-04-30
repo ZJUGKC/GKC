@@ -149,6 +149,7 @@ class StreamHelper
 {
 public:
 	// file stream
+	//   use platform path prefix
 	static CallResult CreateFileStream(const ConstStringS& strFile, int iOpenType, int iCreateType, ShareCom<IByteStream>& sp) throw()
 	{
 		CallResult cr;

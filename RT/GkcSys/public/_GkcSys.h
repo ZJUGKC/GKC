@@ -2657,6 +2657,10 @@ private:
 
 #define USE_COM_SA_MODULE()  GET_SA_GLOBAL_VARIABLE(_g_com_sa_module)
 
+#define DECLARE_COM_SA_EXPORT_FUNCTIONS  \
+SA_FUNCTION void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();  \
+SA_FUNCTION bool _SA_Com_CanUnloadNow() throw();
+
 // --<.h end>---
 
 // --<source file>--
@@ -2676,14 +2680,15 @@ private:
 	_Com_SA_Factory_Item* _Com_SA_Module::get_com_sa_factory_map() throw()  \
 	{ return l_com_sa_factory_map; }
 
+#define IMPLEMENT_COM_SA_EXPORT_FUNCTIONS  \
+void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()  \
+{ USE_COM_SA_MODULE().SA_Com_GetClassObject(cid, sp, cr); }  \
+bool _SA_Com_CanUnloadNow() throw()  \
+{ return USE_COM_SA_MODULE().SA_Com_CanUnloadNow(); }
+
 // --<.cpp end>---
 
-/*
-export functions in COM SA:
-
-SA_FUNCTION void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();
-SA_FUNCTION bool _SA_Com_CanUnloadNow() throw();
-*/
+// component client
 
 //------------------------------------------------------------------------------
 // Stream
@@ -2719,6 +2724,7 @@ DECLARE_GUID(GUID__IByteStream)
 class NOVTABLE _IFileUtility
 {
 public:
+	// use platform path prefix
 	virtual GKC::CallResult Open(const GKC::RefPtr<GKC::CharS>& szFile, const int& iOpenType, const int& iCreateType) throw() = 0;
 	virtual void Close() throw() = 0;
 	virtual bool IsOpened() throw() = 0;
@@ -2779,6 +2785,7 @@ DECLARE_GUID(GUID__ITextStream)
 
 //functions
 
+// use platform path prefix
 SA_FUNCTION void _FileStream_Create(const GKC::CharS* szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _MemoryStream_Create(_ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _BufferStream_Create(const void* p, uintptr uBytes, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();

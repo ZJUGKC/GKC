@@ -182,11 +182,11 @@ class _UnitTestMapHelper
 public:
 	//get map
 	BEGIN_NOINLINE
-	static _UnitTestMap* GetUnitTestMap() throw()
+	static _UnitTestMap& GetUnitTestMap() throw()
 	END_NOINLINE
 	{
 		static _UnitTestMap l_unit_test_map;
-		return &l_unit_test_map;
+		return l_unit_test_map;
 	}
 };
 
@@ -199,8 +199,8 @@ public:
 	{
 		ConstStringS strName;
 		ConstArrayHelper::SetInternalPointer(szName, calc_string_length(szName), strName);
-		_UnitTestMap* pMap = _UnitTestMapHelper::GetUnitTestMap();
-		pMap->AddUnitTest(strName, pFunc);
+		_UnitTestMap& map = _UnitTestMapHelper::GetUnitTestMap();
+		map.AddUnitTest(strName, pFunc);
 	}
 };
 
@@ -219,14 +219,14 @@ public:
 		DECLARE_LOCAL_CONST_STRING(CharS, l_szNoTest, l_iNoTestLen, _S("ERROR: NO SUCH TEST!"))
 
 		//map
-		_UnitTestMap* pMap = _UnitTestMapHelper::GetUnitTestMap();
+		_UnitTestMap& map = _UnitTestMapHelper::GetUnitTestMap();
 		uintptr uTotal  = 0;
 		uintptr uFailed = 0;
 
 		if( args.GetCount() <= 1 ) {
 			//all tests
 			_UnitTestMap::ItemInfo info;
-			bool bContinue = pMap->EnumFirst(info);
+			bool bContinue = map.EnumFirst(info);
 			while( bContinue ) {
 				//current test
 				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
@@ -238,7 +238,7 @@ public:
 				}
 				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
 				uTotal ++;
-				bContinue = pMap->EnumNext(info);
+				bContinue = map.EnumNext(info);
 				//sleep
 				thread_sleep(1);
 			}
@@ -256,7 +256,7 @@ public:
 				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_iColonLen));
 				//find
 				StringUtilHelper::MakeString(iter.get_Value(), strM);
-				_UnitTestFunc pFunc = pMap->Find(strM);
+				_UnitTestFunc pFunc = map.Find(strM);
 				if( pFunc == NULL ) {
 					ConsoleHelper::WriteLine(ConstStringS(l_szNoTest, l_iNoTestLen));
 					uFailed ++;

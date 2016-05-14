@@ -15,33 +15,18 @@
 #define __LEXER_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "fsa.h"
-#include "pool.h"
-#include "CharStream.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
-
-//error string
-#define GKC_CPL_MAX_ERROR_LENGTH  (8*1024)
-
-// CplErrorBuffer
-
-typedef FixedStringT<CharS, GKC_CPL_MAX_ERROR_LENGTH>  CplErrorBuffer;
-
-//token
-#define TK_ERROR   ((uint)-2)     //error
-#define TK_EOF     ((uint)-1)     //EOF
-#define TK_NULL    (0)            //noop or start token (S0)
-#define TK_FIRST   (1)            //the first user token
 
 // TokenTable
 
 class TokenTable
 {
 public:
-	TokenTable() throw() : m_symbol_pool(m_string_pool), m_uLevelHead(0)
+	TokenTable() throw() : m_string_pool(RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(m_str_allocator))),
+						m_symbol_pool(m_string_pool, RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(m_sym_allocator))),
+						m_uLevelHead(0)
 	{
 	}
 	~TokenTable() throw()
@@ -53,150 +38,41 @@ public:
 		assert( uID >= TK_FIRST );
 		assert( m_symbol_pool.Find(strToken).IsNull() );
 		auto iter(m_symbol_pool.CreateNode(strToken, sizeof(uint), 0, 0, m_uLevelHead));  //may throw
-		iter.GetData<uint>() = _cpl_process_byte_order(uID);
+		iter.GetData<BeType<uint>>().set_Value(uID);
 		m_symbol_pool.SetZeroLevelHead(m_uLevelHead);
 	}
 
 	//properties
-	uint GetTokenID(const ConstStringA& strToken) const throw()
+	uint get_ID(const ConstStringA& strToken) const throw()
 	{
 		auto iter(m_symbol_pool.Find(strToken));
 		if( iter.IsNull() )
 			return 0;
-		return _cpl_process_byte_order(iter.GetData<uint>());
+		return iter.GetData<BeType<uint>>().get_Value();
 	}
 
 private:
+	ArrayPoolAllocator m_sym_allocator;
+	ArrayPoolAllocator m_str_allocator;
 	SymbolPool m_symbol_pool;
 	StringPool m_string_pool;
 	uint m_uLevelHead;  //not used in this class
 
 private:
 	//noncopyable
+	TokenTable(const TokenTable&) throw();
+	TokenTable& operator=(const TokenTable&) throw();
 };
 
-//------------------------------------------------------------------------------
-// Lexer
+// LexerTables
 
-#pragma pack(push, 1)
-
-// LEXER_CHAR_INFO
-typedef struct _LexerCharInfo
-{
-	uint uRow;
-	uint uCol;
-	uint uCharIndex;
-} LEXER_CHAR_INFO;
-
-#pragma pack(pop)
-
-// LexerTokenInfo
-
-class LexerTokenInfo
+class LexerTables
 {
 public:
-	LexerTokenInfo() throw()
+	LexerTables() throw()
 	{
 	}
-	~LexerTokenInfo() throw()
-	{
-	}
-
-	void Init()
-	{
-		m_startInfo.uRow = m_startInfo.uCol = m_startInfo.uCharIndex = 0;
-		m_endInfo.uRow = m_endInfo.uCol = m_endInfo.uCharIndex = 0;
-		if( SharedArrayHelper::GetBlockPointer(m_strBuffer) == NULL )
-			m_strBuffer = StringUtilHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager());  //may throw
-		if( SharedArrayHelper::GetBlockPointer(m_strData) == NULL )
-			m_strData = StringUtilHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager());  //may throw
-	}
-	//reset for parsing new token
-	void Reset()
-	{
-		m_strBuffer.SetLength(0);  //may throw
-		m_strData.SetLength(0);    //may throw
-		m_eBuffer.SetLength(0);
-		m_startInfo = m_endInfo;
-		m_uID = TK_NULL;
-	}
-	//append a character
-	void Append(const byte& ch)
-	{
-		StringUtilHelper::Append((CharA)ch, m_strBuffer);  //may throw
-		//coordinates
-		m_endInfo.uCol ++;
-		m_endInfo.uCharIndex ++;
-	}
-	//back characters
-	void BackChar(uint uBackNum)
-	{
-		uintptr uCount = m_strBuffer.GetLength();
-		assert( (uintptr)uBackNum <= uCount );
-		m_strBuffer.SetLength(uCount - (uintptr)uBackNum);  //may throw
-		//only in current line
-		assert( m_endInfo.uCol >= uBackNum );
-		m_endInfo.uCol -= uBackNum;
-		m_endInfo.uCharIndex -= uBackNum;
-	}
-
-	//properties
-	StringA& GetBuffer() throw()
-	{
-		return m_strBuffer;
-	}
-	uint GetID() const throw()
-	{
-		return m_uID;
-	}
-	void SetID(uint uID) throw()
-	{
-		m_uID = uID;
-	}
-	LEXER_CHAR_INFO& GetCharStart() throw()
-	{
-		return m_startInfo;
-	}
-	LEXER_CHAR_INFO& GetCharEnd() throw()
-	{
-		return m_endInfo;
-	}
-	const CplErrorBuffer& GetErrorString() const throw()
-	{
-		return m_eBuffer;
-	}
-	void SetErrorString(const ConstStringS& str) throw()
-	{
-		StringUtilHelper::MakeString(str, m_eBuffer);
-	}
-	StringA& GetData() throw()
-	{
-		return m_strData;
-	}
-
-private:
-	StringA m_strBuffer;  //token string
-	LEXER_CHAR_INFO m_startInfo;
-	LEXER_CHAR_INFO m_endInfo;
-	uint m_uID;  //token id
-	//additional error string
-	CplErrorBuffer m_eBuffer;
-	//additional data
-	StringA m_strData;
-
-private:
-	//noncopyable
-};
-
-// LexerTable
-
-class LexerTable
-{
-public:
-	LexerTable() throw()
-	{
-	}
-	~LexerTable() throw()
+	~LexerTables() throw()
 	{
 	}
 
@@ -224,110 +100,8 @@ private:
 
 private:
 	//noncopyable
-};
-
-// ILexerAction
-class NOVTABLE ILexerAction
-{
-public:
-	// info : all fields can be revised
-	virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info) = 0;
-};
-
-// common actions
-
-// Lexer_CommentStartAction
-class Lexer_CommentStartAction : public ILexerAction
-{
-public:
-	virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
-	{
-		CallResult cr;
-		byte ch;
-		//next char
-		cr = _get_next_char(stream, info, ch);
-		if( cr.IsFailed() )
-			return ;
-		do {
-			//CR
-			if( ch == '\r' ) {
-				(info.GetCharEnd().uRow) ++;
-				info.GetCharEnd().uCol = 0;
-				//next char
-				cr = _get_next_char(stream, info, ch);
-				if( cr.IsFailed() )
-					break;
-				if( ch != '\n' ) {
-					continue;
-				}
-			}
-			//LN
-			else if( ch == '\n' ) {
-				(info.GetCharEnd().uRow) ++;
-				info.GetCharEnd().uCol = 0;
-			}
-			//*
-			else if( ch == '*' ) {
-				(info.GetCharEnd().uCol) ++;
-				//next char
-				cr = _get_next_char(stream, info, ch);
-				if( cr.IsFailed() )
-					break;
-				if( ch == '/' ) {
-					(info.GetCharEnd().uCol) ++;
-					info.SetID(TK_NULL);
-					break;
-				}
-				continue;
-			}
-			else {
-				(info.GetCharEnd().uCol) ++;
-			} //end if
-			//next char
-			cr = _get_next_char(stream, info, ch);
-			if( cr.IsFailed() )
-				break;
-		} while( true );
-	}
-
-private:
-	static CallResult _get_next_char(RefPtr<ICharStream>& stream, LexerTokenInfo& info, byte& ch) throw()
-	{
-		CallResult cr;
-		cr = stream.Deref().GetChar(ch);
-		if( cr.GetResult() == SystemCallResults::S_EOF ) {
-			cr.SetResult(SystemCallResults::Fail);
-		}
-		if( cr.IsFailed() ) {
-			info.SetID(TK_ERROR);
-			info.SetErrorString(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("No expected comment end")));
-			return cr;
-		}
-		(info.GetCharEnd().uCharIndex) ++;
-		return cr;
-	}
-};
-
-// Lexer_SpaceAction
-class Lexer_SpaceAction : public ILexerAction
-{
-public:
-	virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
-	{
-		info.SetID(TK_NULL);
-	}
-};
-
-// Lexer_ReturnAction
-class Lexer_ReturnAction : public ILexerAction
-{
-public:
-	virtual void DoAction(INOUT RefPtr<ICharStream>& stream, INOUT LexerTokenInfo& info)
-	{
-		(info.GetCharEnd().uRow) ++;
-		info.GetCharEnd().uCol = 0;
-		info.SetID(TK_NULL);
-	}
+	LexerTables(const LexerTables&) throw();
+	LexerTables& operator=(const LexerTables&) throw();
 };
 
 // LexerParser
@@ -370,10 +144,10 @@ public:
 	}
 
 	//start parsing
-	void Start(OUT LexerTokenInfo& info)
+	void Start(OUT LexerTokenInfo& info) throw()
 	{
 		m_table.Deref().GetFSA().InitializeAsStopState();  //special
-		info.Init();  //may throw
+		info.ResetCharInfo();
 	}
 
 	// called repeatedly.

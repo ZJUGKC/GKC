@@ -209,14 +209,19 @@ public:
 	};
 
 public:
-	SingleList(const RefPtr<IMemoryManager>& mgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: m_pHead(NULL), m_uElements(0),
-			m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
+	explicit SingleList(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+						: m_pHead(NULL), m_uElements(0),
+						m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
 	~SingleList() throw()
 	{
 		RemoveAll();
+	}
+
+	void SetMemoryManager(const RefPtr<IMemoryManager>& mgr) throw()
+	{
+		m_freelist.SetMemoryManager(RefPtrHelper::GetInternalPointer(mgr));
 	}
 
 	uintptr GetCount() const throw()
@@ -600,14 +605,19 @@ public:
 	};
 
 public:
-	List(const RefPtr<IMemoryManager>& mgr, uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-		: m_pHead(NULL), m_pTail(NULL), m_uElements(0),
-		m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
+	explicit List(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+				: m_pHead(NULL), m_pTail(NULL), m_uElements(0),
+				m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
 	~List() throw()
 	{
 		RemoveAll();
+	}
+
+	void SetMemoryManager(const RefPtr<IMemoryManager>& mgr) throw()
+	{
+		m_freelist.SetMemoryManager(RefPtrHelper::GetInternalPointer(mgr));
 	}
 
 	uintptr GetCount() const throw()
@@ -1355,13 +1365,13 @@ public:
 	};
 
 public:
-	_HashTable(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
-			float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
-			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: m_mgr(mgr), m_ppBins(NULL), m_uBins(uBins), m_uElements(0),
-			m_fOptimalLoad(fOptimalLoad), m_fLowThreshold(fLowThreshold), m_fHighThreshold(fHighThreshold),
-			m_uHighRehashThreshold(Limits<uintptr>::Max), m_uLowRehashThreshold(0), m_uLockCount(0), // Start unlocked
-			m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
+	explicit _HashTable(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uBins = 17,
+						float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
+						uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+						: m_mgr(mgr), m_ppBins(NULL), m_uBins(uBins), m_uElements(0),
+						m_fOptimalLoad(fOptimalLoad), m_fLowThreshold(fLowThreshold), m_fHighThreshold(fHighThreshold),
+						m_uHighRehashThreshold(Limits<uintptr>::Max), m_uLowRehashThreshold(0), m_uLockCount(0), // Start unlocked
+						m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 		assert( uBins > 0 );
 		assert( fOptimalLoad > 0.0f );
@@ -1373,6 +1383,12 @@ public:
 	~_HashTable() throw()
 	{
 		RemoveAll();
+	}
+
+	void SetMemoryManager(const RefPtr<IMemoryManager>& mgr) throw()
+	{
+		m_mgr = mgr;
+		m_freelist.SetMemoryManager(RefPtrHelper::GetInternalPointer(mgr));
 	}
 
 	uintptr GetCount() const throw()
@@ -1584,7 +1600,7 @@ public:
 	void RemoveAt(const Iterator& iter) throw()
 	{
 		assert( iter != GetEnd() );
-		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		_Node* pPrev = NULL;
 		uintptr uBin = pNode->m_uHashCode % m_uBins;
 		assert( m_ppBins[uBin] != NULL );
@@ -1884,10 +1900,10 @@ private:
 	typedef HashList<TKey, THashTrait, TCompareTrait>  thisClass;
 
 public:
-	HashList(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
-			float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
-			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
+	explicit HashList(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uBins = 17,
+					float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
+					uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+					: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
 	{
 	}
 	~HashList() throw()
@@ -1912,10 +1928,10 @@ private:
 	typedef HashMultiList<TKey, THashTrait, TCompareTrait>  thisClass;
 
 public:
-	HashMultiList(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
-				float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
-				uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-				: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
+	explicit HashMultiList(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uBins = 17,
+						float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
+						uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+						: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
 	{
 	}
 	~HashMultiList() throw()
@@ -1951,10 +1967,10 @@ private:
 	typedef _HashTable<TKey, pairClass, THashTrait, TCompareTrait>  baseClass;
 
 public:
-	HashMap(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
-			float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
-			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
+	explicit HashMap(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uBins = 17,
+					float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
+					uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+					: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
 	{
 	}
 	~HashMap() throw()
@@ -1962,6 +1978,14 @@ public:
 	}
 
 	//add
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key);
+	}
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key));
+	}
 	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
@@ -1998,10 +2022,10 @@ private:
 	typedef _HashTable<TKey, pairClass, THashTrait, TCompareTrait>  baseClass;
 
 public:
-	HashMultiMap(const RefPtr<IMemoryManager>& mgr, uintptr uBins = 17,
-				float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
-				uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-				: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
+	explicit HashMultiMap(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uBins = 17,
+						float fOptimalLoad = 0.75f, float fLowThreshold = 0.25f, float fHighThreshold = 2.25f,
+						uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+						: baseClass(mgr, uBins, fOptimalLoad, fLowThreshold, fHighThreshold, uMinElements, uMaxElements)
 	{
 	}
 	~HashMultiMap() throw()
@@ -2009,6 +2033,14 @@ public:
 	}
 
 	//add
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key);
+	}
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key));
+	}
 	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
@@ -2238,10 +2270,10 @@ public:
 	};
 
 public:
-	_RBTree(const RefPtr<IMemoryManager>& mgr,
-			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: m_mgr(mgr), m_pRoot(NULL), m_uElements(0), m_pNil(NULL),
-			m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
+	explicit _RBTree(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(),
+					uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+					: m_mgr(mgr), m_pRoot(NULL), m_uElements(0), m_pNil(NULL),
+					m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
 	~_RBTree() throw()
@@ -2249,6 +2281,12 @@ public:
 		RemoveAll();
 		if( m_pNil != NULL )
 			m_mgr.Deref().Free(m_pNil);
+	}
+
+	void SetMemoryManager(const RefPtr<IMemoryManager>& mgr) throw()
+	{
+		m_mgr = mgr;
+		m_freelist.SetMemoryManager(RefPtrHelper::GetInternalPointer(mgr));
 	}
 
 	uintptr GetCount() const throw()
@@ -2927,9 +2965,9 @@ private:
 	typedef RBList<TKey, TCompareTrait>  thisClass;
 
 public:
-	RBList(const RefPtr<IMemoryManager>& mgr,
-			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: baseClass(mgr, uMinElements, uMaxElements)
+	explicit RBList(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(),
+					uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+					: baseClass(mgr, uMinElements, uMaxElements)
 	{
 	}
 	~RBList() throw()
@@ -2954,9 +2992,9 @@ private:
 	typedef RBMultiList<TKey, TCompareTrait>  thisClass;
 
 public:
-	RBMultiList(const RefPtr<IMemoryManager>& mgr,
-				uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-				: baseClass(mgr, uMinElements, uMaxElements)
+	explicit RBMultiList(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(),
+						uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+						: baseClass(mgr, uMinElements, uMaxElements)
 	{
 	}
 	~RBMultiList() throw()
@@ -2992,9 +3030,9 @@ private:
 	typedef _RBTree<TKey, pairClass, TCompareTrait>  baseClass;
 
 public:
-	RBMap(const RefPtr<IMemoryManager>& mgr,
-		uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-		: baseClass(mgr, uMinElements, uMaxElements)
+	explicit RBMap(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(),
+				uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+				: baseClass(mgr, uMinElements, uMaxElements)
 	{
 	}
 	~RBMap() throw()
@@ -3038,9 +3076,9 @@ private:
 	typedef _RBTree<TKey, pairClass, TCompareTrait>  baseClass;
 
 public:
-	RBMultiMap(const RefPtr<IMemoryManager>& mgr,
-			uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
-			: baseClass(mgr, uMinElements, uMaxElements)
+	explicit RBMultiMap(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(),
+						uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
+						: baseClass(mgr, uMinElements, uMaxElements)
 	{
 	}
 	~RBMultiMap() throw()

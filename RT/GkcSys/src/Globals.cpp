@@ -18,6 +18,10 @@ This file contains global variables.
 
 #include "PreComp.h"
 
+#include "_GkcSys.h"
+
+#include "base/SysDef.h"
+
 #include "Globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +57,10 @@ END_SA_GLOBAL_VARIABLE(g_sab_pool)
 BEGIN_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_com_block)>, g_scb_pool)
 END_SA_GLOBAL_VARIABLE(g_scb_pool)
 
+//Com_SA_Cache
+BEGIN_SA_GLOBAL_VARIABLE(Com_SA_Cache, g_com_sa_cache)
+END_SA_GLOBAL_VARIABLE(g_com_sa_cache)
+
 //------------------------------------------------------------------------------
 //functions
 
@@ -77,11 +85,18 @@ bool _InitGlobals() throw()
 	//scb
 	GET_SA_GLOBAL_VARIABLE(g_scb_pool).SetMemoryManager(pMgr);
 
+	//Com_SA_Cache
+	GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).SetMemoryManager(RefPtr<IMemoryManager>(pMgr));
+	GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).SetMutex(RefPtr<Mutex>(GET_SA_GLOBAL_VARIABLE(g_mutex)));
+
 	return true;
 }
 
 void _DumpGlobals() throw()
 {
+	//Com_SA_Cache
+	GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).Clear();
+
 	//no destructions
 	// scb
 	GET_SA_GLOBAL_VARIABLE(g_scb_pool).Clear();

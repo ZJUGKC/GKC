@@ -18,6 +18,12 @@ This file contains main functions for SA.
 
 #include "PreComp.h"
 
+#include "_GkcSys.h"
+
+#include "base/SysDef.h"
+
+#include "Globals.h"
+
 #include "EntryPoint.h"
 
 ////////////////////////////////////////////////////////////////////////////////

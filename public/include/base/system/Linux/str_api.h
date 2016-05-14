@@ -748,4 +748,15 @@ inline void get_absolute_path_prefix(const char_l*& sz, uintptr& len) throw()
 	len = 0;
 }
 
+inline void get_sa_extention(const char_a*& sz, uintptr& len) throw()
+{
+	sz = ".so";
+	len = 3;
+}
+inline void get_sa_extention(const char_l*& sz, uintptr& len) throw()
+{
+	sz = L".so";
+	len = 3;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

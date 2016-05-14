@@ -19,6 +19,8 @@ This file contains global variables.
 #define __GLOBALS_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "ComSACache.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +64,9 @@ DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_array_block)>, g_
 
 // share_com_block
 DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_com_block)>, g_scb_pool)
+
+// Com_SA_Cache
+DECLARE_SA_GLOBAL_VARIABLE(Com_SA_Cache, g_com_sa_cache)
 
 //functions
 

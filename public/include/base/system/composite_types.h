@@ -784,6 +784,8 @@ public:
 	}
 };
 
+#pragma pack(push, 1)
+
 // fixed_array<T, t_size>
 
 template <typename T, uintptr t_size>
@@ -924,6 +926,8 @@ protected:
 private:
 	friend class fixed_array_helper;
 };
+
+#pragma pack(pop)
 
 // fixed_array_helper
 

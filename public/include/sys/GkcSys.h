@@ -110,6 +110,61 @@ typedef _StringHelper  StringHelper;
 // StringUtilHelper
 typedef _StringUtilHelper  StringUtilHelper;
 
+// IComFactory
+typedef _IComFactory  IComFactory;
+
+#define GUID_IComFactory  GUID__IComFactory
+
+// IComSA
+typedef _IComSA  IComSA;
+
+#define GUID_IComSA  GUID__IComSA
+
+// ComponentClientHelper
+
+class ComponentClientHelper
+{
+public:
+	static CallResult GetClassObject(const StringS& strAssembly, const guid& cid, ShareCom<IComFactory>& sp) throw()
+	{
+		CallResult cr;
+		::_Com_SA_GetClassObject(strAssembly, cid, sp, cr);
+		return cr;
+	}
+	static void FreeUnusedLibraries() throw()
+	{
+		::_Com_SA_FreeUnusedLibraries();
+	}
+	static void FreeClassObject(ShareCom<IComFactory>& sp) throw()
+	{
+		CallResult cr;
+		ShareCom<IComSA> spSA;
+		_COMPONENT_INSTANCE_INTERFACE(IComFactory, IComSA, sp, spSA, cr);
+		assert( cr.IsSucceeded() );
+		spSA.Deref().LockServer(false);
+		sp.Release();
+	}
+	static CallResult CreateInstance(const ShareCom<IComFactory>& spCF, const guid& iid, ShareCom<void>& sp) throw()
+	{
+		return (const_cast<ShareCom<IComFactory>&>(spCF)).Deref().CreateInstance(iid, sp);
+	}
+	static CallResult CreateInstance(const StringS& strAssembly, const guid& cid, const guid& iid, ShareCom<void>& sp) throw()
+	{
+		CallResult cr;
+		ShareCom<IComFactory> spCF;
+		cr = GetClassObject(strAssembly, cid, spCF);
+		if( cr.IsFailed() )
+			return cr;
+		ShareCom<void> spI;
+		cr = CreateInstance(spCF, iid, spI);
+		FreeClassObject(spCF);
+		if( cr.IsFailed() )
+			return cr;
+		sp = spI;
+		return cr;
+	}
+};
+
 // IByteSequentialStream
 typedef _IByteSequentialStream  IByteSequentialStream;
 

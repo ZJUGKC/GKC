@@ -728,6 +728,8 @@ typedef const_string_helper  ConstStringHelper;
 //------------------------------------------------------------------------------
 // Fixed String
 
+#pragma pack(push, 1)
+
 // FixedStringT<Tchar, t_size>
 //   Tchar: CharA CharH CharL, CharS CharW
 template <typename Tchar, uintptr t_size>
@@ -820,6 +822,8 @@ private:
 	bool operator<=(const thisClass& right) const throw();
 	bool operator>=(const thisClass& right) const throw();
 };
+
+#pragma pack(pop)
 
 // FixedStringHelper
 

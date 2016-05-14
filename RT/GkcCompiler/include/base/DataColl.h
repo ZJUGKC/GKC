@@ -52,7 +52,7 @@ public:
 		assert( uBytes > 0 );
 		uint uRet = 0;
 		try {
-			if( SharedArrayHelper::GetBlockPointer(m_arr) == NULL ) {
+			if( m_arr.IsBlockNull() ) {
 				m_arr = SharedArrayHelper::MakeSharedArray<byte>(MemoryHelper::GetCrtMemoryManager());  //may throw
 			}
 			uintptr uCount = m_arr.GetCount();
@@ -83,6 +83,11 @@ public:
 	}
 
 //methods
+
+	void Clear() throw()
+	{
+		m_arr.RemoveAll();
+	}
 
 	//get the size
 	uint GetSize() const throw()

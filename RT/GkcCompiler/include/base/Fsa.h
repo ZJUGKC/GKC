@@ -18,6 +18,8 @@ This file contains FSA.
 #ifndef __FSA_H__
 #define __FSA_H__
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,31 +68,38 @@ typedef struct _tagFSA_Table {
 
 #pragma pack(pop)
 
+inline void _Init_Fsa_Table(FSA_TABLE& table,
+							int iMaxStateNo = 1, const FSA_STATE_ITEM* pState = NULL,
+							int iMaxMatchNo = 0, const FSA_MATCH_ITEM* pMatch = NULL) throw()
+{
+	table.iMaxStateNo = iMaxStateNo;
+	table.iMaxMatchNo = iMaxMatchNo;
+	table.pState = pState;
+	table.pMatch = pMatch;
+}
+inline void _Copy_Fsa_Table(const FSA_TABLE& src, FSA_TABLE& dest) throw()
+{
+	dest.iMaxStateNo = src.iMaxStateNo;
+	dest.iMaxMatchNo = src.iMaxMatchNo;
+	dest.pState = src.pState;
+	dest.pMatch = src.pMatch;
+}
+inline bool _Is_Fsa_Table_Null(const FSA_TABLE& table) throw()
+{
+	return table.pState == NULL || table.pMatch == NULL;
+}
+inline bool _Is_Fsa_Size_Valid(int iMaxStateNo, int iMaxMatchNo) throw()
+{
+	return iMaxStateNo >= 1 && iMaxStateNo < Limits<int>::Max
+		&& iMaxMatchNo >= 0 && iMaxMatchNo < Limits<int>::Max;
+}
+inline bool _Is_Fsa_Table_Valid(const FSA_TABLE& table) throw()
+{
+	return !_Is_Fsa_Table_Null(table) && _Is_Fsa_Size_Valid(table.iMaxStateNo, table.iMaxMatchNo);
+}
+
 //------------------------------------------------------------------------------
 // classes
-
-// DefaultFsaTraits
-
-class DefaultFsaTraits
-{
-public:
-	// state map
-	FSA_BEGIN_TRAITS_STATE_MAP(DefaultFsaTraits)
-		//transitions
-		FSA_BEGIN_STATE_TRANSITION(FSA_STATE_START)
-			FSA_STATE_TRANSITION_ENTRY(0, FSA_STATE_STOP)
-		FSA_END_STATE_TRANSITION()
-		//state
-		FSA_BEGIN_STATE_SET()
-			FSA_STATE_SET_ENTRY(FSA_STATE_STOP, FSA_STATE_START, FSA_STATE_STOP)
-		FSA_END_STATE_SET()
-	FSA_END_TRAITS_STATE_MAP()
-
-	// match map
-	FSA_BEGIN_TRAITS_MATCH_MAP(DefaultFsaTraits)
-		FSA_STATE_MATCH_ENTRY(0)
-	FSA_END_TRAITS_MATCH_MAP()
-};
 
 // FiniteStateAutomata
 
@@ -100,29 +109,19 @@ public:
 	FiniteStateAutomata() throw() : m_iCurrentState(FSA_STATE_START), m_iPrevState(FSA_STATE_START), m_iLastStopState(1), m_uBackEventNum(0), m_iMatch(0), m_uLastEventNo(0)
 	{
 		//init
-		m_table.pState = NULL;
-		m_table.iMaxStateNo = 1;
-		m_table.pMatch = NULL;
-		m_table.iMaxMatchNo = 1;
+		_Init_Fsa_Table(m_table);
 	}
 	~FiniteStateAutomata() throw()
 	{
 	}
 
-	//set parameters
-	// iMaxStateNo : Specify the maximum state No.
-	// pState : A pointer to state array.
-	// iMaxMatchNo : Specify the maximum match No.
-	// pMatch : A pointer to match array.
-	void SetParameters(int iMaxStateNo, const FSA_STATE_ITEM* pState,
-						int iMaxMatchNo, const FSA_MATCH_ITEM* pMatch) throw()
+	//set table
+	void SetTable(const FSA_TABLE& table) throw()
 	{
-		assert( iMaxStateNo >= 1 && iMaxMatchNo >= 0 && pState != NULL && pMatch != NULL );
-		m_table.iMaxStateNo = iMaxStateNo;
-		m_table.pState      = pState;
-		m_table.iMaxMatchNo = iMaxMatchNo;
-		m_table.pMatch      = pMatch;
+		assert( _Is_Fsa_Table_Valid(table) );
+		_Copy_Fsa_Table(table, m_table);
 	}
+
 	//set start state
 	void SetStartState() throw()
 	{
@@ -157,7 +156,7 @@ public:
 	// uEventNo : The input event No.
 	void ProcessState(uint uEventNo) throw()
 	{
-		assert( m_table.pState != NULL && m_table.pMatch != NULL );
+		assert( !_Is_Fsa_Table_Null(m_table) );
 		assert( m_iCurrentState > 0 && m_iCurrentState <= m_table.iMaxStateNo );
 		m_iPrevState = m_iCurrentState;
 		m_uLastEventNo = uEventNo;
@@ -165,19 +164,19 @@ public:
 		const FSA_TRANSITION_ITEM* pItem = m_table.pState[m_iCurrentState].pTransition;
 		if( pItem == NULL ) {
 			m_iCurrentState = m_table.pState[m_iCurrentState].iDefaultState;
-			_post_process_current_state(uEventNo);
+			post_process_current_state(uEventNo);
 			return ;
 		}
 		while( pItem->uEventFirstNo != FSA_LAST_EVENT_NO ) {
 			if( uEventNo >= pItem->uEventFirstNo && uEventNo <= pItem->uEventLastNo ) {
 				m_iCurrentState = pItem->iNextState;
-				_post_process_current_state(uEventNo);
+				post_process_current_state(uEventNo);
 				return ;
 			}
 			pItem ++;
 		} //end while
 		m_iCurrentState = m_table.pState[m_iCurrentState].iDefaultState;
-		_post_process_current_state(uEventNo);
+		post_process_current_state(uEventNo);
 	}
 	//Get current state
 	int GetCurrentState() const throw()
@@ -240,9 +239,9 @@ public:
 	}
 
 protected:
+	FSA_TABLE m_table;            //!< A state machine table.
 	int  m_iCurrentState;         //!< The current state.
 	int  m_iPrevState;            //!< The previous state.
-	FSA_TABLE m_table;            //!< A state machine table.
 	int  m_iLastStopState;        //!< The last stop state.
 	uintptr m_uBackEventNum;      //!< The number of events should be backed.
 	int  m_iMatch;                //!< The match No. 0 means no match (error). It must be not less than 0.
@@ -268,7 +267,7 @@ private:
 		return iMatch;
 	}
 	//post process
-	void _post_process_current_state(uint uEventNo) throw()
+	void post_process_current_state(uint uEventNo) throw()
 	{
 		if( uEventNo != FSA_END_OF_EVENT )
 			++ m_uBackEventNum;
@@ -297,35 +296,8 @@ private:
 
 private:
 	//noncopyable
-};
-
-// FiniteStateMachineT<TTraits>
-//   TTraits A class for state machine traits.
-// In class TTraits, user must define enumerations of states (from 2 to iMaxStateNo),
-//    stop states (0 or the match index of states must be <= 0), events (from 0 to iMaxEventNo) and matches (from 1 to iMaxMatchNo).
-//    The state map and match map should also be defined.
-
-template <class TTraits = DefaultFsaTraits>
-class FiniteStateMachineT : public FiniteStateAutomata
-{
-public:
-	FiniteStateMachineT() throw()
-	{
-		//init
-		RestoreParameters();
-	}
-	void RestoreParameters() throw()
-	{
-		m_table.pState = TTraits::GetStateTable(m_table.iMaxStateNo);
-		m_table.pMatch = TTraits::GetMatchTable(m_table.iMaxMatchNo);
-		assert( m_table.iMaxStateNo >= 1 );
-		assert( m_table.iMaxMatchNo >= 0 );
-		assert( m_table.pState != NULL );
-		assert( m_table.pMatch != NULL );
-	}
-
-private:
-	//noncopyable
+	FiniteStateAutomata(const FiniteStateAutomata&) throw();
+	FiniteStateAutomata& operator=(const FiniteStateAutomata&) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////

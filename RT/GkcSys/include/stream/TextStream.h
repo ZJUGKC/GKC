@@ -128,6 +128,42 @@ public:
 			return CallResult(SystemCallResults::FDBad);
 		return back_bytes_buffer(iCharNum);  //sizeof(byte)
 	}
+	virtual GKC::CallResult GetCharH(GKC::CharH& ch) throw()
+	{
+		if( m_spStream.IsBlockNull() )
+			return CallResult(SystemCallResults::FDBad);
+		return read_bytes_buffer(&ch, sizeof(CharH));
+	}
+	virtual GKC::CallResult UngetCharH(const int64& iCharNum) throw()
+	{
+		if( iCharNum <= 0 )
+			return CallResult(SystemCallResults::Invalid);
+		if( m_spStream.IsBlockNull() )
+			return CallResult(SystemCallResults::FDBad);
+		int64 iBytes;
+		CallResult cr = SafeOperators::Multiply(iCharNum, (int64)sizeof(CharH), iBytes);
+		if( cr.IsFailed() )
+			return cr;
+		return back_bytes_buffer(iBytes);
+	}
+	virtual GKC::CallResult GetCharL(GKC::CharL& ch) throw()
+	{
+		if( m_spStream.IsBlockNull() )
+			return CallResult(SystemCallResults::FDBad);
+		return read_bytes_buffer(&ch, sizeof(CharL));
+	}
+	virtual GKC::CallResult UngetCharL(const int64& iCharNum) throw()
+	{
+		if( iCharNum <= 0 )
+			return CallResult(SystemCallResults::Invalid);
+		if( m_spStream.IsBlockNull() )
+			return CallResult(SystemCallResults::FDBad);
+		int64 iBytes;
+		CallResult cr = SafeOperators::Multiply(iCharNum, (int64)sizeof(CharL), iBytes);
+		if( cr.IsFailed() )
+			return cr;
+		return back_bytes_buffer(iBytes);
+	}
 
 private:
 	void reset_buffer() throw()

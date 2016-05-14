@@ -540,4 +540,15 @@ inline void get_absolute_path_prefix(const char_h*& sz, uintptr& len) throw()
 	len = 4;
 }
 
+inline void get_sa_extention(const char_a*& sz, uintptr& len) throw()
+{
+	sz = ".dll";
+	len = 4;
+}
+inline void get_sa_extention(const char_h*& sz, uintptr& len) throw()
+{
+	sz = L".dll";
+	len = 4;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

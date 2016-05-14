@@ -2478,6 +2478,8 @@ inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const 
 
 typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp);
 
+// --<header file>--
+
 #define DECLARE_COM_FACTORY_CLASS(com_class)  \
 	class _ComFactory_##com_class : public _IComFactory  \
 	{ public:  \
@@ -2501,9 +2503,8 @@ typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>&
 	private: /* noncopyable */  \
 	_ComFactory_##com_class(const _ComFactory_##com_class&) throw();  \
 	_ComFactory_##com_class& operator=(const _ComFactory_##com_class&) throw();  \
-	};
-
-#define USE_COM_FACTORY_CLASS_NAME(com_class)  _ComFactory_##com_class
+	};  \
+	DECLARE_COM_TYPECAST(_ComFactory_##com_class)
 
 #define DECLARE_COM_SA_FACTORY_CLASS(com_class)  \
 	class _ComSAFactory_##com_class : public _ComFactory_##com_class, public _IComSA  \
@@ -2521,7 +2522,27 @@ typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>&
 	private: /* noncopyable */  \
 	_ComSAFactory_##com_class(const _ComSAFactory_##com_class&) throw();  \
 	_ComSAFactory_##com_class& operator=(const _ComSAFactory_##com_class&) throw();  \
-	};
+	};  \
+	DECLARE_COM_TYPECAST(_ComSAFactory_##com_class)
+
+// --<.h end>
+
+// --<source file>--
+
+#define IMPLEMENT_COM_FACTORY_CLASS(com_class)  \
+	BEGIN_COM_TYPECAST(_ComFactory_##com_class)  \
+		COM_TYPECAST_ENTRY(_IComFactory, _IComFactory)  \
+	END_COM_TYPECAST()
+
+#define IMPLEMENT_COM_SA_FACTORY_CLASS(com_class)  \
+	BEGIN_COM_TYPECAST(_ComSAFactory_##com_class)  \
+		COM_TYPECAST_ENTRY(_IComFactory, _ComFactory_##com_class)  \
+		COM_TYPECAST_ENTRY(_IComSA, _IComSA)  \
+	END_COM_TYPECAST()
+
+// --<.cpp end>--
+
+#define USE_COM_FACTORY_CLASS_NAME(com_class)  _ComFactory_##com_class
 
 #define USE_COM_SA_FACTORY_CLASS_NAME(com_class)  _ComSAFactory_##com_class
 
@@ -2547,7 +2568,8 @@ public:
 		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
 		if( pItem != NULL ) {
 			while( pItem->cid != NULL ) {
-				mem_zero(pItem->btFactory, _SHARE_COM_FACTORY_SIZE);
+				_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pItem->btFactory);
+				call_constructor(*pF);  //no throw
 				pItem ++;
 			}
 		}
@@ -2559,7 +2581,7 @@ public:
 		if( pItem != NULL ) {
 			while( pItem->cid != NULL ) {
 				_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pItem->btFactory);
-				pF->Release();
+				pF->~_ShareCom<_IComFactory>();
 				pItem ++;
 			}
 		}
@@ -2661,6 +2683,16 @@ private:
 SA_FUNCTION void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();  \
 SA_FUNCTION bool _SA_Com_CanUnloadNow() throw();
 
+// use _ComSABase as a base class of component class in SA
+#define DECLARE_COM_SA_BASE_CLASS  \
+class _ComSABase { public:  \
+_ComSABase() throw() { USE_COM_SA_MODULE().LockCount(); }  \
+~_ComSABase() throw() { USE_COM_SA_MODULE().UnlockCount(); }  \
+private:  /*noncopyable*/  \
+_ComSABase(const _ComSABase&) throw();  \
+_ComSABase& operator=(const _ComSABase&) throw();  \
+};
+
 // --<.h end>---
 
 // --<source file>--
@@ -2688,7 +2720,9 @@ bool _SA_Com_CanUnloadNow() throw()  \
 
 // --<.cpp end>---
 
-// component client
+// component client functions
+SA_FUNCTION void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _Com_SA_FreeUnusedLibraries() throw();
 
 //------------------------------------------------------------------------------
 // Stream
@@ -2774,9 +2808,13 @@ class NOVTABLE _ITextStream
 public:
 	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw() = 0;
 	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
-	// The return value SystemCallResult::S_EOF means the end of file is reached.
+	// The return value SystemCallResults::S_EOF means the end of file is reached.
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
+	virtual GKC::CallResult GetCharH(GKC::CharH& ch) throw() = 0;
+	virtual GKC::CallResult UngetCharH(const int64& iCharNum) throw() = 0;
+	virtual GKC::CallResult GetCharL(GKC::CharL& ch) throw() = 0;
+	virtual GKC::CallResult UngetCharL(const int64& iCharNum) throw() = 0;
 };
 
 DECLARE_GUID(GUID__ITextStream)

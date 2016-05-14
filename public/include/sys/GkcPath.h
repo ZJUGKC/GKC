@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains Path of FileSystem classes.
+This file contains Path of File System classes.
 */
 
 ////////////////////////////////////////////////////////////////////////////////

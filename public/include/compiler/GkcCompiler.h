@@ -33,6 +33,45 @@ namespace GKC {
 
 // classes
 
+// LEXER_CHAR_INFO
+typedef _LEXER_CHAR_INFO  LEXER_CHAR_INFO;
+
+// LexerTokenInfo
+typedef _LexerTokenInfo  LexerTokenInfo;
+
+// ILexerAction
+typedef _ILexerAction  ILexerAction;
+
+#define GUID_ILexerAction  GUID__ILexerAction
+
+// LexerActionHelper
+
+class LexerActionHelper
+{
+public:
+	// comment start action
+	static CallResult CreateCommentStartAction(ShareCom<ILexerAction>& sp) throw()
+	{
+		CallResult cr;
+		::_CommentStartAction_Create(sp, cr);
+		return cr;
+	}
+	// space action
+	static CallResult CreateSpaceAction(ShareCom<ILexerAction>& sp) throw()
+	{
+		CallResult cr;
+		::_SpaceAction_Create(sp, cr);
+		return cr;
+	}
+	// return action
+	static CallResult CreateReturnAction(ShareCom<ILexerAction>& sp) throw()
+	{
+		CallResult cr;
+		::_ReturnAction_Create(sp, cr);
+		return cr;
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

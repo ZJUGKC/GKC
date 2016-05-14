@@ -18,6 +18,8 @@ This file contains PDA.
 #ifndef __PDA_H__
 #define __PDA_H__
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,8 +62,8 @@ typedef struct _tagPDA_RuleItem {
 
 // PDA_TABLE
 typedef struct _tagPDA_Table {
-	const PDA_STATE_ITEM*  pState;  //!< A pointer to state array with the size iMaxStateNo + 1.
-	const PDA_RULE_ITEM*   pRule;   //!< A pointer to rule array with the size iMaxRuleNo + 1.
+	const PDA_STATE_ITEM* pState;  //!< A pointer to state array with the size iMaxStateNo + 1.
+	const PDA_RULE_ITEM*  pRule;   //!< A pointer to rule array with the size iMaxRuleNo + 1.
 	int iMaxStateNo;      //!< The maximum state No. It must not less than 2.
 	int iMaxRuleNo;       //!< The maximum rule No. It must not less than 0.
 } PDA_TABLE;

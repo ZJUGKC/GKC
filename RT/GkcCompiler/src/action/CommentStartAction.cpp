@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,28 +11,27 @@
 */
 
 /*
-This file contains memory manager functions.
+This file contains global variables for comment start action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcSys.h"
+#include "_GkcCompiler.h"
 
-#include "base/SysDef.h"
-
-#include "Globals.h"
+#include "action/CommentStartAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// CommentStartAction
 
-//CrtMemoryManager
+BEGIN_COM_TYPECAST(CommentStartAction)
+	COM_TYPECAST_ENTRY(_ILexerAction, _ILexerAction)
+END_COM_TYPECAST()
 
-GKC::IMemoryManager* _CrtMemoryManager_Get() throw()
-{
-	return GKC::get_crt_mem_mgr();
+////////////////////////////////////////////////////////////////////////////////
 }
-
 ////////////////////////////////////////////////////////////////////////////////

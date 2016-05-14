@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains memory manager functions.
+This file contains component client functions.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,13 +26,16 @@ This file contains memory manager functions.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// functions
 
-//CrtMemoryManager
-
-GKC::IMemoryManager* _CrtMemoryManager_Get() throw()
+void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()
 {
-	return GKC::get_crt_mem_mgr();
+	cr = GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).GetClassObject(strAssembly, cid, sp);
+}
+
+void _Com_SA_FreeUnusedLibraries() throw()
+{
+	GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).FreeUnusedLibraries();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

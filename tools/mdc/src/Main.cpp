@@ -18,6 +18,10 @@ This file contains main function.
 
 #include "PreComp.h"
 
+#include "Global.h"
+
+#include "ProcessFiles.h"
+
 #include "EntryPoint.h"
 
 ////////////////////////////////////////////////////////////////////////////////

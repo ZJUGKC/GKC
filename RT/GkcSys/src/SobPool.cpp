@@ -20,6 +20,8 @@ This file contains shared-object-header-block pool functions.
 
 #include "_GkcSys.h"
 
+#include "base/SysDef.h"
+
 #include "Globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////

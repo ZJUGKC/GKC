@@ -18,13 +18,15 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/public/include")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
-SET(SRC_LIST "src/Main.cpp")
+SET(SRC_LIST "src/Main.cpp" "src/action/CommentStartAction.cpp" "src/action/SpaceAction.cpp" "src/action/ReturnAction.cpp"
+	"src/Action.cpp")
 ADD_LIBRARY(GkcCompiler SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcCompiler "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")
 SET_TARGET_PROPERTIES(GkcCompiler PROPERTIES OUTPUT_NAME "GkcCompiler"
 	VERSION 1.0 SOVERSION 1
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
+TARGET_LINK_LIBRARIES(GkcCompiler GkcSys ${STRING_LINK_EXTRA_LIBS})
 
 INSTALL(TARGETS GkcCompiler
 	RUNTIME DESTINATION public/assemblies COMPONENT runtime

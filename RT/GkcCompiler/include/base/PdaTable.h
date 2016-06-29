@@ -131,6 +131,7 @@ public:
 	//state: 2 ~ iMaxStateNo
 	//transition: the count of arrTransitionNum is iMaxStateNo + 1
 	//rule: 0 ~ iMaxRuleNo
+	void Allocate(int iMaxStateNo, const ConstArray<int>& arrTransitionNum, int iMaxRuleNo)
 	{
 		assert( _Is_Pda_Size_Valid(iMaxStateNo, iMaxRuleNo) );
 		assert( arrTransitionNum.GetCount() == (uintptr)(iMaxStateNo + 1) );

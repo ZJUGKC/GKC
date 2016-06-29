@@ -130,6 +130,7 @@ public:
 	ConstStringA GetString(uint p) const throw()
 	{
 		uint uLen = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, p).get_Value();
+		return ConstStringA((CharA*)(const_cast<IMemoryAllocatorRef32&>(m_allocator.Deref()).ToPointer(p + sizeof(uint))), uLen);
 	}
 
 	//nonempty string

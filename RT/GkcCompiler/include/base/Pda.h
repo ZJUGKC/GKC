@@ -229,6 +229,7 @@ public:
 	}
 	void EndReduce(uint uRightSymbolNumber) throw()
 	{
+		assert( m_stack.GetCount() > (uintptr)(uRightSymbolNumber + 1) );
 		//remove
 		auto iter(m_stack.GetTail());
 		iter.MovePrev();

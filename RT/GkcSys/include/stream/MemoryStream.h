@@ -39,8 +39,7 @@ public:
 // _IByteSequentialStream methods
 	virtual GKC::CallResult Read(const uintptr& pv, const uint& uBytes, uint& uRead) throw()
 	{
-		if( m_array.IsBlockNull() || m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 
 		{
 			//read lock
@@ -66,8 +65,7 @@ public:
 	}
 	virtual GKC::CallResult Write(const uintptr& pv, const uint& uBytes, uint& uWritten) throw()
 	{
-		if( m_array.IsBlockNull() || m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 
 		CallResult cr;
 		{
@@ -115,8 +113,7 @@ public:
 	}
 	virtual GKC::CallResult Seek(const uint& uMethod, const int64& iOffset, int64& iNewPos) throw()
 	{
-		if( m_array.IsBlockNull() || m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 
 		CallResult cr;
 		{
@@ -184,8 +181,8 @@ public:
 	}
 	virtual GKC::CallResult SetSize(const int64& iSize) throw()
 	{
-		if( m_array.IsBlockNull() || m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
+
 		if( iSize < 0 || (uint64)iSize > (uint64)(Limits<uintptr>::Max) )  //check 32 bits
 			return CallResult(SystemCallResults::Invalid);
 
@@ -210,8 +207,7 @@ public:
 	}
 	virtual GKC::CallResult GetStatus(GKC::StorageStatus& status) throw()
 	{
-		if( m_array.IsBlockNull() || m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 
 		{
 			//read lock
@@ -249,27 +245,21 @@ public:
 		m_iPos = 0;
 		return cr;
 	}
-	virtual GKC::CallResult SetArray(const _ShareArray<byte>& sp) throw()
+	virtual void SetArray(const _ShareArray<byte>& sp) throw()
 	{
-		if( m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
-		if( sp.IsBlockNull() )
-			return CallResult(SystemCallResults::Invalid);
+		assert( is_valid() );
+		assert( !sp.IsBlockNull() );
 		m_array = sp;
 		m_iPos = 0;
-		return CallResult();
 	}
-	virtual GKC::CallResult GetArray(_ShareArray<byte>& sp) throw()
+	virtual _ShareArray<byte> GetArray() throw()
 	{
-		if( m_array.IsBlockNull() || m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
-		sp = m_array;
-		return CallResult();
+		assert( is_valid() );
+		return m_array;
 	}
 	virtual GKC::CallResult CloneTo(_ShareCom<_IByteStream>& sp) throw()
 	{
-		if( m_array.IsBlockNull() || m_rwlock.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 		CallResult cr;
 		_ShareCom<MemoryStream> spC;
 		cr = _Create_Component_Instance<MemoryStream>(spC);
@@ -284,6 +274,12 @@ public:
 		spC.Deref().m_iPos   = 0;
 		sp = spI;
 		return cr;
+	}
+
+private:
+	bool is_valid() const throw()
+	{
+		return !m_array.IsBlockNull() && !m_rwlock.IsBlockNull();
 	}
 
 private:

@@ -277,4 +277,4 @@ id : TK_TOKEN  { do_id_token }
 	;
 ```
 
-The corresponding PDA tables are shown in `ldf-gra-pda.odg` and `cpl_ldf_gra.h`.
+The corresponding PDA tables are shown in `ldf-gra-pda.odg`, `LdfGraPda.h` and `LdfGraPda.cpp`.

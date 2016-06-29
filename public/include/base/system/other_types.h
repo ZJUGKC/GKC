@@ -64,6 +64,7 @@ BEGIN_ENUM(system_call_results)
 	ENUM_VALUE_ENTRY(DiskFull, CR_DISKFULL)
 	ENUM_VALUE_ENTRY(FDBad, CR_FDBAD)
 	ENUM_VALUE_ENTRY(Corrupt, CR_CORRUPT)
+	ENUM_VALUE_ENTRY(NoAccess, CR_NOACCESS)
 END_ENUM()
 
 // byte_order_helper
@@ -749,7 +750,7 @@ public:
 template <typename T, class TAllocator, typename TPointer>
 inline T& memory_allocator_ref_to_object(const ref_ptr<TAllocator>& allocator, const TPointer& p) throw()
 {
-	return *((T*)(allocator.Deref().ToPointer(p)));
+	return *((T*)(const_cast<TAllocator&>(allocator.Deref()).ToPointer(p)));
 }
 
 // fixed_element_memory_pool
@@ -1658,11 +1659,7 @@ public:
 	void Free() throw()
 	{
 		if( m_p != NULL ) {
-			T* p = m_p;
-			for( uintptr i = 0; i < m_uCount; i ++ ) {
-				p->~T();
-				++ p;
-			}
+			call_destructors(m_p, m_uCount);
 			crt_free(m_p);
 			m_p = NULL;
 		}
@@ -1727,6 +1724,16 @@ public:
 	{
 		assert( uIndex < GetCount() );
 		m_p[uIndex] = rv_forward(t);  //may throw
+	}
+
+protected:
+	static void call_destructors(T* p, uintptr uCount) throw()
+	{
+		T* pt = p;
+		for( uintptr i = 0; i < uCount; i ++ ) {
+			pt->~T();
+			++ pt;
+		}
 	}
 
 protected:

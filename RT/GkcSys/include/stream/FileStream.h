@@ -39,40 +39,34 @@ public:
 // _IByteSequentialStream methods
 	virtual GKC::CallResult Read(const uintptr& pv, const uint& uBytes, uint& uRead) throw()
 	{
-		if( !m_hd.IsValid() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( IsOpened() );
 		return m_hd.Read((void*)pv, uBytes, uRead);
 	}
 	virtual GKC::CallResult Write(const uintptr& pv, const uint& uBytes, uint& uWritten) throw()
 	{
-		if( !m_hd.IsValid() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( IsOpened() );
 		return m_hd.Write((const void*)pv, uBytes, uWritten);
 	}
 
 // _IByteStream methods
 	virtual GKC::CallResult Commit() throw()
 	{
-		if( !m_hd.IsValid() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( IsOpened() );
 		return file_io_handle_helper::Flush(m_hd);
 	}
 	virtual GKC::CallResult Seek(const uint& uMethod, const int64& iOffset, int64& iNewPos) throw()
 	{
-		if( !m_hd.IsValid() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( IsOpened() );
 		return file_io_handle_helper::Seek(m_hd, iOffset, iNewPos, uMethod);
 	}
 	virtual GKC::CallResult SetSize(const int64& iSize) throw()
 	{
-		if( !m_hd.IsValid() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( IsOpened() );
 		return file_io_handle_helper::SetSize(m_hd, iSize);
 	}
 	virtual GKC::CallResult GetStatus(GKC::StorageStatus& status) throw()
 	{
-		if( !m_hd.IsValid() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( IsOpened() );
 		return file_io_handle_helper::GetStatus(m_hd, status);
 	}
 

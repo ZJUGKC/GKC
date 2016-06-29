@@ -333,7 +333,7 @@ public:
 	}
 	Iterator Find(const T& t, const Iterator& iterAfter) const throw()
 	{
-		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterAfter.m_refNode));
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterAfter.m_pos.m_refNode));
 		if( pNode == NULL ) {
 			pNode = m_pHead;  //start at head
 		}
@@ -829,7 +829,7 @@ public:
 			return AddHead(); // insert before nothing -> head of the list
 
 		// Insert it before position
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		_Node* pNewNode = new_node(pOldNode->m_pPrev, pOldNode);
 		if( pOldNode->m_pPrev != NULL ) {
 			pOldNode->m_pPrev->m_pNext = pNewNode;
@@ -847,7 +847,7 @@ public:
 		if( iter == GetEnd() )
 			return AddHead(t);
 
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		_Node* pNewNode = new_node(t, pOldNode->m_pPrev, pOldNode);
 		if( pOldNode->m_pPrev != NULL ) {
 			pOldNode->m_pPrev->m_pNext = pNewNode;
@@ -865,7 +865,7 @@ public:
 		if( iter == GetEnd() )
 			return AddHead(rv_forward(t));
 
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		_Node* pNewNode = new_node(rv_forward(t), pOldNode->m_pPrev, pOldNode);
 		if( pOldNode->m_pPrev != NULL ) {
 			pOldNode->m_pPrev->m_pNext = pNewNode;
@@ -885,7 +885,7 @@ public:
 			return AddTail(); // insert after nothing -> tail of the list
 
 		// Insert it after position
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		_Node* pNewNode = new_node(pOldNode, pOldNode->m_pNext);
 		if( pOldNode->m_pNext != NULL ) {
 			pOldNode->m_pNext->m_pPrev = pNewNode;
@@ -903,7 +903,7 @@ public:
 		if( iter == GetEnd() )
 			return AddTail(t);
 
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		_Node* pNewNode = new_node(t, pOldNode, pOldNode->m_pNext);
 		if( pOldNode->m_pNext != NULL ) {
 			pOldNode->m_pNext->m_pPrev = pNewNode;
@@ -921,7 +921,7 @@ public:
 		if( iter == GetEnd() )
 			return AddTail(rv_forward(t));
 
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		_Node* pNewNode = new_node(rv_forward(t), pOldNode, pOldNode->m_pNext);
 		if( pOldNode->m_pNext != NULL ) {
 			pOldNode->m_pNext->m_pPrev = pNewNode;
@@ -940,7 +940,7 @@ public:
 	{
 		assert( iter != GetEnd() );
 
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		// remove pOldNode from list
 		if( pOldNode == m_pHead )
 			m_pHead = pOldNode->m_pNext;
@@ -959,7 +959,7 @@ public:
 	{
 		assert( iter != GetEnd() );
 
-		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		if( pNode == m_pHead ) {
 			// Already at the head
 			return ;
@@ -985,7 +985,7 @@ public:
 	{
 		assert( iter != GetEnd() );
 
-		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		if( pNode == m_pTail ) {
 			// Already at the tail
 			return ;
@@ -1017,8 +1017,8 @@ public:
 			return ;
 		}
 
-		_Node* pNode1 = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter1.m_refNode));
-		_Node* pNode2 = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter2.m_refNode));
+		_Node* pNode1 = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter1.m_pos.m_refNode));
+		_Node* pNode2 = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter2.m_pos.m_refNode));
 		if( pNode2->m_pNext == pNode1 ) {
 			// Swap pNode2 and pNode1 so that the next case works
 			_Node* pNodeTemp = pNode1;
@@ -1104,7 +1104,7 @@ public:
 	}
 	Iterator Find(const T& t, const Iterator& iterAfter) const throw()
 	{
-		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterAfter.m_refNode));
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterAfter.m_pos.m_refNode));
 		if( pNode == NULL ) {
 			pNode = m_pHead;  //start at head
 		}
@@ -1493,7 +1493,7 @@ public:
 	Iterator FindNext(const Iterator& iter) const throw()
 	{
 		assert( iter != GetEnd() );
-		_Node*  pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node*  pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		uintptr uHash = pNode->m_uHashCode;
 		const TKey& key = KeyHelper::GetKey<const TKey>(pNode->m_t);
 		pNode = pNode->m_pNext;
@@ -2424,7 +2424,7 @@ public:
 	Iterator FindNext(const Iterator& iter) const throw()
 	{
 		assert( iter != GetEnd() );
-		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		const TKey& key = KeyHelper::GetKey<const TKey>(pNode->m_t);
 		pNode = to_successor_node(pNode);
 		if( pNode == NULL || !TCompareTrait::IsEQ(key, KeyHelper::GetKey(pNode->m_t)) )
@@ -2503,7 +2503,7 @@ public:
 	void RemoveAt(const Iterator& iter) throw()
 	{
 		assert( iter != GetEnd() );
-		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_refNode));
+		_Node* pNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
 		delete_node(pNode);
 	}
 

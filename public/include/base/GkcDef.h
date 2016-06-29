@@ -1082,7 +1082,7 @@ while( !test_predicate() )
 	Wait
 change shared data
 unlock Mutex
-[option] [lock] [check shared data] Signal or SignalAll for other thread [unlock]
+[option] [lock] [check shared data] Signal or SignalAll for other threads [unlock]
 */
 typedef inprocess_condition  Condition;
 

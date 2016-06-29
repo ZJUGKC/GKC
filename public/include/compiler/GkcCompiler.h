@@ -36,6 +36,9 @@ namespace GKC {
 // LEXER_CHAR_INFO
 typedef _LEXER_CHAR_INFO  LEXER_CHAR_INFO;
 
+// LEXER_WORD_INFO
+typedef _LEXER_WORD_INFO  LEXER_WORD_INFO;
+
 // LexerTokenInfo
 typedef _LexerTokenInfo  LexerTokenInfo;
 
@@ -68,6 +71,76 @@ public:
 	{
 		CallResult cr;
 		::_ReturnAction_Create(sp, cr);
+		return cr;
+	}
+};
+
+// ILexerTables
+typedef _ILexerTables  ILexerTables;
+
+#define GUID_ILexerTables  GUID__ILexerTables
+
+// ILexerAnalyzer
+typedef _ILexerAnalyzer  ILexerAnalyzer;
+
+#define GUID_ILexerAnalyzer  GUID__ILexerAnalyzer
+
+// IGrammarSymbolData
+typedef _IGrammarSymbolData  IGrammarSymbolData;
+
+#define GUID_IGrammarSymbolData  GUID__IGrammarSymbolData
+
+// IGrammarError
+typedef _IGrammarError  IGrammarError;
+
+#define GUID_IGrammarError  GUID__IGrammarError
+
+// IGrammarAction
+typedef _IGrammarAction  IGrammarAction;
+
+#define GUID_IGrammarAction  GUID__IGrammarAction
+
+// IGrammarTables
+typedef _IGrammarTables  IGrammarTables;
+
+#define GUID_IGrammarTables  GUID__IGrammarTables
+
+// IGrammarAnalyzer
+typedef _IGrammarAnalyzer  IGrammarAnalyzer;
+
+#define GUID_IGrammarAnalyzer  GUID__IGrammarAnalyzer
+
+// CplAnalyzerHelper
+
+class CplAnalyzerHelper
+{
+public:
+	// lexer tables
+	static CallResult CreateLexerTables(ShareCom<ILexerTables>& sp) throw()
+	{
+		CallResult cr;
+		::_LexerTables_Create(sp, cr);
+		return cr;
+	}
+	// lexer analyzer
+	static CallResult CreateLexerAnalyzer(ShareCom<ILexerAnalyzer>& sp) throw()
+	{
+		CallResult cr;
+		::_LexerAnalyzer_Create(sp, cr);
+		return cr;
+	}
+	// grammar tables
+	static CallResult CreateGrammarTables(ShareCom<IGrammarTables>& sp) throw()
+	{
+		CallResult cr;
+		::_GrammarTables_Create(sp, cr);
+		return cr;
+	}
+	// grammar analyzer
+	static CallResult CreateGrammarAnalyzer(ShareCom<IGrammarAnalyzer>& sp) throw()
+	{
+		CallResult cr;
+		::_GrammarAnalyzer_Create(sp, cr);
 		return cr;
 	}
 };

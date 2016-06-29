@@ -32,6 +32,7 @@ namespace GKC {
 
 // --<header file>--
 
+// DECLARE_FSA_TRAIT_CLASS(cls_name)
 #define DECLARE_FSA_TRAIT_CLASS(cls_name)  \
 	class cls_name { public:  \
 	static const FSA_TABLE& GetTable() throw(); };
@@ -40,6 +41,7 @@ namespace GKC {
 
 // --<source file>--
 
+// BEGIN_FSA_TRAIT_CLASS(cls_name)
 #define BEGIN_FSA_TRAIT_CLASS(cls_name)
 
 // FSA_BEGIN_STATE_TRANSITION(state_name)
@@ -67,7 +69,7 @@ namespace GKC {
 // FSA_BEGIN_STATE_SET()
 #define FSA_BEGIN_STATE_SET()  \
 	const FSA_STATE_ITEM _ti_state_map[] = {  \
-	{ NULL, 0, 0 },
+	{NULL, 0, 0},
 
 // FSA_STATE_SET_ENTRY(default_state, state_name, match_index)
 //   default_state : The default state.
@@ -84,7 +86,7 @@ namespace GKC {
 // FSA_BEGIN_MATCH()
 #define FSA_BEGIN_MATCH()  \
 	const FSA_MATCH_ITEM _ti_match_map[] = {  \
-	{ 0 },
+	{0},
 
 // FSA_MATCH_ENTRY(match)
 //   match : Specify the match No. 0 means no match. If this value is less than zero, the last event should be unput. This map has at least one entry.
@@ -93,8 +95,9 @@ namespace GKC {
 
 // FSA_END_MATCH()
 #define FSA_END_MATCH()  \
-	{ 0 } };
+	{0} };
 
+// END_FSA_TRAIT_CLASS(cls_name)
 #define END_FSA_TRAIT_CLASS(cls_name)  \
 const FSA_TABLE _ti_fsa_table = {  \
 (int)(sizeof(_ti_state_map) / sizeof(FSA_STATE_ITEM)) - 2,  \
@@ -115,10 +118,15 @@ class FsaTable
 public:
 	explicit FsaTable(const RefPtr<IMemoryAllocatorRef32>& allocator) throw() : m_allocator(allocator)
 	{
-		_Init_Fsa_Table(m_table);
+		Reset();
 	}
 	~FsaTable() throw()
 	{
+	}
+
+	void Reset() throw()
+	{
+		_Init_Fsa_Table(m_table);
 	}
 
 	//state: 1 ~ iMaxStateNo
@@ -127,19 +135,20 @@ public:
 	void Allocate(int iMaxStateNo, const ConstArray<int>& arrTransitionNum, int iMaxMatchNo)
 	{
 		assert( _Is_Fsa_Size_Valid(iMaxStateNo, iMaxMatchNo) );
-		assert( arrTransitionNum.GetCount() == iMaxStateNo + 1 );
+		assert( arrTransitionNum.GetCount() == (uintptr)(iMaxStateNo + 1) );
 		assert( _Is_Fsa_Table_Null(m_table) );
 		//transition number
 		int total_transition_num = 0;
 		for( int i = 1; i <= iMaxStateNo; i ++ ) {
 			int iNum = arrTransitionNum[i].get_Value();
 			assert( iNum > 0 );
+			iNum = SafeOperators::AddThrow(iNum, (int)1);  //may throw
 			total_transition_num = SafeOperators::AddThrow(total_transition_num, iNum);  //may throw
 		}
 		//allocate
 		uint uBytes, uBytes1, uBytes2;
-		uBytes1 = SafeOperators::MultiplyThrow((uint)iMaxStateNo + 1, (uint)sizeof(FSA_STATE_ITEM));  //may throw
-		uBytes2 = SafeOperators::MultiplyThrow((uint)iMaxMatchNo + 1, (uint)sizeof(FSA_MATCH_ITEM));  //may throw
+		uBytes1 = SafeOperators::MultiplyThrow((uint)iMaxStateNo + 2, (uint)sizeof(FSA_STATE_ITEM));  //may throw
+		uBytes2 = SafeOperators::MultiplyThrow((uint)iMaxMatchNo + 2, (uint)sizeof(FSA_MATCH_ITEM));  //may throw
 		uBytes  = SafeOperators::AddThrow(uBytes1, uBytes2);  //may throw
 		uBytes1 = SafeOperators::MultiplyThrow((uint)total_transition_num, (uint)sizeof(FSA_TRANSITION_ITEM));  //may throw
 		uBytes  = SafeOperators::AddThrow(uBytes, uBytes1);  //may throw
@@ -151,30 +160,52 @@ public:
 		pState[0].iDefaultState = 0;
 		pState[0].pTransition = NULL;
 		pState[0].iMatchIndex = 0;
-		FSA_MATCH_ITEM* pMatch = (FSA_MATCH_ITEM*)((byte*)pState + sizeof(FSA_STATE_ITEM) * (iMaxStateNo + 1));
+		pState[iMaxStateNo + 1].iDefaultState = 0;
+		pState[iMaxStateNo + 1].pTransition = NULL;
+		pState[iMaxStateNo + 1].iMatchIndex = 0;
+		FSA_MATCH_ITEM* pMatch = (FSA_MATCH_ITEM*)((byte*)pState + sizeof(FSA_STATE_ITEM) * (iMaxStateNo + 2));
 		pMatch[0].iMatch = 0;
-		FSA_TRANSITION_ITEM* pItem = (FSA_TRANSITION_ITEM*)((byte*)pMatch + sizeof(FSA_MATCH_ITEM) * (iMaxMatchNo + 1));
+		pMatch[iMaxMatchNo + 1].iMatch = 0;
+		FSA_TRANSITION_ITEM* pItem = (FSA_TRANSITION_ITEM*)((byte*)pMatch + sizeof(FSA_MATCH_ITEM) * (iMaxMatchNo + 2));
 		for( int i = 1; i <= iMaxStateNo; i ++ ) {
 			pState[i].pTransition = pItem;
 			pItem += (arrTransitionNum[i].get_Value());
+			pItem->uEventFirstNo = FSA_LAST_EVENT_NO;
+			pItem->uEventLastNo  = FSA_LAST_EVENT_NO;
+			pItem->iNextState    = 0;
+			pItem ++;
 		}
 		//parameters
 		_Init_Fsa_Table(m_table, iMaxStateNo, pState, iMaxMatchNo, pMatch);
 	}
+
 	//set state
 	void SetState(int iState, int iDefaultState, int iMatchIndex) throw()
 	{
 		assert( iState > 0 && iState <= m_table.iMaxStateNo );
-		assert( m_table.pState != NULL );
-		m_table.pState[iState].iDefaultState = iDefaultState;
-		m_table.pState[iState].iMatchIndex = iMatchIndex;
+		assert( !_Is_Fsa_Table_Null(m_table) );
+		FSA_STATE_ITEM* pItem = const_cast<FSA_STATE_ITEM*>(m_table.pState);
+		pItem[iState].iDefaultState = iDefaultState;
+		pItem[iState].iMatchIndex = iMatchIndex;
 	}
 	//set match
 	void SetMatch(int iMatchIndex, int iMatch) throw()
 	{
 		assert( iMatchIndex > 0 && iMatchIndex <= m_table.iMaxMatchNo );
-		assert( m_table.pMatch != NULL );
-		m_table.pMatch[iMatchIndex].iMatch = iMatch;
+		assert( !_Is_Fsa_Table_Null(m_table) );
+		FSA_MATCH_ITEM* pItem = const_cast<FSA_MATCH_ITEM*>(m_table.pMatch);
+		pItem[iMatchIndex].iMatch = iMatch;
+	}
+	//set transition
+	void SetTransition(int iState, int iIndex, uint uEventFirstNo, uint uEventLastNo, int iNextState) throw()
+	{
+		assert( iState > 0 && iState <= m_table.iMaxStateNo );
+		assert( !_Is_Fsa_Table_Null(m_table) );
+		FSA_TRANSITION_ITEM* pItem = const_cast<FSA_TRANSITION_ITEM*>(m_table.pState[iState].pTransition);
+		assert( pItem != NULL );
+		pItem[iIndex].uEventFirstNo = uEventFirstNo;
+		pItem[iIndex].uEventLastNo  = uEventLastNo;
+		pItem[iIndex].iNextState    = iNextState;
 	}
 
 	const FSA_TABLE& GetTable() const throw()

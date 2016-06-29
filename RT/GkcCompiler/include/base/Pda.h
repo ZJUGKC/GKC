@@ -64,41 +64,47 @@ typedef struct _tagPDA_RuleItem {
 typedef struct _tagPDA_Table {
 	const PDA_STATE_ITEM* pState;  //!< A pointer to state array with the size iMaxStateNo + 1.
 	const PDA_RULE_ITEM*  pRule;   //!< A pointer to rule array with the size iMaxRuleNo + 1.
-	int iMaxStateNo;      //!< The maximum state No. It must not less than 2.
-	int iMaxRuleNo;       //!< The maximum rule No. It must not less than 0.
+	int iMaxStateNo;      //!< The maximum state No. It must not be less than 2.
+	int iMaxRuleNo;       //!< The maximum rule No. It must not be less than 0.
 } PDA_TABLE;
 
 #pragma pack(pop)
 
+inline void _Init_Pda_Table(PDA_TABLE& table,
+							int iMaxStateNo = 2, PDA_STATE_ITEM* pState = NULL,
+							int iMaxRuleNo = 0, PDA_RULE_ITEM* pRule = NULL) throw()
+{
+	table.iMaxStateNo = iMaxStateNo;
+	table.iMaxRuleNo  = iMaxRuleNo;
+	table.pState = pState;
+	table.pRule  = pRule;
+}
+inline void _Copy_Pda_Table(const PDA_TABLE& src, PDA_TABLE& dest) throw()
+{
+	dest.iMaxStateNo = src.iMaxStateNo;
+	dest.iMaxRuleNo  = src.iMaxRuleNo;
+	dest.pState = src.pState;
+	dest.pRule  = src.pRule;
+}
+inline bool _Is_Pda_Table_Null(const PDA_TABLE& table) throw()
+{
+	return table.pState == NULL || table.pRule == NULL;
+}
+inline bool _Is_Pda_Size_Valid(int iMaxStateNo, int iMaxRuleNo) throw()
+{
+	return iMaxStateNo >= 2 && iMaxStateNo < Limits<int>::Max - 1
+		&& iMaxRuleNo >= 0 && iMaxRuleNo < Limits<int>::Max - 1;  //with last NULL item
+}
+inline bool _Is_Pda_Table_Valid(const PDA_TABLE& table) throw()
+{
+	return !_Is_Pda_Table_Null(table) && _Is_Pda_Size_Valid(table.iMaxStateNo, table.iMaxRuleNo);
+}
+
 //------------------------------------------------------------------------------
 // classes
 
-// DefaultPdaTraits
+// PushDownAutomata
 
-class DefaultPdaTraits
-{
-public:
-	// state map
-	PDA_BEGIN_TRAITS_STATE_MAP(DefaultPdaTraits)
-		//transitions
-		PDA_BEGIN_STATE_TRANSITION(PDA_STATE_START)
-			PDA_STATE_TRANSITION_ENTRY(1, PDA_STATE_ACCEPTED)
-		PDA_END_STATE_TRANSITION()
-		//state
-		PDA_BEGIN_STATE_SET()
-			PDA_STATE_SET_ENTRY(PDA_STATE_START)
-		PDA_END_STATE_SET()
-	PDA_END_TRAITS_STATE_MAP()
-
-	// rule map
-	PDA_BEGIN_TRAITS_RULE_MAP(DefaultPdaTraits)
-		PDA_RULE_ENTRY(0, 1)    // S -> start_nonterminal $
-	PDA_END_TRAITS_RULE_MAP()
-};
-
-// PushDownAutomata<T>
-
-template <typename T>
 class PushDownAutomata
 {
 private:
@@ -107,45 +113,32 @@ private:
 	public:
 		uint m_uEvent;  //input event
 		int  m_iState;  //state after the event
-		T m_t;  //user data
 	};
 
 public:
-	PushDownAutomata() throw() : m_uCurrentEvent(PDA_NO_EVENT), m_iCurrentActState(PDA_STATE_START), m_stack(MemoryHelper::GetCrtMemoryManager()),
-								m_uRightSymbolNumber(0)
+	PushDownAutomata() throw() : m_uCurrentEvent(PDA_NO_EVENT), m_iCurrentActState(PDA_STATE_START), m_stack(MemoryHelper::GetCrtMemoryManager())
 	{
-		m_table.pState = NULL;
-		m_table.iMaxStateNo = PDA_STATE_START;
-		m_table.pRule  = NULL;
-		m_table.iMaxRuleNo  = 0;
+		_Init_Pda_Table(m_table);
 	}
 	~PushDownAutomata() throw()
 	{
 	}
 
-	//set parameters
-	void SetParameters(int iMaxStateNo, const PDA_STATE_ITEM* pState,
-						int iMaxRuleNo, const PDA_RULE_ITEM* pRule) throw()
+	//set table
+	void SetTable(const PDA_TABLE& table) throw()
 	{
-		assert( iMaxStateNo >= 2 && pState != NULL );
-		assert( iMaxRuleNo >= 0 && pRule != NULL );
-		m_table.iMaxStateNo = iMaxStateNo;
-		m_table.pState      = pState;
-		m_table.iMaxRuleNo  = iMaxRuleNo;
-		m_table.pRule       = pRule;
+		assert( _Is_Pda_Table_Valid(table) );
+		_Copy_Pda_Table(table, m_table);
 	}
 
 	//start
 	void SetStartState()
 	{
 		m_stack.RemoveAll();
-		if( SharedArrayHelper::GetBlockPointer(m_arrSymbol) == NULL )
-			m_arrSymbol = SharedArrayHelper::MakeSharedArray<RefPtr<T>>(MemoryHelper::GetCrtMemoryManager());  //may throw
-		m_arrSymbol.RemoveAll();
 		m_uCurrentEvent = PDA_NO_EVENT;
 		m_iCurrentActState = PDA_STATE_START;
 		//push
-		auto iter = m_stack.AddTail();  //may throw
+		auto iter(m_stack.AddTail());  //may throw
 		//S0
 		_SymItem& item = iter.get_Value();
 		item.m_uEvent = PDA_NO_EVENT;
@@ -162,11 +155,14 @@ public:
 		assert( uEvent != PDA_NO_EVENT );
 		m_uCurrentEvent = uEvent;
 	}
+	void ClearEvent() throw()
+	{
+		m_uCurrentEvent = PDA_NO_EVENT;
+	}
 	void ProcessEvent() throw()
 	{
 		//stack top
-		_SymItem& item = get_stack_top();
-		process_event(item.m_iState, m_uCurrentEvent);
+		process_event(get_stack_top().m_iState, m_uCurrentEvent);
 	}
 	uint GetCurrentEvent() const throw()
 	{
@@ -198,62 +194,49 @@ public:
 		return m_stack.GetCount() == 1 && m_stack.GetHead().get_Value().m_iState == PDA_STATE_START;
 	}
 
-	//actions
-	T& Shift()
+//actions
+
+	// return : event no.
+	uint Shift()
 	{
 		assert( m_iCurrentActState >= PDA_STATE_START );
 		//push
-		auto iter = m_stack.AddTail();  //may throw
+		auto iter(m_stack.AddTail());  //may throw
 		//state
 		_SymItem& item = iter.get_Value();
 		item.m_uEvent = m_uCurrentEvent;
 		item.m_iState = m_iCurrentActState;
 		//clear
 		m_uCurrentEvent = PDA_NO_EVENT;
-		return item.m_t;
+		return item.m_uEvent;
 	}
 
-	void BeginReduce(int iRule)
+	// return : the number of symbols in right part of a production rule
+	uint BeginReduce(int iRule, uint& uLeftEventNo)
 	{
-		assert( m_table.pRule != NULL );
+		assert( !_Is_Pda_Table_Null(m_table) );
 		assert( iRule > 0 );
 		//rule
-		uint uLeftEventNo = m_table.pRule[iRule].uLeftEventNo;
+		uLeftEventNo = m_table.pRule[iRule].uLeftEventNo;
 		uint uRightSymbolNumber = m_table.pRule[iRule].uRightSymbolNumber;
 		assert( uRightSymbolNumber > 0 );
-		//symbol array
-		if( SharedArrayHelper::GetBlockPointer(m_arrSymbol) == NULL )
-			m_arrSymbol = SharedArrayHelper::MakeSharedArray<RefPtr<T>>(MemoryHelper::GetCrtMemoryManager());  //may throw
-		m_arrSymbol.RemoveAll();
 		//push event
-		auto iter = m_stack.AddTail();  //may throw
+		auto iter(m_stack.AddTail());  //may throw
 		//left event
 		_SymItem& item = iter.get_Value();
 		item.m_uEvent = uLeftEventNo;
-		//rule symbols
-		//0 --- left symbol, 1, 2, 3, ... --- right symbols
-		m_arrSymbol.Add(RefPtr<T>(get_stack_top().m_t));  //may throw
-		for( uint i = 1; i <= uRightSymbolNumber; i ++ ) {
-			m_arrSymbol.Add(RefPtr<T>(get_stack_right_sym(i, uRightSymbolNumber).m_t));  //may throw
-		}
-		m_uRightSymbolNumber = uRightSymbolNumber;
+		return uRightSymbolNumber;
 	}
-	// 0 --- left symbol, 1, 2, 3, ... --- right symbols
-	SharedArray<RefPtr<T>>& GetReduceSymbolArray() throw()
+	void EndReduce(uint uRightSymbolNumber) throw()
 	{
-		return m_arrSymbol;
-	}
-	void EndReduce() throw()
-	{
-		assert( m_stack.GetCount() > (m_uRightSymbolNumber + 1) );
 		//remove
 		auto iter(m_stack.GetTail());
 		iter.MovePrev();
-		while( m_uRightSymbolNumber > 0 ) {
+		while( uRightSymbolNumber > 0 ) {
 			auto iter1(iter);
 			iter.MovePrev();
 			m_stack.RemoveAt(iter1);
-			m_uRightSymbolNumber --;
+			uRightSymbolNumber --;
 		}
 		//new state
 		process_event(iter.get_Value().m_iState, get_stack_top().m_uEvent);
@@ -262,14 +245,14 @@ public:
 	}
 
 	//error restore
-	//  return : true --- success, false --- should input a new event and call NextRevert repeatedly until returning true
+	//  return : true --- success, false --- should input a new event and call RevertAgain repeatedly until returning true
 	bool Revert() throw()
 	{
 		return revert_with_current_event(false);
 	}
 	//input the next event and try this method
 	//  do not input PDA_END_OF_EVENT
-	bool NextRevert() throw()
+	bool RevertAgain() throw()
 	{
 		assert( m_uCurrentEvent != PDA_END_OF_EVENT );
 		return revert_with_current_event(true);
@@ -279,7 +262,7 @@ private:
 	//process event
 	void process_event(int iCurrentState, uint uEventNo) throw()
 	{
-		assert( m_table.pState != NULL );
+		assert( !_Is_Pda_Table_Null(m_table) );
 		assert( iCurrentState >= PDA_STATE_START );
 		//look table
 		const PDA_TRANSITION_ITEM* pItem = m_table.pState[iCurrentState].pTransition;
@@ -301,13 +284,6 @@ private:
 	{
 		assert( m_stack.GetCount() > 0 );
 		return m_stack.GetTail().get_Value();
-	}
-	_SymItem& get_stack_right_sym(uint uIndex, uint uRightSymbolNumber) throw()
-	{
-		assert( uIndex <= uRightSymbolNumber );
-		uintptr uCount = m_stack.GetCount();
-		assert( uCount > uRightSymbolNumber );
-		return m_stack.FindIndex(uCount - uRightSymbolNumber - 1 + uIndex - 1).get_Value();
 	}
 	//revert
 	bool revert_with_current_event(bool bFromTop) throw()
@@ -338,48 +314,15 @@ private:
 	}
 
 protected:
-	uint m_uCurrentEvent;    //current input event
-	int m_iCurrentActState;  //current action & state
 	PDA_TABLE m_table;
-	List<_SymItem> m_stack;  //symbol stack
-	//reduce
-	uint m_uRightSymbolNumber;  //the number of symbols in right part of a production rule
-	SharedArray<RefPtr<T>> m_arrSymbol;  //the symbols of a production rule
+	uint m_uCurrentEvent;     //current input event
+	int  m_iCurrentActState;  //current action & state
+	List<_SymItem> m_stack;   //symbol stack
 
 private:
 	//noncopyable
-};
-
-// PushDownMachineT<T, TTraits>
-//   TTraits A class for PDA traits.
-// In class TTraits, user must define enumerations of states (from 3 to iMaxStateNo),
-//    events (from 1 to iMaxEventNo).
-//    The state map and rule map should be defined.
-
-template <typename T, class TTraits = DefaultPdaTraits>
-class PushDownMachineT : public PushDownAutomata<T>
-{
-public:
-	typedef PushDownAutomata<T>  baseClass;
-
-public:
-	PushDownMachineT() throw()
-	{
-		//init
-		RestoreParameters();
-	}
-	void RestoreParameters() throw()
-	{
-		baseClass::m_table.pState = TTraits::GetStateTable(baseClass::m_table.iMaxStateNo);
-		baseClass::m_table.pRule  = TTraits::GetRuleTable(baseClass::m_table.iMaxRuleNo);
-		assert( baseClass::m_table.iMaxStateNo >= PDA_STATE_START );
-		assert( baseClass::m_table.pState != NULL );
-		assert( baseClass::m_table.iMaxRuleNo >= 0 );
-		assert( baseClass::m_table.pRule != NULL );
-	}
-
-private:
-	//noncopyable
+	PushDownAutomata(const PushDownAutomata&) throw();
+	PushDownAutomata& operator=(const PushDownAutomata&) throw();
 };
 
 ////////////////////////////////////////////////////////////////////////////////

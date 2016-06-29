@@ -2772,8 +2772,8 @@ class NOVTABLE _IMemoryUtility
 {
 public:
 	virtual GKC::CallResult Initialize() throw() = 0;
-	virtual GKC::CallResult SetArray(const _ShareArray<byte>& sp) throw() = 0;
-	virtual GKC::CallResult GetArray(_ShareArray<byte>& sp) throw() = 0;
+	virtual void SetArray(const _ShareArray<byte>& sp) throw() = 0;
+	virtual _ShareArray<byte> GetArray() throw() = 0;
 	virtual GKC::CallResult CloneTo(_ShareCom<_IByteStream>& sp) throw() = 0;
 };
 

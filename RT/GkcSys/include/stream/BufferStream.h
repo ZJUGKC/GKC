@@ -39,8 +39,7 @@ public:
 // _IByteSequentialStream methods
 	virtual GKC::CallResult Read(const uintptr& pv, const uint& uBytes, uint& uRead) throw()
 	{
-		if( m_pBuffer == NULL )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 		uRead = uBytes;
 		if( (int64)uBytes > m_iSize - m_iPos )
 			uRead = (uint)(m_iSize - m_iPos);
@@ -62,8 +61,8 @@ public:
 	}
 	virtual GKC::CallResult Seek(const uint& uMethod, const int64& iOffset, int64& iNewPos) throw()
 	{
-		if( m_pBuffer == NULL )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
+
 		CallResult cr;
 		int64 iNow = m_iPos;
 		if( uMethod == IO_SEEK_BEGIN ) {
@@ -104,6 +103,7 @@ public:
 		}
 		m_iPos  = iNow;
 		iNewPos = iNow;
+
 		return cr;
 	}
 	virtual GKC::CallResult SetSize(const int64& iSize) throw()
@@ -112,8 +112,7 @@ public:
 	}
 	virtual GKC::CallResult GetStatus(GKC::StorageStatus& status) throw()
 	{
-		if( m_pBuffer == NULL )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 		status.iSize = m_iSize;
 		return CallResult();
 	}
@@ -121,6 +120,7 @@ public:
 // _IBufferUtility methods
 	virtual GKC::CallResult SetBuffer(const uintptr& p, const uintptr& uBytes) throw()
 	{
+		assert( p != 0 );
 		uint64 uSize = (uint64)uBytes;
 		if( uSize > (uint64)(Limits<int64>::Max) )
 			return CallResult(SystemCallResults::Invalid);
@@ -128,6 +128,12 @@ public:
 		m_iSize   = (int64)uSize;
 		m_iPos    = 0;
 		return CallResult();
+	}
+
+private:
+	bool is_valid() const throw()
+	{
+		return m_pBuffer != NULL;
 	}
 
 private:

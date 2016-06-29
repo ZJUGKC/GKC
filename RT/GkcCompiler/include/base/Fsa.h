@@ -60,8 +60,8 @@ typedef struct _tagFSA_MatchItem {
 
 // FSA_TABLE
 typedef struct _tagFSA_Table {
-	int iMaxStateNo;      //!< The maximum state No. It must not less than 1.
-	int iMaxMatchNo;      //!< The maximum match No. It must be not less than zero.
+	int iMaxStateNo;      //!< The maximum state No. It must not be less than 1.
+	int iMaxMatchNo;      //!< The maximum match No. It must not be less than zero.
 	const FSA_STATE_ITEM* pState;  //!< A pointer to state array with the size iMaxStateNo + 1.
 	const FSA_MATCH_ITEM* pMatch;  //!< A pointer to match array with the size iMaxMatchNo + 1.
 } FSA_TABLE;
@@ -90,8 +90,8 @@ inline bool _Is_Fsa_Table_Null(const FSA_TABLE& table) throw()
 }
 inline bool _Is_Fsa_Size_Valid(int iMaxStateNo, int iMaxMatchNo) throw()
 {
-	return iMaxStateNo >= 1 && iMaxStateNo < Limits<int>::Max
-		&& iMaxMatchNo >= 0 && iMaxMatchNo < Limits<int>::Max;
+	return iMaxStateNo >= 1 && iMaxStateNo < Limits<int>::Max - 1
+		&& iMaxMatchNo >= 0 && iMaxMatchNo < Limits<int>::Max - 1;  //with last NULL item
 }
 inline bool _Is_Fsa_Table_Valid(const FSA_TABLE& table) throw()
 {
@@ -196,7 +196,7 @@ public:
 	//Get match No. of current stopped state
 	//  uBackEventNum [out] Receive the the number of events needing to be backed.
 	//  return: The match No. It is not less than zero. 0 means no match (error).
-	int GetMatch(uintptr& uBackEventNum) const throw()
+	int GetMatch(uint& uBackEventNum) const throw()
 	{
 		assert( m_iCurrentState <= 0 );
 		uBackEventNum = m_uBackEventNum;
@@ -243,8 +243,8 @@ protected:
 	int  m_iCurrentState;         //!< The current state.
 	int  m_iPrevState;            //!< The previous state.
 	int  m_iLastStopState;        //!< The last stop state.
-	uintptr m_uBackEventNum;      //!< The number of events should be backed.
-	int  m_iMatch;                //!< The match No. 0 means no match (error). It must be not less than 0.
+	uint m_uBackEventNum;         //!< The number of events should be backed.
+	int  m_iMatch;                //!< The match No. 0 means no match (error). It must not be less than 0.
 	uint m_uLastEventNo;
 
 private:
@@ -269,8 +269,14 @@ private:
 	//post process
 	void post_process_current_state(uint uEventNo) throw()
 	{
-		if( uEventNo != FSA_END_OF_EVENT )
-			++ m_uBackEventNum;
+		if( uEventNo != FSA_END_OF_EVENT ) {
+			CallResult cr = SafeOperators::Add(m_uBackEventNum, (uint)1, m_uBackEventNum);
+			if( cr.IsFailed() ) {
+				//overflow
+				m_iCurrentState  = 0;
+				m_iLastStopState = 1;
+			}
+		}
 		if( m_iCurrentState > 0 ) {
 			assert( uEventNo != FSA_END_OF_EVENT );
 			int iMatchIndex = m_table.pState[m_iCurrentState].iMatchIndex;

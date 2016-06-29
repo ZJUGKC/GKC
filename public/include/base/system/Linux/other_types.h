@@ -201,6 +201,7 @@ private:
 #define CR_DISKFULL          CR_FROM_ERROR(ENOSPC)
 #define CR_FDBAD             CR_FROM_ERROR(EBADF)
 #define CR_CORRUPT           CR_FROM_ERROR(EILSEQ)
+#define CR_NOACCESS          CR_FROM_ERROR(EACCES)
 
 //------------------------------------------------------------------------------
 // Service

@@ -15,144 +15,21 @@ This file contains grammar parser.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __PARSER_H__
-#define __PARSER_H__
+#ifndef __GRAMMAR_H__
+#define __GRAMMAR_H__
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "pda.h"
-#include "lexer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// SymbolDataBase
+// GrammarParser
 
-class SymbolDataBase
-{
-public:
-	SymbolDataBase() throw()
-	{
-	}
-	~SymbolDataBase() throw()
-	{
-	}
-
-	const StringA& GetBuffer() const throw()
-	{
-		return m_strBuffer;
-	}
-	StringA& GetBuffer() throw()
-	{
-		return m_strBuffer;
-	}
-	const StringA& GetAux() const throw()
-	{
-		return m_strData;
-	}
-	StringA& GetAux() throw()
-	{
-		return m_strData;
-	}
-	const LEXER_CHAR_INFO& GetCharStart() const throw()
-	{
-		return m_startInfo;
-	}
-	LEXER_CHAR_INFO& GetCharStart() throw()
-	{
-		return m_startInfo;
-	}
-	const LEXER_CHAR_INFO& GetCharEnd() const throw()
-	{
-		return m_endInfo;
-	}
-	LEXER_CHAR_INFO& GetCharEnd() throw()
-	{
-		return m_endInfo;
-	}
-
-protected:
-	StringA m_strBuffer;  //original string
-	StringA m_strData;    //additional string
-	LEXER_CHAR_INFO m_startInfo;
-	LEXER_CHAR_INFO m_endInfo;
-
-private:
-	//noncopyable
-};
-
-// GrammarTable<T>
-//  T must be derived from SymbolDataBase
-
-template <class T>
-class GrammarTable
-{
-public:
-	GrammarTable() throw()
-	{
-	}
-	~GrammarTable() throw()
-	{
-	}
-
-	//properties
-	void SetPDA(const RefPtr<PushDownAutomata<T>>& pda) throw()
-	{
-		m_pda = pda;
-	}
-	PushDownAutomata<T>& GetPDA() throw()
-	{
-		return m_pda.Deref();
-	}
-	void SetReductionActionTable(const RefPtr<TokenTable>& ra) throw()
-	{
-		m_ra_table = ra;
-	}
-	const TokenTable& GetReductionActionTable() const throw()
-	{
-		return m_ra_table.Deref();
-	}
-
-private:
-	RefPtr<PushDownAutomata<T>>  m_pda;
-	RefPtr<TokenTable>           m_ra_table;  //reduction action name
-
-private:
-	//noncopyable
-};
-
-// IGrammarError
-
-class NOVTABLE IGrammarError
-{
-public:
-	//return : true -- changed, false -- unchanged
-	virtual bool ModifyInputEvent(INOUT uint& uEvent, INOUT RefPtr<ICharStream>& stream) = 0;
-};
-
-// IGrammarAction<T>
-//  T must be derived from SymbolDataBase
-
-template <class T>
-class NOVTABLE IGrammarAction
-{
-public:
-	virtual void DoAction(INOUT SharedArray<RefPtr<T>>& arr, INOUT SharedArray<StringS>& errorArray) = 0;
-};
-
-// GrammarParser<T>
-//  T must be derived from SymbolDataBase
-
-template <class T>
 class GrammarParser
 {
 public:
-	GrammarParser() throw()
+	GrammarParser() throw() : m_symbolList(MemoryHelper::GetCrtMemoryManager())
 	{
-#ifdef DEBUG
-		bool b = is_derived_from<T, SymbolDataBase>();
-#endif
-		assert( b );
 	}
 	~GrammarParser() throw()
 	{
@@ -163,133 +40,202 @@ public:
 	{
 		m_lexer = lexer;
 	}
-	void SetGrammarTable(const RefPtr<GrammarTable<T>>& table) throw()
+	void SetReductionActionTable(const RefPtr<TokenTable>& ra) throw()
 	{
-		m_table = table;
+		m_ra_table = ra;
 	}
-	void SetErrorAction(const RefPtr<IGrammarError>& pAction) throw()
+	void SetPdaTable(const PDA_TABLE& table) throw()
 	{
-		m_actError = pAction;
+		m_pda.SetTable(table);
 	}
-	void SetAction(const ConstStringA& strAction, const RefPtr<IGrammarAction<T>>& pAction)
+	void SetErrorAction(const WeakCom<_IGrammarError>& sp) throw()
 	{
-		if( SharedArrayHelper::GetBlockPointer(m_arrAction) == NULL )
-			m_arrAction = SharedArrayHelper::MakeSharedArray<RefPtr<IGrammarAction<T>>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		m_errorAction = sp;
+	}
+	void SetAction(const ConstStringA& strAction, const WeakCom<_IGrammarAction>& spAction)
+	{
+		if( m_arrAction.IsBlockNull() )
+			m_arrAction = ShareArrayHelper::MakeShareArray<WeakCom<_IGrammarAction>>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		//find id
-		uint uID = m_table.Deref().GetReductionActionTable().GetTokenID(strAction);
+		uint uID = m_ra_table.Deref().get_ID(strAction);
 		assert( uID > 0 );
 		//fill
 		uint uLeastCount = SafeOperators::AddThrow(uID, (uint)1);  //may throw
 		if( m_arrAction.GetCount() < (uintptr)uLeastCount )
 			m_arrAction.SetCount((uintptr)uLeastCount, 0);  //may throw
-		m_arrAction.SetAt(uID, pAction);
+		m_arrAction.SetAt(uID, spAction);
+	}
+	void SetFactory(uint uEventNo, const ShareCom<IComFactory>& sp)
+	{
+		assert( uEventNo != PDA_NO_EVENT );
+		if( m_arrFactory.IsBlockNull() )
+			m_arrFactory = ShareArrayHelper::MakeShareArray<ShareCom<IComFactory>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		//fill
+		uint uLeastCount = SafeOperators::AddThrow(uEventNo, (uint)1);  //may throw
+		if( m_arrFactory.GetCount() < (uintptr)uLeastCount )
+			m_arrFactory.SetCount((uintptr)uLeastCount, 0);  //may throw
+		m_arrFactory.SetAt(uEventNo, sp);
 	}
 
-	const SharedArray<StringS>& GetErrorArray() const throw()
+	const ShareArray<StringS>& GetErrorArray() const throw()
 	{
 		return m_arrError;
 	}
 
 	//start
-	void Start()
+	void Start(bool bUnexpectedEoeAsError)
 	{
-		m_lexer.Deref().Start(m_tokenInfo);  //may throw
-		m_table.Deref().GetPDA().SetStartState();  //may throw
-		if( SharedArrayHelper::GetBlockPointer(m_arrError) == NULL )
-			m_arrError = SharedArrayHelper::MakeSharedArray<StringS>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		m_lexer.Deref().Start();
+		m_pda.SetStartState();  //may throw
+		if( m_arrError.IsBlockNull() )
+			m_arrError = ShareArrayHelper::MakeShareArray<StringS>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		m_arrError.RemoveAll();
+		m_bUnexpectedEoeAsError = bUnexpectedEoeAsError;
+		m_symbolList.RemoveAll();
 	}
 
 	// called repeatedly.
-	// return : Failed
-	//          SystemCallResults::S_False, the end of parsing. The error list may not be empty.
-	//          OK, the error list may not be empty.
-	CallResult Parse(bool& bEmpty)
+	// return : SystemCallResults::OK, uLastEventNo indicates the error state.
+	//                                 PDA_NO_EVENT : correct.
+	//                                 otherwise, the event No. causes an error. User can revert stack or stop parsing.
+	//                                 The error list may not be empty.
+	//          SystemCallResults::S_False, the end of parsing. uLastEventNo indicates the state of source stream.
+	//                                      PDA_LAST_EVENT_NO : the source stream is empty, user can also wait for next parsing.
+	//                                      otherwise, the source stream is non-empty.
+	//                                      The error list may not be empty.
+	//                                      The current event has been cleared.
+	//          SystemCallResults::S_EOF, user can wait for next parsing.
+	//                                    The error list may not be empty.
+	//                                    The current event has been cleared.
+	//                                    This value is returned after calling Start() with the parameter value false.
+	//          otherwise, this call is failed.
+	CallResult Parse(uint& uLastEventNo)
 	{
 		CallResult cr;
 
-		bEmpty = false;
+		uLastEventNo = PDA_NO_EVENT;
 		do {
 			bool bSkip;
 			uint uEvent;
 			//check event
-			if( m_table.Deref().GetPDA().IsNoEvent() ) {
+			if( m_pda.IsNoEvent() ) {
 				cr = get_event(bSkip, uEvent);  //may throw
 				if( cr.IsFailed() )
 					break;
 				if( bSkip )
 					continue;
-				m_table.Deref().GetPDA().InputEvent(uEvent);
+				m_pda.InputEvent(uEvent);
 			}
 			//process
-			m_table.Deref().GetPDA().ProcessEvent();
-			uEvent = m_table.Deref().GetPDA().GetCurrentEvent();
+			m_pda.ProcessEvent();
+			uEvent = m_pda.GetCurrentEvent();
 			//actions
-			if( m_table.Deref().GetPDA().IsError() ) {
-				if( !m_actError.IsNull() ) {
-					//modify event
-					bool bChanged = m_actError.Deref().ModifyInputEvent(uEvent, m_lexer.Deref().GetStream());  //may throw
+			if( m_pda.IsError() ) {
+				//modify event
+				ShareCom<_IGrammarError> spErrorAction(ShareComHelper::ToShareCom(m_errorAction));
+				if( !spErrorAction.IsBlockNull() ) {
+					bool bChanged = false;
+					cr = spErrorAction.Deref().DoModifyEvent(uEvent, m_lexer.Deref().GetStream(), bChanged);
+					if( cr.IsFailed() )
+						break;
 					if( bChanged ) {
-						m_table.Deref().GetPDA().InputEvent(uEvent);
+						m_pda.InputEvent(uEvent);
 						continue;
 					}
 				}
 				//only a S0
-				if( m_table.Deref().GetPDA().CheckStackStart() ) {
+				if( m_pda.CheckStackStart() ) {
 					if( uEvent == PDA_END_OF_EVENT ) {
 						cr.SetResult(SystemCallResults::S_False);
-						bEmpty = true;
+						uLastEventNo = PDA_LAST_EVENT_NO;
+						m_pda.ClearEvent();
 						break;
 					}
 					add_unexpected_error();  //may throw
 					cr.SetResult(SystemCallResults::Fail);
 					break;
 				}
-				add_unexpected_error();  //may throw
-				//revert
-				bool bOK = m_table.Deref().GetPDA().Revert();
-				while( !bOK ) {
-					cr = get_event(bSkip, uEvent);  //may throw
-					if( cr.IsFailed() )
-						break;
-					if( bSkip )
-						continue;
-					if( uEvent == PDA_END_OF_EVENT ) {
-						//error
+				if( uEvent == PDA_END_OF_EVENT ) {
+					if( m_bUnexpectedEoeAsError ) {
+						add_unexpected_error();  //may throw
 						cr.SetResult(SystemCallResults::Fail);
 						break;
 					}
-					m_table.Deref().GetPDA().InputEvent(uEvent);
-					bOK = m_table.Deref().GetPDA().NextRevert();
-				}
-				if( cr.IsFailed() )
+					m_pda.ClearEvent();
+					cr.SetResult(SystemCallResults::S_EOF);
 					break;
-				continue;
+				}
+				add_unexpected_error();  //may throw
+				uLastEventNo = uEvent;
+				break;
 			}
-			if( m_table.Deref().GetPDA().IsAccepted() ) {
+			if( m_pda.IsAccepted() ) {
 				cr.SetResult(SystemCallResults::S_False);
+				m_pda.ClearEvent();
 				break;
 			}
 			int iRule;
-			if( m_table.Deref().GetPDA().IsReduction(iRule) ) {
+			if( m_pda.IsReduction(iRule) ) {
 				//reduce
-				m_table.Deref().GetPDA().BeginReduce(iRule);  //may throw
+				uint uLeftEventNo;
+				uint uRightSymbolNumber = m_pda.BeginReduce(iRule, uLeftEventNo);  //may throw
+				auto iter(m_symbolList.AddTail());  //may throw
+				cr = create_symbol_data(uLeftEventNo, iter.get_Value());
+				if( cr.IsFailed() )
+					break;
+				//symbol array for a production rule
+				ShareArray<ShareCom<_IGrammarSymbolData>> arrSymbol(ShareArrayHelper::MakeShareArray<ShareCom<_IGrammarSymbolData>>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+				//rule symbols
+				//0 --- left symbol, 1, 2, 3, ... --- right symbols
+				add_rule_symbols(uRightSymbolNumber, arrSymbol);  //may throw
 				//action
-				RefPtr<IGrammarAction<T>> action = find_action(iRule);
-				if( !action.IsNull() ) {
-					action.Deref().DoAction(m_table.Deref().GetPDA().GetReduceSymbolArray(), m_arrError);  //may throw
+				ShareCom<_IGrammarAction> action = find_action(iRule);
+				if( !action.IsBlockNull() ) {
+					cr = action.Deref().DoAction(arrSymbol, m_arrError);
+					if( cr.IsFailed() )
+						break;
 				}
-				m_table.Deref().GetPDA().EndReduce();
+				m_pda.EndReduce(uRightSymbolNumber);
+				remove_rule_symbols(uRightSymbolNumber);
 				break;
 			}
 			//shift
-			T& sData = m_table.Deref().GetPDA().Shift();  //may throw
-			sData.GetBuffer() = StringUtilHelper::Clone(m_tokenInfo.GetBuffer());  //may throw
-			sData.GetAux()    = StringUtilHelper::Clone(m_tokenInfo.GetData());  //may throw
-			sData.GetCharStart() = m_tokenInfo.GetCharStart();
-			sData.GetCharEnd()   = m_tokenInfo.GetCharEnd();
+			uEvent = m_pda.Shift();  //may throw
+			auto iter(m_symbolList.AddTail());  //may throw
+			ShareCom<_IGrammarSymbolData>& spData = iter.get_Value();
+			cr = create_symbol_data(uEvent, spData);
+			if( cr.IsFailed() )
+				break;
+			_LexerTokenInfo& tokenInfo = m_lexer.Deref().GetTokenInfo();
+			spData.Deref().set_Buffer(StringHelper::Clone(tokenInfo.get_Buffer()));  //may throw
+			spData.Deref().set_Data(StringHelper::Clone(tokenInfo.get_Data()));  //may throw
+			spData.Deref().set_WordInfo(tokenInfo.get_WordInfo());
 		} while( true );  //end while
 
+		return cr;
+	}
+
+	//revert
+	CallResult Revert()
+	{
+		CallResult cr;
+		bool bOK = m_pda.Revert();
+		while( !bOK ) {
+			bool bSkip;
+			uint uEvent;
+			cr = get_event(bSkip, uEvent);  //may throw
+			if( cr.IsFailed() )
+				break;
+			if( bSkip )
+				continue;
+			if( uEvent == PDA_END_OF_EVENT ) {
+				//error
+				cr.SetResult(SystemCallResults::Fail);
+				break;
+			}
+			m_pda.InputEvent(uEvent);
+			bOK = m_pda.RevertAgain();
+		}
 		return cr;
 	}
 
@@ -300,41 +246,43 @@ private:
 		CallResult cr;
 		bSkip = false;
 		//token
-		cr = m_lexer.Deref().Parse(m_tokenInfo);  //may throw
+		cr = m_lexer.Deref().Parse();  //may throw
 		if( cr.IsFailed() ) {
-			CplErrorBuffer eb;
-			result_to_string(cr, FixedArrayHelper::GetInternalPointer(eb), CplErrorBuffer::c_size);
-			StringS strError(StringUtilHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+			_CplErrorBuffer eb;
+			result_to_string(cr, FixedArrayHelper::GetInternalPointer(eb), _CplErrorBuffer::c_size);
+			StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 			StringUtilHelper::MakeString(eb, strError);  //may throw
 			m_arrError.Add(strError);  //may throw
 			return cr;
 		}
-		uint uTokenID;
 		if( cr.GetResult() == SystemCallResults::S_False ) {
 			cr.SetResult(SystemCallResults::OK);
-			uTokenID = TK_EOF;
+			//TK_EOF
+			uEvent = PDA_END_OF_EVENT;
+			return cr;
 		}
-		else {
-			uTokenID = m_tokenInfo.GetID();
-		}
+		_LexerTokenInfo& tokenInfo = m_lexer.Deref().GetTokenInfo();
+		uint uTokenID = tokenInfo.get_ID();
 		//check value
-		if( uTokenID == TK_NULL ) {
+		if( uTokenID == CPL_TK_NULL ) {
 			//skip
 			bSkip = true;
 			return cr;
 		}
-		if( uTokenID == TK_ERROR ) {
-			StringS strError(StringUtilHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-			const CplErrorBuffer& eb = m_tokenInfo.GetErrorString();
-			CplErrorBuffer tmp;
-			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), CplErrorBuffer::c_size,
-									_S("Error (%u) : (%u) %s"), m_tokenInfo.GetCharStart().uRow + 1, m_tokenInfo.GetCharStart().uCol + 1,
+		if( uTokenID == CPL_TK_ERROR ) {
+			const _CplErrorBuffer& eb = tokenInfo.get_ErrorString();
+			_CplErrorBuffer tmp;
+			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
+									_S("Error (%u) : (%u) %s"), 
+									SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uRow, (uint)1),
+									SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uCol, (uint)1),
 									eb.GetLength() == 0 ?
-										ConstArrayHelper::GetInternalPointer(CS_U2S(StringUtilHelper::To_ConstString(m_tokenInfo.GetBuffer())).GetC())
+										ConstArrayHelper::GetInternalPointer(CS_U2S(StringUtilHelper::To_ConstString(tokenInfo.get_Buffer())).GetC())
 										: FixedArrayHelper::GetInternalPointer(eb)
 									);
 			if( ret >= 0 )
 				tmp.SetLength(ret);
+			StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 			StringUtilHelper::MakeString(tmp, strError);  //may throw
 			//add to error string list
 			m_arrError.Add(strError);  //may throw
@@ -342,50 +290,115 @@ private:
 			return cr;
 		}
 		uEvent = uTokenID;
-		if( uTokenID == TK_EOF )
-			uEvent = PDA_END_OF_EVENT;
 		return cr;
 	}
 	//find action
-	RefPtr<IGrammarAction<T>> find_action(uint uID) const throw()
+	ShareCom<_IGrammarAction> find_action(uint uID) const throw()
 	{
-		RefPtr<IGrammarAction<T>> ret;
-		if( m_arrAction.IsNull() || uID >= m_arrAction.GetCount() )
+		ShareCom<_IGrammarAction> ret;
+		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;
-		ret = m_arrAction[uID].get_Value();
+		ret = ShareComHelper::ToShareCom(m_arrAction[uID].get_Value());
 		return ret;
+	}
+	//create symbol data
+	CallResult create_symbol_data(uint uEventNo, ShareCom<_IGrammarSymbolData>& sp) throw()
+	{
+		assert( !m_arrFactory.IsBlockNull() && (uintptr)uEventNo < m_arrFactory.GetCount() );
+		ShareCom<IComFactory> spFactory(m_arrFactory[uEventNo].get_Value());
+		assert( !spFactory.IsBlockNull() );
+		ShareCom<void> spV;
+		CallResult cr(spFactory.Deref().CreateInstance(USE_GUID(GUID__IGrammarSymbolData), spV));
+		if( cr.IsFailed() )
+			return cr;
+		sp = ShareComHelper::TypeCast<void, _IGrammarSymbolData>(spV);
+		return cr;
+	}
+	//0 --- left symbol, 1, 2, 3, ... --- right symbols
+	void add_rule_symbols(uint uRightSymbolNumber, ShareArray<ShareCom<_IGrammarSymbolData>>& arr)
+	{
+		uintptr uCount = m_symbolList.GetCount();
+		assert( uRightSymbolNumber > 0 );
+		assert( uCount > (uintptr)uRightSymbolNumber );
+		auto iter(m_symbolList.GetTail());
+		arr.Add(iter.get_Value());  //may throw
+		uint uR = uRightSymbolNumber;
+		while( uR > 0 ) {
+			iter.MovePrev();
+			uR --;
+		}
+		for( uint i = 0; i < uRightSymbolNumber; i ++ ) {
+			arr.Add(iter.get_Value());  //may throw
+			iter.MoveNext();
+		}
+	}
+	void remove_rule_symbols(uint uRightSymbolNumber) throw()
+	{
+		auto iter(m_symbolList.GetTail());
+		iter.MovePrev();
+		while( uRightSymbolNumber > 0 ) {
+			auto iter1(iter);
+			iter.MovePrev();
+			m_symbolList.RemoveAt(iter1);
+			uRightSymbolNumber --;
+		}
 	}
 
 	//unexpected error
 	void add_unexpected_error()
 	{
-		StringS strError(StringUtilHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-		CplErrorBuffer tmp;
-		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), CplErrorBuffer::c_size,
-								_S("Error (%u) : (%u) Unexpected."), m_tokenInfo.GetCharStart().uRow + 1, m_tokenInfo.GetCharStart().uCol + 1
+		_LexerTokenInfo& tokenInfo = m_lexer.Deref().GetTokenInfo();
+		_CplErrorBuffer tmp;
+		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
+								_S("Error (%u) : (%u) Unexpected."),
+								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uRow, (uint)1),
+								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uCol, (uint)1)
 								);
 		if( ret >= 0 )
 			tmp.SetLength(ret);
+		StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 		StringUtilHelper::MakeString(tmp, strError);  //may throw
 		m_arrError.Add(strError);  //may throw
 	}
 
 private:
-	RefPtr<LexerParser>      m_lexer;
-	RefPtr<GrammarTable<T>>  m_table;
-	RefPtr<IGrammarError>    m_actError;
-	SharedArray<RefPtr<IGrammarAction<T>>>  m_arrAction;
+	RefPtr<LexerParser>  m_lexer;
+	RefPtr<TokenTable>   m_ra_table;  //reduction action name
+	PushDownAutomata     m_pda;
+	WeakCom<_IGrammarError>  m_errorAction;
+	ShareArray<WeakCom<_IGrammarAction>>  m_arrAction;
 	//error
-	SharedArray<StringS>  m_arrError;
-	//internal
-	LexerTokenInfo  m_tokenInfo;
+	ShareArray<StringS>  m_arrError;
+
+	//EOE as error
+	bool m_bUnexpectedEoeAsError;
+
+	//symbol list
+	List<ShareCom<_IGrammarSymbolData>> m_symbolList;  //for user data
+	//factories
+	ShareArray<ShareCom<IComFactory>> m_arrFactory;  //factories for user data
 
 private:
 	//noncopyable
+	GrammarParser(const GrammarParser&) throw();
+	GrammarParser& operator=(const GrammarParser&) throw();
 };
+
+// private interfaces
+
+// _IGrammarTablesAccess
+
+class NOVTABLE _IGrammarTablesAccess
+{
+public:
+	virtual RefPtr<TokenTable> GetReductionActionTable() throw() = 0;
+	virtual const PDA_TABLE& GetPdaTable() throw() = 0;
+};
+
+DECLARE_GUID(GUID__IGrammarTablesAccess)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__PARSER_H__
+#endif //__GRAMMAR_H__
 ////////////////////////////////////////////////////////////////////////////////

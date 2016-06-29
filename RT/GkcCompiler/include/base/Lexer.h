@@ -33,9 +33,19 @@ public:
 	{
 	}
 
+	//remove all nodes
+	void RemoveAll() throw()
+	{
+		m_sym_allocator.Clear();
+		m_str_allocator.Clear();
+		m_symbol_pool.Reset();
+		//m_string_pool
+		m_uLevelHead = 0;
+	}
+
 	void InsertToken(const ConstStringA& strToken, uint uID)
 	{
-		assert( uID >= TK_FIRST );
+		assert( uID >= CPL_TK_FIRST );
 		assert( m_symbol_pool.Find(strToken).IsNull() );
 		auto iter(m_symbol_pool.CreateNode(strToken, sizeof(uint), 0, 0, m_uLevelHead));  //may throw
 		iter.GetData<BeType<uint>>().set_Value(uID);
@@ -54,54 +64,16 @@ public:
 private:
 	ArrayPoolAllocator m_sym_allocator;
 	ArrayPoolAllocator m_str_allocator;
+
 	SymbolPool m_symbol_pool;
 	StringPool m_string_pool;
+
 	uint m_uLevelHead;  //not used in this class
 
 private:
 	//noncopyable
 	TokenTable(const TokenTable&) throw();
 	TokenTable& operator=(const TokenTable&) throw();
-};
-
-// LexerTables
-
-class LexerTables
-{
-public:
-	LexerTables() throw()
-	{
-	}
-	~LexerTables() throw()
-	{
-	}
-
-	//properties
-	void SetFSA(const RefPtr<FiniteStateAutomata>& fsa) throw()
-	{
-		m_fsa = fsa;
-	}
-	FiniteStateAutomata& GetFSA() throw()
-	{
-		return m_fsa.Deref();
-	}
-	void SetTokenTable(const RefPtr<TokenTable>& tk) throw()
-	{
-		m_token_table = tk;
-	}
-	const TokenTable& GetTokenTable() const throw()
-	{
-		return m_token_table.Deref();
-	}
-
-private:
-	RefPtr<FiniteStateAutomata>  m_fsa;
-	RefPtr<TokenTable>           m_token_table;
-
-private:
-	//noncopyable
-	LexerTables(const LexerTables&) throw();
-	LexerTables& operator=(const LexerTables&) throw();
 };
 
 // LexerParser
@@ -117,58 +89,68 @@ public:
 	}
 
 	//settings
-	void SetLexerTable(const RefPtr<LexerTable>& table) throw()
+	void SetTokenTable(const RefPtr<TokenTable>& tk) throw()
 	{
-		m_table = table;
+		m_token_table = tk;
 	}
-	void SetAction(const ConstStringA& strToken, const RefPtr<ILexerAction>& pAction)
+	void SetFsaTable(const FSA_TABLE& tb) throw()
 	{
-		if( SharedArrayHelper::GetBlockPointer(m_arrAction) == NULL )
-			m_arrAction = SharedArrayHelper::MakeSharedArray<RefPtr<ILexerAction>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		m_fsa.SetTable(tb);
+	}
+	void SetAction(const ConstStringA& strToken, const WeakCom<_ILexerAction>& spAction)
+	{
+		if( m_arrAction.IsBlockNull() )
+			m_arrAction = ShareArrayHelper::MakeShareArray<WeakCom<_ILexerAction>>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		//find id
-		uint uID = m_table.Deref().GetTokenTable().GetTokenID(strToken);
+		uint uID = m_token_table.Deref().get_ID(strToken);
 		assert( uID > 0 );
 		//fill
 		uint uLeastCount = SafeOperators::AddThrow(uID, (uint)1);  //may throw
 		if( m_arrAction.GetCount() < (uintptr)uLeastCount )
 			m_arrAction.SetCount((uintptr)uLeastCount, 0);  //may throw
-		m_arrAction.SetAt(uID, pAction);
+		m_arrAction.SetAt(uID, spAction);
 	}
-	void SetStream(IN const RefPtr<ICharStream>& stream) throw()
+	void SetStream(IN const ShareCom<ITextStream>& stream) throw()
 	{
 		m_stream = stream;
 	}
-	RefPtr<ICharStream>& GetStream() throw()
+	ShareCom<ITextStream> GetStream() const throw()
 	{
 		return m_stream;
 	}
 
-	//start parsing
-	void Start(OUT LexerTokenInfo& info) throw()
+	//token info
+	_LexerTokenInfo& GetTokenInfo() throw()
 	{
-		m_table.Deref().GetFSA().InitializeAsStopState();  //special
-		info.ResetCharInfo();
+		return m_token_info;
+	}
+
+	//start parsing
+	void Start() throw()
+	{
+		m_fsa.InitializeAsStopState();  //special
+		m_token_info.ResetCharInfo();
 	}
 
 	// called repeatedly.
-	// return : Failed
-	//          SystemCallResults::S_False, the end of stream.
-	//          OK, the token id may be TK_ERROR.
-	CallResult Parse(INOUT LexerTokenInfo& info)
+	// return : SystemCallResults::OK, the token id may be CPL_TK_ERROR.
+	//          SystemCallResults::S_False, it reaches the end of stream.
+	//          otherwise, this call is failed.
+	CallResult Parse()
 	{
 		CallResult cr;
 
 		bool bErrorOrEnd;
 		//can restart (last token is error or EOE)
-		if( !m_table.Deref().GetFSA().CanRestart(bErrorOrEnd) ) {
+		if( !m_fsa.CanRestart(bErrorOrEnd) ) {
 			cr.SetResult(bErrorOrEnd ? SystemCallResults::Fail : SystemCallResults::S_False);
 			return cr;
 		}
 
 		uint uEvent;
-		byte ch;
+		CharA ch;
 		//read a character
-		cr = m_stream.Deref().GetChar(ch);
+		cr = m_stream.Deref().GetCharA(ch);
 		if( cr.IsFailed() )
 			return cr;
 		if( cr.GetResult() == SystemCallResults::S_EOF ) {
@@ -177,45 +159,43 @@ public:
 		}
 
 		//start state
-		m_table.Deref().GetFSA().SetStartState();
-		info.Reset();  //may throw
+		m_fsa.SetStartState();
+		m_token_info.Reset();  //may throw
 		//first character
 		uEvent = ch;
-		info.Append(ch);  //may throw
+		m_token_info.Append(ch);  //may throw
 
 		//loop
 		do {
 			//state
-			m_table.Deref().GetFSA().ProcessState(uEvent);
+			m_fsa.ProcessState(uEvent);
 			//stopped
-			if( m_table.Deref().GetFSA().IsStopped() ) {
+			if( m_fsa.IsStopped() ) {
 				//match
-				uintptr uBackNum;
-				int iMatch = m_table.Deref().GetFSA().GetMatch(uBackNum);
+				uint uBackNum;
+				int iMatch = m_fsa.GetMatch(uBackNum);
 				assert( iMatch >= 0 );
 				if( iMatch == 0 ) {
 					//error
-					info.SetID(TK_ERROR);
+					m_token_info.set_ID(CPL_TK_ERROR);
 					break;
 				}
-				//iMatch is the same as token id (from TK_FIRST)
-				info.SetID(iMatch);
+				//iMatch is the same as token id (from CPL_TK_FIRST)
+				m_token_info.set_ID(iMatch);
 				//back
-				assert( uBackNum <= (uintptr)Limits<uint>::Max );
 				if( uBackNum > 0 ) {
-					cr = m_stream.Deref().UngetChar((uint)uBackNum);
+					cr = m_stream.Deref().UngetCharA((int64)uBackNum);
 					assert( cr.IsOK() );
-					info.BackChar((uint)uBackNum);  //may throw
+					m_token_info.BackChar(uBackNum);  //may throw
 				}
 				//action
-				RefPtr<ILexerAction> action = find_action(info.GetID());
-				if( !action.IsNull() ) {
-					action.Deref().DoAction(m_stream, info);  //may throw
-				}
+				ShareCom<_ILexerAction> action(find_action(m_token_info.get_ID()));
+				if( !action.IsBlockNull() )
+					cr = action.Deref().DoAction(m_stream, m_token_info);
 				break;
 			} //end if
 			//get next char
-			cr = m_stream.Deref().GetChar(ch);
+			cr = m_stream.Deref().GetCharA(ch);
 			if( cr.IsFailed() )
 				break;
 			if( cr.GetResult() == SystemCallResults::S_EOF ) {
@@ -224,7 +204,7 @@ public:
 			}
 			else {
 				uEvent = ch;
-				info.Append(ch);  //may throw
+				m_token_info.Append(ch);  //may throw
 			}
 		} while( true );
 
@@ -232,24 +212,53 @@ public:
 	}
 
 private:
-	RefPtr<ILexerAction> find_action(uint uID) const throw()
+	ShareCom<_ILexerAction> find_action(uint uID) const throw()
 	{
-		RefPtr<ILexerAction> ret;
-		if( m_arrAction.IsNull() || uID >= m_arrAction.GetCount() )
+		ShareCom<_ILexerAction> ret;
+		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;
-		ret = m_arrAction[uID].get_Value();
+		ret = ShareComHelper::ToShareCom(m_arrAction[uID].get_Value());
 		return ret;
 	}
 
 private:
 	//settings
-	RefPtr<LexerTable>  m_table;
-	SharedArray<RefPtr<ILexerAction>>  m_arrAction;
-	RefPtr<ICharStream>  m_stream;
+	RefPtr<TokenTable>   m_token_table;
+	FiniteStateAutomata  m_fsa;
+	ShareArray<WeakCom<_ILexerAction>>  m_arrAction;
+	ShareCom<ITextStream>  m_stream;
+
+	//token info
+	_LexerTokenInfo  m_token_info;
 
 private:
 	//noncopyable
+	LexerParser(const LexerParser&) throw();
+	LexerParser& operator=(const LexerParser&) throw();
 };
+
+// private interfaces
+
+// _ILexerTablesAccess
+
+class NOVTABLE _ILexerTablesAccess
+{
+public:
+	virtual RefPtr<TokenTable> GetTokenTable() throw() = 0;
+	virtual const FSA_TABLE& GetFsaTable() throw() = 0;
+};
+
+DECLARE_GUID(GUID__ILexerTablesAccess)
+
+// _ILexerAnalyzerAccess
+
+class NOVTABLE _ILexerAnalyzerAccess
+{
+public:
+	virtual RefPtr<LexerParser> GetLexerParser() throw() = 0;
+};
+
+DECLARE_GUID(GUID__ILexerAnalyzerAccess)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

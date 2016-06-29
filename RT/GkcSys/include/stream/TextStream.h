@@ -43,13 +43,13 @@ public:
 // _ITextStream methods
 	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw()
 	{
+		assert( !sp.IsBlockNull() );
 		m_spStream = sp;
 		reset_buffer();
 	}
 	virtual GKC::CallResult CheckBOM(int& iType) throw()
 	{
-		if( m_spStream.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 
 		//default
 		iType = _BOMTypes::None;
@@ -116,30 +116,24 @@ public:
 	}
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw()
 	{
-		if( m_spStream.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 		return read_bytes_buffer(&ch, 1);
 	}
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw()
 	{
-		if( iCharNum <= 0 )
-			return CallResult(SystemCallResults::Invalid);
-		if( m_spStream.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
+		assert( iCharNum > 0 );
 		return back_bytes_buffer(iCharNum);  //sizeof(byte)
 	}
 	virtual GKC::CallResult GetCharH(GKC::CharH& ch) throw()
 	{
-		if( m_spStream.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 		return read_bytes_buffer(&ch, sizeof(CharH));
 	}
 	virtual GKC::CallResult UngetCharH(const int64& iCharNum) throw()
 	{
-		if( iCharNum <= 0 )
-			return CallResult(SystemCallResults::Invalid);
-		if( m_spStream.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
+		assert( iCharNum > 0 );
 		int64 iBytes;
 		CallResult cr = SafeOperators::Multiply(iCharNum, (int64)sizeof(CharH), iBytes);
 		if( cr.IsFailed() )
@@ -148,16 +142,13 @@ public:
 	}
 	virtual GKC::CallResult GetCharL(GKC::CharL& ch) throw()
 	{
-		if( m_spStream.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
 		return read_bytes_buffer(&ch, sizeof(CharL));
 	}
 	virtual GKC::CallResult UngetCharL(const int64& iCharNum) throw()
 	{
-		if( iCharNum <= 0 )
-			return CallResult(SystemCallResults::Invalid);
-		if( m_spStream.IsBlockNull() )
-			return CallResult(SystemCallResults::FDBad);
+		assert( is_valid() );
+		assert( iCharNum > 0 );
 		int64 iBytes;
 		CallResult cr = SafeOperators::Multiply(iCharNum, (int64)sizeof(CharL), iBytes);
 		if( cr.IsFailed() )
@@ -249,6 +240,12 @@ private:
 		m_uRead = uRead;
 		m_uPos = 0;
 		return cr;
+	}
+
+	//valid
+	bool is_valid() const throw()
+	{
+		return !m_spStream.IsBlockNull();
 	}
 
 private:

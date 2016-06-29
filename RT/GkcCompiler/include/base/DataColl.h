@@ -53,7 +53,7 @@ public:
 		uint uRet = 0;
 		try {
 			if( m_arr.IsBlockNull() ) {
-				m_arr = SharedArrayHelper::MakeSharedArray<byte>(MemoryHelper::GetCrtMemoryManager());  //may throw
+				m_arr = ShareArrayHelper::MakeShareArray<byte>(MemoryHelper::GetCrtMemoryManager());  //may throw
 			}
 			uintptr uCount = m_arr.GetCount();
 			//overflow
@@ -63,9 +63,9 @@ public:
 			if( uCount < (uintptr)sizeof(uint) )
 				uCount = (uintptr)sizeof(uint);
 			//align
-			uBytes = AlignHelper::RoundUpThrow(uBytes, (uint)sizeof(uint));  //may throw
+			uint uNew = AlignHelper::RoundUpThrow(uBytes, (uint)sizeof(uint));  //may throw
 			//new size
-			uint uNew = SafeOperators::AddThrow((uint)uCount, uBytes);  //may throw
+			uNew = SafeOperators::AddThrow((uint)uCount, uNew);  //may throw
 			m_arr.SetCount((uintptr)uNew, 0);  //may throw
 			//fill the count number
 			to_object<BeType<uint>>(0).set_Value(uNew - ((uint)sizeof(uint)));
@@ -79,7 +79,7 @@ public:
 	virtual uintptr ToPointer(const uint& p) throw()
 	{
 		assert( p < (uint)m_arr.GetCount() );
-		return (uintptr)(SharedArrayHelper::GetInternalPointer(m_arr) + p);
+		return (uintptr)(ShareArrayHelper::GetInternalPointer(m_arr) + p);
 	}
 
 //methods
@@ -101,13 +101,13 @@ public:
 
 private:
 	template <typename T>
-	T& to_object(uint p) throw()
+	T& to_object(uint p) const throw()
 	{
 		return _RefAllocatorHelper::ToObject<T>(RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(this)), p);
 	}
 
 private:
-	SharedArray<byte>  m_arr;
+	ShareArray<byte>  m_arr;
 
 private:
 	//noncopyable
@@ -130,7 +130,6 @@ public:
 	ConstStringA GetString(uint p) const throw()
 	{
 		uint uLen = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, p).get_Value();
-		return ConstStringA((CharA*)(m_allocator.Deref().ToPointer(p + sizeof(uint))), uLen);
 	}
 
 	//nonempty string
@@ -371,6 +370,11 @@ public:
 	{
 	}
 
+	void Reset() throw()
+	{
+		m_uStart = 0;
+	}
+
 	bool IsNull() const throw()
 	{
 		return m_uStart == 0;
@@ -386,7 +390,7 @@ public:
 	void* ToPointer(uint uAddr) const throw()
 	{
 		assert( uAddr != 0 );
-		return (void*)(m_allocater.Deref().ToPointer(uAddr));
+		return (void*)(const_cast<IMemoryAllocatorRef32&>(m_allocator.Deref()).ToPointer(uAddr));
 	}
 
 // Node
@@ -760,7 +764,7 @@ public:
 	void* ToPointer(uint uAddr) const throw()
 	{
 		assert( uAddr != 0 );
-		return (void*)(m_allocator.Deref().ToPointer(uAddr));
+		return (void*)(const_cast<IMemoryAllocatorRef32&>(m_allocator.Deref()).ToPointer(uAddr));
 	}
 
 //header

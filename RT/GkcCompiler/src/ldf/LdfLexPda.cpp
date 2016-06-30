@@ -29,9 +29,7 @@ namespace GKC {
 
 // LdfLexPdaTraits
 
-// state map
-PDA_BEGIN_TRAITS_STATE_MAP(_LDF_lex_PdaTraits)
-	//transitions
+BEGIN_PDA_TRAIT_CLASS(LdfLexPdaTraits)
 	PDA_BEGIN_STATE_TRANSITION(PDA_STATE_START)
 		PDA_STATE_TRANSITION_ENTRY(101, 3)  //lex_def
 		PDA_STATE_TRANSITION_ENTRY(4, 4)    //TK_SEP
@@ -71,7 +69,7 @@ PDA_BEGIN_TRAITS_STATE_MAP(_LDF_lex_PdaTraits)
 		PDA_STATE_TRANSITION_ENTRY(7, -2)    //TK_TOKEN
 		PDA_STATE_TRANSITION_ENTRY(6, -2)    //TK_MACRO
 	PDA_END_STATE_TRANSITION()
-	//state
+
 	PDA_BEGIN_STATE_SET()
 		PDA_STATE_SET_ENTRY(PDA_STATE_START)
 		PDA_STATE_SET_ENTRY(3)
@@ -82,17 +80,15 @@ PDA_BEGIN_TRAITS_STATE_MAP(_LDF_lex_PdaTraits)
 		PDA_STATE_SET_ENTRY(8)
 		PDA_STATE_SET_ENTRY(9)
 	PDA_END_STATE_SET()
-PDA_END_TRAITS_STATE_MAP()
 
-// rule map
-PDA_BEGIN_TRAITS_RULE_MAP(_LDF_lex_PdaTraits)
-	PDA_RULE_ENTRY(0, 1)      // S -> lex_def $
-	PDA_RULE_ENTRY(101, 2)    // lex_def -> TK_SEP rule_block
-	PDA_RULE_ENTRY(102, 2)    // rule_block -> rule_block id
-	PDA_RULE_ENTRY(102, 1)    // rule_block -> id
-	PDA_RULE_ENTRY(103, 1)    // id -> TK_TOKEN
-	PDA_RULE_ENTRY(103, 1)    // id -> TK_MACRO
-PDA_END_TRAITS_RULE_MAP()
+	PDA_BEGIN_RULE()
+		PDA_RULE_ENTRY(101, 2)    // lex_def -> TK_SEP rule_block
+		PDA_RULE_ENTRY(102, 2)    // rule_block -> rule_block id
+		PDA_RULE_ENTRY(102, 1)    // rule_block -> id
+		PDA_RULE_ENTRY(103, 1)    // id -> TK_TOKEN
+		PDA_RULE_ENTRY(103, 1)    // id -> TK_MACRO
+	PDA_END_RULE()
+END_PDA_TRAIT_CLASS(LdfLexPdaTraits)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

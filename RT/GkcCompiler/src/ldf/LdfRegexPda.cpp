@@ -29,9 +29,7 @@ namespace GKC {
 
 // LdfRegexPdaTraits
 
-// state map
-PDA_BEGIN_TRAITS_STATE_MAP(_LDF_regex_PdaTraits)
-	//transitions
+BEGIN_PDA_TRAIT_CLASS(LdfRegexPdaTraits)
 	PDA_BEGIN_STATE_TRANSITION(PDA_STATE_START)
 		PDA_STATE_TRANSITION_ENTRY(101, 3)   //regex_exp
 		PDA_STATE_TRANSITION_ENTRY(102, 4)   //regex_term
@@ -289,7 +287,7 @@ PDA_BEGIN_TRAITS_STATE_MAP(_LDF_regex_PdaTraits)
 		PDA_STATE_TRANSITION_ENTRY(23, -8)   //TK_QUESTION
 		PDA_STATE_TRANSITION_ENTRY(28, -8)   //TK_RPAREN
 	PDA_END_STATE_TRANSITION()
-	//state
+
 	PDA_BEGIN_STATE_SET()
 		PDA_STATE_SET_ENTRY(PDA_STATE_START)
 		PDA_STATE_SET_ENTRY(3)
@@ -322,32 +320,30 @@ PDA_BEGIN_TRAITS_STATE_MAP(_LDF_regex_PdaTraits)
 		PDA_STATE_SET_ENTRY(30)
 		PDA_STATE_SET_ENTRY(31)
 	PDA_END_STATE_SET()
-PDA_END_TRAITS_STATE_MAP()
 
-// rule map
-PDA_BEGIN_TRAITS_RULE_MAP(_LDF_regex_PdaTraits)
-	PDA_RULE_ENTRY(0, 1)      // S -> regex_exp $
-	PDA_RULE_ENTRY(101, 3)    // regex_exp -> regex_exp TK_VERT regex_term
-	PDA_RULE_ENTRY(101, 1)    // regex_exp -> regex_term
-	PDA_RULE_ENTRY(102, 2)    // regex_term -> regex_term regex_factor_1
-	PDA_RULE_ENTRY(102, 1)    // regex_term -> regex_factor_1
-	PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_PLUS
-	PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_STAR
-	PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_QUESTION
-	PDA_RULE_ENTRY(103, 1)    // regex_factor_1 -> regex_factor
-	PDA_RULE_ENTRY(104, 3)    // regex_factor -> TK_LPAREN regex_exp TK_RPAREN
-	PDA_RULE_ENTRY(104, 1)    // regex_factor -> regex_char
-	PDA_RULE_ENTRY(104, 1)    // regex_factor -> regex_char_set
-	PDA_RULE_ENTRY(106, 3)    // regex_char_set -> TK_LBRACKET regex_char_item TK_RBRACKET
-	PDA_RULE_ENTRY(106, 4)    // regex_char_set -> TK_LBRACKET TK_UPARROW regex_char_item TK_RBRACKET
-	PDA_RULE_ENTRY(107, 2)    // regex_char_item -> regex_char_item regex_char_e
-	PDA_RULE_ENTRY(107, 1)    // regex_char_item -> regex_char_e
-	PDA_RULE_ENTRY(108, 1)    // regex_char_e -> regex_char_range
-	PDA_RULE_ENTRY(108, 1)    // regex_char_e -> regex_char
-	PDA_RULE_ENTRY(109, 3)    // regex_char_range -> regex_char TK_MINUS regex_char_s
-	PDA_RULE_ENTRY(110, 1)    // regex_char_s -> regex_char
-	PDA_RULE_ENTRY(105, 1)    // regex_char -> TK_CHAR
-PDA_END_TRAITS_RULE_MAP()
+	PDA_BEGIN_RULE()
+		PDA_RULE_ENTRY(101, 3)    // regex_exp -> regex_exp TK_VERT regex_term
+		PDA_RULE_ENTRY(101, 1)    // regex_exp -> regex_term
+		PDA_RULE_ENTRY(102, 2)    // regex_term -> regex_term regex_factor_1
+		PDA_RULE_ENTRY(102, 1)    // regex_term -> regex_factor_1
+		PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_PLUS
+		PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_STAR
+		PDA_RULE_ENTRY(103, 2)    // regex_factor_1 -> regex_factor_1 TK_QUESTION
+		PDA_RULE_ENTRY(103, 1)    // regex_factor_1 -> regex_factor
+		PDA_RULE_ENTRY(104, 3)    // regex_factor -> TK_LPAREN regex_exp TK_RPAREN
+		PDA_RULE_ENTRY(104, 1)    // regex_factor -> regex_char
+		PDA_RULE_ENTRY(104, 1)    // regex_factor -> regex_char_set
+		PDA_RULE_ENTRY(106, 3)    // regex_char_set -> TK_LBRACKET regex_char_item TK_RBRACKET
+		PDA_RULE_ENTRY(106, 4)    // regex_char_set -> TK_LBRACKET TK_UPARROW regex_char_item TK_RBRACKET
+		PDA_RULE_ENTRY(107, 2)    // regex_char_item -> regex_char_item regex_char_e
+		PDA_RULE_ENTRY(107, 1)    // regex_char_item -> regex_char_e
+		PDA_RULE_ENTRY(108, 1)    // regex_char_e -> regex_char_range
+		PDA_RULE_ENTRY(108, 1)    // regex_char_e -> regex_char
+		PDA_RULE_ENTRY(109, 3)    // regex_char_range -> regex_char TK_MINUS regex_char_s
+		PDA_RULE_ENTRY(110, 1)    // regex_char_s -> regex_char
+		PDA_RULE_ENTRY(105, 1)    // regex_char -> TK_CHAR
+	PDA_END_RULE()
+END_PDA_TRAIT_CLASS(LdfRegexPdaTraits)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

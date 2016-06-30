@@ -20,7 +20,7 @@ This file contains main function for Service program.
 
 // tools
 
-volatile int g_ExitFlag = 0;
+volatile int g_ServiceExitFlag = 0;
 
 //signal callbacks
 static
@@ -28,7 +28,7 @@ void _sig_term(int signo)
 {
 	//catched signal sent by kill(1) command
 	if( signo == SIGTERM ) {
-		g_ExitFlag = 1;
+		g_ServiceExitFlag = 1;
 	} //end if
 }
 
@@ -99,7 +99,7 @@ int main(int argc, char *argv[], char *envp[])
 		report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_ERROR, _S("Initialize loop failed!"));
 		return -1;
 	}
-	while( !g_ExitFlag ) {
+	while( !g_ServiceExitFlag ) {
 		if( !sml.OneLoop() )
 			break;
 		thread_sleep(1);

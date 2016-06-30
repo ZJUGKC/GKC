@@ -20,7 +20,7 @@ SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Action.cpp" "src/Analyzer.cpp"
 	"src/action/CommentStartAction.cpp" "src/action/SpaceAction.cpp" "src/action/ReturnAction.cpp"
-	"src/ldf/LdfGraPda.cpp"
+	"src/ldf/LdfFsa.cpp" "src/ldf/LdfLexPda.cpp" "src/ldf/LdfRegexFsa.cpp" "src/ldf/LdfRegexPda.cpp" "src/ldf/LdfGraPda.cpp"
 	"src/analyzer/LexerTables.cpp" "src/analyzer/LexerAnalyzer.cpp" "src/analyzer/GrammarTables.cpp" "src/analyzer/GrammarAnalyzer.cpp")
 ADD_LIBRARY(GkcCompiler SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcCompiler "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})

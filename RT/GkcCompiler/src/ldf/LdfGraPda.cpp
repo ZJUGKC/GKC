@@ -18,8 +18,6 @@ This file contains PDA tables for gra file.
 
 #include "PreComp.h"
 
-#include "_GkcCompiler.h"
-
 #include "base/Pda.h"
 #include "base/PdaTable.h"
 

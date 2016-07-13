@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -20,14 +20,10 @@ This is pre-compiled header file.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "base/GkcDef.h"
-#include "base/GkcColl.h"
 
 #include "sys/GkcSys.h"
-#include "sys/GkcConsole.h"
-#include "sys/GkcPath.h"
-#include "sys/GkcCharset.h"
 
-#include "parser/GkcParser.h"
+#include "compiler/GkcCompiler.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__PRECOMP_H__

@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,29 +11,25 @@
 */
 
 /*
-This file contains memory manager functions.
+This file contains global variables for WLang grammar error component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcSys.h"
-
-#include "base/SysDef.h"
-
-#include "ComSACache.h"
-#include "Globals.h"
+#include "wlang/WlangGrammarError.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// WlangGrammarError
 
-//CrtMemoryManager
+BEGIN_COM_TYPECAST(WlangGrammarError)
+	COM_TYPECAST_ENTRY(IGrammarError, IGrammarError)
+END_COM_TYPECAST()
 
-GKC::IMemoryManager* _CrtMemoryManager_Get() throw()
-{
-	return GKC::get_crt_mem_mgr();
+////////////////////////////////////////////////////////////////////////////////
 }
-
 ////////////////////////////////////////////////////////////////////////////////

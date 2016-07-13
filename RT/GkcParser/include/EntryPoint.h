@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,24 +11,31 @@
 */
 
 /*
-This is pre-compiled header file.
+This file contains entry point function for SA.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __PRECOMP_H__
-#define __PRECOMP_H__
+#ifndef __ENTRY_POINT_H__
+#define __ENTRY_POINT_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "base/GkcDef.h"
-#include "base/GkcColl.h"
+////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
 
-#include "sys/GkcSys.h"
-#include "sys/GkcConsole.h"
-#include "sys/GkcPath.h"
-#include "sys/GkcCharset.h"
+// ProgramEntryPoint
 
-#include "parser/GkcParser.h"
+class ProgramEntryPoint
+{
+public:
+	static bool SAMain(bool bInitOrDump)
+	{
+		return true;
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__PRECOMP_H__
+}
+////////////////////////////////////////////////////////////////////////////////
+#endif
 ////////////////////////////////////////////////////////////////////////////////

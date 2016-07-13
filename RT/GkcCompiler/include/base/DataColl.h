@@ -477,6 +477,13 @@ public:
 		return Iterator(this, uNode);
 	}
 
+	uint GetTotalCount() const throw()
+	{
+		if( IsNull() )
+			return 0;
+		return _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
+	}
+
 // level
 	Iterator GetZeroLevelHead() const throw()
 	{

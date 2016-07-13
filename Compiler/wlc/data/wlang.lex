@@ -22,7 +22,8 @@ letter [a-zA-Z_]
 TK_IDENTIFIER     {letter}({letter}|{digit})*
 TK_KEY_CLASS      class
 TK_KEY_NAMESPACE  namespace
-TK_COMMENT_START  /\*|//
+TK_COMMENT_START  /\*
+TK_LINE_COMMENT_START  //
 hex_digit    [0-9A-Fa-f]
 hex_byte     {hex_digit}{hex_digit}?
 oct_digit    [0-7]

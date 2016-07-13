@@ -11,32 +11,29 @@
 */
 
 /*
-This file contains component client functions.
+This file contains global variables for WLang parser component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcSys.h"
+#include "_GkcParser.h"
 
-#include "base/SysDef.h"
-
-#include "ComSACache.h"
-#include "Globals.h"
+#include "wlang/WlangGrammarError.h"
+#include "wlang/WlangAction.h"
+#include "wlang/WlangParser.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
 
-// functions
+// WlangParser
 
-void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()
-{
-	cr = GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).GetClassObject(strAssembly, cid, sp);
+BEGIN_COM_TYPECAST(WlangParser)
+	COM_TYPECAST_ENTRY(_IWlangParser, _IWlangParser)
+END_COM_TYPECAST()
+
+////////////////////////////////////////////////////////////////////////////////
 }
-
-void _Com_SA_FreeUnusedLibraries() throw()
-{
-	GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).FreeUnusedLibraries();
-}
-
 ////////////////////////////////////////////////////////////////////////////////

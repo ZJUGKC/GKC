@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,23 +11,11 @@
 */
 
 /*
-This file contains main function.
+This file is pre-compiled header file.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
-
-#include "base/SourceAnalyzer.h"
-
-#include "cmd/CompileSingleFile.h"
-
-#include "Global.h"
-
-#include "EntryPoint.h"
-
-////////////////////////////////////////////////////////////////////////////////
-
-#include "base/GkcConsoleMain.cpp"
 
 ///////////////////////////////////////////////////////////////////////////////

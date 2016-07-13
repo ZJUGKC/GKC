@@ -11,32 +11,28 @@
 */
 
 /*
-This file contains component client functions.
+This file contains WLang action functions.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "PreComp.h"
-
-#include "_GkcSys.h"
-
-#include "base/SysDef.h"
-
-#include "ComSACache.h"
-#include "Globals.h"
-
+////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// functions
+//functions
 
-void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()
+inline CallResult _Create_WlangGrammarError(ShareCom<IGrammarError>& sp) throw()
 {
-	cr = GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).GetClassObject(strAssembly, cid, sp);
+	CallResult cr;
+	ShareCom<IGrammarError> spError;
+	_CREATE_COMPONENT_INSTANCE(WlangGrammarError, IGrammarError, spError, cr);
+	if( cr.IsFailed() )
+		return cr;
+	sp = spError;
+	return cr;
 }
 
-void _Com_SA_FreeUnusedLibraries() throw()
-{
-	GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).FreeUnusedLibraries();
+////////////////////////////////////////////////////////////////////////////////
 }
-
 ////////////////////////////////////////////////////////////////////////////////

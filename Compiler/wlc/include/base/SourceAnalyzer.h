@@ -20,77 +20,25 @@ Author: Lijuan Mei
 #define __SOURCE_ANALYZER_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../base/LdfTable.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// source analyzer
+// _Create_WlangParser
 
-class SourceAnalyzer
+inline CallResult _Create_WlangParser(ShareCom<IWlangParser>& sp) throw()
 {
-public:
-	SourceAnalyzer() throw()
-	{
-	}
-	~SourceAnalyzer() throw()
-	{
-	}
-
-	// init
-	CallResult Initialize(const ConstStringS& strFileName) throw()
-	{
-		CallResult cr;
-
-		TokenTable tokenTable;
-		FsaTableInPool fsaTable;
-		TokenTable actionTable;
-		PdaTableInPool pdaTable;
-
-		try {
-			//process lex & gra file
-			LdfTableAnalyzer lta;
-			lta.Init();
-			cr = lta.Process(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")),
-							DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")),
-							tokenTable, fsaTable, actionTable, pdaTable);
-		}
-		catch(Exception& e) {
-			//error
-
-			return e.GetResult();
-		}
-		catch(...) {
-			//error
-
-		}
-
+	const uint c_uMaxErrorNumber = 400;
+	CallResult cr;
+	cr = ParserHelper::CreateWlangParser(sp);
+	if( cr.IsFailed() )
 		return cr;
-	}
-
-	// parse
-	void parse() throw()
-	{
-	}
-
-private:
-	void lexical() throw()
-	{
-	}
-	void grammar() throw()
-	{
-	}
-	void semantics() throw()
-	{
-	}
-
-private:
-	CplErrorBuffer m_errorBuffer;
-
-private:
-	//noncopyable
-};
+	//init
+	cr = sp.Deref().Initialize(c_uMaxErrorNumber);
+	if( cr.IsFailed() )
+		return cr;
+	return cr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -22,6 +22,7 @@ This file contains main functions for SA.
 
 #include "base/SysDef.h"
 
+#include "ComSACache.h"
 #include "Globals.h"
 
 #include "EntryPoint.h"

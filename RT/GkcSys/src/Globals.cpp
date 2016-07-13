@@ -22,6 +22,7 @@ This file contains global variables.
 
 #include "base/SysDef.h"
 
+#include "ComSACache.h"
 #include "Globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -170,6 +170,8 @@ public:
 	}
 };
 
+#pragma pack(push, 1)
+
 // se_type<T>
 //   T: short ushort int uint int64 uint64 float double
 template <typename T>
@@ -271,6 +273,8 @@ public:
 private:
 	T m_t;
 };
+
+#pragma pack(pop)
 
 // -----exception-----
 

@@ -59,6 +59,13 @@ public:
 		::_CommentStartAction_Create(sp, cr);
 		return cr;
 	}
+	// line comment start action
+	static CallResult CreateLineCommentStartAction(ShareCom<ILexerAction>& sp) throw()
+	{
+		CallResult cr;
+		::_LineCommentStartAction_Create(sp, cr);
+		return cr;
+	}
 	// space action
 	static CallResult CreateSpaceAction(ShareCom<ILexerAction>& sp) throw()
 	{

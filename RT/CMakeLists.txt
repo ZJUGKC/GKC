@@ -11,6 +11,7 @@
 
 ADD_SUBDIRECTORY(GkcSys GkcSys)
 ADD_SUBDIRECTORY(GkcCompiler GkcCompiler)
+ADD_SUBDIRECTORY(GkcParser GkcParser)
 ADD_SUBDIRECTORY(GkcHostSvc GkcHostSvc)
 
 #end

@@ -52,6 +52,11 @@ public:
 		m_symbol_pool.SetZeroLevelHead(m_uLevelHead);
 	}
 
+	void Finish()
+	{
+		uint uCount = m_symbol_pool.GetTotalCount();
+	}
+
 	//properties
 	uint get_ID(const ConstStringA& strToken) const throw()
 	{

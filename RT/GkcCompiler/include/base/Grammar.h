@@ -257,7 +257,7 @@ private:
 		}
 		if( cr.GetResult() == SystemCallResults::S_False ) {
 			cr.SetResult(SystemCallResults::OK);
-			//TK_EOF
+			//CPL_TK_EOF
 			uEvent = PDA_END_OF_EVENT;
 			return cr;
 		}

@@ -34,7 +34,7 @@ void _PrintVersion() throw()
 inline
 void _PrintHelp() throw()
 {
-	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
 }
 
 // ProgramEntryPoint
@@ -53,7 +53,7 @@ public:
 		}
 		int ret = 0;
 		//-c
-		if( ConstStringCompareTrait::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
 			if( uArgCount > 4 ) {
 				_PrintVersion();
 				_PrintHelp();
@@ -82,7 +82,7 @@ public:
 
 			//process
 			_PrintVersion();
-			ret = compile_single_file(strSrc, strDest);
+			ret = _Compile_Single_File(strSrc, strDest);
 		}
 
 		return ret;

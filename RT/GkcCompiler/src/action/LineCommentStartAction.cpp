@@ -11,32 +11,27 @@
 */
 
 /*
-This file contains component client functions.
+This file contains global variables for line comment start action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcSys.h"
+#include "_GkcCompiler.h"
 
-#include "base/SysDef.h"
-
-#include "ComSACache.h"
-#include "Globals.h"
+#include "action/LineCommentStartAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
 
-// functions
+// LineCommentStartAction
 
-void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()
-{
-	cr = GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).GetClassObject(strAssembly, cid, sp);
+BEGIN_COM_TYPECAST(LineCommentStartAction)
+	COM_TYPECAST_ENTRY(_ILexerAction, _ILexerAction)
+END_COM_TYPECAST()
+
+////////////////////////////////////////////////////////////////////////////////
 }
-
-void _Com_SA_FreeUnusedLibraries() throw()
-{
-	GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).FreeUnusedLibraries();
-}
-
 ////////////////////////////////////////////////////////////////////////////////

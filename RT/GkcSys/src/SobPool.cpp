@@ -22,6 +22,7 @@ This file contains shared-object-header-block pool functions.
 
 #include "base/SysDef.h"
 
+#include "ComSACache.h"
 #include "Globals.h"
 
 ////////////////////////////////////////////////////////////////////////////////

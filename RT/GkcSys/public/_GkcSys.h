@@ -2434,14 +2434,13 @@ DECLARE_GUID(GUID__IComSA)
 #pragma pack(pop)
 
 // create component
-//   return : CallResult (no throw)
+
 template <class T>
 inline GKC::CallResult _Create_Component_Instance(_ShareCom<T>& sp) throw()
 {
 	GKC::CallResult cr;
 	try {
-		_ShareCom<T> spC(_ShareComHelper::MakeShareCom<T>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get())));
-		sp = spC;
+		sp = _ShareComHelper::MakeShareCom<T>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));
 	}
 	catch(GKC::Exception& e) {
 		cr = e.GetResult();
@@ -2461,13 +2460,18 @@ inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const 
 	sp = spI;
 	return GKC::CallResult();
 }
+template <class T, class TInterface>
+inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const guid& iid, _ShareCom<TInterface>& sp) throw()
+{
+	_ShareCom<TInterface> spI(_ShareComHelper::Query<T, TInterface>(spC, iid));
+	if( spI.IsBlockNull() )
+		return GKC::CallResult(GKC::SystemCallResults::Fail);
+	sp = spI;
+	return GKC::CallResult();
+}
 
 #define _COMPONENT_INSTANCE_INTERFACE(com_type, if_type, spC, sp, cr)  \
-	do { _ShareCom<void> __sp_I__;  \
-		cr = _Component_Instance_Query<com_type>(spC, USE_GUID(GUID_##if_type), __sp_I__);  \
-		if( cr.IsSucceeded() )  \
-			sp = _ShareComHelper::TypeCast<void, if_type>(__sp_I__);  \
-	} while(0)
+	cr = _Component_Instance_Query<com_type, if_type>(spC, USE_GUID(GUID_##if_type), sp)
 
 #define _CREATE_COMPONENT_INSTANCE(com_type, if_type, sp, cr)  \
 	do { _ShareCom<com_type> __sp_C__;  \
@@ -2477,6 +2481,8 @@ inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const 
 	} } while(0)
 
 typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp);
+
+// --only one component factory class can be defined in a pair of .h and .cpp files.--
 
 // --<header file>--
 
@@ -2491,9 +2497,7 @@ typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>&
 	_ShareCom<com_class> spC;  \
 	cr = _Create_Component_Instance<com_class>(spC);  \
 	if( cr.IsSucceeded() ) {  \
-		_ShareCom<void> spI;  \
-		cr = _Component_Instance_Query<com_class>(spC, iid, spI);  \
-		if( cr.IsSucceeded() ) sp = spI;  \
+		cr = _Component_Instance_Query<com_class>(spC, iid, sp);  \
 	} return cr; }  \
 	public:  \
 	static CallResult Create(_ShareCom<_IComFactory>& sp) throw()  \

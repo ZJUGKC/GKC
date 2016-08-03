@@ -11,23 +11,26 @@
 */
 
 /*
-This file contains WLang action functions.
+This file contains global variables for Macro-Token action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#include "PreComp.h"
+
+#include "_GkcCompiler.h"
+
+#include "ldf/MacroTokenAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// MacroTokenAction
 
-inline CallResult _Create_WlangGrammarError(ShareCom<IGrammarError>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(WlangGrammarError, IGrammarError, sp, cr);
-	return cr;
-}
+BEGIN_COM_TYPECAST(MacroTokenAction)
+	COM_TYPECAST_ENTRY(_ILexerAction, _ILexerAction)
+END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////
 }

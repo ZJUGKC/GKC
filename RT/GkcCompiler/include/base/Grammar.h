@@ -40,6 +40,10 @@ public:
 	{
 		m_lexer = lexer;
 	}
+	void SetNonterminalTable(const RefPtr<TokenTable>& nt) throw()
+	{
+		m_nonterminal_table = nt;
+	}
 	void SetReductionActionTable(const RefPtr<TokenTable>& ra) throw()
 	{
 		m_ra_table = ra;
@@ -59,22 +63,27 @@ public:
 		//find id
 		uint uID = m_ra_table.Deref().get_ID(strAction);
 		assert( uID > 0 );
+		uID -= m_ra_table.Deref().GetMinID();
 		//fill
 		uint uLeastCount = SafeOperators::AddThrow(uID, (uint)1);  //may throw
 		if( m_arrAction.GetCount() < (uintptr)uLeastCount )
 			m_arrAction.SetCount((uintptr)uLeastCount, 0);  //may throw
 		m_arrAction.SetAt(uID, spAction);
 	}
-	void SetFactory(uint uEventNo, const ShareCom<IComFactory>& sp)
+	void SetFactory(const ConstStringA& strEvent, const ShareCom<IComFactory>& sp)
 	{
-		assert( uEventNo != PDA_NO_EVENT );
-		if( m_arrFactory.IsBlockNull() )
-			m_arrFactory = ShareArrayHelper::MakeShareArray<ShareCom<IComFactory>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		if( m_arrTerminalFactory.IsBlockNull() )
+			m_arrTerminalFactory = ShareArrayHelper::MakeShareArray<ShareCom<IComFactory>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		if( m_arrNonterminalFactory.IsBlockNull() )
+			m_arrNonterminalFactory = ShareArrayHelper::MakeShareArray<ShareCom<IComFactory>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		//find
+		uint uID;
+		ShareArray<ShareCom<IComFactory>>& arr = find_factory_array(strEvent, uID);
 		//fill
-		uint uLeastCount = SafeOperators::AddThrow(uEventNo, (uint)1);  //may throw
-		if( m_arrFactory.GetCount() < (uintptr)uLeastCount )
-			m_arrFactory.SetCount((uintptr)uLeastCount, 0);  //may throw
-		m_arrFactory.SetAt(uEventNo, sp);
+		uint uLeastCount = SafeOperators::AddThrow(uID, (uint)1);  //may throw
+		if( arr.GetCount() < (uintptr)uLeastCount )
+			arr.SetCount((uintptr)uLeastCount, 0);  //may throw
+		arr.SetAt(uID, sp);
 	}
 
 	const ShareArray<StringS>& GetErrorArray() const throw()
@@ -135,10 +144,15 @@ public:
 				ShareCom<_IGrammarError> spErrorAction(ShareComHelper::ToShareCom(m_errorAction));
 				if( !spErrorAction.IsBlockNull() ) {
 					bool bChanged = false;
-					cr = spErrorAction.Deref().DoModifyEvent(uEvent, m_lexer.Deref().GetStream(), bChanged);
+					//uEvent must be a terminal symbol
+					const TokenTable& tt = m_lexer.Deref().GetTokenTable();
+					ConstStringA strEvent(tt.get_Token(uEvent));
+					cr = spErrorAction.Deref().DoModifyEvent(strEvent, m_lexer.Deref().GetStream(), bChanged);
 					if( cr.IsFailed() )
 						break;
 					if( bChanged ) {
+						uEvent = tt.get_ID(strEvent);
+						assert( uEvent >= CPL_TK_FIRST );
 						m_pda.InputEvent(uEvent);
 						continue;
 					}
@@ -279,7 +293,7 @@ private:
 									eb.GetLength() == 0 ?
 										ConstArrayHelper::GetInternalPointer(CS_U2S(StringUtilHelper::To_ConstString(tokenInfo.get_Buffer())).GetC())
 										: FixedArrayHelper::GetInternalPointer(eb)
-									);
+									);  //may throw
 			if( ret >= 0 )
 				tmp.SetLength(ret);
 			StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -295,18 +309,49 @@ private:
 	//find action
 	ShareCom<_IGrammarAction> find_action(uint uID) const throw()
 	{
+		uID -= m_ra_table.Deref().GetMinID();
 		ShareCom<_IGrammarAction> ret;
 		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;
 		ret = ShareComHelper::ToShareCom(m_arrAction[uID].get_Value());
 		return ret;
 	}
+	//factories
+	ShareArray<ShareCom<IComFactory>>& find_factory_array(const ConstStringA& strEvent, uint& uID) throw()
+	{
+		const TokenTable& tt = m_lexer.Deref().GetTokenTable();
+		uID = tt.get_ID(strEvent);
+		if( uID != 0 ) {
+			uID -= tt.GetMinID();
+			return m_arrTerminalFactory;
+		}
+		uID = m_nonterminal_table.Deref().get_ID(strEvent);
+		assert( uID > 0 );
+		uID -= m_nonterminal_table.Deref().GetMinID();
+		return m_arrNonterminalFactory;
+	}
 	//create symbol data
 	CallResult create_symbol_data(uint uEventNo, ShareCom<_IGrammarSymbolData>& sp) throw()
 	{
-		assert( !m_arrFactory.IsBlockNull() && (uintptr)uEventNo < m_arrFactory.GetCount() );
-		ShareCom<IComFactory> spFactory(m_arrFactory[uEventNo].get_Value());
+		assert( !m_arrTerminalFactory.IsBlockNull() && !m_arrNonterminalFactory.IsBlockNull() );
+		assert( uEventNo > 0 );
+		//find factory
+		ShareCom<IComFactory> spFactory;
+		const TokenTable& tt = m_lexer.Deref().GetTokenTable();
+		if( uEventNo <= tt.GetMaxID() ) {
+			assert( uEventNo >= tt.GetMinID() );
+			uEventNo -= tt.GetMinID();
+			assert( (uintptr)uEventNo < m_arrTerminalFactory.GetCount() );
+			spFactory = m_arrTerminalFactory[uEventNo].get_Value();
+		}
+		else {
+			assert( uEventNo >= m_nonterminal_table.Deref().GetMinID());
+			uEventNo -= m_nonterminal_table.Deref().GetMinID();
+			assert( (uintptr)uEventNo < m_arrNonterminalFactory.GetCount() );
+			spFactory = m_arrNonterminalFactory[uEventNo].get_Value();
+		} //end if
 		assert( !spFactory.IsBlockNull() );
+		//create
 		ShareCom<void> spV;
 		CallResult cr(spFactory.Deref().CreateInstance(USE_GUID(GUID__IGrammarSymbolData), spV));
 		if( cr.IsFailed() )
@@ -353,7 +398,7 @@ private:
 								_S("Error (%u) : (%u) Unexpected."),
 								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uRow, (uint)1),
 								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uCol, (uint)1)
-								);
+								);  //may throw
 		if( ret >= 0 )
 			tmp.SetLength(ret);
 		StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -363,6 +408,7 @@ private:
 
 private:
 	RefPtr<LexerParser>  m_lexer;
+	RefPtr<TokenTable>   m_nonterminal_table;
 	RefPtr<TokenTable>   m_ra_table;  //reduction action name
 	PushDownAutomata     m_pda;
 	WeakCom<_IGrammarError>  m_errorAction;
@@ -375,8 +421,9 @@ private:
 
 	//symbol list
 	List<ShareCom<_IGrammarSymbolData>> m_symbolList;  //for user data
-	//factories
-	ShareArray<ShareCom<IComFactory>> m_arrFactory;  //factories for user data
+	//factories for user data
+	ShareArray<ShareCom<IComFactory>> m_arrTerminalFactory;
+	ShareArray<ShareCom<IComFactory>> m_arrNonterminalFactory;
 
 private:
 	//noncopyable
@@ -391,6 +438,7 @@ private:
 class NOVTABLE _IGrammarTablesAccess
 {
 public:
+	virtual RefPtr<TokenTable> GetNonterminalTable() throw() = 0;
 	virtual RefPtr<TokenTable> GetReductionActionTable() throw() = 0;
 	virtual const PDA_TABLE& GetPdaTable() throw() = 0;
 };

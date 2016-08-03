@@ -170,6 +170,8 @@ class SymbolPool
 private:
 	typedef SymbolPool  thisClass;
 
+#pragma pack(push, 1)
+
 	class _Node
 	{
 	public:
@@ -252,6 +254,8 @@ private:
 		_Node& operator=(const _Node& src) throw();
 	};
 
+#pragma pack(pop)
+
 public:
 	//constants
 	enum { MASK_LEVEL = 0x3FFFFFFF, MAX_LEVEL = MASK_LEVEL,
@@ -287,11 +291,15 @@ public:
 		}
 
 		//properties
-		ConstStringA GetKey() const throw()
+		uint GetKeyAddr() const throw()
 		{
 			assert( !IsNull() );
 			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
-			return m_pPool->GetStringPool().GetString(pNode->GetStringAddr());
+			return pNode->GetStringAddr();
+		}
+		ConstStringA GetKey() const throw()
+		{
+			return m_pPool->GetStringPool().GetString(GetKeyAddr());
 		}
 		uint GetNodeAddr() const throw()
 		{
@@ -456,7 +464,14 @@ public:
 		if( uNode == 0 )
 			throw OutOfMemoryException();
 		//key
-		uint uKeyAddr = m_string_pool.PutString(str);  //may throw
+		uint uKeyAddr;
+		{
+			uint uStringNode = get_first_node(uFirstNode, uHash, str);
+			if( uStringNode == 0 )
+				uKeyAddr = m_string_pool.PutString(str);  //may throw
+			else
+				uKeyAddr = ((_Node*)ToPointer(uStringNode))->GetStringAddr();
+		} //end block
 		//fill
 		_Node& node = *((_Node*)ToPointer(uNode));
 		node.Init();
@@ -601,6 +616,8 @@ class AstTree
 private:
 	typedef AstTree  thisClass;
 
+#pragma pack(push, 1)
+
 	//Node
 	class _Node
 	{
@@ -664,6 +681,8 @@ private:
 		_Node(const _Node&) throw();
 		_Node& operator=(const _Node&) throw();
 	};
+
+#pragma pack(pop)
 
 public:
 	// Iterator

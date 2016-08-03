@@ -934,6 +934,7 @@ private:
 	uintptr m_uMinBlockElements, m_uMaxBlockElements;
 
 private:
+	//noncopyable
 	free_list(const free_list&) throw();
 	free_list& operator=(const free_list&) throw();
 };
@@ -1076,6 +1077,7 @@ private:
 	free_list<_Node>  m_freelist;
 
 private:
+	//noncopyable
 	fixed_size_memory_pool(const fixed_size_memory_pool&) throw();
 	fixed_size_memory_pool& operator=(const fixed_size_memory_pool&) throw();
 };

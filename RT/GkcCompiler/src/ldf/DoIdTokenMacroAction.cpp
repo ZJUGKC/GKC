@@ -11,23 +11,36 @@
 */
 
 /*
-This file contains WLang action functions.
+This file contains global variables for Do-Id-Token-Macro action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#include "PreComp.h"
+
+#include "_GkcCompiler.h"
+
+#include "base/DataColl.h"
+#include "base/Fsa.h"
+#include "base/Lexer.h"
+
+#include "ldf/Def.h"
+#include "ldf/DoIdTokenMacroAction.h"
+
+////////////////////////////////////////////////////////////////////////////////
+
+#include "ldf/Def.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// DoIdTokenMacroAction
 
-inline CallResult _Create_WlangGrammarError(ShareCom<IGrammarError>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(WlangGrammarError, IGrammarError, sp, cr);
-	return cr;
-}
+BEGIN_COM_TYPECAST(DoIdTokenMacroAction)
+	COM_TYPECAST_ENTRY(_IGrammarAction, _IGrammarAction)
+	COM_TYPECAST_ENTRY(_I_IdTokenMacroAction_Utility, _I_IdTokenMacroAction_Utility)
+END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////
 }

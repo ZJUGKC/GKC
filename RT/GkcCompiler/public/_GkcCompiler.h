@@ -88,9 +88,9 @@ public:
 		m_uID = CPL_TK_NULL;
 	}
 	//append a character
-	void Append(const byte& ch)
+	void Append(const GKC::CharA& ch)
 	{
-		GKC::StringHelper::Append((GKC::CharA)ch, m_strBuffer);  //may throw
+		GKC::StringHelper::Append(ch, m_strBuffer);  //may throw
 		//coordinates
 		m_wordInfo.infoEnd.uCol = GKC::SafeOperators::AddThrow(m_wordInfo.infoEnd.uCol, (uint)1);  //may throw
 		m_wordInfo.infoEnd.uCharIndex = GKC::SafeOperators::AddThrow(m_wordInfo.infoEnd.uCharIndex, (uint)1);  //may throw
@@ -312,7 +312,7 @@ private:
 class NOVTABLE _IGrammarError
 {
 public:
-	virtual GKC::CallResult DoModifyEvent(INOUT uint& uEvent, INOUT GKC::ShareCom<GKC::ITextStream>& spText, INOUT bool& bChanged) throw() = 0;
+	virtual GKC::CallResult DoModifyEvent(INOUT GKC::ConstStringA& strEvent, INOUT GKC::ShareCom<GKC::ITextStream>& spText, INOUT bool& bChanged) throw() = 0;
 };
 
 DECLARE_GUID(GUID__IGrammarError)
@@ -348,7 +348,7 @@ public:
 	virtual void SetLexerAnalyzer(const GKC::ShareCom<_ILexerAnalyzer>& sp) throw() = 0;
 	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strAction, const GKC::WeakCom<_IGrammarAction>& spAction) throw() = 0;
 	virtual void SetErrorAction(const GKC::WeakCom<_IGrammarError>& sp) throw() = 0;
-	virtual GKC::CallResult SetFactory(const uint& uEventNo, const GKC::ShareCom<GKC::IComFactory>& sp) throw() = 0;
+	virtual GKC::CallResult SetFactory(const GKC::ConstStringA& strEvent, const GKC::ShareCom<GKC::IComFactory>& sp) throw() = 0;
 	virtual GKC::CallResult Start(const bool& bUnexpectedEoeAsError) throw() = 0;
 	// return value : SystemCallResults::OK, the call is successful.
 	//                SystemCallResults::S_False, it reaches the end of stream.
@@ -372,6 +372,7 @@ DECLARE_GUID(GUID__IGrammarAnalyzer)
 
 SA_FUNCTION void _GrammarTables_Create(GKC::ShareCom<_IGrammarTables>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _GrammarAnalyzer_Create(GKC::ShareCom<_IGrammarAnalyzer>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw();
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_COMPILER_H__

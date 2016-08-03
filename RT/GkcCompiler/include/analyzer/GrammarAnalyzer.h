@@ -28,7 +28,7 @@ namespace GKC {
 class GrammarAnalyzer : public _IGrammarAnalyzer
 {
 public:
-	GrammarAnalyzer() throw()
+	GrammarAnalyzer() throw() : m_bEmpty(false), m_bErrorState(false)
 	{
 	}
 	~GrammarAnalyzer() throw()
@@ -43,6 +43,7 @@ public:
 		if( m_spTablesAccess.IsBlockNull() )
 			return CallResult(SystemCallResults::NotImpl);
 		//set
+		m_grammar.SetNonterminalTable(m_spTablesAccess.Deref().GetNonterminalTable());
 		m_grammar.SetReductionActionTable(m_spTablesAccess.Deref().GetReductionActionTable());
 		m_grammar.SetPdaTable(m_spTablesAccess.Deref().GetPdaTable());
 		return CallResult();
@@ -72,11 +73,11 @@ public:
 	{
 		m_grammar.SetErrorAction(sp);
 	}
-	virtual GKC::CallResult SetFactory(const uint& uEventNo, const GKC::ShareCom<GKC::IComFactory>& sp) throw()
+	virtual GKC::CallResult SetFactory(const GKC::ConstStringA& strEvent, const GKC::ShareCom<GKC::IComFactory>& sp) throw()
 	{
 		CallResult cr;
 		try {
-			m_grammar.SetFactory(uEventNo, sp);
+			m_grammar.SetFactory(strEvent, sp);
 		}
 		catch(Exception& e) {
 			cr = e.GetResult();

@@ -265,14 +265,12 @@ public:
 		cr = _Create_Component_Instance<MemoryStream>(spC);
 		if( cr.IsFailed() )
 			return cr;
-		_ShareCom<_IByteStream> spI;
-		_COMPONENT_INSTANCE_INTERFACE(MemoryStream, _IByteStream, spC, spI, cr);
+		_COMPONENT_INSTANCE_INTERFACE(MemoryStream, _IByteStream, spC, sp, cr);
 		if( cr.IsFailed() )
 			return cr;
 		spC.Deref().m_array  = m_array;
 		spC.Deref().m_rwlock = m_rwlock;
 		spC.Deref().m_iPos   = 0;
-		sp = spI;
 		return cr;
 	}
 

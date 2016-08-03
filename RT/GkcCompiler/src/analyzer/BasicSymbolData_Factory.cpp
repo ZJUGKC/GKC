@@ -11,23 +11,23 @@
 */
 
 /*
-This file contains WLang action functions.
+This file contains global variables for basic symbol data factory component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#include "PreComp.h"
+
+#include "_GkcCompiler.h"
+
+#include "analyzer/BasicSymbolData.h"
+#include "analyzer/BasicSymbolData_Factory.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
-
-inline CallResult _Create_WlangGrammarError(ShareCom<IGrammarError>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(WlangGrammarError, IGrammarError, sp, cr);
-	return cr;
-}
+IMPLEMENT_COM_FACTORY_CLASS(BasicSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

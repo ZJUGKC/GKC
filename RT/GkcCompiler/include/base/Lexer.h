@@ -26,7 +26,7 @@ class TokenTable
 public:
 	TokenTable() throw() : m_string_pool(RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(m_str_allocator))),
 						m_symbol_pool(m_string_pool, RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(m_sym_allocator))),
-						m_uLevelHead(0)
+						m_uLevelHead(0), m_uIDFirstAddr(0), m_uMinID(0), m_uMaxID(0)
 	{
 	}
 	~TokenTable() throw()
@@ -41,6 +41,9 @@ public:
 		m_symbol_pool.Reset();
 		//m_string_pool
 		m_uLevelHead = 0;
+		m_uIDFirstAddr = 0;
+		m_uMinID = 0;
+		m_uMaxID = 0;
 	}
 
 	void InsertToken(const ConstStringA& strToken, uint uID)
@@ -55,6 +58,47 @@ public:
 	void Finish()
 	{
 		uint uCount = m_symbol_pool.GetTotalCount();
+		assert( uCount != 0 );
+		//find minimum & maximum ID
+		uint uMinID = Limits<uint>::Max;
+		uint uMaxID = 0;
+		{
+			auto iter(m_symbol_pool.GetZeroLevelHead());
+			for( ; !iter.IsNull(); iter.MoveLevelNext() ) {
+				uint uID = iter.GetData<BeType<uint>>().get_Value();
+				if( uID < uMinID )
+					uMinID = uID;
+				if( uID > uMaxID )
+					uMaxID = uID;
+			}
+		} //end block
+		assert( uMinID != 0 && uMaxID != 0 && uMinID <= uMaxID );
+		uCount = uMaxID - uMinID;
+		uCount = SafeOperators::AddThrow(uCount, (uint)1);  //may throw
+		//allocate
+		uint uBytes = SafeOperators::MultiplyThrow(uCount, (uint)sizeof(uint));  //may throw
+		uint uAddr = m_str_allocator.Allocate(uBytes);
+		if( uAddr == 0 )
+			throw OutOfMemoryException();
+		m_uIDFirstAddr = uAddr;
+		m_uMinID = uMinID;
+		m_uMaxID = uMaxID;
+		//fill
+		auto iter(m_symbol_pool.GetZeroLevelHead());
+		for( ; !iter.IsNull(); iter.MoveLevelNext() ) {
+			uint uID = iter.GetData<BeType<uint>>().get_Value();
+			uAddr = m_uIDFirstAddr + sizeof(uint) * (uID - uMinID);
+			_RefAllocatorHelper::ToObject<BeType<uint>>(RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(m_str_allocator)), uAddr).set_Value(iter.GetKeyAddr());
+		} //end for
+	}
+
+	uint GetMinID() const throw()
+	{
+		return m_uMinID;
+	}
+	uint GetMaxID() const throw()
+	{
+		return m_uMaxID;
 	}
 
 	//properties
@@ -65,6 +109,14 @@ public:
 			return 0;
 		return iter.GetData<BeType<uint>>().get_Value();
 	}
+	ConstStringA get_Token(uint uID) const throw()
+	{
+		assert( m_uIDFirstAddr != 0 );
+		assert( uID >= m_uMinID && uID <= m_uMaxID );
+		uint uP = m_uIDFirstAddr + sizeof(uint) * (uID - m_uMinID);
+		uint uAddr = _RefAllocatorHelper::ToObject<BeType<uint>>(RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(m_str_allocator)), uP).get_Value();
+		return m_string_pool.GetString(uAddr);
+	}
 
 private:
 	ArrayPoolAllocator m_sym_allocator;
@@ -73,7 +125,10 @@ private:
 	SymbolPool m_symbol_pool;
 	StringPool m_string_pool;
 
-	uint m_uLevelHead;  //not used in this class
+	uint m_uLevelHead;
+	uint m_uIDFirstAddr;
+	uint m_uMinID;
+	uint m_uMaxID;
 
 private:
 	//noncopyable
@@ -98,6 +153,10 @@ public:
 	{
 		m_token_table = tk;
 	}
+	const TokenTable& GetTokenTable() const throw()
+	{
+		return m_token_table.Deref();
+	}
 	void SetFsaTable(const FSA_TABLE& tb) throw()
 	{
 		m_fsa.SetTable(tb);
@@ -109,6 +168,7 @@ public:
 		//find id
 		uint uID = m_token_table.Deref().get_ID(strToken);
 		assert( uID > 0 );
+		uID -= m_token_table.Deref().GetMinID();
 		//fill
 		uint uLeastCount = SafeOperators::AddThrow(uID, (uint)1);  //may throw
 		if( m_arrAction.GetCount() < (uintptr)uLeastCount )
@@ -219,6 +279,7 @@ public:
 private:
 	ShareCom<_ILexerAction> find_action(uint uID) const throw()
 	{
+		uID -= m_token_table.Deref().GetMinID();
 		ShareCom<_ILexerAction> ret;
 		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;

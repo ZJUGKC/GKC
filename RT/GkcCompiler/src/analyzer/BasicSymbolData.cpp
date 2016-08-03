@@ -11,23 +11,26 @@
 */
 
 /*
-This file contains WLang action functions.
+This file contains global variables for basic symbol data component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#include "PreComp.h"
+
+#include "_GkcCompiler.h"
+
+#include "analyzer/BasicSymbolData.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
+// BasicSymbolData
 
-inline CallResult _Create_WlangGrammarError(ShareCom<IGrammarError>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(WlangGrammarError, IGrammarError, sp, cr);
-	return cr;
-}
+BEGIN_COM_TYPECAST(BasicSymbolData)
+	COM_TYPECAST_ENTRY(_IGrammarSymbolData, _GrammarSymbolDataBase)
+END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////
 }

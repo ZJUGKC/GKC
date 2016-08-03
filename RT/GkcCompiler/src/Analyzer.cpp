@@ -28,10 +28,20 @@ This file contains analyzer functions.
 #include "base/PdaTable.h"
 #include "base/Grammar.h"
 
+#include "ldf/Def.h"
+#include "ldf/MacroTokenAction.h"
+#include "ldf/DoIdTokenMacroAction.h"
+#include "ldf/LdfFsa.h"
+#include "ldf/Base.h"
+#include "ldf/LdfLexPda.h"
+#include "ldf/LexAnalyzer.h"
+
 #include "analyzer/LexerTables.h"
 #include "analyzer/LexerAnalyzer.h"
 #include "analyzer/GrammarTables.h"
 #include "analyzer/GrammarAnalyzer.h"
+#include "analyzer/BasicSymbolData.h"
+#include "analyzer/BasicSymbolData_Factory.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,44 +53,35 @@ namespace GKC {
 
 inline void _Internal_LexerTables_Create(GKC::ShareCom<_ILexerTables>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_ILexerTables> spTables;
-	_CREATE_COMPONENT_INSTANCE(LexerTables, _ILexerTables, spTables, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spTables;
+	_CREATE_COMPONENT_INSTANCE(LexerTables, _ILexerTables, sp, cr);
 }
 
 // LexerAnalyzer
 
 inline void _Internal_LexerAnalyzer_Create(GKC::ShareCom<_ILexerAnalyzer>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_ILexerAnalyzer> spAnalyzer;
-	_CREATE_COMPONENT_INSTANCE(LexerAnalyzer, _ILexerAnalyzer, spAnalyzer, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spAnalyzer;
+	_CREATE_COMPONENT_INSTANCE(LexerAnalyzer, _ILexerAnalyzer, sp, cr);
 }
 
 // GrammarTables
 
 inline void _Internal_GrammarTables_Create(GKC::ShareCom<_IGrammarTables>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_IGrammarTables> spTables;
-	_CREATE_COMPONENT_INSTANCE(GrammarTables, _IGrammarTables, spTables, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spTables;
+	_CREATE_COMPONENT_INSTANCE(GrammarTables, _IGrammarTables, sp, cr);
 }
 
 // GrammarAnalyzer
 
 inline void _Internal_GrammarAnalyzer_Create(GKC::ShareCom<_IGrammarAnalyzer>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_IGrammarAnalyzer> spAnalyzer;
-	_CREATE_COMPONENT_INSTANCE(GrammarAnalyzer, _IGrammarAnalyzer, spAnalyzer, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spAnalyzer;
+	_CREATE_COMPONENT_INSTANCE(GrammarAnalyzer, _IGrammarAnalyzer, sp, cr);
+}
+
+// BasicSymbolData Factory
+
+inline void _Internal_BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw()
+{
+	cr = USE_COM_FACTORY_CLASS_NAME(BasicSymbolData)::Create(sp);
 }
 
 } //namespace
@@ -111,6 +112,13 @@ void _GrammarTables_Create(GKC::ShareCom<_IGrammarTables>& sp, GKC::CallResult& 
 void _GrammarAnalyzer_Create(GKC::ShareCom<_IGrammarAnalyzer>& sp, GKC::CallResult& cr) throw()
 {
 	GKC::_Internal_GrammarAnalyzer_Create(sp, cr);
+}
+
+// BasicSymbolData Factory
+
+void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_BasicSymbolDataFactory_Create(sp, cr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

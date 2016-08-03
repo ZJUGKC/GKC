@@ -44,6 +44,10 @@ public:
 	}
 
 // _IGrammarTablesAccess methods
+	virtual RefPtr<TokenTable> GetNonterminalTable() throw()
+	{
+		return RefPtr<TokenTable>(m_nonterminal_table);
+	}
 	virtual RefPtr<TokenTable> GetReductionActionTable() throw()
 	{
 		return RefPtr<TokenTable>(m_ra_table);
@@ -56,12 +60,14 @@ public:
 private:
 	void clear_all() throw()
 	{
+		m_nonterminal_table.RemoveAll();
 		m_ra_table.RemoveAll();
 		m_pda_table.Reset();
 		m_pda_allocator.Clear();
 	}
 
 private:
+	TokenTable  m_nonterminal_table;
 	TokenTable  m_ra_table;
 	PdaTable    m_pda_table;
 

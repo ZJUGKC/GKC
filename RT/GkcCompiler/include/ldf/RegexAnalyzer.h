@@ -238,6 +238,7 @@ private:
 			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_range"), uID ++);
 			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_s"), uID ++);
 			m_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char"), uID ++);
+			m_table.Finish();
 		}
 
 		const TokenTable& GetTable() const throw()

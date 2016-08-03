@@ -24,6 +24,17 @@ This file contains global variables for lexer tables component.
 #include "base/Fsa.h"
 #include "base/FsaTable.h"
 #include "base/Lexer.h"
+#include "base/Pda.h"
+#include "base/PdaTable.h"
+#include "base/Grammar.h"
+
+#include "ldf/Def.h"
+#include "ldf/MacroTokenAction.h"
+#include "ldf/DoIdTokenMacroAction.h"
+#include "ldf/LdfFsa.h"
+#include "ldf/Base.h"
+#include "ldf/LdfLexPda.h"
+#include "ldf/LexAnalyzer.h"
 
 #include "analyzer/LexerTables.h"
 

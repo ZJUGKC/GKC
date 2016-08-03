@@ -150,6 +150,13 @@ public:
 		::_GrammarAnalyzer_Create(sp, cr);
 		return cr;
 	}
+	// basic symbol data factory
+	static CallResult CreateBasicSymbolDataFactory(ShareCom<IComFactory>& sp) throw()
+	{
+		CallResult cr;
+		::_BasicSymbolDataFactory_Create(sp, cr);
+		return cr;
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

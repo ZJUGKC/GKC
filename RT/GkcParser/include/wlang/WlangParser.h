@@ -45,6 +45,7 @@ public:
 		cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
 		if( cr.IsFailed() )
 			return cr;
+		// stream
 		ShareCom<IByteStream> spStream;
 		cr = StreamHelper::CreateFileStream(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")), FileOpenTypes::Read, 0, spStream);
 		if( cr.IsFailed() )
@@ -54,6 +55,16 @@ public:
 		if( cr.IsFailed() )
 			return cr;
 		spText.Deref().SetStream(spStream);
+		// BOM
+		int iBOMType;
+		cr = spText.Deref().CheckBOM(iBOMType);
+		if( cr.IsFailed() )
+			return cr;
+		if( iBOMType != BOMTypes::UTF8 ) {
+			cr.SetResult(SystemCallResults::Fail);
+			return cr;
+		}
+		// generate
 		cr = spLexerTables.Deref().GenerateTables(spText);
 		if( cr.IsFailed() )
 			return cr;
@@ -63,10 +74,20 @@ public:
 		cr = CplAnalyzerHelper::CreateGrammarTables(spGrammarTables);
 		if( cr.IsFailed() )
 			return cr;
+		// stream
 		cr = StreamHelper::CreateFileStream(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")), FileOpenTypes::Read, 0, spStream);
 		if( cr.IsFailed() )
 			return cr;
 		spText.Deref().SetStream(spStream);
+		// BOM
+		cr = spText.Deref().CheckBOM(iBOMType);
+		if( cr.IsFailed() )
+			return cr;
+		if( iBOMType != BOMTypes::UTF8 ) {
+			cr.SetResult(SystemCallResults::Fail);
+			return cr;
+		}
+		// generate
 		cr = spGrammarTables.Deref().GenerateTables(spText);
 		if( cr.IsFailed() )
 			return cr;
@@ -152,6 +173,11 @@ public:
 		assert( !m_spGrammarAnalyzer.IsBlockNull() );
 		CallResult cr = m_spGrammarAnalyzer.Deref().Parse();
 		if( cr.GetResult() == SystemCallResults::OK ) {
+			if( m_spGrammarAnalyzer.Deref().IsErrorState() ) {
+				cr = m_spGrammarAnalyzer.Deref().Revert();
+				if( cr.IsFailed() )
+					return cr;
+			}
 			const GKC::ShareArray<GKC::StringS> arrError(m_spGrammarAnalyzer.Deref().get_ErrorArray());
 			uintptr uCount = arrError.GetCount();
 			if( m_uMaxErrorNumber != 0 && uCount >= (uintptr)m_uMaxErrorNumber )

@@ -35,44 +35,28 @@ namespace GKC {
 
 inline void _Internal_CommentStartAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_ILexerAction> spAction;
-	_CREATE_COMPONENT_INSTANCE(CommentStartAction, _ILexerAction, spAction, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spAction;
+	_CREATE_COMPONENT_INSTANCE(CommentStartAction, _ILexerAction, sp, cr);
 }
 
 // LineCommentStartAction
 
 inline void _Internal_LineCommentStartAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_ILexerAction> spAction;
-	_CREATE_COMPONENT_INSTANCE(LineCommentStartAction, _ILexerAction, spAction, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spAction;
+	_CREATE_COMPONENT_INSTANCE(LineCommentStartAction, _ILexerAction, sp, cr);
 }
 
 // SpaceAction
 
 inline void _Internal_SpaceAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_ILexerAction> spAction;
-	_CREATE_COMPONENT_INSTANCE(SpaceAction, _ILexerAction, spAction, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spAction;
+	_CREATE_COMPONENT_INSTANCE(SpaceAction, _ILexerAction, sp, cr);
 }
 
 // ReturnAction
 
 inline void _Internal_ReturnAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_ILexerAction> spAction;
-	_CREATE_COMPONENT_INSTANCE(ReturnAction, _ILexerAction, spAction, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spAction;
+	_CREATE_COMPONENT_INSTANCE(ReturnAction, _ILexerAction, sp, cr);
 }
 
 } //namespace

@@ -96,11 +96,7 @@ inline void _Internal_BufferStream_Create(const void* p, uintptr uBytes, _ShareC
 // text stream
 inline void _Internal_TextStream_Create(_ShareCom<_ITextStream>& sp, GKC::CallResult& cr) throw()
 {
-	_ShareCom<_ITextStream> spText;
-	_CREATE_COMPONENT_INSTANCE(TextStream, _ITextStream, spText, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spText;
+	_CREATE_COMPONENT_INSTANCE(TextStream, _ITextStream, sp, cr);
 }
 
 }  //namespace

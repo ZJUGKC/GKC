@@ -36,9 +36,20 @@ public:
 	}
 
 // IGrammarError methods
-	virtual GKC::CallResult DoModifyEvent(INOUT uint& uEvent, INOUT GKC::ShareCom<GKC::ITextStream>& spText, INOUT bool& bChanged) throw()
+	virtual GKC::CallResult DoModifyEvent(INOUT GKC::ConstStringA& strEvent, INOUT GKC::ShareCom<GKC::ITextStream>& spText, INOUT bool& bChanged) throw()
 	{
-		return CallResult();
+		CallResult cr;
+
+		// ">>" --> ">"
+		if( ConstStringCompareTrait<ConstStringA>::IsEQ(strEvent, DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RIGHT_SHIFT")) ) {
+			cr = spText.Deref().UngetCharA(1);
+			if( cr.IsFailed() )
+				return cr;
+			strEvent = DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LOG_GT");
+			bChanged = true;
+		}
+
+		return cr;
 	}
 
 private:

@@ -189,6 +189,7 @@ private:
 	RefPtr<Mutex>  m_mtx;
 
 private:
+	//noncopyable
 	Com_SA_Cache(const Com_SA_Cache&) throw();
 	Com_SA_Cache& operator=(const Com_SA_Cache&) throw();
 };

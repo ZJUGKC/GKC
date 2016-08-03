@@ -34,11 +34,7 @@ namespace GKC {
 
 inline void _Internal_WlangParser_Create(GKC::ShareCom<_IWlangParser>& sp, GKC::CallResult& cr) throw()
 {
-	ShareCom<_IWlangParser> spParser;
-	_CREATE_COMPONENT_INSTANCE(WlangParser, _IWlangParser, spParser, cr);
-	if( cr.IsFailed() )
-		return ;
-	sp = spParser;
+	_CREATE_COMPONENT_INSTANCE(WlangParser, _IWlangParser, sp, cr);
 }
 
 } //namespace

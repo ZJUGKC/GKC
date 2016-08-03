@@ -11,23 +11,16 @@
 */
 
 /*
-This file contains WLang action functions.
+This file contains global variables for LDF interfaces.
 */
-
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
-
-inline CallResult _Create_WlangGrammarError(ShareCom<IGrammarError>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(WlangGrammarError, IGrammarError, sp, cr);
-	return cr;
-}
+// GUID__I_IdTokenMacroAction_Utility
+//   {0276E3A0-7B68-4A11-A8B2-DF967CB35324}
+IMPLEMENT_GUID(GUID__I_IdTokenMacroAction_Utility, 0x276e3a0, 0x7b68, 0x4a11, 0xa8, 0xb2, 0xdf, 0x96, 0x7c, 0xb3, 0x53, 0x24)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

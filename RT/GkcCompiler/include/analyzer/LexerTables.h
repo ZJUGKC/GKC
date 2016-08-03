@@ -40,6 +40,18 @@ public:
 	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
 	{
 		CallResult cr;
+		try {
+			cr = _Generate_Lexer_Tables(sp);  //may throw
+		}
+		catch(Exception& e) {
+			cr = e.GetResult();
+		}
+		catch(...) {
+			cr.SetResult(SystemCallResults::Fail);
+		}
+		if( cr.IsSucceeded() ) {
+			clear_all();
+		}
 		return cr;
 	}
 

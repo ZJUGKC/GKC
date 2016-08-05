@@ -40,118 +40,95 @@ public:
 	{
 		CallResult cr;
 
-		//lexer tables
-		ShareCom<ILexerTables> spLexerTables;
-		cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
-		if( cr.IsFailed() )
-			return cr;
-		// stream
-		ShareCom<IByteStream> spStream;
-		cr = StreamHelper::CreateFileStream(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")), FileOpenTypes::Read, 0, spStream);
-		if( cr.IsFailed() )
-			return cr;
-		ShareCom<ITextStream> spText;
-		cr = StreamHelper::CreateTextStream(spText);
-		if( cr.IsFailed() )
-			return cr;
-		spText.Deref().SetStream(spStream);
-		// BOM
-		int iBOMType;
-		cr = spText.Deref().CheckBOM(iBOMType);
-		if( cr.IsFailed() )
-			return cr;
-		if( iBOMType != BOMTypes::UTF8 ) {
-			cr.SetResult(SystemCallResults::Fail);
-			return cr;
-		}
-		// generate
-		cr = spLexerTables.Deref().GenerateTables(spText);
-		if( cr.IsFailed() )
-			return cr;
-
-		//grammar tables
-		ShareCom<IGrammarTables> spGrammarTables;
-		cr = CplAnalyzerHelper::CreateGrammarTables(spGrammarTables);
-		if( cr.IsFailed() )
-			return cr;
-		// stream
-		cr = StreamHelper::CreateFileStream(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")), FileOpenTypes::Read, 0, spStream);
-		if( cr.IsFailed() )
-			return cr;
-		spText.Deref().SetStream(spStream);
-		// BOM
-		cr = spText.Deref().CheckBOM(iBOMType);
-		if( cr.IsFailed() )
-			return cr;
-		if( iBOMType != BOMTypes::UTF8 ) {
-			cr.SetResult(SystemCallResults::Fail);
-			return cr;
-		}
-		// generate
-		cr = spGrammarTables.Deref().GenerateTables(spText);
-		if( cr.IsFailed() )
-			return cr;
-
 		//lexer analyzer
 		ShareCom<ILexerAnalyzer> spLexerAnalyzer;
 		cr = CplAnalyzerHelper::CreateLexerAnalyzer(spLexerAnalyzer);
 		if( cr.IsFailed() )
 			return cr;
-		cr = spLexerAnalyzer.Deref().SetTables(spLexerTables);
-		if( cr.IsFailed() )
-			return cr;
+		//lexer tables
+		{
+			ShareCom<ILexerTables> spLexerTables;
+			cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
+			if( cr.IsFailed() )
+				return cr;
+			ShareCom<ITextStream> spText;
+			cr = load_text(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")), spText);
+			if( cr.IsFailed() )
+				return cr;
+			// generate
+			cr = spLexerTables.Deref().GenerateTables(spText);
+			if( cr.IsFailed() )
+				return cr;
+			// set
+			cr = spLexerAnalyzer.Deref().SetTables(spLexerTables);
+			if( cr.IsFailed() )
+				return cr;
+		} //end block
 		//actions
-		ShareCom<ILexerAction> spCommentStart;
-		cr = LexerActionHelper::CreateCommentStartAction(spCommentStart);
-		if( cr.IsFailed() )
-			return cr;
-		cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), ShareComHelper::ToWeakCom(spCommentStart));
-		if( cr.IsFailed() )
-			return cr;
-		ShareCom<ILexerAction> spLineCommentStart;
-		cr = LexerActionHelper::CreateLineCommentStartAction(spLineCommentStart);
-		if( cr.IsFailed() )
-			return cr;
-		cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LINE_COMMENT_START"), ShareComHelper::ToWeakCom(spLineCommentStart));
-		if( cr.IsFailed() )
-			return cr;
-		ShareCom<ILexerAction> spSpace;
-		cr = LexerActionHelper::CreateSpaceAction(spSpace);
-		if( cr.IsFailed() )
-			return cr;
-		cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), ShareComHelper::ToWeakCom(spSpace));
-		if( cr.IsFailed() )
-			return cr;
-		ShareCom<ILexerAction> spReturn;
-		cr = LexerActionHelper::CreateReturnAction(spReturn);
-		if( cr.IsFailed() )
-			return cr;
-		cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), ShareComHelper::ToWeakCom(spReturn));
-		if( cr.IsFailed() )
-			return cr;
+		{
+			ShareCom<ILexerAction> spAction;
+			cr = LexerActionHelper::CreateCommentStartAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = LexerActionHelper::CreateLineCommentStartAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LINE_COMMENT_START"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = LexerActionHelper::CreateSpaceAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = LexerActionHelper::CreateReturnAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+		} //end block
 
 		//grammar analyzer
 		ShareCom<IGrammarAnalyzer> spGrammarAnalyzer;
 		cr = CplAnalyzerHelper::CreateGrammarAnalyzer(spGrammarAnalyzer);
 		if( cr.IsFailed() )
 			return cr;
-		cr = spGrammarAnalyzer.Deref().SetTables(spGrammarTables);
-		if( cr.IsFailed() )
-			return cr;
+		//grammar tables
+		{
+			ShareCom<IGrammarTables> spGrammarTables;
+			cr = CplAnalyzerHelper::CreateGrammarTables(spGrammarTables);
+			if( cr.IsFailed() )
+				return cr;
+			ShareCom<ITextStream> spText;
+			cr = load_text(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")), spText);
+			if( cr.IsFailed() )
+				return cr;
+			// generate
+			cr = spGrammarTables.Deref().GenerateTables(spText);
+			if( cr.IsFailed() )
+				return cr;
+			// set
+			cr = spGrammarAnalyzer.Deref().SetTables(spGrammarTables);
+			if( cr.IsFailed() )
+				return cr;
+		} //end block
+
 		spGrammarAnalyzer.Deref().SetLexerAnalyzer(spLexerAnalyzer);
 		//actions
-		ShareCom<IGrammarError> spGrammarError;
-		cr = _Create_WlangGrammarError(spGrammarError);
-		if( cr.IsFailed() )
-			return cr;
-		spGrammarAnalyzer.Deref().SetErrorAction(ShareComHelper::ToWeakCom(spGrammarError));
+		{
+			ShareCom<IGrammarError> spGrammarError;
+			cr = _Create_WlangGrammarError(spGrammarError);
+			if( cr.IsFailed() )
+				return cr;
+			spGrammarAnalyzer.Deref().SetErrorAction(spGrammarError);
+		} //end block
 
-		m_spCommentStart = spCommentStart;
-		m_spLineCommentStart = spLineCommentStart;
-		m_spSpace = spSpace;
-		m_spReturn = spReturn;
 		m_spLexerAnalyzer = spLexerAnalyzer;
-		m_spGrammarError = spGrammarError;
 		m_spGrammarAnalyzer = spGrammarAnalyzer;
 
 		m_uMaxErrorNumber = uMaxErrorNumber;
@@ -192,14 +169,36 @@ public:
 	}
 
 private:
+	CallResult load_text(const ConstStringS& str, ShareCom<ITextStream>& sp) throw()
+	{
+		CallResult cr;
+		// stream
+		ShareCom<IByteStream> spStream;
+		cr = StreamHelper::CreateFileStream(str, FileOpenTypes::Read, 0, spStream);
+		if( cr.IsFailed() )
+			return cr;
+		ShareCom<ITextStream> spText;
+		cr = StreamHelper::CreateTextStream(spText);
+		if( cr.IsFailed() )
+			return cr;
+		spText.Deref().SetStream(spStream);
+		// BOM
+		int iBOMType;
+		cr = spText.Deref().CheckBOM(iBOMType);
+		if( cr.IsFailed() )
+			return cr;
+		if( iBOMType != BOMTypes::UTF8 ) {
+			cr.SetResult(SystemCallResults::Fail);
+			return cr;
+		}
+		sp = spText;
+		return cr;
+	}
+
+private:
 	uint m_uMaxErrorNumber;
 
-	ShareCom<ILexerAction> m_spCommentStart;
-	ShareCom<ILexerAction> m_spLineCommentStart;
-	ShareCom<ILexerAction> m_spSpace;
-	ShareCom<ILexerAction> m_spReturn;
 	ShareCom<ILexerAnalyzer> m_spLexerAnalyzer;
-	ShareCom<IGrammarError> m_spGrammarError;
 	ShareCom<IGrammarAnalyzer> m_spGrammarAnalyzer;
 
 private:

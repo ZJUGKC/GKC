@@ -161,10 +161,10 @@ public:
 	{
 		m_fsa.SetTable(tb);
 	}
-	void SetAction(const ConstStringA& strToken, const WeakCom<_ILexerAction>& spAction)
+	void SetAction(const ConstStringA& strToken, const ShareCom<_ILexerAction>& spAction)
 	{
 		if( m_arrAction.IsBlockNull() )
-			m_arrAction = ShareArrayHelper::MakeShareArray<WeakCom<_ILexerAction>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			m_arrAction = ShareArrayHelper::MakeShareArray<ShareCom<_ILexerAction>>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		//find id
 		uint uID = m_token_table.Deref().get_ID(strToken);
 		assert( uID > 0 );
@@ -283,7 +283,7 @@ private:
 		ShareCom<_ILexerAction> ret;
 		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;
-		ret = ShareComHelper::ToShareCom(m_arrAction[uID].get_Value());
+		ret = m_arrAction[uID].get_Value();
 		return ret;
 	}
 
@@ -291,7 +291,7 @@ private:
 	//settings
 	RefPtr<TokenTable>   m_token_table;
 	FiniteStateAutomata  m_fsa;
-	ShareArray<WeakCom<_ILexerAction>>  m_arrAction;
+	ShareArray<ShareCom<_ILexerAction>>  m_arrAction;
 	ShareCom<ITextStream>  m_stream;
 
 	//token info

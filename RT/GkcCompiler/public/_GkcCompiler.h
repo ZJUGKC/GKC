@@ -218,7 +218,7 @@ class NOVTABLE _ILexerAnalyzer
 public:
 	virtual GKC::CallResult SetTables(const GKC::ShareCom<_ILexerTables>& sp) throw() = 0;
 	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
-	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strToken, const GKC::WeakCom<_ILexerAction>& spAction) throw() = 0;
+	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strToken, const GKC::ShareCom<_ILexerAction>& spAction) throw() = 0;
 	virtual void Start() throw() = 0;
 	// return value : SystemCallResults::OK, the call is successful. The token id may be CPL_TK_ERROR.
 	//                SystemCallResults::S_False, it reaches the end of stream.
@@ -346,8 +346,8 @@ class NOVTABLE _IGrammarAnalyzer
 public:
 	virtual GKC::CallResult SetTables(const GKC::ShareCom<_IGrammarTables>& sp) throw() = 0;
 	virtual void SetLexerAnalyzer(const GKC::ShareCom<_ILexerAnalyzer>& sp) throw() = 0;
-	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strAction, const GKC::WeakCom<_IGrammarAction>& spAction) throw() = 0;
-	virtual void SetErrorAction(const GKC::WeakCom<_IGrammarError>& sp) throw() = 0;
+	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strAction, const GKC::ShareCom<_IGrammarAction>& spAction) throw() = 0;
+	virtual void SetErrorAction(const GKC::ShareCom<_IGrammarError>& sp) throw() = 0;
 	virtual GKC::CallResult SetFactory(const GKC::ConstStringA& strEvent, const GKC::ShareCom<GKC::IComFactory>& sp) throw() = 0;
 	virtual GKC::CallResult Start(const bool& bUnexpectedEoeAsError) throw() = 0;
 	// return value : SystemCallResults::OK, the call is successful.

@@ -53,7 +53,7 @@ public:
 		assert( !sp.IsBlockNull() );
 		m_lexer.SetStream(sp);
 	}
-	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strToken, const GKC::WeakCom<_ILexerAction>& spAction) throw()
+	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strToken, const GKC::ShareCom<_ILexerAction>& spAction) throw()
 	{
 		CallResult cr;
 		try {

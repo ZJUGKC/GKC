@@ -55,7 +55,7 @@ public:
 		assert( !m_spLexerAccess.IsBlockNull() );
 		m_grammar.SetLexerParser(m_spLexerAccess.Deref().GetLexerParser());
 	}
-	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strAction, const GKC::WeakCom<_IGrammarAction>& spAction) throw()
+	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strAction, const GKC::ShareCom<_IGrammarAction>& spAction) throw()
 	{
 		CallResult cr;
 		try {
@@ -69,7 +69,7 @@ public:
 		}
 		return cr;
 	}
-	virtual void SetErrorAction(const GKC::WeakCom<_IGrammarError>& sp) throw()
+	virtual void SetErrorAction(const GKC::ShareCom<_IGrammarError>& sp) throw()
 	{
 		m_grammar.SetErrorAction(sp);
 	}

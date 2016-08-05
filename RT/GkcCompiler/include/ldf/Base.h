@@ -78,23 +78,26 @@ public:
 
 		CallResult cr;
 		//actions
-		_CommentStartAction_Create(m_spCommentStart, cr);
-		if( cr.IsFailed() )
-			return cr;
-		m_lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), ShareComHelper::ToWeakCom(m_spCommentStart));  //may throw
-		_SpaceAction_Create(m_spSpace, cr);
-		if( cr.IsFailed() )
-			return cr;
-		m_lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), ShareComHelper::ToWeakCom(m_spSpace));  //may throw
-		_ReturnAction_Create(m_spReturn, cr);
-		if( cr.IsFailed() )
-			return cr;
-		m_lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), ShareComHelper::ToWeakCom(m_spReturn));  //may throw
+		{
+			ShareCom<_ILexerAction> spAction;
+			_CommentStartAction_Create(spAction, cr);
+			if( cr.IsFailed() )
+				return cr;
+			m_lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), spAction);  //may throw
+			_SpaceAction_Create(spAction, cr);
+			if( cr.IsFailed() )
+				return cr;
+			m_lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), spAction);  //may throw
+			_ReturnAction_Create(spAction, cr);
+			if( cr.IsFailed() )
+				return cr;
+			m_lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), spAction);  //may throw
+		} //end block
 
 		return cr;
 	}
 
-	void SetAction(const ConstStringA& strToken, const WeakCom<_ILexerAction>& spAction)
+	void SetAction(const ConstStringA& strToken, const ShareCom<_ILexerAction>& spAction)
 	{
 		m_lexer.SetAction(strToken, spAction);  //may throw
 	}
@@ -112,11 +115,6 @@ private:
 
 	//lexer parser
 	LexerParser m_lexer;
-
-	//actions
-	ShareCom<_ILexerAction> m_spCommentStart;
-	ShareCom<_ILexerAction> m_spSpace;
-	ShareCom<_ILexerAction> m_spReturn;
 
 private:
 	//noncopyable
@@ -152,7 +150,7 @@ public:
 	{
 		m_grammar.SetPdaTable(table);
 	}
-	void SetAction(const ConstStringA& strAction, const WeakCom<_IGrammarAction>& spAction)
+	void SetAction(const ConstStringA& strAction, const ShareCom<_IGrammarAction>& spAction)
 	{
 		m_grammar.SetAction(strAction, spAction);  //may throw
 	}

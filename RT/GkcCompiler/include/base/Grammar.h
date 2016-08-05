@@ -52,14 +52,14 @@ public:
 	{
 		m_pda.SetTable(table);
 	}
-	void SetErrorAction(const WeakCom<_IGrammarError>& sp) throw()
+	void SetErrorAction(const ShareCom<_IGrammarError>& sp) throw()
 	{
 		m_errorAction = sp;
 	}
-	void SetAction(const ConstStringA& strAction, const WeakCom<_IGrammarAction>& spAction)
+	void SetAction(const ConstStringA& strAction, const ShareCom<_IGrammarAction>& spAction)
 	{
 		if( m_arrAction.IsBlockNull() )
-			m_arrAction = ShareArrayHelper::MakeShareArray<WeakCom<_IGrammarAction>>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			m_arrAction = ShareArrayHelper::MakeShareArray<ShareCom<_IGrammarAction>>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		//find id
 		uint uID = m_ra_table.Deref().get_ID(strAction);
 		assert( uID > 0 );
@@ -141,7 +141,7 @@ public:
 			//actions
 			if( m_pda.IsError() ) {
 				//modify event
-				ShareCom<_IGrammarError> spErrorAction(ShareComHelper::ToShareCom(m_errorAction));
+				ShareCom<_IGrammarError> spErrorAction(m_errorAction);
 				if( !spErrorAction.IsBlockNull() ) {
 					bool bChanged = false;
 					//uEvent must be a terminal symbol
@@ -313,7 +313,7 @@ private:
 		ShareCom<_IGrammarAction> ret;
 		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;
-		ret = ShareComHelper::ToShareCom(m_arrAction[uID].get_Value());
+		ret = m_arrAction[uID].get_Value();
 		return ret;
 	}
 	//factories
@@ -411,8 +411,8 @@ private:
 	RefPtr<TokenTable>   m_nonterminal_table;
 	RefPtr<TokenTable>   m_ra_table;  //reduction action name
 	PushDownAutomata     m_pda;
-	WeakCom<_IGrammarError>  m_errorAction;
-	ShareArray<WeakCom<_IGrammarAction>>  m_arrAction;
+	ShareCom<_IGrammarError>  m_errorAction;
+	ShareArray<ShareCom<_IGrammarAction>>  m_arrAction;
 	//error
 	ShareArray<StringS>  m_arrError;
 

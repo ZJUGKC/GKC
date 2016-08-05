@@ -192,12 +192,14 @@ inline CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
 	if( cr.IsFailed() )
 		return cr;
 	//actions
-	ShareCom<_ILexerAction> spMacroToken;
-	cr = _Create_MacroTokenAction(spMacroToken);
-	if( cr.IsFailed() )
-		return cr;
-	lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"), ShareComHelper::ToWeakCom(spMacroToken));  //may throw
-	lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"), ShareComHelper::ToWeakCom(spMacroToken));  //may throw
+	{
+		ShareCom<_ILexerAction> spMacroToken;
+		cr = _Create_MacroTokenAction(spMacroToken);
+		if( cr.IsFailed() )
+			return cr;
+		lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"), spMacroToken);  //may throw
+		lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"), spMacroToken);  //may throw
+	} //end block
 	//stream
 	lexer.SetStream(sp);
 
@@ -225,39 +227,42 @@ inline CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
 	//pda table
 	grammar.SetPdaTable(LdfLexPdaTraits::GetTable());
 	//factory
-	ShareCom<IComFactory> spCF;
-	_BasicSymbolDataFactory_Create(spCF, cr);
-	if( cr.IsFailed() )
-		return cr;
-	grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEP"), spCF);  //may throw
-	grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"), spCF);  //may throw
-	grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"), spCF);  //may throw
-	grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "lex_def"), spCF);  //may throw
-	grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "rule_block"), spCF);  //may throw
-	grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "id"), spCF);  //may throw
-	//actions
-	ShareCom<_IGrammarAction> spDoIdToken;
-	cr = _Create_DoIdTokenMacroAction(spDoIdToken);
-	if( cr.IsFailed() )
-		return cr;
-	ShareCom<_IGrammarAction> spDoIdMacro;
-	cr = _Create_DoIdTokenMacroAction(spDoIdMacro);
-	if( cr.IsFailed() )
-		return cr;
-	// data
+	{
+		ShareCom<IComFactory> spCF;
+		_BasicSymbolDataFactory_Create(spCF, cr);
+		if( cr.IsFailed() )
+			return cr;
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEP"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_MACRO"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "lex_def"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "rule_block"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "id"), spCF);  //may throw
+	} //end block
+	//data
 	_Lex_Data lex_data;
 	lex_data.Init();  //may throw
+	//actions
 	{
+		ShareCom<_IGrammarAction> spAction;
+		//DoIdToken
+		cr = _Create_DoIdTokenMacroAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
 		ShareCom<_I_IdTokenMacroAction_Utility> spUtility;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_IdTokenMacroAction_Utility, spDoIdToken, spUtility, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_IdTokenMacroAction_Utility, spAction, spUtility, cr);
 		assert( cr.IsSucceeded() );
 		spUtility.Deref().SetOutput(lex_data.GetTokenTable(), lex_data.GetTokenRegex(), lex_data.GetTokenId());
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_IdTokenMacroAction_Utility, spDoIdMacro, spUtility, cr);
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"), spAction);  //may throw
+		//DoIdMacro
+		cr = _Create_DoIdTokenMacroAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_IdTokenMacroAction_Utility, spAction, spUtility, cr);
 		assert( cr.IsSucceeded() );
 		spUtility.Deref().SetOutput(lex_data.GetMacroTable(), lex_data.GetMacroRegex(), lex_data.GetMacroId());
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"), spAction);  //may throw
 	} //end block
-	grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"), ShareComHelper::ToWeakCom(spDoIdToken));  //may throw
-	grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_macro"), ShareComHelper::ToWeakCom(spDoIdMacro));  //may throw
 
 	//execute
 	cr = grammar.Execute();  //may throw

@@ -40,6 +40,22 @@ inline CallResult _Create_DoIdTokenMacroAction(ShareCom<_IGrammarAction>& sp) th
 	_CREATE_COMPONENT_INSTANCE(DoIdTokenMacroAction, _IGrammarAction, sp, cr);
 	return cr;
 }
+inline CallResult _Create_RegexCharAction(ShareCom<_ILexerAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexCharAction, _ILexerAction, sp, cr);
+	return cr;
+}
+inline CallResult _Create_RegexCharSymbolDataFactory(ShareCom<IComFactory>& sp) throw()
+{
+	return USE_COM_FACTORY_CLASS_NAME(RegexCharSymbolData)::Create(sp);
+}
+inline CallResult _Create_RegexDoCharAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoCharAction, _IGrammarAction, sp, cr);
+	return cr;
+}
 
 // _LdfLexerParser
 

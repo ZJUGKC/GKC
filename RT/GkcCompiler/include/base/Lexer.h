@@ -253,10 +253,21 @@ public:
 					assert( cr.IsOK() );
 					m_token_info.BackChar(uBackNum);  //may throw
 				}
+				uint uID = m_token_info.get_ID();
 				//action
-				ShareCom<_ILexerAction> action(find_action(m_token_info.get_ID()));
-				if( !action.IsBlockNull() )
-					cr = action.Deref().DoAction(m_stream, m_token_info);
+				ShareCom<_ILexerAction> action(find_action(uID));
+				if( !action.IsBlockNull() ) {
+					ConstStringA strToken(m_token_table.Deref().get_Token(uID));
+					bool bTokenChanged = false;
+					cr = action.Deref().DoAction(m_stream, m_token_info, strToken, bTokenChanged);
+					if( cr.IsFailed() )
+						break;
+					if( bTokenChanged ) {
+						uID = m_token_table.Deref().get_ID(strToken);
+						assert( uID >= CPL_TK_FIRST );
+						m_token_info.set_ID(uID);
+					}
+				} //end if
 				break;
 			} //end if
 			//get next char

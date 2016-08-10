@@ -11,44 +11,54 @@
 */
 
 /*
-This file contains component class of space action.
+This file contains component class of regular expression character symbol data.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __SPACE_ACTION_H__
-#define __SPACE_ACTION_H__
+#ifndef __REGEX_CHAR_SYMBOL_DATA_H__
+#define __REGEX_CHAR_SYMBOL_DATA_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// SpaceAction
+// RegexCharSymbolData
 
-class SpaceAction : public _ILexerAction
+class RegexCharSymbolData : public _GrammarSymbolDataBase,
+							public _I_RegexCharSymbolData_Utility
 {
 public:
-	SpaceAction() throw()
+	RegexCharSymbolData() throw()
 	{
 	}
-	~SpaceAction() throw()
+	~RegexCharSymbolData() throw()
 	{
 	}
 
-// _ILexerAction methods
-	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
+// _I_RegexCharSymbolData_Utility methods
+	virtual void GetCharRange(uint& uLow, uint& uHigh) throw()
 	{
-		info.set_ID(CPL_TK_NULL);
-		return CallResult();
+		uLow  = m_uLow;
+		uHigh = m_uHigh;
+	}
+	virtual void SetCharRange(uint uLow, uint uHigh) throw()
+	{
+		m_uLow  = uLow;
+		m_uHigh = uHigh;
 	}
 
 private:
+	uint m_uLow;
+	uint m_uHigh;
+
+private:
 	//noncopyable
-	SpaceAction(const SpaceAction&) throw();
-	SpaceAction& operator=(const SpaceAction&) throw();
+	RegexCharSymbolData(const RegexCharSymbolData&) throw();
+	RegexCharSymbolData& operator=(const RegexCharSymbolData&) throw();
 };
 
-DECLARE_COM_TYPECAST(SpaceAction)
+DECLARE_COM_TYPECAST(RegexCharSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -22,8 +22,6 @@ This file contains main functions for SA.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "_GkcCompiler.cpp"
-
 #include "base/GkcSAMain.cpp"
 
 #include "sys/GkcSys.cpp"

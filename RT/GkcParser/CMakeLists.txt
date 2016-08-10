@@ -19,7 +19,7 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/public/include")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
-SET(SRC_LIST "src/Main.cpp" "src/Parser.cpp"
+SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Parser.cpp"
 	"src/wlang/WlangGrammarError.cpp" "src/wlang/WlangParser.cpp")
 ADD_LIBRARY(GkcParser SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcParser "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})

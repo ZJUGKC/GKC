@@ -36,7 +36,7 @@ public:
 	}
 
 // _ILexerAction methods
-	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info) throw()
+	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
 	{
 		CallResult cr;
 

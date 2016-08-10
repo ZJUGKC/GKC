@@ -11,44 +11,69 @@
 */
 
 /*
-This file contains component class of space action.
+This file contains component class of regular expression character action.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __SPACE_ACTION_H__
-#define __SPACE_ACTION_H__
+#ifndef __REGEX_CHAR_ACTION_H__
+#define __REGEX_CHAR_ACTION_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// SpaceAction
+// RegexCharAction
 
-class SpaceAction : public _ILexerAction
+class RegexCharAction : public _ILexerAction
 {
 public:
-	SpaceAction() throw()
+	RegexCharAction() throw()
 	{
 	}
-	~SpaceAction() throw()
+	~RegexCharAction() throw()
 	{
 	}
 
 // _ILexerAction methods
 	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
 	{
-		info.set_ID(CPL_TK_NULL);
+		//fetch the actual character
+		StringA& str = info.get_Buffer();
+		assert( str.GetLength() > 1 );
+		//value
+		CharA ch = str.GetAt(1).get_Value();
+		if( ch == 'r' )
+			str.GetAt(0).set_Value('\r');
+		else if( ch == 'n' )
+			str.GetAt(0).set_Value('\n');
+		else if( ch == 't' )
+			str.GetAt(0).set_Value('\t');
+		else if( ch == 's' )
+			str.GetAt(0).set_Value(' ');
+		else if( ch == 'x' ) {
+			bool bOK;
+			uint v;
+			string_to_value(ShareArrayHelper::GetInternalPointer(str) + 2, 16, v, bOK);  //no check
+			assert( bOK );
+			str.GetAt(0).set_Value((CharA)v);
+		}
+		else
+			str.GetAt(0).set_Value(ch);
+		str.SetLength(1);
+		//change ID
+		strToken = DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR");
+		bTokenChanged = true;
 		return CallResult();
 	}
 
 private:
 	//noncopyable
-	SpaceAction(const SpaceAction&) throw();
-	SpaceAction& operator=(const SpaceAction&) throw();
+	RegexCharAction(const RegexCharAction&) throw();
+	RegexCharAction& operator=(const RegexCharAction&) throw();
 };
 
-DECLARE_COM_TYPECAST(SpaceAction)
+DECLARE_COM_TYPECAST(RegexCharAction)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

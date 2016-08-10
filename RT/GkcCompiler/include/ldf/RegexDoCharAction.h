@@ -11,44 +11,44 @@
 */
 
 /*
-This file contains component class of space action.
+This file contains component class of Do-Char action.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __SPACE_ACTION_H__
-#define __SPACE_ACTION_H__
+#ifndef __REGEX_DO_CHAR_ACTION_H__
+#define __REGEX_DO_CHAR_ACTION_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// SpaceAction
+// RegexDoCharAction
 
-class SpaceAction : public _ILexerAction
+class RegexDoCharAction : public _IGrammarAction
 {
 public:
-	SpaceAction() throw()
+	RegexDoCharAction() throw()
 	{
 	}
-	~SpaceAction() throw()
+	~RegexDoCharAction() throw()
 	{
 	}
 
-// _ILexerAction methods
-	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
+// _IGrammarAction methods
+	virtual GKC::CallResult DoAction(INOUT GKC::ShareArray<GKC::ShareCom<_IGrammarSymbolData>>& arrSymbol, INOUT GKC::ShareArray<GKC::StringS>& errorArray) throw()
 	{
-		info.set_ID(CPL_TK_NULL);
-		return CallResult();
+		CallResult cr;
+		return cr;
 	}
 
 private:
 	//noncopyable
-	SpaceAction(const SpaceAction&) throw();
-	SpaceAction& operator=(const SpaceAction&) throw();
+	RegexDoCharAction(const RegexDoCharAction&) throw();
+	RegexDoCharAction& operator=(const RegexDoCharAction&) throw();
 };
 
-DECLARE_COM_TYPECAST(SpaceAction)
+DECLARE_COM_TYPECAST(RegexDoCharAction)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

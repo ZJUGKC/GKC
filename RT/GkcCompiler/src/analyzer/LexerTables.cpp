@@ -32,15 +32,18 @@ This file contains global variables for lexer tables component.
 #include "ldf/MacroTokenAction.h"
 #include "ldf/DoIdTokenMacroAction.h"
 #include "ldf/LdfFsa.h"
+#include "ldf/RegexCharAction.h"
+#include "ldf/RegexCharSymbolData.h"
+#include "ldf/RegexCharSymbolData_Factory.h"
+#include "ldf/RegexDoCharAction.h"
 #include "ldf/Base.h"
+#include "ldf/LdfRegexFsa.h"
+#include "ldf/LdfRegexPda.h"
+#include "ldf/RegexAnalyzer.h"
 #include "ldf/LdfLexPda.h"
 #include "ldf/LexAnalyzer.h"
 
 #include "analyzer/LexerTables.h"
-
-////////////////////////////////////////////////////////////////////////////////
-
-#include "base/Lexer.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

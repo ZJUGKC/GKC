@@ -272,6 +272,13 @@ inline CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
 	lex_data.Finish();  //may throw
 	lex_data.ExpandTokenMacros();  //may throw
 
+	//AST
+	_Regex_AST ast;
+	ast.Init();  //may throw
+	cr = _Regex_Generate_AST(lex_data.GetTokenRegex(), ast);  //may throw
+	if( cr.IsFailed() )
+		return cr;
+
 	return cr;
 }
 

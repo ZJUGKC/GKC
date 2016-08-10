@@ -183,7 +183,7 @@ class NOVTABLE _ILexerAction
 {
 public:
 	// info : all fields can be revised
-	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info) throw() = 0;
+	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw() = 0;
 };
 
 DECLARE_GUID(GUID__ILexerAction)

@@ -34,6 +34,28 @@ public:
 
 DECLARE_GUID(GUID__I_IdTokenMacroAction_Utility)
 
+// _I_RegexCharSymbolData_Utility
+
+class NOVTABLE _I_RegexCharSymbolData_Utility
+{
+public:
+	virtual void GetCharRange(uint& uLow, uint& uHigh) throw() = 0;
+	virtual void SetCharRange(uint uLow, uint uHigh) throw() = 0;
+};
+
+DECLARE_GUID(GUID__I_RegexCharSymbolData_Utility)
+
+//regex operators
+
+enum {
+	REGEX_OP_LINK,
+	REGEX_OP_OR,
+	REGEX_OP_QUESTION,
+	REGEX_OP_STAR,
+	REGEX_OP_PLUS,
+	REGEX_OP_MAX
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

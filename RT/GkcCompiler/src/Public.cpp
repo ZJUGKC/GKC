@@ -21,6 +21,7 @@
 #include "base/Lexer.cpp"
 #include "base/Grammar.cpp"
 
-#include "ldf/Def.cpp"
+#include "ldf/lex/LexDef.cpp"
+#include "ldf/regex/RegexDef.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

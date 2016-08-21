@@ -11,51 +11,51 @@
 */
 
 /*
-This file contains component class of regular expression character symbol data.
+This file contains component class of regular expression position symbol data.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __REGEX_CHAR_SYMBOL_DATA_H__
-#define __REGEX_CHAR_SYMBOL_DATA_H__
+#ifndef __REGEX_POSITION_SYMBOL_DATA_H__
+#define __REGEX_POSITION_SYMBOL_DATA_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// RegexCharSymbolData
+// RegexPositionSymbolData
 
-class RegexCharSymbolData : public _GrammarSymbolDataBase,
-							public _I_RegexCharSymbolData_Utility
+class RegexPositionSymbolData : public _GrammarSymbolDataBase,
+								public _I_RegexPositionSymbolData_Utility
 {
 public:
-	RegexCharSymbolData() throw()
+	RegexPositionSymbolData() throw()
 	{
 	}
-	~RegexCharSymbolData() throw()
+	~RegexPositionSymbolData() throw()
 	{
 	}
 
-// _I_RegexCharSymbolData_Utility methods
-	virtual void GetCharRange(_RegexCharRange& rcr) throw()
+// _I_RegexPositionSymbolData_Utility methods
+	virtual void SetPosition(const AstTree::Position& pos) throw()
 	{
-		rcr = m_rcr;
+		m_pos = pos;
 	}
-	virtual void SetCharRange(const _RegexCharRange& rcr) throw()
+	virtual AstTree::Position GetPosition() throw()
 	{
-		m_rcr = rcr;
+		return m_pos;
 	}
 
 private:
-	_RegexCharRange m_rcr;
+	AstTree::Position m_pos;
 
 private:
 	//noncopyable
-	RegexCharSymbolData(const RegexCharSymbolData&) throw();
-	RegexCharSymbolData& operator=(const RegexCharSymbolData&) throw();
+	RegexPositionSymbolData(const RegexPositionSymbolData&) throw();
+	RegexPositionSymbolData& operator=(const RegexPositionSymbolData&) throw();
 };
 
-DECLARE_COM_TYPECAST(RegexCharSymbolData)
+DECLARE_COM_TYPECAST(RegexPositionSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

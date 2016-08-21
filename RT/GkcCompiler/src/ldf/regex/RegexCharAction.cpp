@@ -20,7 +20,7 @@ This file contains global variables for regular expression character action comp
 
 #include "_GkcCompiler.h"
 
-#include "ldf/RegexCharAction.h"
+#include "ldf/regex/RegexCharAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

@@ -21,7 +21,7 @@ This file contains PDA tables for gra file.
 #include "base/Pda.h"
 #include "base/PdaTable.h"
 
-#include "ldf/LdfGraPda.h"
+#include "ldf/gra/LdfGraPda.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

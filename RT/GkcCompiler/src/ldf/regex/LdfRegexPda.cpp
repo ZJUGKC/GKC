@@ -21,7 +21,7 @@ This file contains PDA tables for regular expressions.
 #include "base/Pda.h"
 #include "base/PdaTable.h"
 
-#include "ldf/LdfRegexPda.h"
+#include "ldf/regex/LdfRegexPda.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

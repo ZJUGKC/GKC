@@ -20,7 +20,7 @@ This file contains global variables for Macro-Token action component.
 
 #include "_GkcCompiler.h"
 
-#include "ldf/MacroTokenAction.h"
+#include "ldf/lex/MacroTokenAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

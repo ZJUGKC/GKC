@@ -102,6 +102,11 @@ typedef _IGrammarError  IGrammarError;
 
 #define GUID_IGrammarError  GUID__IGrammarError
 
+// IGrammarAccepted
+typedef _IGrammarAccepted  IGrammarAccepted;
+
+#define GUID_IGrammarAccepted  GUID__IGrammarAccepted
+
 // IGrammarAction
 typedef _IGrammarAction  IGrammarAction;
 

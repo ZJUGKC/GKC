@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains global variables for regular expression character symbol data factory component.
+This file contains global variables for Do-Char-Item-Char-E action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,14 +23,17 @@ This file contains global variables for regular expression character symbol data
 #include "base/DataColl.h"
 
 #include "ldf/regex/RegexDef.h"
-#include "ldf/regex/RegexCharSymbolData.h"
-#include "ldf/regex/RegexCharSymbolData_Factory.h"
+#include "ldf/regex/RegexDoCharItemCharEAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_COM_FACTORY_CLASS(RegexCharSymbolData)
+// RegexDoCharItemCharEAction
+
+BEGIN_COM_TYPECAST(RegexDoCharItemCharEAction)
+	COM_TYPECAST_ENTRY(_IGrammarAction, _IGrammarAction)
+END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////
 }

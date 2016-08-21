@@ -11,13 +11,54 @@
 */
 
 /*
-Internal Header
+This file contains the functions for lex file.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __LEX_ANALYZER_H__
-#define __LEX_ANALYZER_H__
-////////////////////////////////////////////////////////////////////////////////
+
+#include "PreComp.h"
+
+#include "_GkcCompiler.h"
+
+#include "base/DataColl.h"
+#include "base/Fsa.h"
+#include "base/FsaTable.h"
+#include "base/Lexer.h"
+#include "base/Pda.h"
+#include "base/PdaTable.h"
+#include "base/Grammar.h"
+
+#include "ldf/base/LdfFsa.h"
+#include "ldf/base/LdfLexer.h"
+#include "ldf/base/LdfGrammar.h"
+
+#include "ldf/regex/RegexDef.h"
+#include "ldf/regex/LdfRegexFsa.h"
+#include "ldf/regex/LdfRegexPda.h"
+#include "ldf/regex/RegexCharAction.h"
+#include "ldf/regex/RegexCharSymbolData.h"
+#include "ldf/regex/RegexCharSymbolData_Factory.h"
+#include "ldf/regex/RegexCharSetSymbolData.h"
+#include "ldf/regex/RegexCharSetSymbolData_Factory.h"
+#include "ldf/regex/RegexPositionSymbolData.h"
+#include "ldf/regex/RegexPositionSymbolData_Factory.h"
+#include "ldf/regex/RegexDoCharAction.h"
+#include "ldf/regex/RegexDoCharSAction.h"
+#include "ldf/regex/RegexDoCharRangeAction.h"
+#include "ldf/regex/RegexDoCharItemCharEAction.h"
+#include "ldf/regex/RegexDoCharItemItemCharEAction.h"
+#include "ldf/regex/RegexDoCharSetAction.h"
+#include "ldf/regex/RegexDoCharSetUpAction.h"
+
+#include "ldf/lex/LexDef.h"
+#include "ldf/lex/LdfLexPda.h"
+#include "ldf/lex/MacroTokenAction.h"
+#include "ldf/lex/DoIdTokenMacroAction.h"
+
+#include "ldf/LexAction.h"
+#include "ldf/RegexAction.h"
+#include "ldf/RegexAnalyzer.h"
+#include "ldf/LexAnalyzer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
@@ -182,7 +223,7 @@ private:
 	_Lex_Data& operator=(const _Lex_Data&) throw();
 };
 
-inline CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
+CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
 {
 	CallResult cr;
 
@@ -284,6 +325,4 @@ inline CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
-////////////////////////////////////////////////////////////////////////////////
-#endif //__LEX_ANALYZER_H__
 ////////////////////////////////////////////////////////////////////////////////

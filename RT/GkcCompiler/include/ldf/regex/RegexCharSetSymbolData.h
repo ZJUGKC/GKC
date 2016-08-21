@@ -11,51 +11,47 @@
 */
 
 /*
-This file contains component class of regular expression character symbol data.
+This file contains component class of regular expression character set symbol data.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __REGEX_CHAR_SYMBOL_DATA_H__
-#define __REGEX_CHAR_SYMBOL_DATA_H__
+#ifndef __REGEX_CHAR_SET_SYMBOL_DATA_H__
+#define __REGEX_CHAR_SET_SYMBOL_DATA_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// RegexCharSymbolData
+// RegexCharSetSymbolData
 
-class RegexCharSymbolData : public _GrammarSymbolDataBase,
-							public _I_RegexCharSymbolData_Utility
+class RegexCharSetSymbolData : public _GrammarSymbolDataBase,
+							public _I_RegexCharSetSymbolData_Utility
 {
 public:
-	RegexCharSymbolData() throw()
+	RegexCharSetSymbolData() throw()
 	{
 	}
-	~RegexCharSymbolData() throw()
+	~RegexCharSetSymbolData() throw()
 	{
 	}
 
-// _I_RegexCharSymbolData_Utility methods
-	virtual void GetCharRange(_RegexCharRange& rcr) throw()
+// _I_RegexCharSetSymbolData_Utility methods
+	virtual RefPtr<_RegexCharRangeSet> GetCharRangeSet() throw()
 	{
-		rcr = m_rcr;
-	}
-	virtual void SetCharRange(const _RegexCharRange& rcr) throw()
-	{
-		m_rcr = rcr;
+		return RefPtr<_RegexCharRangeSet>(m_rs);
 	}
 
 private:
-	_RegexCharRange m_rcr;
+	_RegexCharRangeSet m_rs;
 
 private:
 	//noncopyable
-	RegexCharSymbolData(const RegexCharSymbolData&) throw();
-	RegexCharSymbolData& operator=(const RegexCharSymbolData&) throw();
+	RegexCharSetSymbolData(const RegexCharSetSymbolData&) throw();
+	RegexCharSetSymbolData& operator=(const RegexCharSetSymbolData&) throw();
 };
 
-DECLARE_COM_TYPECAST(RegexCharSymbolData)
+DECLARE_COM_TYPECAST(RegexCharSetSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

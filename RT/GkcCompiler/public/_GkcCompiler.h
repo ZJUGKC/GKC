@@ -317,6 +317,16 @@ public:
 
 DECLARE_GUID(GUID__IGrammarError)
 
+// _IGrammarAccepted
+
+class NOVTABLE _IGrammarAccepted
+{
+public:
+	virtual GKC::CallResult DoAccepted(INOUT GKC::ShareCom<_IGrammarSymbolData>& sym) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IGrammarAccepted)
+
 // _IGrammarAction
 
 class NOVTABLE _IGrammarAction
@@ -348,6 +358,7 @@ public:
 	virtual void SetLexerAnalyzer(const GKC::ShareCom<_ILexerAnalyzer>& sp) throw() = 0;
 	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strAction, const GKC::ShareCom<_IGrammarAction>& spAction) throw() = 0;
 	virtual void SetErrorAction(const GKC::ShareCom<_IGrammarError>& sp) throw() = 0;
+	virtual void SetAcceptedAction(const GKC::ShareCom<_IGrammarAccepted>& sp) throw() = 0;
 	virtual GKC::CallResult SetFactory(const GKC::ConstStringA& strEvent, const GKC::ShareCom<GKC::IComFactory>& sp) throw() = 0;
 	virtual GKC::CallResult Start(const bool& bUnexpectedEoeAsError) throw() = 0;
 	// return value : SystemCallResults::OK, the call is successful.

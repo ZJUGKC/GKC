@@ -73,6 +73,10 @@ public:
 	{
 		m_grammar.SetErrorAction(sp);
 	}
+	virtual void SetAcceptedAction(const GKC::ShareCom<_IGrammarAccepted>& sp) throw()
+	{
+		m_grammar.SetAcceptedAction(sp);
+	}
 	virtual GKC::CallResult SetFactory(const GKC::ConstStringA& strEvent, const GKC::ShareCom<GKC::IComFactory>& sp) throw()
 	{
 		CallResult cr;

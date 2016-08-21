@@ -21,7 +21,7 @@ This file contains FSA tables for lex & gra files.
 #include "base/Fsa.h"
 #include "base/FsaTable.h"
 
-#include "ldf/LdfFsa.h"
+#include "ldf/base/LdfFsa.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

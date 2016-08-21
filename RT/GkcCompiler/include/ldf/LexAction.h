@@ -11,27 +11,38 @@
 */
 
 /*
-This file contains global variables for regular expression character symbol data factory component.
+Internal Header
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "PreComp.h"
-
-#include "_GkcCompiler.h"
-
-#include "base/DataColl.h"
-
-#include "ldf/regex/RegexDef.h"
-#include "ldf/regex/RegexCharSymbolData.h"
-#include "ldf/regex/RegexCharSymbolData_Factory.h"
+#ifndef __LEX_ACTION_H__
+#define __LEX_ACTION_H__
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_COM_FACTORY_CLASS(RegexCharSymbolData)
+// MacroTokenAction
+
+inline CallResult _Create_MacroTokenAction(ShareCom<_ILexerAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(MacroTokenAction, _ILexerAction, sp, cr);
+	return cr;
+}
+
+// DoIdTokenMacroAction
+
+inline CallResult _Create_DoIdTokenMacroAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(DoIdTokenMacroAction, _IGrammarAction, sp, cr);
+	return cr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 }
+////////////////////////////////////////////////////////////////////////////////
+#endif
 ////////////////////////////////////////////////////////////////////////////////

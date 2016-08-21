@@ -15,8 +15,8 @@ Internal Header
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __BASE_H__
-#define __BASE_H__
+#ifndef __LDF_LEXER_H__
+#define __LDF_LEXER_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,37 +25,6 @@ namespace GKC {
 
 //------------------------------------------------------------------------------
 //for lex and gra file
-
-// functions
-
-inline CallResult _Create_MacroTokenAction(ShareCom<_ILexerAction>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(MacroTokenAction, _ILexerAction, sp, cr);
-	return cr;
-}
-inline CallResult _Create_DoIdTokenMacroAction(ShareCom<_IGrammarAction>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(DoIdTokenMacroAction, _IGrammarAction, sp, cr);
-	return cr;
-}
-inline CallResult _Create_RegexCharAction(ShareCom<_ILexerAction>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(RegexCharAction, _ILexerAction, sp, cr);
-	return cr;
-}
-inline CallResult _Create_RegexCharSymbolDataFactory(ShareCom<IComFactory>& sp) throw()
-{
-	return USE_COM_FACTORY_CLASS_NAME(RegexCharSymbolData)::Create(sp);
-}
-inline CallResult _Create_RegexDoCharAction(ShareCom<_IGrammarAction>& sp) throw()
-{
-	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(RegexDoCharAction, _IGrammarAction, sp, cr);
-	return cr;
-}
 
 // _LdfLexerParser
 
@@ -138,91 +107,8 @@ private:
 	_LdfLexerParser& operator=(const _LdfLexerParser&) throw();
 };
 
-// _LdfGrammarParser
-
-class _LdfGrammarParser
-{
-public:
-	_LdfGrammarParser() throw()
-	{
-	}
-	~_LdfGrammarParser() throw()
-	{
-	}
-
-	void SetLexerParser(const RefPtr<LexerParser>& lexer) throw()
-	{
-		m_grammar.SetLexerParser(lexer);
-	}
-	void SetNonterminalTable(const RefPtr<TokenTable>& nt) throw()
-	{
-		m_grammar.SetNonterminalTable(nt);
-	}
-	void SetReductionActionTable(const RefPtr<TokenTable>& ra) throw()
-	{
-		m_grammar.SetReductionActionTable(ra);
-	}
-	void SetPdaTable(const PDA_TABLE& table) throw()
-	{
-		m_grammar.SetPdaTable(table);
-	}
-	void SetAction(const ConstStringA& strAction, const ShareCom<_IGrammarAction>& spAction)
-	{
-		m_grammar.SetAction(strAction, spAction);  //may throw
-	}
-	void SetFactory(const ConstStringA& strEvent, const ShareCom<IComFactory>& sp)
-	{
-		m_grammar.SetFactory(strEvent, sp);  //may throw
-	}
-
-	CallResult Execute()
-	{
-		CallResult cr;
-		//loop
-		m_grammar.Start(true);  //may throw
-		while( true ) {
-			uint uLastEventNo;
-			cr = m_grammar.Parse(uLastEventNo);  //may throw
-			if( cr.IsFailed() )
-				break;
-			if( cr.GetResult() == SystemCallResults::S_False ) {
-				if( uLastEventNo == PDA_LAST_EVENT_NO )
-					cr.SetResult(SystemCallResults::Fail);  //The empty source file is an error
-				break;
-			}
-			if( cr.GetResult() == SystemCallResults::OK ) {
-				if( uLastEventNo != PDA_NO_EVENT ) {
-					//error state
-					cr = m_grammar.Revert();  //may throw
-					if( cr.IsFailed() )
-						break;
-				}
-			}
-		} //end while
-		//check
-		if( cr.IsFailed() )
-			return cr;
-		if( m_grammar.GetErrorArray().GetCount() > 0 ) {
-			cr.SetResult(SystemCallResults::Fail);
-			return cr;
-		}
-		//successful
-		cr.SetResult(SystemCallResults::OK);
-		return cr;
-	}
-
-private:
-	//grammar parser
-	GrammarParser m_grammar;
-
-private:
-	//noncopyable
-	_LdfGrammarParser(const _LdfGrammarParser&) throw();
-	_LdfGrammarParser& operator=(const _LdfGrammarParser&) throw();
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__BASE_H__
+#endif //__LDF_LEXER_H__
 ////////////////////////////////////////////////////////////////////////////////

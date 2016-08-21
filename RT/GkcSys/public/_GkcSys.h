@@ -615,6 +615,99 @@ public:
 	}
 };
 
+// _SObjArray<TSObj>
+
+template <class TSObj>
+class _SObjArray
+{
+public:
+	_SObjArray() throw() : m_p(NULL), m_uCount(0), m_uAlloc(0)
+	{
+	}
+	~_SObjArray() throw()
+	{
+		if( m_p != NULL ) {
+			TSObj* p = m_p;
+			for( uintptr i = 0; i < m_uCount; i ++ ) {
+				p->~TSObj();
+				p ++;
+			}
+			crt_free(m_p);
+		}
+	}
+
+	//add
+	uintptr Add(const TSObj& obj) throw()
+	{
+		//find null
+		uintptr uFind = (uintptr)-1;
+		TSObj* p = m_p;
+		for( uintptr i = 0; i < m_uCount; i ++ ) {
+			if( (*p).IsBlockNull() ) {
+				uFind = i;
+				break;
+			}
+			p ++;
+		}
+		if( uFind != (uintptr)-1 ) {
+			m_p[uFind] = obj;
+			return uFind + 1;
+		}
+		//add
+		if( m_uCount < m_uAlloc ) {
+			call_constructor(m_p[m_uCount], obj);  //no throw
+			m_uCount ++;
+			return m_uCount;
+		}
+		//resize
+		uintptr uAlloc;
+		if( m_uCount == 0 ) {
+			uAlloc = 4;
+		}
+		else {
+			if( SafeOperators::Multiply(m_uCount, (uintptr)2, uAlloc).IsFailed() )
+				return 0;
+		}
+		uintptr uBytes;
+		if( SafeOperators::Multiply(uAlloc, (uintptr)sizeof(TSObj), uBytes).IsFailed() )
+			return 0;
+		if( m_p == NULL )
+			p = (TSObj*)crt_alloc(uBytes);
+		else
+			p = (TSObj*)crt_realloc(m_p, uBytes);
+		if( p == NULL )
+			return 0;
+		//set
+		m_p = p;
+		m_uAlloc = uAlloc;
+		call_constructor(m_p[m_uCount], obj);  //no throw
+		m_uCount ++;
+		return m_uCount;
+	}
+	//remove
+	void Remove(uintptr uCookie) throw()
+	{
+		assert( uCookie > 0 && uCookie <= m_uCount );
+		m_p[uCookie - 1].Release();
+	}
+	//get
+	void GetObject(uintptr index, TSObj& obj) throw()
+	{
+		assert( index >= 0 && index < m_uCount );
+		obj = m_p[index];
+	}
+
+private:
+	TSObj*   m_p;
+	uintptr  m_uCount;
+	uintptr  m_uAlloc;
+
+private:
+	//noncopyable
+	_SObjArray(const _SObjArray&) throw();
+	_SObjArray& operator=(const _SObjArray&) throw();
+};
+
 // _SharePtrHelper
 
 class _SharePtrHelper

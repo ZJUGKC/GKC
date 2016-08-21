@@ -29,6 +29,8 @@ SET_TARGET_PROPERTIES(GkcParser PROPERTIES OUTPUT_NAME "GkcParser"
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
 TARGET_LINK_LIBRARIES(GkcParser GkcCompiler ${STRING_LINK_EXTRA_LIBS})
 
+SET_POSTBUILD_PATH_COPY(GkcParser "no-platform" "no-machine" "no-config" "config" "${PROJECT_SOURCE_DIR}/RT/GkcParser/data" "*" "${LIBRARY_OUTPUT_PATH}")
+
 INSTALL(TARGETS GkcParser
 	RUNTIME DESTINATION public/assemblies COMPONENT runtime
 	LIBRARY DESTINATION public/assemblies COMPONENT runtime
@@ -36,5 +38,10 @@ INSTALL(TARGETS GkcParser
 
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcParser/public/"
 	DESTINATION public/include/parser COMPONENT development)
+
+INSTALL(FILES "${PROJECT_SOURCE_DIR}/RT/GkcParser/data/wlang.lex"
+	DESTINATION public/assemblies COMPONENT runtime)
+INSTALL(FILES "${PROJECT_SOURCE_DIR}/RT/GkcParser/data/wlang.gra"
+	DESTINATION public/assemblies COMPONENT runtime)
 
 #end

@@ -56,6 +56,10 @@ public:
 	{
 		m_errorAction = sp;
 	}
+	void SetAcceptedAction(const GKC::ShareCom<_IGrammarAccepted>& sp) throw()
+	{
+		m_acceptedAction = sp;
+	}
 	void SetAction(const ConstStringA& strAction, const ShareCom<_IGrammarAction>& spAction)
 	{
 		if( m_arrAction.IsBlockNull() )
@@ -184,6 +188,14 @@ public:
 				break;
 			}
 			if( m_pda.IsAccepted() ) {
+				//action
+				assert( m_symbolList.GetCount() == 1 );
+				if( !m_acceptedAction.IsBlockNull() ) {
+					cr = m_acceptedAction.Deref().DoAccepted(m_symbolList.GetBegin().get_Value());
+					if( cr.IsFailed() )
+						break;
+				}
+				//end
 				cr.SetResult(SystemCallResults::S_False);
 				m_pda.ClearEvent();
 				break;
@@ -412,6 +424,7 @@ private:
 	RefPtr<TokenTable>   m_ra_table;  //reduction action name
 	PushDownAutomata     m_pda;
 	ShareCom<_IGrammarError>  m_errorAction;
+	ShareCom<_IGrammarAccepted>  m_acceptedAction;
 	ShareArray<ShareCom<_IGrammarAction>>  m_arrAction;
 	//error
 	ShareArray<StringS>  m_arrError;

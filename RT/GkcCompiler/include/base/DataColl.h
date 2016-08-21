@@ -494,9 +494,7 @@ public:
 
 	uint GetTotalCount() const throw()
 	{
-		if( IsNull() )
-			return 0;
-		return _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
+		return get_count();
 	}
 
 // level
@@ -685,24 +683,22 @@ private:
 #pragma pack(pop)
 
 public:
-	// Iterator
-	class Iterator
+	// Position
+	class Position
 	{
 	public:
-		explicit Iterator(thisClass* p, uint uNode = 0) throw() : m_pTree(p), m_uNode(uNode)
+		explicit Position(uint uNode = 0) throw() : m_uNode(uNode)
 		{
 		}
-		Iterator(const Iterator& src) throw() : m_pTree(src.m_pTree), m_uNode(src.m_uNode)
+		Position(const Position& src) throw() : m_uNode(src.m_uNode)
 		{
 		}
-		~Iterator() throw()
+		~Position() throw()
 		{
 		}
-
-		Iterator& operator=(const Iterator& src) throw()
+		Position& operator=(const Position& src) throw()
 		{
 			if( this != &src ) {
-				m_pTree = src.m_pTree;
 				m_uNode = src.m_uNode;
 			}
 			return *this;
@@ -713,22 +709,82 @@ public:
 			return m_uNode == 0;
 		}
 
-		uint GetNodeAddr() const throw()
+		uint GetAddr() const throw()
 		{
 			return m_uNode;
+		}
+		void SetAddr(uint uNode) throw()
+		{
+			m_uNode = uNode;
+		}
+
+		bool operator==(const Position& right) const throw()
+		{
+			return m_uNode == right.m_uNode;
+		}
+		bool operator!=(const Position& right) const throw()
+		{
+			return m_uNode != right.m_uNode;
+		}
+
+	private:
+		uint m_uNode;  //node address
+
+	private:
+		friend thisClass;
+	};
+
+	// Iterator
+	class Iterator
+	{
+	public:
+		explicit Iterator(thisClass* p, uint uNode = 0) throw() : m_pTree(p), m_pos(uNode)
+		{
+		}
+		Iterator(const Iterator& src) throw() : m_pTree(src.m_pTree), m_pos(src.m_pos)
+		{
+		}
+		~Iterator() throw()
+		{
+		}
+
+		Iterator& operator=(const Iterator& src) throw()
+		{
+			m_pTree = src.m_pTree;
+			m_pos   = src.m_pos;
+			return *this;
+		}
+
+		const Position GetPosition() const throw()
+		{
+			return m_pos;
+		}
+		Position GetPosition() throw()
+		{
+			return m_pos;
+		}
+
+		bool IsNull() const throw()
+		{
+			return m_pos.IsNull();
+		}
+
+		uint GetNodeAddr() const throw()
+		{
+			return m_pos.GetAddr();
 		}
 
 		//properties
 		uint GetType() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(GetNodeAddr()));
 			return pNode->GetType();
 		}
 		void SetType(uint uType) throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(GetNodeAddr()));
 			pNode->SetType(uType);
 		}
 
@@ -736,7 +792,7 @@ public:
 		void* GetDataPointer() const throw()
 		{
 			assert( !IsNull() );
-			return m_pTree->ToPointer(m_uNode + sizeof(_Node));
+			return m_pTree->ToPointer(GetNodeAddr() + sizeof(_Node));
 		}
 		template <typename T>
 		const T& GetData() const throw()
@@ -753,25 +809,25 @@ public:
 		void MoveParent() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
-			m_uNode = pNode->GetParent();
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(GetNodeAddr()));
+			m_pos.SetAddr(pNode->GetParent());
 		}
 		void MoveChild() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
-			m_uNode = pNode->GetChild();
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(GetNodeAddr()));
+			m_pos.SetAddr(pNode->GetChild());
 		}
 		void MoveNext() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pTree->ToPointer(m_uNode));
-			m_uNode = pNode->GetNext();
+			_Node* pNode = (_Node*)(m_pTree->ToPointer(GetNodeAddr()));
+			m_pos.SetAddr(pNode->GetNext());
 		}
 
 	private:
 		thisClass* m_pTree;
-		uint m_uNode;  //node address
+		Position   m_pos;
 	};
 
 public:
@@ -799,6 +855,10 @@ public:
 	{
 		return m_uStart;
 	}
+	uint GetCount() const throw()
+	{
+		return get_count();
+	}
 
 //nodes
 	Iterator GetNullIterator() const throw()
@@ -807,12 +867,76 @@ public:
 	}
 	Iterator GetRoot() const throw()
 	{
-		if( IsNull() )
-			return GetNullIterator();
-		uint uRoot = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).get_Value();
-		return Iterator(const_cast<thisClass*>(this), uRoot);
+		return Iterator(const_cast<thisClass*>(this), get_root());
 	}
+
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return Iterator(const_cast<thisClass*>(this), pos.GetAddr());
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return Iterator(this, pos.GetAddr());
+	}
+
+	//create node
+	Iterator CreateNode(uint uDataSize, uint uType)
+	{
+		uint uRoot;
+		uint uNode = create_node(uDataSize, uType, uRoot);  //may throw
+		//iterator
+		return Iterator(this, uNode);
+	}
+
+	//set node
+	void SetParent(const Iterator& iter, const Iterator& iterParent) throw()
+	{
+		uint uNode = iter.GetNodeAddr();
+		assert( uNode != 0 );
+		uint uParent = iterParent.GetNodeAddr();
+		set_parent(uNode, uParent, get_root());
+	}
+	void SetChild(const Iterator& iter, const Iterator& iterChild) throw()
+	{
+		uint uNode = iter.GetNodeAddr();
+		assert( uNode != 0 );
+		set_child(uNode, iterChild.GetNodeAddr());
+	}
+	void SetNext(const Iterator& iter, const Iterator& iterNext) throw()
+	{
+		uint uNode = iter.GetNodeAddr();
+		assert( uNode != 0 );
+		set_next(uNode, iterNext.GetNodeAddr());
+	}
+
+	//insert
 	Iterator Insert(const Iterator& iterParent, const Iterator& iterAfter, uint uDataSize, uint uType)
+	{
+		//create
+		uint uRoot;
+		uint uNode = create_node(uDataSize, uType, uRoot);  //may throw
+		//list
+		uint uParent = iterParent.GetNodeAddr();
+		set_parent(uNode, uParent, uRoot);
+		uint uAfter = iterAfter.GetNodeAddr();
+		if( uAfter == 0 ) {
+			uint uChild = get_child(uParent);
+			if( uChild != 0 )
+				set_next(uNode, uChild);
+			set_child(uParent, uNode);
+		}
+		else {
+			assert( get_parent(uAfter) == uParent );
+			set_next(uNode, get_next(uAfter));
+			set_next(uAfter, uNode);
+		} //end if
+		//iterator
+		return Iterator(this, uNode);
+	}
+
+private:
+	//node
+	uint create_node(uint uDataSize, uint uType, uint& uRoot)
 	{
 		if( IsNull() ) {
 			//header
@@ -823,7 +947,7 @@ public:
 			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).set_Value(0);
 		}
 		//root
-		uint uRoot = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).get_Value();
+		uRoot = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).get_Value();
 		if( uRoot == 0 ) {
 			//root has not any data
 			uRoot = m_allocator.Deref().Allocate(sizeof(_Node));
@@ -840,31 +964,59 @@ public:
 		_Node& node = *((_Node*)ToPointer(uNode));
 		node.Init();
 		node.SetType(uType);
-		//list
-		uint uParent = iterParent.IsNull() ? uRoot : iterParent.GetNodeAddr();
-		_Node& nodeParent = *((_Node*)ToPointer(uParent));
-		node.SetParent(uParent);
-		if( iterAfter.IsNull() ) {
-			//first child
-			uint uChild = nodeParent.GetChild();
-			if( uChild != 0 ) {
-				node.SetNext(uChild);
-			}
-			nodeParent.SetChild(uNode);
-		}
-		else {
-			uint uAfter = iterAfter.GetNodeAddr();
-			_Node& nodeAfter = *((_Node*)ToPointer(uAfter));
-			assert( nodeAfter.GetParent() == uParent );
-			node.SetNext(nodeAfter.GetNext());
-			nodeAfter.SetNext(uNode);
-		} //end if
 		//count
 		uint uCount = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
 		uCount = SafeOperators::AddThrow(uCount, (uint)1);  //may throw
 		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).set_Value(uCount);
-		//iterator
-		return Iterator(this, uNode);
+		return uNode;
+	}
+	void set_parent(uint uNode, uint& uParent, uint uRoot) throw()
+	{
+		assert( uRoot != 0 );
+		if( uParent == 0 )
+			uParent = uRoot;
+		_Node& node = *((_Node*)ToPointer(uNode));
+		node.SetParent(uParent);
+	}
+	void set_child(uint uNode, uint uChild) throw()
+	{
+		_Node& node = *((_Node*)ToPointer(uNode));
+		node.SetChild(uChild);
+	}
+	void set_next(uint uNode, uint uNext) throw()
+	{
+		_Node& node = *((_Node*)ToPointer(uNode));
+		node.SetNext(uNext);
+	}
+	uint get_parent(uint uNode) const throw()
+	{
+		_Node& node = *((_Node*)ToPointer(uNode));
+		return node.GetParent();
+	}
+	uint get_child(uint uNode) const throw()
+	{
+		_Node& node = *((_Node*)ToPointer(uNode));
+		return node.GetChild();
+	}
+	uint get_next(uint uNode) const throw()
+	{
+		_Node& node = *((_Node*)ToPointer(uNode));
+		return node.GetNext();
+	}
+
+	//count
+	uint get_count() const throw()
+	{
+		if( IsNull() )
+			return 0;
+		return _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
+	}
+	//root
+	uint get_root() const throw()
+	{
+		if( IsNull() )
+			return 0;
+		return _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).get_Value();
 	}
 
 private:
@@ -875,15 +1027,6 @@ private:
 	root
 	*/
 	enum { IDX_COUNT = 0, IDX_ROOT = sizeof(uint), SIZE_HEADER = sizeof(uint) + sizeof(uint) };
-
-private:
-	//count
-	uint get_count() const throw()
-	{
-		if( IsNull() )
-			return 0;
-		return _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
-	}
 
 private:
 	//noncopyable

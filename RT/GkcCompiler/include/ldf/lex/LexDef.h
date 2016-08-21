@@ -11,27 +11,31 @@
 */
 
 /*
-This file contains global variables for regular expression character symbol data factory component.
+Internal Header
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "PreComp.h"
-
-#include "_GkcCompiler.h"
-
-#include "base/DataColl.h"
-
-#include "ldf/regex/RegexDef.h"
-#include "ldf/regex/RegexCharSymbolData.h"
-#include "ldf/regex/RegexCharSymbolData_Factory.h"
+#ifndef __LEX_DEF_H__
+#define __LEX_DEF_H__
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_COM_FACTORY_CLASS(RegexCharSymbolData)
+// _I_IdTokenMacroAction_Utility
+
+class NOVTABLE _I_IdTokenMacroAction_Utility
+{
+public:
+	// uID : the input value is considered as the minimum value.
+	virtual void SetOutput(const RefPtr<TokenTable>& table, const ShareArray<StringA>& arr, const RefPtr<uint>& uID) throw() = 0;
+};
+
+DECLARE_GUID(GUID__I_IdTokenMacroAction_Utility)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
+////////////////////////////////////////////////////////////////////////////////
+#endif
 ////////////////////////////////////////////////////////////////////////////////

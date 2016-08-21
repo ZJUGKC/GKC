@@ -21,7 +21,7 @@ This file contains FSA tables for regular expressions.
 #include "base/Fsa.h"
 #include "base/FsaTable.h"
 
-#include "ldf/LdfRegexFsa.h"
+#include "ldf/regex/LdfRegexFsa.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

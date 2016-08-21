@@ -21,11 +21,9 @@ This file contains global variables for regular expression character symbol data
 #include "_GkcCompiler.h"
 
 #include "base/DataColl.h"
-#include "base/Fsa.h"
-#include "base/Lexer.h"
 
-#include "ldf/Def.h"
-#include "ldf/RegexCharSymbolData.h"
+#include "ldf/regex/RegexDef.h"
+#include "ldf/regex/RegexCharSymbolData.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

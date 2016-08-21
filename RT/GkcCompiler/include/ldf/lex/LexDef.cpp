@@ -11,26 +11,16 @@
 */
 
 /*
-This file contains global variables for regular expression character symbol data factory component.
+This file contains global variables for LDF interfaces.
 */
-
-////////////////////////////////////////////////////////////////////////////////
-
-#include "PreComp.h"
-
-#include "_GkcCompiler.h"
-
-#include "base/DataColl.h"
-
-#include "ldf/regex/RegexDef.h"
-#include "ldf/regex/RegexCharSymbolData.h"
-#include "ldf/regex/RegexCharSymbolData_Factory.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_COM_FACTORY_CLASS(RegexCharSymbolData)
+// GUID__I_IdTokenMacroAction_Utility
+//   {0276E3A0-7B68-4A11-A8B2-DF967CB35324}
+IMPLEMENT_GUID(GUID__I_IdTokenMacroAction_Utility, 0x276e3a0, 0x7b68, 0x4a11, 0xa8, 0xb2, 0xdf, 0x96, 0x7c, 0xb3, 0x53, 0x24)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

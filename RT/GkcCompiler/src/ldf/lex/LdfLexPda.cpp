@@ -21,7 +21,7 @@ This file contains PDA tables for lex file.
 #include "base/Pda.h"
 #include "base/PdaTable.h"
 
-#include "ldf/LdfLexPda.h"
+#include "ldf/lex/LdfLexPda.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

@@ -20,7 +20,10 @@ This file contains global variables for Do-Char action component.
 
 #include "_GkcCompiler.h"
 
-#include "ldf/RegexDoCharAction.h"
+#include "base/DataColl.h"
+
+#include "ldf/regex/RegexDef.h"
+#include "ldf/regex/RegexDoCharAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

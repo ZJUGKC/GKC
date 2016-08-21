@@ -20,9 +20,14 @@ SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Action.cpp" "src/Analyzer.cpp"
 	"src/action/CommentStartAction.cpp" "src/action/LineCommentStartAction.cpp" "src/action/SpaceAction.cpp" "src/action/ReturnAction.cpp"
-	"src/ldf/LdfFsa.cpp" "src/ldf/LdfLexPda.cpp" "src/ldf/LdfRegexFsa.cpp" "src/ldf/LdfRegexPda.cpp" "src/ldf/LdfGraPda.cpp"
-	"src/ldf/MacroTokenAction.cpp" "src/ldf/DoIdTokenMacroAction.cpp" "src/ldf/RegexCharAction.cpp" "src/ldf/RegexDoCharAction.cpp"
-	"src/ldf/RegexCharSymbolData.cpp" "src/ldf/RegexCharSymbolData_Factory.cpp"
+	"src/ldf/base/LdfFsa.cpp"
+	"src/ldf/lex/LdfLexPda.cpp" "src/ldf/lex/MacroTokenAction.cpp" "src/ldf/lex/DoIdTokenMacroAction.cpp"
+	"src/ldf/regex/LdfRegexFsa.cpp" "src/ldf/regex/LdfRegexPda.cpp" 
+	"src/ldf/regex/RegexCharAction.cpp" "src/ldf/regex/RegexDoCharAction.cpp" "src/ldf/regex/RegexDoCharSAction.cpp" "src/ldf/regex/RegexDoCharRangeAction.cpp" "src/ldf/regex/RegexDoCharItemCharEAction.cpp" "src/ldf/regex/RegexDoCharItemItemCharEAction.cpp"
+	"src/ldf/regex/RegexDoCharSetAction.cpp" "src/ldf/regex/RegexDoCharSetUpAction.cpp"
+	"src/ldf/regex/RegexCharSymbolData.cpp" "src/ldf/regex/RegexCharSymbolData_Factory.cpp" "src/ldf/regex/RegexCharSetSymbolData.cpp" "src/ldf/regex/RegexCharSetSymbolData_Factory.cpp" "src/ldf/regex/RegexPositionSymbolData.cpp" "src/ldf/regex/RegexPositionSymbolData_Factory.cpp"
+	"src/ldf/gra/LdfGraPda.cpp"
+	"src/ldf/LexAnalyzer.cpp" "src/ldf/GraAnalyzer.cpp"
 	"src/analyzer/LexerTables.cpp" "src/analyzer/LexerAnalyzer.cpp" "src/analyzer/GrammarTables.cpp" "src/analyzer/GrammarAnalyzer.cpp"
 	"src/analyzer/BasicSymbolData.cpp" "src/analyzer/BasicSymbolData_Factory.cpp")
 ADD_LIBRARY(GkcCompiler SHARED ${SRC_PCH_LIST} ${SRC_LIST})

@@ -24,8 +24,8 @@ This file contains global variables for Do-Id-Token-Macro action component.
 #include "base/Fsa.h"
 #include "base/Lexer.h"
 
-#include "ldf/Def.h"
-#include "ldf/DoIdTokenMacroAction.h"
+#include "ldf/lex/LexDef.h"
+#include "ldf/lex/DoIdTokenMacroAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {

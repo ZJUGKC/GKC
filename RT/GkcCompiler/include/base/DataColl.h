@@ -86,7 +86,8 @@ public:
 
 	void Clear() throw()
 	{
-		m_arr.RemoveAll();
+		if( !m_arr.IsBlockNull() )
+			m_arr.RemoveAll();
 	}
 
 	//get the size
@@ -262,24 +263,23 @@ public:
 		MASK_ANALYSIS = 0x40000000, RSHIFT_BITS = 30  //bit 30 in _Node::uLevel, analysis flag, indicating the analysis process or not
 	};
 
-	//Iterator
-	class Iterator
+	//Position
+	class Position
 	{
 	public:
-		explicit Iterator(thisClass* p, uint uNode = 0) throw() : m_pPool(p), m_uNode(uNode)
+		explicit Position(uint uNode = 0) throw() : m_uNode(uNode)
 		{
 		}
-		Iterator(const Iterator& src) throw() : m_pPool(src.m_pPool), m_uNode(src.m_uNode)
+		Position(const Position& src) throw() : m_uNode(src.m_uNode)
 		{
 		}
-		~Iterator() throw()
+		~Position() throw()
 		{
 		}
 
-		Iterator& operator=(const Iterator& src) throw()
+		Position& operator=(const Position& src) throw()
 		{
 			if( this != &src ) {
-				m_pPool = src.m_pPool;
 				m_uNode = src.m_uNode;
 			}
 			return *this;
@@ -290,50 +290,110 @@ public:
 			return m_uNode == 0;
 		}
 
+		uint GetAddr() const throw()
+		{
+			return m_uNode;
+		}
+		void SetAddr(uint uNode) throw()
+		{
+			m_uNode = uNode;
+		}
+
+		bool operator==(const Position& right) const throw()
+		{
+			return m_uNode == right.m_uNode;
+		}
+		bool operator!=(const Position& right) const throw()
+		{
+			return m_uNode != right.m_uNode;
+		}
+
+	private:
+		uint m_uNode;  //address for node
+	};
+
+	//Iterator
+	class Iterator
+	{
+	public:
+		Iterator() throw() : m_pPool(NULL), m_pos()
+		{
+		}
+		explicit Iterator(thisClass* p, uint uNode = 0) throw() : m_pPool(p), m_pos(uNode)
+		{
+		}
+		Iterator(const Iterator& src) throw() : m_pPool(src.m_pPool), m_pos(src.m_pos)
+		{
+		}
+		~Iterator() throw()
+		{
+		}
+
+		Iterator& operator=(const Iterator& src) throw()
+		{
+			m_pPool = src.m_pPool;
+			m_pos = src.m_pos;
+			return *this;
+		}
+
+		const Position GetPosition() const throw()
+		{
+			return m_pos;
+		}
+		Position GetPosition() throw()
+		{
+			return m_pos;
+		}
+
+		bool IsNull() const throw()
+		{
+			return m_pos.IsNull();
+		}
+
 		//properties
+		uint GetNodeAddr() const throw()
+		{
+			return m_pos.GetAddr();
+		}
 		uint GetKeyAddr() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
 			return pNode->GetStringAddr();
 		}
 		ConstStringA GetKey() const throw()
 		{
 			return m_pPool->GetStringPool().GetString(GetKeyAddr());
 		}
-		uint GetNodeAddr() const throw()
-		{
-			return m_uNode;
-		}
 		uint GetType() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
 			return pNode->GetType();
 		}
 		void SetType(uint uType) throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
 			pNode->SetType(uType);
 		}
 		uint GetLevel() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
 			return (pNode->GetLevel()) & MASK_LEVEL;
 		}
 		bool IsAnalysis() const throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
 			return ((pNode->GetLevel()) & MASK_ANALYSIS) != 0;
 		}
 		//clear analysis flag
 		void ClearAnalysisFlag() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
 			uint uLevel = pNode->GetLevel();
 			uLevel &= (~MASK_ANALYSIS);
 			pNode->SetLevel(uLevel);
@@ -344,7 +404,7 @@ public:
 		{
 			assert( !IsNull() );
 			//after node
-			return m_pPool->ToPointer(m_uNode + sizeof(_Node));
+			return m_pPool->ToPointer(GetNodeAddr() + sizeof(_Node));
 		}
 		template <typename T>
 		const T& GetData() const throw()
@@ -361,13 +421,23 @@ public:
 		void MoveLevelNext() throw()
 		{
 			assert( !IsNull() );
-			_Node* pNode = (_Node*)(m_pPool->ToPointer(m_uNode));
-			m_uNode = pNode->GetLevelNext();
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
+			m_pos.SetAddr(pNode->GetLevelNext());
+		}
+
+		//compare
+		bool operator==(const Iterator& right) const throw()
+		{
+			return m_pPool == right.m_pPool && m_pos == right.m_pos;
+		}
+		bool operator!=(const Iterator& right) const throw()
+		{
+			return m_pPool != right.m_pPool || m_pos != right.m_pos;
 		}
 
 	private:
 		thisClass* m_pPool;
-		uint m_uNode;  //address for node
+		Position m_pos;
 	};
 
 public:
@@ -403,6 +473,15 @@ public:
 	}
 
 // Node
+	const Iterator GetAtPosition(const Position& pos) const throw()
+	{
+		return Iterator(const_cast<thisClass*>(this), pos.GetAddr());
+	}
+	Iterator GetAtPosition(const Position& pos) throw()
+	{
+		return Iterator(this, pos.GetAddr());
+	}
+
 	Iterator Find(const ConstStringA& str) const throw()
 	{
 		assert( !str.IsNull() );
@@ -427,7 +506,7 @@ public:
 		return Iterator(const_cast<thisClass*>(this), get_first_node(uNode, uHash, str));
 	}
 
-// create
+// create without find
 	Iterator CreateNode(const ConstStringA& str, uint uDataSize, uint uType, uint uLevel, uint& uLevelHead)
 	{
 		assert( !str.IsNull() );
@@ -729,15 +808,15 @@ public:
 
 	private:
 		uint m_uNode;  //node address
-
-	private:
-		friend thisClass;
 	};
 
 	// Iterator
 	class Iterator
 	{
 	public:
+		Iterator() throw() : m_pTree(NULL), m_pos()
+		{
+		}
 		explicit Iterator(thisClass* p, uint uNode = 0) throw() : m_pTree(p), m_pos(uNode)
 		{
 		}
@@ -825,6 +904,16 @@ public:
 			m_pos.SetAddr(pNode->GetNext());
 		}
 
+		//compare
+		bool operator==(const Iterator& right) const throw()
+		{
+			return m_pTree == right.m_pTree && m_pos == right.m_pos;
+		}
+		bool operator!=(const Iterator& right) const throw()
+		{
+			return m_pTree != right.m_pTree || m_pos != right.m_pos;
+		}
+
 	private:
 		thisClass* m_pTree;
 		Position   m_pos;
@@ -836,6 +925,11 @@ public:
 	}
 	~AstTree() throw()
 	{
+	}
+
+	void Reset() throw()
+	{
+		m_uStart = 0;
 	}
 
 	bool IsNull() const throw()

@@ -122,8 +122,8 @@ private:
 	ArrayPoolAllocator m_sym_allocator;
 	ArrayPoolAllocator m_str_allocator;
 
-	SymbolPool m_symbol_pool;
 	StringPool m_string_pool;
+	SymbolPool m_symbol_pool;
 
 	uint m_uLevelHead;
 	uint m_uIDFirstAddr;
@@ -314,6 +314,10 @@ private:
 	LexerParser& operator=(const LexerParser&) throw();
 };
 
+////////////////////////////////////////////////////////////////////////////////
+}
+////////////////////////////////////////////////////////////////////////////////
+
 // private interfaces
 
 // _ILexerTablesAccess
@@ -321,8 +325,8 @@ private:
 class NOVTABLE _ILexerTablesAccess
 {
 public:
-	virtual RefPtr<TokenTable> GetTokenTable() throw() = 0;
-	virtual const FSA_TABLE& GetFsaTable() throw() = 0;
+	virtual GKC::RefPtr<GKC::TokenTable> GetTokenTable() throw() = 0;
+	virtual const GKC::FSA_TABLE& GetFsaTable() throw() = 0;
 };
 
 DECLARE_GUID(GUID__ILexerTablesAccess)
@@ -332,13 +336,11 @@ DECLARE_GUID(GUID__ILexerTablesAccess)
 class NOVTABLE _ILexerAnalyzerAccess
 {
 public:
-	virtual RefPtr<LexerParser> GetLexerParser() throw() = 0;
+	virtual GKC::RefPtr<GKC::LexerParser> GetLexerParser() throw() = 0;
 };
 
 DECLARE_GUID(GUID__ILexerAnalyzerAccess)
 
-////////////////////////////////////////////////////////////////////////////////
-}
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__LEXER_H__
 ////////////////////////////////////////////////////////////////////////////////

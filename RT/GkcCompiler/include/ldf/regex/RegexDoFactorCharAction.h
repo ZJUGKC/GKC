@@ -11,27 +11,28 @@
 */
 
 /*
-This file contains component class of Do-Char-Item-Char-E action.
+This file contains component class of Do-Factor-Char action.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __REGEX_DO_CHAR_ITEM_CHAR_E_ACTION_H__
-#define __REGEX_DO_CHAR_ITEM_CHAR_E_ACTION_H__
+#ifndef __REGEX_DO_FACTOR_CHAR_ACTION_H__
+#define __REGEX_DO_FACTOR_CHAR_ACTION_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// RegexDoCharItemCharEAction
+// RegexDoFactorCharAction
 
-class RegexDoCharItemCharEAction : public _IGrammarAction
+class RegexDoFactorCharAction : public _IGrammarAction,
+								public _RegexAstActionBase
 {
 public:
-	RegexDoCharItemCharEAction() throw()
+	RegexDoFactorCharAction() throw()
 	{
 	}
-	~RegexDoCharItemCharEAction() throw()
+	~RegexDoFactorCharAction() throw()
 	{
 	}
 
@@ -39,21 +40,21 @@ public:
 	virtual GKC::CallResult DoAction(INOUT GKC::ShareArray<GKC::ShareCom<_IGrammarSymbolData>>& arrSymbol, INOUT GKC::ShareArray<GKC::StringS>& errorArray) throw()
 	{
 		CallResult cr;
-		//get value
+		//value
 		ShareCom<_I_RegexCharSymbolData_Utility> spU;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSymbolData_Utility, arrSymbol[1].get_Value(), spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		_RegexCharRange rcr;
 		spU.Deref().GetCharRange(rcr);
-		//add value
-		ShareCom<_I_RegexCharSetSymbolData_Utility> spS;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
+		//position
+		ShareCom<_I_RegexPositionSymbolData_Utility> spS;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
 		if( cr.IsFailed() )
 			return cr;
-		RefPtr<_RegexCharRangeSet> rs(spS.Deref().GetCharRangeSet());
 		try {
-			rs.Deref().AddRangeByCombination(rcr);  //may throw
+			AstTree::Iterator iter(_RegexCharRange_To_AST(rcr, m_tree.Deref()));  //may throw
+			spS.Deref().SetPosition(iter.GetPosition());
 		}
 		catch(Exception& e) {
 			cr = e.GetResult();
@@ -66,11 +67,11 @@ public:
 
 private:
 	//noncopyable
-	RegexDoCharItemCharEAction(const RegexDoCharItemCharEAction&) throw();
-	RegexDoCharItemCharEAction& operator=(const RegexDoCharItemCharEAction&) throw();
+	RegexDoFactorCharAction(const RegexDoFactorCharAction&) throw();
+	RegexDoFactorCharAction& operator=(const RegexDoFactorCharAction&) throw();
 };
 
-DECLARE_COM_TYPECAST(RegexDoCharItemCharEAction)
+DECLARE_COM_TYPECAST(RegexDoFactorCharAction)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

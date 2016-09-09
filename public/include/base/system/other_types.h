@@ -1275,13 +1275,14 @@ private:
 };
 
 typedef void* (* share_object_typecast_func)(void* p, const guid& iid);
+typedef void* (* share_object_connection_func)(void* p, const guid& iid);
 
 // share_com_block
 
 class share_com_block : public share_ptr_block
 {
 public:
-	share_com_block() throw() : m_pTypeCast(NULL)
+	share_com_block() throw() : m_pTypeCast(NULL), m_pConnection(NULL)
 	{
 	}
 	~share_com_block() throw()
@@ -1296,9 +1297,18 @@ public:
 	{
 		m_pTypeCast = pFunc;
 	}
+	share_object_connection_func GetConnectionFunc() const throw()
+	{
+		return m_pConnection;
+	}
+	void SetConnectionFunc(share_object_connection_func pFunc) throw()
+	{
+		m_pConnection = pFunc;
+	}
 
 protected:
 	share_object_typecast_func m_pTypeCast;
+	share_object_connection_func m_pConnection;
 
 private:
 	share_com_block(const share_com_block&) throw();

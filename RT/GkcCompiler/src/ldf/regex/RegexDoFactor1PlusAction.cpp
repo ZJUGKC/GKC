@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains global variables for Do-Char-Set action component.
+This file contains global variables for Do-Factor-1-Plus action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,15 +23,15 @@ This file contains global variables for Do-Char-Set action component.
 #include "base/DataColl.h"
 
 #include "ldf/regex/RegexDef.h"
-#include "ldf/regex/RegexDoCharSetAction.h"
+#include "ldf/regex/RegexDoFactor1PlusAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// RegexDoCharSetAction
+// RegexDoFactor1PlusAction
 
-BEGIN_COM_TYPECAST(RegexDoCharSetAction)
+BEGIN_COM_TYPECAST(RegexDoFactor1PlusAction)
 	COM_TYPECAST_ENTRY(_IGrammarAction, _IGrammarAction)
 	COM_TYPECAST_ENTRY(_I_RegexAstAction_Utility, _RegexAstActionBase)
 END_COM_TYPECAST()

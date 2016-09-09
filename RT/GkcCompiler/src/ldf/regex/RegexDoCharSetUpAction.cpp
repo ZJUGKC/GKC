@@ -33,7 +33,7 @@ namespace GKC {
 
 BEGIN_COM_TYPECAST(RegexDoCharSetUpAction)
 	COM_TYPECAST_ENTRY(_IGrammarAction, _IGrammarAction)
-	COM_TYPECAST_ENTRY(_I_RegexAstAction_Utility, _I_RegexAstAction_Utility)
+	COM_TYPECAST_ENTRY(_I_RegexAstAction_Utility, _RegexAstActionBase)
 END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////

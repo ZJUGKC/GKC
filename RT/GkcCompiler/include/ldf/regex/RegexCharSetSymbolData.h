@@ -37,7 +37,7 @@ public:
 	}
 
 // _I_RegexCharSetSymbolData_Utility methods
-	virtual RefPtr<_RegexCharRangeSet> GetCharRangeSet() throw()
+	virtual GKC::RefPtr<_RegexCharRangeSet> GetCharRangeSet() throw()
 	{
 		return RefPtr<_RegexCharRangeSet>(m_rs);
 	}

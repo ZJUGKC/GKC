@@ -47,6 +47,10 @@ public:
 		m_spStream = sp;
 		reset_buffer();
 	}
+	virtual void Reset() throw()
+	{
+		reset_buffer();
+	}
 	virtual GKC::CallResult CheckBOM(int& iType) throw()
 	{
 		assert( is_valid() );

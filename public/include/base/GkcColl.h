@@ -593,7 +593,10 @@ public:
 		void MovePrev() throw()
 		{
 			//NULL node -> Tail
-			m_pos.IsNull() ? (m_pos = m_refList.Deref().GetTailPosition()) : m_pos.MovePrev();
+			if( m_pos.IsNull() )
+				m_pos = m_refList.Deref().GetTailPosition();
+			else
+				m_pos.MovePrev();
 		}
 
 	private:

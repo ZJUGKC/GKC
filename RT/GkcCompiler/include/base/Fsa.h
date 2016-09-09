@@ -49,8 +49,8 @@ typedef struct _tagFSA_TransitionItem {
 // FSA_STATE_ITEM
 typedef struct _tagFSA_StateItem {
 	const FSA_TRANSITION_ITEM* pTransition;  //!< A pointer to transition array.
-	int  iDefaultState;   //!< The default next state if no transitions are used.
-	int  iMatchIndex;     //!< Specify the match index. If this value is not larger than 0, its absolute value is the match index (the current state is a stop state). If this value is larger than 0, the current state is not a stop state.
+	int iDefaultState;   //!< The default next state if no transitions are used.
+	int iMatchIndex;     //!< Specify the match index. If this value is not larger than 0, its absolute value is the match index (the current state is a stop state). If this value is larger than 0, the current state is not a stop state.
 } FSA_STATE_ITEM;
 
 // FSA_MATCH_ITEM

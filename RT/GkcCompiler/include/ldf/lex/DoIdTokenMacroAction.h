@@ -53,7 +53,7 @@ public:
 	}
 
 // _I_IdTokenMacroAction_Utility methods
-	virtual void SetOutput(const RefPtr<TokenTable>& table, const ShareArray<StringA>& arr, const RefPtr<uint>& uID) throw()
+	virtual void SetOutput(const GKC::RefPtr<GKC::TokenTable>& table, const GKC::ShareArray<GKC::StringA>& arr, const GKC::RefPtr<uint>& uID) throw()
 	{
 		m_table = table;
 		m_arr = arr;

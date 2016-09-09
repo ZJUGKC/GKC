@@ -116,6 +116,87 @@ inline CallResult _Create_RegexDoCharSetUpAction(ShareCom<_IGrammarAction>& sp) 
 	return cr;
 }
 
+// RegexDoFactorCharSetAction
+
+inline CallResult _Create_RegexDoFactorCharSetAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoFactorCharSetAction, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexDoFactorCharAction
+
+inline CallResult _Create_RegexDoFactorCharAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoFactorCharAction, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexDoFactorParenExpAction
+
+inline CallResult _Create_RegexDoFactorParenExpAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoFactorParenExpAction, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexDoFactor1QuestionAction
+
+inline CallResult _Create_RegexDoFactor1QuestionAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoFactor1QuestionAction, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexDoFactor1StarAction
+
+inline CallResult _Create_RegexDoFactor1StarAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoFactor1StarAction, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexDoFactor1PlusAction
+
+inline CallResult _Create_RegexDoFactor1PlusAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoFactor1PlusAction, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexDoTermTermFactor1Action
+
+inline CallResult _Create_RegexDoTermTermFactor1Action(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoTermTermFactor1Action, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexDoExpExpTermAction
+
+inline CallResult _Create_RegexDoExpExpTermAction(ShareCom<_IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexDoExpExpTermAction, _IGrammarAction, sp, cr);
+	return cr;
+}
+
+// RegexGrammarAccepted
+
+inline CallResult _Create_RegexGrammarAccepted(ShareCom<_IGrammarAccepted>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(RegexGrammarAccepted, _IGrammarAccepted, sp, cr);
+	return cr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

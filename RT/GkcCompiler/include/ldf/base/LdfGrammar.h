@@ -54,6 +54,10 @@ public:
 	{
 		m_grammar.SetPdaTable(table);
 	}
+	void SetAcceptedAction(const ShareCom<_IGrammarAccepted>& sp) throw()
+	{
+		m_grammar.SetAcceptedAction(sp);
+	}
 	void SetAction(const ConstStringA& strAction, const ShareCom<_IGrammarAction>& spAction)
 	{
 		m_grammar.SetAction(strAction, spAction);  //may throw

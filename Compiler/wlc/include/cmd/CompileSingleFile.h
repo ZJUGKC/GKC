@@ -44,6 +44,17 @@ inline bool _Compile_One_File(ShareCom<IWlangParser>& spParser, const StringS& s
 		return false;
 	}
 	spText.Deref().SetStream(spStream);
+	// BOM
+	int iBOMType;
+	cr = spText.Deref().CheckBOM(iBOMType);
+	if( cr.IsFailed() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Source File must have a BOM with UTF8!")));
+		return false;
+	}
+	if( iBOMType != BOMTypes::UTF8 ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Source File must have a BOM with UTF8!")));
+		return false;
+	}
 
 	//parser
 	spParser.Deref().SetStream(spText);

@@ -141,7 +141,7 @@ public:
 		int total_transition_num = 0;
 		for( int i = 1; i <= iMaxStateNo; i ++ ) {
 			int iNum = arrTransitionNum[i].get_Value();
-			assert( iNum > 0 );
+			assert( iNum >= 0 );
 			iNum = SafeOperators::AddThrow(iNum, (int)1);  //may throw
 			total_transition_num = SafeOperators::AddThrow(total_transition_num, iNum);  //may throw
 		}

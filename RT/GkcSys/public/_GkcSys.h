@@ -621,6 +621,9 @@ template <class TSObj>
 class _SObjArray
 {
 public:
+	typedef TSObj  ESObj;
+
+public:
 	_SObjArray() throw() : m_p(NULL), m_uCount(0), m_uAlloc(0)
 	{
 	}
@@ -665,11 +668,11 @@ public:
 			uAlloc = 4;
 		}
 		else {
-			if( SafeOperators::Multiply(m_uCount, (uintptr)2, uAlloc).IsFailed() )
+			if( GKC::SafeOperators::Multiply(m_uCount, (uintptr)2, uAlloc).IsFailed() )
 				return 0;
 		}
 		uintptr uBytes;
-		if( SafeOperators::Multiply(uAlloc, (uintptr)sizeof(TSObj), uBytes).IsFailed() )
+		if( GKC::SafeOperators::Multiply(uAlloc, (uintptr)sizeof(TSObj), uBytes).IsFailed() )
 			return 0;
 		if( m_p == NULL )
 			p = (TSObj*)crt_alloc(uBytes);
@@ -691,10 +694,15 @@ public:
 		m_p[uCookie - 1].Release();
 	}
 	//get
-	void GetObject(uintptr index, TSObj& obj) throw()
+	void GetObject(uintptr index, TSObj& obj) const throw()
 	{
 		assert( index >= 0 && index < m_uCount );
 		obj = m_p[index];
+	}
+
+	uintptr GetCount() const throw()
+	{
+		return m_uCount;
 	}
 
 private:
@@ -707,6 +715,102 @@ private:
 	_SObjArray(const _SObjArray&) throw();
 	_SObjArray& operator=(const _SObjArray&) throw();
 };
+
+// _SObjArrayWithLock<TSObj>
+
+template <class TSObj>
+class _SObjArrayWithLock : public _SObjArray<TSObj>
+{
+private:
+	typedef _SObjArray<TSObj>  baseClass;
+
+public:
+	_SObjArrayWithLock() throw()
+	{
+	}
+	~_SObjArrayWithLock() throw()
+	{
+	}
+
+	void SetMutex(const GKC::RefPtr<GKC::Mutex>& mtx) throw()
+	{
+		m_mtx = mtx;
+	}
+
+	uintptr Add(const TSObj& obj) throw()
+	{
+		GKC::MutexLock lock(m_mtx.Deref());
+		return baseClass::Add(obj);
+	}
+	void Remove(uintptr uCookie) throw()
+	{
+		GKC::MutexLock lock(m_mtx.Deref());
+		baseClass::Remove(uCookie);
+	}
+	void GetObject(uintptr index, TSObj& obj) const throw()
+	{
+		GKC::MutexLock lock(m_mtx.Deref());
+		baseClass::GetObject(index, obj);
+	}
+
+private:
+	GKC::RefPtr<GKC::Mutex> m_mtx;
+
+private:
+	//noncopyable
+	_SObjArrayWithLock(const _SObjArrayWithLock&) throw();
+	_SObjArrayWithLock& operator=(const _SObjArrayWithLock&) throw();
+};
+
+// _SObjConnectionImpl<TSObjArray>
+//   TSObjArray : _SObjArray<TSObj> or _SObjArrayWithLock<TSObj>
+
+template <class TSObjArray>
+class _SObjConnectionImpl
+{
+public:
+	_SObjConnectionImpl() throw()
+	{
+	}
+	~_SObjConnectionImpl() throw()
+	{
+	}
+
+	void SetLock(const GKC::RefPtr<GKC::Mutex>& mtx) throw()
+	{
+		m_arr.SetMutex(mtx);  //may be no-matching
+	}
+	uintptr Add(const typename TSObjArray::ESObj& obj) throw()
+	{
+		return m_arr.Add(obj);
+	}
+	void Remove(uintptr uCookie) throw()
+	{
+		m_arr.Remove(uCookie);
+	}
+	void GetObject(uintptr index, typename TSObjArray::TSObj& obj) const throw()
+	{
+		m_arr.GetObject(index, obj);
+	}
+	uintptr GetCount() const throw()
+	{
+		return m_arr.GetCount();
+	}
+
+private:
+	TSObjArray m_arr;
+
+private:
+	//noncopyable
+	_SObjConnectionImpl(const _SObjConnectionImpl&) throw();
+	_SObjConnectionImpl& operator=(const _SObjConnectionImpl&) throw();
+};
+
+/*
+_SharePtr:
+User can define a proxy class named as Proxy_<event_class_name> derived from _SObjConnectionImpl<_SObjArray<_SharePtr<event_class_name>>> or _SObjConnectionImpl<_SObjArrayWithLock<_SharePtr<event_class_name>>>.
+This proxy class provides the fire functions with Fire_<event_method_name> format, and is used as the base class of main class.
+*/
 
 // _SharePtrHelper
 
@@ -788,6 +892,29 @@ public:
 				: _SharePtr<T>();
 	}
 
+	//event
+	template <class T, class TProxy>
+	static void SetLock(const _SharePtr<T>& sp, const GKC::RefPtr<GKC::Mutex>& mtx) throw()
+	{
+		assert( sp.m_pB != NULL );
+		TProxy* pX = static_cast<TProxy*>(sp.m_pT);
+		pX->SetLock(mtx);
+	}
+	template <class T, class TEvent, class TProxy>
+	static uintptr Advise(const _SharePtr<T>& sp, const _SharePtr<TEvent>& spE) throw()
+	{
+		assert( sp.m_pB != NULL );
+		TProxy* pX = static_cast<TProxy*>(sp.m_pT);
+		return pX->Add(spE);
+	}
+	template <class T, class TProxy>
+	static void Unadvise(const _SharePtr<T>& sp, uintptr uCookie) throw()
+	{
+		assert( sp.m_pB != NULL );
+		TProxy* pX = static_cast<TProxy*>(sp.m_pT);
+		pX->Remove(uCookie);
+	}
+
 	//get internal pointer
 	template <typename T>
 	static T* GetInternalPointer(const _SharePtr<T>& sp) throw()
@@ -828,6 +955,9 @@ public:
 template <class T>
 class _ShareCom : public _ShareSoloBase<share_com_block>
 {
+public:
+	typedef T  EType;
+
 private:
 	typedef _ShareSoloBase<share_com_block>  baseClass;
 	typedef _ShareCom<T>  thisClass;
@@ -977,6 +1107,15 @@ private:
 	friend class _SObjSoloHelper;
 };
 
+// _IComConnection
+
+class NOVTABLE _IComConnection
+{
+public:
+	virtual uintptr Advise(const _ShareCom<void>& sp) throw() = 0;
+	virtual void Unadvise(const uintptr& uCookie) throw() = 0;
+};
+
 // --only one component class can be defined in a pair of .h and .cpp files.--
 
 struct _Com_Interface_Offset_Item
@@ -990,6 +1129,27 @@ template <class T>
 class _Com_TypeCast_Func
 {
 };
+template <class T>
+class _Com_Connection_Func
+{
+public:
+	static share_object_connection_func GetFunc() throw()
+	{
+		return NULL;
+	}
+};
+}
+
+inline void* _Com_Get_Base_Object(void* p, const guid& iid,
+								const _Com_Interface_Offset_Item* pItem, uintptr uCount) throw()
+{
+	for( uintptr i = 0; i < uCount; i ++ ) {
+		if( guid_equal(*(pItem->pid), iid) ) {
+			return (void*)((byte*)p + pItem->offset);
+		}
+		pItem ++;
+	}
+	return NULL;
 }
 
 // --<header file>--
@@ -1001,16 +1161,24 @@ class _Com_TypeCast_Func
 		BEGIN_NOINLINE  \
 		static void* _Com_TypeCast(void* p, const guid& iid) throw()  \
 		END_NOINLINE  \
-		{  const _Com_Interface_Offset_Item* pItem = com_ca_##cls ::GetAddress();  \
-		uintptr uCount = com_ca_##cls ::GetCount();  \
-		for( uintptr i = 0; i < uCount; i ++ ) {  \
-			if( guid_equal(*(pItem->pid), iid) ) {  \
-				return (void*)((byte*)p + pItem->offset); }  \
-			pItem ++; }  \
-		return NULL; }  \
+		{ return _Com_Get_Base_Object(p, iid, com_ca_##cls ::GetAddress(), com_ca_##cls ::GetCount()); }  \
 	};  \
 	template <> class _Com_TypeCast_Func<cls> { public:  \
 		static const share_object_typecast_func c_func;  \
+	};
+
+#define DECLARE_COM_CONNECTION(cls)  \
+	DECLARE_STATIC_CONST_ARRAY(com_cc_##cls, _Com_Interface_Offset_Item)  \
+	class _Com_CN_##cls {  \
+	public:  \
+		BEGIN_NOINLINE  \
+		static void* _Com_Connection(void* p, const guid& iid) throw()  \
+		END_NOINLINE  \
+		{ return _Com_Get_Base_Object(p, iid, com_cc_##cls ::GetAddress(), com_cc_##cls ::GetCount()); }  \
+	};  \
+	template <> class _Com_Connection_Func<cls> { public:  \
+		static share_object_connection_func GetFunc() throw()  \
+		{ return &(_Com_CN_##cls ::_Com_Connection); }  \
 	};
 
 // --<.h end>--
@@ -1037,6 +1205,25 @@ class _Com_TypeCast_Func
 	END_STATIC_CONST_ARRAY_GROUP_LAST()  \
 	END_STATIC_CONST_ARRAY(com_ca_class)  \
 	const share_object_typecast_func _Com_TypeCast_Func<com_x_class>::c_func = &(com_tc_class::_Com_TypeCast);
+
+#define BEGIN_COM_CONNECTION(cls)  \
+	typedef cls com_y_class;  \
+	typedef com_cc_##cls  com_cc_class;  \
+	BEGIN_STATIC_CONST_ARRAY(com_cc_class)
+
+// if_name : event interface name
+#define COM_CONNECTION_ENTRY(ifname)  \
+	BEGIN_STATIC_CONST_ARRAY_GROUP()  \
+		STATIC_CONST_ARRAY_ENTRY(&(USE_GUID(GUID_##ifname)))  \
+		STATIC_CONST_ARRAY_ENTRY_LAST( (intptr)( (byte*)(static_cast<_IComConnection*>(static_cast< Proxy_##ifname *>((com_y_class*)(0x128)))) - (byte*)(0x128) ) )  \
+	END_STATIC_CONST_ARRAY_GROUP()
+
+#define END_COM_CONNECTION()  \
+	BEGIN_STATIC_CONST_ARRAY_GROUP()  \
+		STATIC_CONST_ARRAY_ENTRY(NULL)  \
+		STATIC_CONST_ARRAY_ENTRY_LAST(0)  \
+	END_STATIC_CONST_ARRAY_GROUP_LAST()  \
+	END_STATIC_CONST_ARRAY(com_cc_class)
 
 // --<.cpp end>--
 
@@ -1078,6 +1265,7 @@ public:
 		pB->SetAddress(pT);
 		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
 		pB->SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+		pB->SetConnectionFunc(GKC::_Com_Connection_Func<T>::GetFunc());
 
 		_ShareCom<T> ret;
 		//return value
@@ -1145,6 +1333,28 @@ public:
 				: _ShareCom<T>();
 	}
 
+	//event
+	template <class T, class TEvent>
+	static uintptr Advise(const _ShareCom<T>& sp, const guid& iid, const _ShareCom<TEvent>& spE) throw()
+	{
+		if( sp.IsBlockNull() )
+			return 0;
+		_IComConnection* pC = (_IComConnection*)(((static_cast<share_com_block*>(sp.m_pB))->GetConnectionFunc())((sp.m_pB)->GetAddress(), iid));
+		if( pC == NULL )
+			return 0;
+		return pC->Advise(TypeCast<TEvent, void>(spE));
+	}
+	template <class T>
+	static void Unadvise(const _ShareCom<T>& sp, const guid& iid, uintptr uCookie) throw()
+	{
+		if( sp.IsBlockNull() )
+			return ;
+		_IComConnection* pC = (_IComConnection*)(((static_cast<share_com_block*>(sp.m_pB))->GetConnectionFunc())((sp.m_pB)->GetAddress(), iid));
+		if( pC == NULL )
+			return ;
+		pC->Unadvise(uCookie);
+	}
+
 	//get internal pointer
 	template <class T>
 	static T* GetInternalPointer(const _ShareCom<T>& sp) throw()
@@ -1181,6 +1391,49 @@ public:
 };
 
 #define CALL_COM_TYPECAST(src, src_type, ifname)  _ShareComHelper::Query<src_type, ifname>(src, USE_GUID(GUID_##ifname))
+
+#define CALL_COM_ADVISE(sp, type, ifname, spe)  _ShareComHelper::Advise<type, ifname>(sp, USE_GUID(GUID_##ifname), spe)
+
+#define CALL_COM_UNADVISE(sp, type, ifname, ck)  _ShareComHelper::Unadvise<type>(sp, USE_GUID(GUID_##ifname), ck)
+
+// _ComConnectionImpl<TSObjArray>
+
+template <class TSObjArray>
+class NOVTABLE _ComConnectionImpl : public _SObjConnectionImpl<TSObjArray>,
+									public _IComConnection
+{
+private:
+	typedef _SObjConnectionImpl<TSObjArray>  baseClass;
+
+public:
+	_ComConnectionImpl() throw()
+	{
+	}
+	~_ComConnectionImpl() throw()
+	{
+	}
+
+// _IComConnection methods
+	virtual uintptr Advise(const _ShareCom<void>& sp) throw()
+	{
+		return baseClass::Add(_ShareComHelper::TypeCast<void, typename TSObjArray::ESObj::EType>(sp));
+	}
+	virtual void Unadvise(const uintptr& uCookie) throw()
+	{
+		baseClass::Remove(uCookie);
+	}
+
+private:
+	//noncopyable
+	_ComConnectionImpl(const _ComConnectionImpl&) throw();
+	_ComConnectionImpl& operator=(const _ComConnectionImpl&) throw();
+};
+
+/*
+_ShareCom:
+User can define a proxy class named as Proxy_<event_interface_name> derived from _ComConnectionImpl<_SObjArray<_ShareCom<event_interface_name>>> or _ComConnectionImpl<_SObjArrayWithLock<_ShareCom<event_interface_name>>>.
+This proxy class provides the fire functions with Fire_<event_method_name> format, and is used as the base class of main class.
+*/
 
 // _ShareArrayBase<T>
 
@@ -2904,6 +3157,7 @@ class NOVTABLE _ITextStream
 {
 public:
 	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw() = 0;
+	virtual void Reset() throw() = 0;
 	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
 	// The return value SystemCallResults::S_EOF means the end of file is reached.
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;

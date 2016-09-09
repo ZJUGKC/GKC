@@ -26,7 +26,7 @@ namespace GKC {
 // RegexDoCharSetUpAction
 
 class RegexDoCharSetUpAction : public _IGrammarAction,
-							public _I_RegexAstAction_Utility
+							public _RegexAstActionBase
 {
 public:
 	RegexDoCharSetUpAction() throw()
@@ -65,19 +65,6 @@ public:
 		}
 		return cr;
 	}
-
-// _I_RegexAstAction_Utility methods
-	virtual void SetAST(const RefPtr<AstTree>& tree) throw()
-	{
-		m_tree = tree;
-	}
-	virtual RefPtr<AstTree> GetAST() throw()
-	{
-		return m_tree;
-	}
-
-private:
-	RefPtr<AstTree> m_tree;
 
 private:
 	//noncopyable

@@ -44,15 +44,15 @@ public:
 	}
 
 // _IGrammarTablesAccess methods
-	virtual RefPtr<TokenTable> GetNonterminalTable() throw()
+	virtual GKC::RefPtr<GKC::TokenTable> GetNonterminalTable() throw()
 	{
 		return RefPtr<TokenTable>(m_nonterminal_table);
 	}
-	virtual RefPtr<TokenTable> GetReductionActionTable() throw()
+	virtual GKC::RefPtr<GKC::TokenTable> GetReductionActionTable() throw()
 	{
 		return RefPtr<TokenTable>(m_ra_table);
 	}
-	virtual const PDA_TABLE& GetPdaTable() throw()
+	virtual const GKC::PDA_TABLE& GetPdaTable() throw()
 	{
 		return m_pda_table.GetTable();
 	}

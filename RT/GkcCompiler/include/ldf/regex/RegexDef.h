@@ -19,10 +19,6 @@ Internal Header
 #define __REGEX_DEF_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-namespace GKC {
-////////////////////////////////////////////////////////////////////////////////
-
 // _RegexCharRange
 
 struct _RegexCharRange
@@ -44,11 +40,11 @@ public:
 	}
 
 	//add
-	void AddRange(const _RegexCharRange& rcr)
+	void AddRangeByCombination(const _RegexCharRange& rcr)
 	{
 		//init
 		if( m_arr.IsBlockNull() )
-			m_arr = ShareArrayHelper::MakeShareArray<_RegexCharRange>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			m_arr = GKC::ShareArrayHelper::MakeShareArray<_RegexCharRange>(GKC::MemoryHelper::GetCrtMemoryManager());  //may throw
 		//add
 		if( m_arr.GetCount() == 0 ) {
 			m_arr.Add(rcr);  //may throw
@@ -94,12 +90,67 @@ public:
 		//insert
 		m_arr.InsertAt(index, 1, rcr);  //may throw
 	}
+	void AddRangeBySplit(const _RegexCharRange& rcr)
+	{
+		//init
+		if( m_arr.IsBlockNull() )
+			m_arr = GKC::ShareArrayHelper::MakeShareArray<_RegexCharRange>(GKC::MemoryHelper::GetCrtMemoryManager());  //may throw
+		//add
+		if( m_arr.GetCount() == 0 ) {
+			m_arr.Add(rcr);  //may throw
+			return ;
+		}
+		//check ranges
+		_RegexCharRange rcrV(rcr);
+		uintptr index = 0;
+		while( index < m_arr.GetCount() ) {
+			_RegexCharRange rcrC = m_arr[index].get_Value();
+			//left
+			if( rcrV.uHigh < rcrC.uLow )
+				break;
+			//right
+			if( rcrV.uLow > rcrC.uHigh ) {
+				index ++;
+				continue;
+			}
+			_RegexCharRange rcrK;
+			//overlapped
+			if( rcrV.uLow < rcrC.uLow ) {
+				rcrK.uLow = rcrV.uLow;
+				rcrK.uHigh = rcrC.uLow - 1;
+				m_arr.InsertAt(index, 1, rcrK);  //may throw
+				index ++;
+				rcrV.uLow = rcrC.uLow;
+			}
+			else if( rcrV.uLow > rcrC.uLow ) {
+				rcrK.uLow = rcrC.uLow;
+				rcrK.uHigh = rcrV.uLow - 1;
+				m_arr.InsertAt(index, 1, rcrK);  //may throw
+				index ++;
+				m_arr[index].get_Value().uLow = rcrV.uLow;
+				rcrC.uLow = rcrV.uLow;
+			} //end if
+			if( rcrV.uHigh < rcrC.uHigh ) {
+				m_arr[index].get_Value().uHigh = rcrV.uHigh;
+				rcrK.uLow = rcrV.uHigh + 1;
+				rcrK.uHigh = rcrC.uHigh;
+				m_arr.InsertAt(index + 1, 1, rcrK);  //may throw
+				return ;
+			}
+			if( rcrV.uHigh == rcrC.uHigh )
+				return ;
+			rcrV.uLow = rcrC.uHigh + 1;
+			index ++;
+		} //end while
+		//insert
+		m_arr.InsertAt(index, 1, rcrV);  //may throw
+	}
 
 	//complement set
 	void CalcComplement(_RegexCharRangeSet& rs) const
 	{
 		if( rs.m_arr.IsBlockNull() )
-			rs.m_arr = ShareArrayHelper::MakeShareArray<_RegexCharRange>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			rs.m_arr = GKC::ShareArrayHelper::MakeShareArray<_RegexCharRange>(GKC::MemoryHelper::GetCrtMemoryManager());  //may throw
 		//clear
 		rs.m_arr.RemoveAll();
 		//empty
@@ -155,7 +206,7 @@ public:
 	}
 
 private:
-	ShareArray<_RegexCharRange> m_arr;
+	GKC::ShareArray<_RegexCharRange> m_arr;
 
 private:
 	//noncopyable
@@ -179,7 +230,7 @@ DECLARE_GUID(GUID__I_RegexCharSymbolData_Utility)
 class NOVTABLE _I_RegexCharSetSymbolData_Utility
 {
 public:
-	virtual RefPtr<_RegexCharRangeSet> GetCharRangeSet() throw() = 0;
+	virtual GKC::RefPtr<_RegexCharRangeSet> GetCharRangeSet() throw() = 0;
 };
 
 DECLARE_GUID(GUID__I_RegexCharSetSymbolData_Utility)
@@ -189,8 +240,8 @@ DECLARE_GUID(GUID__I_RegexCharSetSymbolData_Utility)
 class NOVTABLE _I_RegexPositionSymbolData_Utility
 {
 public:
-	virtual void SetPosition(const AstTree::Position& pos) throw() = 0;
-	virtual AstTree::Position GetPosition() throw() = 0;
+	virtual void SetPosition(const GKC::AstTree::Position& pos) throw() = 0;
+	virtual GKC::AstTree::Position GetPosition() throw() = 0;
 };
 
 DECLARE_GUID(GUID__I_RegexPositionSymbolData_Utility)
@@ -200,11 +251,42 @@ DECLARE_GUID(GUID__I_RegexPositionSymbolData_Utility)
 class NOVTABLE _I_RegexAstAction_Utility
 {
 public:
-	virtual void SetAST(const RefPtr<AstTree>& tree) throw() = 0;
-	virtual RefPtr<AstTree> GetAST() throw() = 0;
+	virtual void SetAST(const GKC::RefPtr<GKC::AstTree>& tree) throw() = 0;
+	virtual GKC::RefPtr<GKC::AstTree> GetAST() throw() = 0;
 };
 
 DECLARE_GUID(GUID__I_RegexAstAction_Utility)
+
+//implementation
+
+class NOVTABLE _RegexAstActionBase : public _I_RegexAstAction_Utility
+{
+public:
+	_RegexAstActionBase() throw()
+	{
+	}
+	~_RegexAstActionBase() throw()
+	{
+	}
+
+// _I_RegexAstAction_Utility methods
+	virtual void SetAST(const GKC::RefPtr<GKC::AstTree>& tree) throw()
+	{
+		m_tree = tree;
+	}
+	virtual GKC::RefPtr<GKC::AstTree> GetAST() throw()
+	{
+		return m_tree;
+	}
+
+protected:
+	GKC::RefPtr<GKC::AstTree> m_tree;
+
+private:
+	//noncopyable
+	_RegexAstActionBase(const _RegexAstActionBase&) throw();
+	_RegexAstActionBase& operator=(const _RegexAstActionBase&) throw();
+};
 
 //regex operators
 
@@ -250,8 +332,8 @@ public:
 	}
 
 private:
-	BeType<uint> m_uLow;
-	BeType<uint> m_uHigh;
+	GKC::BeType<uint> m_uLow;
+	GKC::BeType<uint> m_uHigh;
 
 private:
 	//noncopyable
@@ -261,30 +343,34 @@ private:
 
 #pragma pack(pop)
 
+// _RegexCharRange_To_AST
+
+inline GKC::AstTree::Iterator _RegexCharRange_To_AST(const _RegexCharRange& rcr, GKC::AstTree& tree)
+{
+	GKC::AstTree::Iterator iterLeaf(tree.CreateNode(sizeof(_RegexLeafNode), REGEX_OP_NONE));  //may throw
+	_RegexLeafNode& node = iterLeaf.GetData<_RegexLeafNode>();
+	node.set_Low(rcr.uLow);
+	node.set_High(rcr.uHigh);
+	return iterLeaf;
+}
+
 // _RegexCharRangeSet_To_AST
 
-inline AstTree::Iterator _RegexCharRangeSet_To_AST(const _RegexCharRangeSet& rs, AstTree& tree)
+inline GKC::AstTree::Iterator _RegexCharRangeSet_To_AST(const _RegexCharRangeSet& rs, GKC::AstTree& tree)
 {
 	uintptr uCount = rs.GetCount();
 	assert( uCount > 0 );
 	if( uCount == 1 ) {
 		//only a leaf
 		const _RegexCharRange& rcr = rs.GetRange(0);
-		auto iterLeaf(tree.CreateNode(sizeof(_RegexLeafNode), REGEX_OP_NONE));  //may throw
-		_RegexLeafNode& node = iterLeaf.GetData<_RegexLeafNode>();
-		node.set_Low(rcr.uLow);
-		node.set_High(rcr.uHigh);
-		return iterLeaf;
+		return _RegexCharRange_To_AST(rcr, tree);  //may throw
 	}
 	//OR tree
-	AstTree::Iterator iterOP(tree.CreateNode(0, REGEX_OP_OR));  //may throw
-	AstTree::Iterator iterLast(tree.GetNullIterator());
+	GKC::AstTree::Iterator iterOP(tree.CreateNode(0, REGEX_OP_OR));  //may throw
+	GKC::AstTree::Iterator iterLast(tree.GetNullIterator());
 	for( uintptr i = 0; i < uCount; i ++ ) {
 		const _RegexCharRange& rcr = rs.GetRange(i);
-		auto iterLeaf(tree.CreateNode(sizeof(_RegexLeafNode), REGEX_OP_NONE));  //may throw
-		_RegexLeafNode& node = iterLeaf.GetData<_RegexLeafNode>();
-		node.set_Low(rcr.uLow);
-		node.set_High(rcr.uHigh);
+		auto iterLeaf(_RegexCharRange_To_AST(rcr, tree));  //may throw
 		tree.SetParent(iterLeaf, iterOP);
 		if( iterLast.IsNull() )
 			tree.SetChild(iterOP, iterLeaf);
@@ -295,8 +381,42 @@ inline AstTree::Iterator _RegexCharRangeSet_To_AST(const _RegexCharRangeSet& rs,
 	return iterOP;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// _RegexUnaryOperator_AST
+
+inline GKC::AstTree::Iterator _RegexUnaryOperator_AST(const GKC::AstTree::Iterator& iter, uint uOP, GKC::AstTree& tree)
+{
+	GKC::AstTree::Iterator iterOP(tree.CreateNode(0, uOP));  //may throw
+	tree.SetParent(iter, iterOP);
+	tree.SetChild(iterOP, iter);
+	return iterOP;
 }
+
+// _RegexBinaryOperator_AST
+
+inline GKC::AstTree::Iterator _RegexBinaryOperator_AST(const GKC::AstTree::Iterator& iter1, const GKC::AstTree::Iterator& iter2, uint uOP, GKC::AstTree& tree)
+{
+	//check type
+	if( iter1.GetType() == uOP ) {
+		tree.SetParent(iter2, iter1);
+		GKC::AstTree::Iterator iter(iter1);
+		iter.MoveChild();
+		GKC::AstTree::Iterator iterE;
+		while( !iter.IsNull() ) {
+			iterE = iter;
+			iter.MoveNext();
+		}
+		tree.SetNext(iterE, iter2);
+		return iter1;
+	}
+	//new node
+	GKC::AstTree::Iterator iterOP(tree.CreateNode(0, uOP));  //may throw
+	tree.SetParent(iter1, iterOP);
+	tree.SetParent(iter2, iterOP);
+	tree.SetChild(iterOP, iter1);
+	tree.SetNext(iter1, iter2);
+	return iterOP;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

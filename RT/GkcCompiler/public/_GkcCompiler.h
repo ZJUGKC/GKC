@@ -243,7 +243,7 @@ SA_FUNCTION void _LexerAnalyzer_Create(GKC::ShareCom<_ILexerAnalyzer>& sp, GKC::
 
 // _IGrammarSymbolData
 
-class _IGrammarSymbolData
+class NOVTABLE _IGrammarSymbolData
 {
 public:
 	virtual GKC::StringA get_Buffer() throw() = 0;
@@ -258,7 +258,7 @@ DECLARE_GUID(GUID__IGrammarSymbolData)
 
 // _GrammarSymbolDataBase
 
-class _GrammarSymbolDataBase : public _IGrammarSymbolData
+class NOVTABLE _GrammarSymbolDataBase : public _IGrammarSymbolData
 {
 public:
 	_GrammarSymbolDataBase() throw()

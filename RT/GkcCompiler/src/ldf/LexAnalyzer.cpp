@@ -49,6 +49,15 @@ This file contains the functions for lex file.
 #include "ldf/regex/RegexDoCharItemItemCharEAction.h"
 #include "ldf/regex/RegexDoCharSetAction.h"
 #include "ldf/regex/RegexDoCharSetUpAction.h"
+#include "ldf/regex/RegexDoFactorCharSetAction.h"
+#include "ldf/regex/RegexDoFactorCharAction.h"
+#include "ldf/regex/RegexDoFactorParenExpAction.h"
+#include "ldf/regex/RegexDoFactor1QuestionAction.h"
+#include "ldf/regex/RegexDoFactor1StarAction.h"
+#include "ldf/regex/RegexDoFactor1PlusAction.h"
+#include "ldf/regex/RegexDoTermTermFactor1Action.h"
+#include "ldf/regex/RegexDoExpExpTermAction.h"
+#include "ldf/regex/RegexGrammarAccepted.h"
 
 #include "ldf/lex/LexDef.h"
 #include "ldf/lex/LdfLexPda.h"
@@ -58,6 +67,7 @@ This file contains the functions for lex file.
 #include "ldf/LexAction.h"
 #include "ldf/RegexAction.h"
 #include "ldf/RegexAnalyzer.h"
+#include "ldf/RegexDotAlg.h"
 #include "ldf/LexAnalyzer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +82,7 @@ namespace GKC {
 class _Lex_Data
 {
 public:
-	_Lex_Data() throw()
+	explicit _Lex_Data(TokenTable& tt) throw() : m_token_table(tt)
 	{
 	}
 	~_Lex_Data() throw()
@@ -208,7 +218,7 @@ private:
 
 private:
 	//table
-	TokenTable m_token_table;
+	TokenTable& m_token_table;
 	TokenTable m_macro_table;
 	//regular expression
 	ShareArray<StringA> m_token_regex;
@@ -223,7 +233,7 @@ private:
 	_Lex_Data& operator=(const _Lex_Data&) throw();
 };
 
-CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
+CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp, TokenTable& tokenTable, FsaTable& fsaTable)
 {
 	CallResult cr;
 
@@ -281,7 +291,7 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
 		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "id"), spCF);  //may throw
 	} //end block
 	//data
-	_Lex_Data lex_data;
+	_Lex_Data lex_data(tokenTable);
 	lex_data.Init();  //may throw
 	//actions
 	{
@@ -313,12 +323,22 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp)
 	lex_data.Finish();  //may throw
 	lex_data.ExpandTokenMacros();  //may throw
 
+	//check overflow
+	{
+		TokenTable& tt = lex_data.GetTokenTable().Deref();
+		assert( tt.GetMinID() == CPL_TK_FIRST
+				&& tt.GetMaxID() < (uint)(Limits<int>::Max - 1) );  //with last NULL item
+	} //end block
+
 	//AST
-	_Regex_AST ast;
-	ast.Init();  //may throw
-	cr = _Regex_Generate_AST(lex_data.GetTokenRegex(), ast);  //may throw
+	_Regex_AST rast;
+	rast.Init();  //may throw
+	cr = _Regex_Generate_AST(lex_data.GetTokenRegex(), rast);  //may throw
 	if( cr.IsFailed() )
 		return cr;
+
+	//Generate
+	_Regex_Generate_Tables(rast, fsaTable);  //may throw
 
 	return cr;
 }

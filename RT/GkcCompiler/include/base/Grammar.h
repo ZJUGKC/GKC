@@ -56,7 +56,7 @@ public:
 	{
 		m_errorAction = sp;
 	}
-	void SetAcceptedAction(const GKC::ShareCom<_IGrammarAccepted>& sp) throw()
+	void SetAcceptedAction(const ShareCom<_IGrammarAccepted>& sp) throw()
 	{
 		m_acceptedAction = sp;
 	}
@@ -151,7 +151,8 @@ public:
 					//uEvent must be a terminal symbol
 					const TokenTable& tt = m_lexer.Deref().GetTokenTable();
 					ConstStringA strEvent(tt.get_Token(uEvent));
-					cr = spErrorAction.Deref().DoModifyEvent(strEvent, m_lexer.Deref().GetStream(), bChanged);
+					ShareCom<ITextStream> spText(m_lexer.Deref().GetStream());
+					cr = spErrorAction.Deref().DoModifyEvent(strEvent, spText, bChanged);
 					if( cr.IsFailed() )
 						break;
 					if( bChanged ) {
@@ -444,6 +445,10 @@ private:
 	GrammarParser& operator=(const GrammarParser&) throw();
 };
 
+////////////////////////////////////////////////////////////////////////////////
+}
+////////////////////////////////////////////////////////////////////////////////
+
 // private interfaces
 
 // _IGrammarTablesAccess
@@ -451,15 +456,13 @@ private:
 class NOVTABLE _IGrammarTablesAccess
 {
 public:
-	virtual RefPtr<TokenTable> GetNonterminalTable() throw() = 0;
-	virtual RefPtr<TokenTable> GetReductionActionTable() throw() = 0;
-	virtual const PDA_TABLE& GetPdaTable() throw() = 0;
+	virtual GKC::RefPtr<GKC::TokenTable> GetNonterminalTable() throw() = 0;
+	virtual GKC::RefPtr<GKC::TokenTable> GetReductionActionTable() throw() = 0;
+	virtual const GKC::PDA_TABLE& GetPdaTable() throw() = 0;
 };
 
 DECLARE_GUID(GUID__IGrammarTablesAccess)
 
-////////////////////////////////////////////////////////////////////////////////
-}
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__GRAMMAR_H__
 ////////////////////////////////////////////////////////////////////////////////

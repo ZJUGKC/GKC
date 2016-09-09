@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains global variables for Do-Char-Set action component.
+This file contains global variables for regular expression grammar accepted action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,16 +23,16 @@ This file contains global variables for Do-Char-Set action component.
 #include "base/DataColl.h"
 
 #include "ldf/regex/RegexDef.h"
-#include "ldf/regex/RegexDoCharSetAction.h"
+#include "ldf/regex/RegexGrammarAccepted.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// RegexDoCharSetAction
+// RegexGrammarAccepted
 
-BEGIN_COM_TYPECAST(RegexDoCharSetAction)
-	COM_TYPECAST_ENTRY(_IGrammarAction, _IGrammarAction)
+BEGIN_COM_TYPECAST(RegexGrammarAccepted)
+	COM_TYPECAST_ENTRY(_IGrammarAccepted, _IGrammarAccepted)
 	COM_TYPECAST_ENTRY(_I_RegexAstAction_Utility, _RegexAstActionBase)
 END_COM_TYPECAST()
 

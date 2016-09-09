@@ -40,8 +40,9 @@ public:
 	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
 	{
 		CallResult cr;
+		clear_all();
 		try {
-			cr = _Generate_Lexer_Tables(sp);  //may throw
+			cr = _Generate_Lexer_Tables(sp, m_token_table, m_fsa_table);  //may throw
 		}
 		catch(Exception& e) {
 			cr = e.GetResult();
@@ -49,18 +50,18 @@ public:
 		catch(...) {
 			cr.SetResult(SystemCallResults::Fail);
 		}
-		if( cr.IsSucceeded() ) {
+		if( cr.IsFailed() ) {
 			clear_all();
 		}
 		return cr;
 	}
 
 // _ILexerTablesAccess methods
-	virtual RefPtr<TokenTable> GetTokenTable() throw()
+	virtual GKC::RefPtr<GKC::TokenTable> GetTokenTable() throw()
 	{
 		return RefPtr<TokenTable>(m_token_table);
 	}
-	virtual const FSA_TABLE& GetFsaTable() throw()
+	virtual const GKC::FSA_TABLE& GetFsaTable() throw()
 	{
 		return m_fsa_table.GetTable();
 	}

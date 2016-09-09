@@ -91,7 +91,7 @@ public:
 	}
 
 // _ILexerAnalyzerAccess methods
-	virtual RefPtr<LexerParser> GetLexerParser() throw()
+	virtual GKC::RefPtr<GKC::LexerParser> GetLexerParser() throw()
 	{
 		return RefPtr<LexerParser>(m_lexer);
 	}

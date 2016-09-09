@@ -37,11 +37,11 @@ public:
 	}
 
 // _I_RegexPositionSymbolData_Utility methods
-	virtual void SetPosition(const AstTree::Position& pos) throw()
+	virtual void SetPosition(const GKC::AstTree::Position& pos) throw()
 	{
 		m_pos = pos;
 	}
-	virtual AstTree::Position GetPosition() throw()
+	virtual GKC::AstTree::Position GetPosition() throw()
 	{
 		return m_pos;
 	}

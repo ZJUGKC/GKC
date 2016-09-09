@@ -11,27 +11,28 @@
 */
 
 /*
-This file contains component class of Do-Char-Item-Char-E action.
+This file contains component class of Do-Factor-1-Plus action.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __REGEX_DO_CHAR_ITEM_CHAR_E_ACTION_H__
-#define __REGEX_DO_CHAR_ITEM_CHAR_E_ACTION_H__
+#ifndef __REGEX_DO_FACTOR_1_PLUS_ACTION_H__
+#define __REGEX_DO_FACTOR_1_PLUS_ACTION_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// RegexDoCharItemCharEAction
+// RegexDoFactor1PlusAction
 
-class RegexDoCharItemCharEAction : public _IGrammarAction
+class RegexDoFactor1PlusAction : public _IGrammarAction,
+								public _RegexAstActionBase
 {
 public:
-	RegexDoCharItemCharEAction() throw()
+	RegexDoFactor1PlusAction() throw()
 	{
 	}
-	~RegexDoCharItemCharEAction() throw()
+	~RegexDoFactor1PlusAction() throw()
 	{
 	}
 
@@ -39,21 +40,19 @@ public:
 	virtual GKC::CallResult DoAction(INOUT GKC::ShareArray<GKC::ShareCom<_IGrammarSymbolData>>& arrSymbol, INOUT GKC::ShareArray<GKC::StringS>& errorArray) throw()
 	{
 		CallResult cr;
-		//get value
-		ShareCom<_I_RegexCharSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSymbolData_Utility, arrSymbol[1].get_Value(), spU, cr);
+		//iterator
+		ShareCom<_I_RegexPositionSymbolData_Utility> spS;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[1].get_Value(), spS, cr);
 		if( cr.IsFailed() )
 			return cr;
-		_RegexCharRange rcr;
-		spU.Deref().GetCharRange(rcr);
-		//add value
-		ShareCom<_I_RegexCharSetSymbolData_Utility> spS;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
+		AstTree::Iterator iter(m_tree.Deref().GetAtPosition(spS.Deref().GetPosition()));
+		//node
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
 		if( cr.IsFailed() )
 			return cr;
-		RefPtr<_RegexCharRangeSet> rs(spS.Deref().GetCharRangeSet());
 		try {
-			rs.Deref().AddRangeByCombination(rcr);  //may throw
+			AstTree::Iterator iterOP(_RegexUnaryOperator_AST(iter, REGEX_OP_PLUS, m_tree.Deref()));  //may throw
+			spS.Deref().SetPosition(iterOP.GetPosition());
 		}
 		catch(Exception& e) {
 			cr = e.GetResult();
@@ -66,11 +65,11 @@ public:
 
 private:
 	//noncopyable
-	RegexDoCharItemCharEAction(const RegexDoCharItemCharEAction&) throw();
-	RegexDoCharItemCharEAction& operator=(const RegexDoCharItemCharEAction&) throw();
+	RegexDoFactor1PlusAction(const RegexDoFactor1PlusAction&) throw();
+	RegexDoFactor1PlusAction& operator=(const RegexDoFactor1PlusAction&) throw();
 };
 
-DECLARE_COM_TYPECAST(RegexDoCharItemCharEAction)
+DECLARE_COM_TYPECAST(RegexDoFactor1PlusAction)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

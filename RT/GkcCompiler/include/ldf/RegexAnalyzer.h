@@ -54,6 +54,12 @@ public:
 	{
 		return m_trees.GetCount();
 	}
+
+	const AstTree& GetAST(uintptr uIndex) const throw()
+	{
+		assert( uIndex < GetCount() );
+		return m_trees[uIndex].get_Value();
+	}
 	AstTree& GetAST(uintptr uIndex) throw()
 	{
 		assert( uIndex < GetCount() );
@@ -70,7 +76,7 @@ private:
 	_Regex_AST& operator=(const _Regex_AST&) throw();
 };
 
-inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST& ast)
+inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST& rast)
 {
 	CallResult cr;
 
@@ -137,16 +143,16 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 	} //end block
 	//stream
 	ShareCom<IBufferUtility> spBU;
+	ShareCom<ITextStream> spText;
+	cr = StreamHelper::CreateTextStream(spText);
+	if( cr.IsFailed() )
+		return cr;
 	{
 		ShareCom<IByteStream> spStream;
 		cr = StreamHelper::CreateBufferStream(1, 1, spStream);  //any value
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(IByteStream, IBufferUtility, spStream, spBU, cr);
-		if( cr.IsFailed() )
-			return cr;
-		ShareCom<ITextStream> spText;
-		cr = StreamHelper::CreateTextStream(spText);
 		if( cr.IsFailed() )
 			return cr;
 		spText.Deref().SetStream(spStream);
@@ -164,7 +170,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_factor_1"), uID ++);  //may throw
 	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_factor"), uID ++);  //may throw
 	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_char"), uID ++);  //may throw
-	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_charset"), uID ++);  //may throw
+	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_char_set"), uID ++);  //may throw
 	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_char_item"), uID ++);  //may throw
 	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_char_e"), uID ++);  //may throw
 	nt_table.InsertToken(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_char_range"), uID ++);  //may throw
@@ -204,6 +210,12 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 		_BasicSymbolDataFactory_Create(spCF, cr);
 		if( cr.IsFailed() )
 			return cr;
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_VERT"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_PLUS"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_STAR"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_QUESTION"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LPAREN"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RPAREN"), spCF);  //may throw
 		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_UPARROW"), spCF);  //may throw
 		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LBRACKET"), spCF);  //may throw
 		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RBRACKET"), spCF);  //may throw
@@ -224,12 +236,101 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 		if( cr.IsFailed() )
 			return cr;
 		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_char_set"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_factor"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_exp"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_factor_1"), spCF);  //may throw
+		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_term"), spCF);  //may throw
 	} //end block
 	//actions
-	ShareArray<ShareCom<_I_RegexAstAction_Utility>> arrAstU;
+	ShareArray<ShareCom<_I_RegexAstAction_Utility>> arrAstU(ShareArrayHelper::MakeShareArray<ShareCom<_I_RegexAstAction_Utility>>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	{
 		ShareCom<_IGrammarAction> spAction;
 		ShareCom<_I_RegexAstAction_Utility> spAU;
+		ShareCom<_IGrammarAccepted> spAccepted;
+		//GrammarAccepted
+		cr = _Create_RegexGrammarAccepted(spAccepted);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAccepted, _I_RegexAstAction_Utility, spAccepted, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAcceptedAction(spAccepted);
+		//DoExpExpTerm
+		cr = _Create_RegexDoExpExpTermAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_exp_exp_term"), spAction);  //may throw
+		//DoTermTermFactor1
+		cr = _Create_RegexDoTermTermFactor1Action(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_term_term_factor_1"), spAction);  //may throw
+		//DoFactor1Plus
+		cr = _Create_RegexDoFactor1PlusAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_plus"), spAction);  //may throw
+		//DoFactor1Star
+		cr = _Create_RegexDoFactor1StarAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_star"), spAction);  //may throw
+		//DoFactor1Question
+		cr = _Create_RegexDoFactor1QuestionAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_question"), spAction);  //may throw
+		//DoFactorParenExp
+		cr = _Create_RegexDoFactorParenExpAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_paren_exp"), spAction);  //may throw
+		//DoFactorChar
+		cr = _Create_RegexDoFactorCharAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_char"), spAction);  //may throw
+		//DoFactorCharSet
+		cr = _Create_RegexDoFactorCharSetAction(spAction);
+		if( cr.IsFailed() )
+			return cr;
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		arrAstU.Add(spAU);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_exp_term"), spAction);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_term_factor_1"), spAction);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_factor"), spAction);  //may throw
+		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_char_set"), spAction);  //may throw
 		//DoCharSet
 		cr = _Create_RegexDoCharSetAction(spAction);
 		if( cr.IsFailed() )
@@ -278,7 +379,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 	} //end block
 
 	//loop
-	ast.SetCount(arr.GetCount());  //may throw
+	rast.SetCount(arr.GetCount());  //may throw
 	uintptr index = 0;
 	for( auto iter(arr.GetBegin()); iter != arr.GetEnd(); iter.MoveNext() ) {
 		StringA& str = iter.get_Value();
@@ -289,9 +390,10 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 		cr = spBU.Deref().SetBuffer((uintptr)ShareArrayHelper::GetInternalPointer(str), str.GetLength());
 		if( cr.IsFailed() )
 			return cr;
+		spText.Deref().Reset();
 
 		//AST
-		AstTree& atree = ast.GetAST(index);
+		AstTree& atree = rast.GetAST(index);
 		//set AST for actions
 		for( auto iterA(arrAstU.GetBegin()); iterA != arrAstU.GetEnd(); iterA.MoveNext() )
 			iterA.get_Value().Deref().SetAST(RefPtr<AstTree>(atree));

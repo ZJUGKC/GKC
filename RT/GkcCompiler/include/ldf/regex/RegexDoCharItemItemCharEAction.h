@@ -59,7 +59,7 @@ public:
 		rs1.Deref().MoveTo(rs.Deref());
 		//add value
 		try {
-			rs.Deref().AddRange(rcr);  //may throw
+			rs.Deref().AddRangeByCombination(rcr);  //may throw
 		}
 		catch(Exception& e) {
 			cr = e.GetResult();

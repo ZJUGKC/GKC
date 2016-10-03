@@ -46,6 +46,7 @@ public:
 		m_uMaxID = 0;
 	}
 
+	//insert token without find
 	void InsertToken(const ConstStringA& strToken, uint uID)
 	{
 		assert( uID >= CPL_TK_FIRST );

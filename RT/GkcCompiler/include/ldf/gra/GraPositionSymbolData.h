@@ -11,26 +11,54 @@
 */
 
 /*
-Internal Header
+This file contains component class of grammar position symbol data.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __GRA_ANALYZER_H__
-#define __GRA_ANALYZER_H__
+#ifndef __GRA_POSITION_SYMBOL_DATA_H__
+#define __GRA_POSITION_SYMBOL_DATA_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------------
-//for gra file
+// GraPositionSymbolData
 
-CallResult _Generate_Grammar_Tables(const ShareCom<ITextStream>& sp, const TokenTable& terminalTable,
-									TokenTable& nonterminalTable, TokenTable& reductionTable, PdaTable& table);
+class GraPositionSymbolData : public _GrammarSymbolDataBase,
+							public _I_GraPositionSymbolData_Utility
+{
+public:
+	GraPositionSymbolData() throw()
+	{
+	}
+	~GraPositionSymbolData() throw()
+	{
+	}
+
+// _I_GraPositionSymbolData_Utility methods
+	virtual uintptr GetPosition() throw()
+	{
+		return m_uPos;
+	}
+	virtual void SetPosition(uintptr uPos) throw()
+	{
+		m_uPos = uPos;
+	}
+
+private:
+	uintptr m_uPos;
+
+private:
+	//noncopyable
+	GraPositionSymbolData(const GraPositionSymbolData&) throw();
+	GraPositionSymbolData& operator=(const GraPositionSymbolData&) throw();
+};
+
+DECLARE_COM_TYPECAST(GraPositionSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__GRA_ANALYZER_H__
+#endif
 ////////////////////////////////////////////////////////////////////////////////

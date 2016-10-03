@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains global variables for grammar tables component.
+This file contains global variables for Do-Id action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,22 +23,19 @@ This file contains global variables for grammar tables component.
 #include "base/DataColl.h"
 #include "base/Fsa.h"
 #include "base/Lexer.h"
-#include "base/Pda.h"
-#include "base/PdaTable.h"
-#include "base/Grammar.h"
 
-#include "ldf/GraAnalyzer.h"
-#include "analyzer/GrammarTables.h"
+#include "ldf/gra/GraDef.h"
+#include "ldf/gra/GraDoIdAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// GrammarTables
+// GraDoIdAction
 
-BEGIN_COM_TYPECAST(GrammarTables)
-	COM_TYPECAST_ENTRY(_IGrammarTables, _IGrammarTables)
-	COM_TYPECAST_ENTRY(_IGrammarTablesAccess, _IGrammarTablesAccess)
+BEGIN_COM_TYPECAST(GraDoIdAction)
+	COM_TYPECAST_ENTRY(_IGrammarAction, _IGrammarAction)
+	COM_TYPECAST_ENTRY(_I_GraDataAction_Utility, _GraDataActionBase)
 END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////

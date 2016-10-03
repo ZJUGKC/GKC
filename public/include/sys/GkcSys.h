@@ -77,6 +77,9 @@ using WeakArray = _WeakArray<T>;
 // ShareArrayHelper
 typedef _ShareArrayHelper  ShareArrayHelper;
 
+// ArrayUtilHelper
+typedef _ArrayUtilHelper  ArrayUtilHelper;
+
 // StringT<Tchar>
 template <typename Tchar>
 using StringT = _StringT<Tchar>;
@@ -141,8 +144,11 @@ public:
 		ShareCom<IComSA> spSA;
 		_COMPONENT_INSTANCE_INTERFACE(IComFactory, IComSA, sp, spSA, cr);
 		assert( cr.IsSucceeded() );
-		spSA.Deref().LockServer(false);
+		IComSA* pSA = ShareComHelper::GetInternalPointer(spSA);
+		spSA.Release();
 		sp.Release();
+		//this must be the last call for destroying the factory object correctly when unloading SA
+		pSA->LockServer(false);
 	}
 	static CallResult CreateInstance(const ShareCom<IComFactory>& spCF, const guid& iid, ShareCom<void>& sp) throw()
 	{

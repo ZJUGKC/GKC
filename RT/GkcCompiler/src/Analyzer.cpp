@@ -29,6 +29,7 @@ This file contains analyzer functions.
 #include "base/Grammar.h"
 
 #include "ldf/LexAnalyzer.h"
+#include "ldf/GraAnalyzer.h"
 
 #include "analyzer/LexerTables.h"
 #include "analyzer/LexerAnalyzer.h"

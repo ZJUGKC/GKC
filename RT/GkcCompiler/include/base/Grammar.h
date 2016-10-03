@@ -150,7 +150,10 @@ public:
 					bool bChanged = false;
 					//uEvent must be a terminal symbol
 					const TokenTable& tt = m_lexer.Deref().GetTokenTable();
-					ConstStringA strEvent(tt.get_Token(uEvent));
+					ConstStringA strEvent(
+						(uEvent == PDA_END_OF_EVENT) ? DECLARE_TEMP_CONST_STRING(ConstStringA, "CPL_TK_EOF")
+							: tt.get_Token(uEvent)
+						);
 					ShareCom<ITextStream> spText(m_lexer.Deref().GetStream());
 					cr = spErrorAction.Deref().DoModifyEvent(strEvent, spText, bChanged);
 					if( cr.IsFailed() )
@@ -300,7 +303,7 @@ private:
 			const _CplErrorBuffer& eb = tokenInfo.get_ErrorString();
 			_CplErrorBuffer tmp;
 			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
-									_S("Error (%u) : (%u) %s"), 
+									_S("Error : (%u:%u) token [%s]."), 
 									SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uRow, (uint)1),
 									SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uCol, (uint)1),
 									eb.GetLength() == 0 ?
@@ -375,9 +378,8 @@ private:
 	//0 --- left symbol, 1, 2, 3, ... --- right symbols
 	void add_rule_symbols(uint uRightSymbolNumber, ShareArray<ShareCom<_IGrammarSymbolData>>& arr)
 	{
-		uintptr uCount = m_symbolList.GetCount();
 		assert( uRightSymbolNumber > 0 );
-		assert( uCount > (uintptr)uRightSymbolNumber );
+		assert( m_symbolList.GetCount() > (uintptr)uRightSymbolNumber );
 		auto iter(m_symbolList.GetTail());
 		arr.Add(iter.get_Value());  //may throw
 		uint uR = uRightSymbolNumber;
@@ -408,7 +410,7 @@ private:
 		_LexerTokenInfo& tokenInfo = m_lexer.Deref().GetTokenInfo();
 		_CplErrorBuffer tmp;
 		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
-								_S("Error (%u) : (%u) Unexpected."),
+								_S("Error : (%u:%u) Unexpected."),
 								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uRow, (uint)1),
 								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uCol, (uint)1)
 								);  //may throw

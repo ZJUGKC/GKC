@@ -11,36 +11,22 @@
 */
 
 /*
-This file contains global variables for grammar tables component.
+This file contains component class of grammar position symbol data factory.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "PreComp.h"
-
-#include "_GkcCompiler.h"
-
-#include "base/DataColl.h"
-#include "base/Fsa.h"
-#include "base/Lexer.h"
-#include "base/Pda.h"
-#include "base/PdaTable.h"
-#include "base/Grammar.h"
-
-#include "ldf/GraAnalyzer.h"
-#include "analyzer/GrammarTables.h"
+#ifndef __GRA_POSITION_SYMBOL_DATA_FACTORY_H__
+#define __GRA_POSITION_SYMBOL_DATA_FACTORY_H__
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// GrammarTables
-
-BEGIN_COM_TYPECAST(GrammarTables)
-	COM_TYPECAST_ENTRY(_IGrammarTables, _IGrammarTables)
-	COM_TYPECAST_ENTRY(_IGrammarTablesAccess, _IGrammarTablesAccess)
-END_COM_TYPECAST()
+DECLARE_COM_FACTORY_CLASS(GraPositionSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
+////////////////////////////////////////////////////////////////////////////////
+#endif
 ////////////////////////////////////////////////////////////////////////////////

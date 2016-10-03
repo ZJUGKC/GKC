@@ -643,7 +643,7 @@ public:
 	uintptr Add(const TSObj& obj) throw()
 	{
 		//find null
-		uintptr uFind = (uintptr)-1;
+		uintptr uFind = INVALID_ARRAY_INDEX;
 		TSObj* p = m_p;
 		for( uintptr i = 0; i < m_uCount; i ++ ) {
 			if( (*p).IsBlockNull() ) {
@@ -652,7 +652,7 @@ public:
 			}
 			p ++;
 		}
-		if( uFind != (uintptr)-1 ) {
+		if( uFind != INVALID_ARRAY_INDEX ) {
 			m_p[uFind] = obj;
 			return uFind + 1;
 		}
@@ -1433,6 +1433,8 @@ private:
 _ShareCom:
 User can define a proxy class named as Proxy_<event_interface_name> derived from _ComConnectionImpl<_SObjArray<_ShareCom<event_interface_name>>> or _ComConnectionImpl<_SObjArrayWithLock<_ShareCom<event_interface_name>>>.
 This proxy class provides the fire functions with Fire_<event_method_name> format, and is used as the base class of main class.
+
+The class used as method parameter type of interface should not be upgraded in a SA.
 */
 
 // _ShareArrayBase<T>
@@ -1770,7 +1772,8 @@ public:
 		assert( !(baseClass::IsBlockNull()) );
 		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		uintptr uElement = pB->GetLength();
-		SetCount(uElement + 1, 0, rv_forward<Args>(args)...);
+		uintptr uNew = GKC::SafeOperators::AddThrow(uElement, (uintptr)1);
+		SetCount(uNew, 0, rv_forward<Args>(args)...);
 		return GetAt(uElement);
 	}
 	void Append(const _ShareArray<T>& src)  //may throw
@@ -1779,7 +1782,8 @@ public:
 		assert( !(baseClass::IsBlockNull()) );
 		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		uintptr uOldSize = pB->GetLength();
-		SetCount(uOldSize + src.GetCount(), 0);
+		uintptr uNewSize = GKC::SafeOperators::AddThrow(uOldSize, src.GetCount());
+		SetCount(uNewSize, 0);
 		copy_elements(src.get_array_address(), get_array_address() + uOldSize, src.GetCount());
 	}
 
@@ -2105,6 +2109,39 @@ public:
 	static int test_get_weak_count(const _WeakArray<T>& sp) throw()
 	{
 		return (sp.m_pB == NULL) ? 0 : (sp.m_pB)->GetWeakCount();
+	}
+};
+
+// _ArrayUtilHelper
+
+class _ArrayUtilHelper
+{
+public:
+	//find
+	//  TArray : GKC::ConstArray<T>, GKC::FixedArray<T, t_size>, _ShareArray<T>
+	template <typename T, class TArray, class TCompareTrait = GKC::DefaultCompareTrait<T>>
+	static GKC::ArrayPosition Find(const TArray& arr, const T& t) throw()
+	{
+		if( arr.GetCount() != 0 ) {
+			for( auto iter(arr.GetBegin()); iter != arr.GetEnd(); iter.MoveNext() ) {
+				if( TCompareTrait::IsEQ(iter.get_Value(), t) )
+					return arr.ToPosition(iter);
+			}
+		}
+		return GKC::ArrayPosition();  //invalid : INVALID_ARRAY_INDEX
+	}
+	template <typename T, class TArray, class TCompareTrait = GKC::DefaultCompareTrait<T>>
+	static GKC::ArrayPosition Find(const TArray& arr, uintptr uStart, uintptr uCount, const T& t) throw()
+	{
+		if( arr.GetCount() != 0 && uCount != 0 ) {
+			auto iterB(arr.GetAt(uStart));
+			auto iterE(arr.GetAt(uStart + uCount));  //no check : overflow
+			for( auto iter(iterB); iter != iterE; iter.MoveNext() ) {
+				if( TCompareTrait::IsEQ(iter.get_Value(), t) )
+					return arr.ToPosition(iter);
+			}
+		}
+		return GKC::ArrayPosition();  //invalid : INVALID_ARRAY_INDEX
 	}
 };
 

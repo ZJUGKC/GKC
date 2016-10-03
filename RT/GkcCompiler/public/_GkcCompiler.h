@@ -344,7 +344,7 @@ DECLARE_GUID(GUID__IGrammarAction)
 class NOVTABLE _IGrammarTables
 {
 public:
-	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
+	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp, const GKC::ShareCom<_ILexerTables>& spTables) throw() = 0;
 };
 
 DECLARE_GUID(GUID__IGrammarTables)

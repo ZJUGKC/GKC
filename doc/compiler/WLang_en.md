@@ -307,3 +307,11 @@ Several thread models.
 Synchronization between processes.
 
 Communication between processes.
+
+## Types of Project
+
+### Application
+
+### Class Library
+
+The file name of class library contains the version string.

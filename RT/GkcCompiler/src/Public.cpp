@@ -23,5 +23,6 @@
 
 #include "ldf/lex/LexDef.cpp"
 #include "ldf/regex/RegexDef.cpp"
+#include "ldf/gra/GraDef.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

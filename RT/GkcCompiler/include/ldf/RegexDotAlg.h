@@ -128,11 +128,7 @@ public:
 
 	bool Find(const _RegexDotItem& item) const throw()
 	{
-		for( uintptr i = 0; i < GetCount(); i ++ ) {
-			if( item == GetItem(i) )
-				return true;
-		}
-		return false;
+		return ArrayUtilHelper::Find<_RegexDotItem, ShareArray<_RegexDotItem>>(m_arr, item).IsValid();
 	}
 
 private:
@@ -265,7 +261,9 @@ inline void _Regex_Initial_ClosureSet(const _Regex_AST& rast, _RegexDotItemSet& 
 		assert( !iterR.IsNull() );
 		iterR.MoveChild();
 		assert( !iterR.IsNull() );
+#ifdef DEBUG
 		uint uType = iterR.GetType();
+#endif
 		assert( uType != REGEX_OP_QUESTION && uType != REGEX_OP_STAR );
 		//add
 		_RegexDotItem item;
@@ -439,8 +437,8 @@ public:
 			const _RegexDotItem& item = m_closureSet.GetItem(i);
 			uintptr uItemIndex = item.GetIndex();
 			RefPtr<_RegexDotItemSet> doneSet;
-			uintptr uFind = _find_index_array(arrIndex, uItemIndex);
-			if( uFind == (uintptr)-1 ) {
+			uintptr uFind = find_index_array(arrIndex, uItemIndex);
+			if( uFind == INVALID_ARRAY_INDEX ) {
 				arrIndex.Add(uItemIndex);  //may throw
 				arrDoneSet.Add();  //may throw
 				uFind = arrDoneSet.GetCount() - 1;
@@ -461,18 +459,14 @@ public:
 			if( item.GetIterator().IsNull() )
 				return item.GetIndex();
 		}
-		return (uintptr)-1;
+		return INVALID_ARRAY_INDEX;
 	}
 
 private:
 	//find
-	static uintptr _find_index_array(const ShareArray<uintptr>& arr, uintptr index) throw()
+	static uintptr find_index_array(const ShareArray<uintptr>& arr, uintptr index) throw()
 	{
-		for( uintptr i = 0; i < arr.GetCount(); i ++ ) {
-			if( arr[i].get_Value() == index )
-				return i;
-		}
-		return (uintptr)-1;
+		return ArrayUtilHelper::Find<uintptr, ShareArray<uintptr>>(arr, index).GetIndex();
 	}
 
 private:
@@ -541,8 +535,8 @@ public:
 					continue;
 				}
 				//check states
-				uintptr uFind = _find_state_array(nextSet);
-				if( uFind == (uintptr)-1 ) {
+				uintptr uFind = find_state_array(nextSet);
+				if( uFind == INVALID_ARRAY_INDEX ) {
 					m_arrState.Add(iterList);  //may throw
 					arrToDo.Add(iterList);  //may throw
 					arrNext[i].set_Value(m_arrState.GetCount() - 1);
@@ -567,13 +561,13 @@ public:
 
 private:
 	//find
-	uintptr _find_state_array(const _RegexDotItemSet& s) const throw()
+	uintptr find_state_array(const _RegexDotItemSet& s) const throw()
 	{
 		for( uintptr i = 0; i < m_arrState.GetCount(); i ++ ) {
 			if( _Regex_DotItemSet_Is_Same(s, m_arrState[i].get_Value().get_Value().GetClosureSet()) )
 				return i;
 		}
-		return (uintptr)-1;
+		return INVALID_ARRAY_INDEX;
 	}
 
 private:
@@ -617,8 +611,9 @@ inline void _Regex_Generate_Tables(const _Regex_AST& rast, FsaTable& table)
 	for( int i = 1; i <= iMaxStateNo; i ++ ) {
 		const _RegexCharRangeSet& rs = rss.GetState(i - 1).GetTransitionSet();
 		const ShareArray<uintptr>& arrNext = rss.GetState(i - 1).GetNextStateArray();
+		//return the first match in a state while conflicts occur
 		uintptr uMatch = rss.GetState(i - 1).GetMatchIndex();
-		table.SetState(i, FSA_STATE_STOP, uMatch == (uintptr)-1 ? 100 : -((int)(uMatch + 1)));
+		table.SetState(i, FSA_STATE_STOP, uMatch == INVALID_ARRAY_INDEX ? 100 : -((int)(uMatch + 1)));
 		for( int j = 0; j < arrTransitionNum[i].get_Value(); j ++ ) {
 			const _RegexCharRange& rcr = rs.GetRange(j);
 			table.SetTransition(i, j, rcr.uLow, rcr.uHigh, (int)(arrNext[j].get_Value() + 1));

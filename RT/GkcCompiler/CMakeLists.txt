@@ -28,6 +28,8 @@ SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Action.cpp" "src/Analyzer.cpp"
 	"src/ldf/regex/RegexGrammarAccepted.cpp"
 	"src/ldf/regex/RegexCharSymbolData.cpp" "src/ldf/regex/RegexCharSymbolData_Factory.cpp" "src/ldf/regex/RegexCharSetSymbolData.cpp" "src/ldf/regex/RegexCharSetSymbolData_Factory.cpp" "src/ldf/regex/RegexPositionSymbolData.cpp" "src/ldf/regex/RegexPositionSymbolData_Factory.cpp"
 	"src/ldf/gra/LdfGraPda.cpp"
+	"src/ldf/gra/GraDoIdTokenAction.cpp" "src/ldf/gra/GraDoIdMacroAction.cpp" "src/ldf/gra/GraDoIdAction.cpp" "src/ldf/gra/GraDoIdBlockAction.cpp" "src/ldf/gra/GraDoRightIdBlockAction.cpp" "src/ldf/gra/GraDoRightAction.cpp" "src/ldf/gra/GraDoRightBlockAction.cpp" "src/ldf/gra/GraDoRuleRightBlockAction.cpp"
+	"src/ldf/gra/GraTokenSymbolData.cpp" "src/ldf/gra/GraTokenSymbolData_Factory.cpp" "src/ldf/gra/GraPositionSymbolData.cpp" "src/ldf/gra/GraPositionSymbolData_Factory.cpp"
 	"src/ldf/LexAnalyzer.cpp" "src/ldf/GraAnalyzer.cpp"
 	"src/analyzer/LexerTables.cpp" "src/analyzer/LexerAnalyzer.cpp" "src/analyzer/GrammarTables.cpp" "src/analyzer/GrammarAnalyzer.cpp"
 	"src/analyzer/BasicSymbolData.cpp" "src/analyzer/BasicSymbolData_Factory.cpp")

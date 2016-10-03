@@ -179,8 +179,12 @@ public:
 			iter.MoveNext();
 			Com_SA_Item& item = iter1.get_Value().get_Second();
 			//call function
-			if( item.CanUnloadNow() )
+			if( item.CanUnloadNow() ) {
+				//give up the current thread for completing the unlock server function in this SA by other threads.
+				thread_sleep(10);
+				//unload SA
 				m_map.RemoveAt(iter1);
+			}
 		} //end while
 	}
 

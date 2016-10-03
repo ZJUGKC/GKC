@@ -252,7 +252,6 @@ class NOVTABLE _I_RegexAstAction_Utility
 {
 public:
 	virtual void SetAST(const GKC::RefPtr<GKC::AstTree>& tree) throw() = 0;
-	virtual GKC::RefPtr<GKC::AstTree> GetAST() throw() = 0;
 };
 
 DECLARE_GUID(GUID__I_RegexAstAction_Utility)
@@ -273,10 +272,6 @@ public:
 	virtual void SetAST(const GKC::RefPtr<GKC::AstTree>& tree) throw()
 	{
 		m_tree = tree;
-	}
-	virtual GKC::RefPtr<GKC::AstTree> GetAST() throw()
-	{
-		return m_tree;
 	}
 
 protected:

@@ -2283,7 +2283,7 @@ public:
 	{
 		RemoveAll();
 		if( m_pNil != NULL )
-			m_mgr.Deref().Free(m_pNil);
+			m_mgr.Deref().Free((uintptr)m_pNil);
 	}
 
 	void SetMemoryManager(const RefPtr<IMemoryManager>& mgr) throw()
@@ -3043,6 +3043,14 @@ public:
 	}
 
 	//add
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key);
+	}
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key));
+	}
 	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);
@@ -3089,6 +3097,14 @@ public:
 	}
 
 	//add
+	typename thisClass::Iterator InsertWithoutFind(const TKey& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(key);
+	}
+	typename thisClass::Iterator InsertWithoutFind(TKey&& key)  //may throw
+	{
+		return baseClass::InsertWithoutFind(rv_forward(key));
+	}
 	typename thisClass::Iterator InsertWithoutFind(const TKey& key, const TValue& val)  //may throw
 	{
 		return baseClass::InsertWithoutFind(key, val);

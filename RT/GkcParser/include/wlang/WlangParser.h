@@ -46,8 +46,8 @@ public:
 		if( cr.IsFailed() )
 			return cr;
 		//lexer tables
+		ShareCom<ILexerTables> spLexerTables;
 		{
-			ShareCom<ILexerTables> spLexerTables;
 			cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
 			if( cr.IsFailed() )
 				return cr;
@@ -109,7 +109,7 @@ public:
 			if( cr.IsFailed() )
 				return cr;
 			// generate
-			cr = spGrammarTables.Deref().GenerateTables(spText);
+			cr = spGrammarTables.Deref().GenerateTables(spText, spLexerTables);
 			if( cr.IsFailed() )
 				return cr;
 			// set

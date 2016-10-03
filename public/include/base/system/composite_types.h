@@ -383,15 +383,16 @@ private:
 
 // -----Array-----
 
+// INVALID_ARRAY_INDEX
+
+#define INVALID_ARRAY_INDEX  ((uintptr)-1)
+
 // array_position
 
 class array_position
 {
 public:
-	array_position() throw()
-	{
-	}
-	explicit array_position(uintptr uIndex) throw() : m_uIndex(uIndex)
+	explicit array_position(uintptr uIndex = INVALID_ARRAY_INDEX) throw() : m_uIndex(uIndex)
 	{
 	}
 	array_position(const array_position& src) throw() : m_uIndex(src.m_uIndex)
@@ -412,12 +413,16 @@ public:
 
 	bool IsValid() const throw()
 	{
-		return ((intptr)m_uIndex) >= 0;
+		return m_uIndex != INVALID_ARRAY_INDEX;
 	}
 
 	uintptr GetIndex() const throw()
 	{
 		return m_uIndex;
+	}
+	void SetIndex(uintptr uIndex) throw()
+	{
+		m_uIndex = uIndex;
 	}
 
 	//logical

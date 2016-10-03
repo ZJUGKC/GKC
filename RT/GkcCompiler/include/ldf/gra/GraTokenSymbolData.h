@@ -11,26 +11,54 @@
 */
 
 /*
-Internal Header
+This file contains component class of grammar token symbol data.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __GRA_ANALYZER_H__
-#define __GRA_ANALYZER_H__
+#ifndef __GRA_TOKEN_SYMBOL_DATA_H__
+#define __GRA_TOKEN_SYMBOL_DATA_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------------
-//for gra file
+// GraTokenSymbolData
 
-CallResult _Generate_Grammar_Tables(const ShareCom<ITextStream>& sp, const TokenTable& terminalTable,
-									TokenTable& nonterminalTable, TokenTable& reductionTable, PdaTable& table);
+class GraTokenSymbolData : public _GrammarSymbolDataBase,
+						public _I_GraTokenSymbolData_Utility
+{
+public:
+	GraTokenSymbolData() throw()
+	{
+	}
+	~GraTokenSymbolData() throw()
+	{
+	}
+
+// _I_GraTokenSymbolData_Utility methods
+	virtual void GetToken(_GraToken& tk) throw()
+	{
+		tk = m_token;
+	}
+	virtual void SetToken(const _GraToken& tk) throw()
+	{
+		m_token = tk;
+	}
+
+private:
+	_GraToken m_token;
+
+private:
+	//noncopyable
+	GraTokenSymbolData(const GraTokenSymbolData&) throw();
+	GraTokenSymbolData& operator=(const GraTokenSymbolData&) throw();
+};
+
+DECLARE_COM_TYPECAST(GraTokenSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__GRA_ANALYZER_H__
+#endif
 ////////////////////////////////////////////////////////////////////////////////

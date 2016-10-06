@@ -32,9 +32,9 @@ Download it and compile it under Windows and Linux.
 
 1. Execute:
 
-```
+	``
 mdc <source directory> <output directory>
-```
+``
 
 1. Install `HTML Help Workshop`, execute `hhc XXX.hhp`.
 
@@ -42,20 +42,20 @@ mdc <source directory> <output directory>
 
 # Linux
 
-1. Copy `cmark`, `libcmark.so` and `libcmark.so.0.22.0` to `/usr/.GKC/public/assemblies` with option `-d`.
+1. Copy `cmark`, `libcmark.so` and `libcmark.so.0.XX.X` to `/usr/.GKC/public/assemblies` with option `-d`.
 
 1. Execute:
 
-```
+	``
 mdc <source directory> <output directory>
-```
+``
 
 1. Download chmc (http://sourceforge.net/projects/chmc/) and compile it.
 
 1. Execute:
 
-```
+	``
 chmc -c XXX.conf -o XXX.chm <source directory>
-```
+``
 
 1. Install the package `kchmviewer` and view `XXX.chm`.

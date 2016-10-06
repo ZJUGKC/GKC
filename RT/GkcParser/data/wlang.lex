@@ -19,9 +19,9 @@ TK_CONST_INTEGER  {digit}+
 TK_CONST_FLOAT    {TK_CONST_INTEGER}f|{float_num}f
 TK_CONST_DOUBLE   {float_num}
 letter [a-zA-Z_]
-TK_IDENTIFIER     {letter}({letter}|{digit})*
 TK_KEY_CLASS      class
 TK_KEY_NAMESPACE  namespace
+TK_IDENTIFIER     {letter}({letter}|{digit})*
 TK_COMMENT_START  /\*
 TK_LINE_COMMENT_START  //
 hex_digit    [0-9A-Fa-f]

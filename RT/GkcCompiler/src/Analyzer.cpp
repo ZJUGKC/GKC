@@ -37,6 +37,7 @@ This file contains analyzer functions.
 #include "analyzer/GrammarAnalyzer.h"
 #include "analyzer/BasicSymbolData.h"
 #include "analyzer/BasicSymbolData_Factory.h"
+#include "analyzer/CplMetaData.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -79,6 +80,13 @@ inline void _Internal_BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFacto
 	cr = USE_COM_FACTORY_CLASS_NAME(BasicSymbolData)::Create(sp);
 }
 
+// CplMetaData
+
+inline void _Internal_CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::CallResult& cr) throw()
+{
+	_CREATE_COMPONENT_INSTANCE(CplMetaData, _ICplMetaData, sp, cr);
+}
+
 } //namespace
 
 // LexerTables
@@ -114,6 +122,13 @@ void _GrammarAnalyzer_Create(GKC::ShareCom<_IGrammarAnalyzer>& sp, GKC::CallResu
 void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw()
 {
 	GKC::_Internal_BasicSymbolDataFactory_Create(sp, cr);
+}
+
+// CplMetaData
+
+void _CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_CplMetaData_Create(sp, cr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

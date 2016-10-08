@@ -36,9 +36,19 @@ public:
 	}
 
 // _IWlangParser methods
-	virtual GKC::CallResult Initialize(const uint& uMaxErrorNumber) throw()
+	virtual GKC::CallResult Initialize(const uint& uMaxErrorNumber, const GKC::ShareCom<_IWlangUtility>& sp) throw()
 	{
 		CallResult cr;
+
+		//access
+		_WlangUtility_Objects obj;
+		{
+			ShareCom<_IWlangUtility_Access> spAccess;
+			_COMPONENT_INSTANCE_INTERFACE(_IWlangUtility, _IWlangUtility_Access, sp, spAccess, cr);
+			if( cr.IsFailed() )
+				return cr;
+			spAccess.Deref().GetObjects(obj);
+		} //end block
 
 		//lexer analyzer
 		ShareCom<ILexerAnalyzer> spLexerAnalyzer;
@@ -66,29 +76,17 @@ public:
 		} //end block
 		//actions
 		{
-			ShareCom<ILexerAction> spAction;
-			cr = LexerActionHelper::CreateCommentStartAction(spAction);
+			// set
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), obj.spCommentStart);
 			if( cr.IsFailed() )
 				return cr;
-			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), spAction);
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LINE_COMMENT_START"), obj.spLineCommentStart);
 			if( cr.IsFailed() )
 				return cr;
-			cr = LexerActionHelper::CreateLineCommentStartAction(spAction);
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), obj.spSpace);
 			if( cr.IsFailed() )
 				return cr;
-			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LINE_COMMENT_START"), spAction);
-			if( cr.IsFailed() )
-				return cr;
-			cr = LexerActionHelper::CreateSpaceAction(spAction);
-			if( cr.IsFailed() )
-				return cr;
-			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SPACE"), spAction);
-			if( cr.IsFailed() )
-				return cr;
-			cr = LexerActionHelper::CreateReturnAction(spAction);
-			if( cr.IsFailed() )
-				return cr;
-			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), spAction);
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), obj.spReturn);
 			if( cr.IsFailed() )
 				return cr;
 		} //end block
@@ -117,15 +115,16 @@ public:
 			if( cr.IsFailed() )
 				return cr;
 		} //end block
-
 		spGrammarAnalyzer.Deref().SetLexerAnalyzer(spLexerAnalyzer);
-		//actions
+		//factory
 		{
-			ShareCom<IGrammarError> spGrammarError;
-			cr = _Create_WlangGrammarError(spGrammarError);
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEMI"), obj.spBasicFactory);
 			if( cr.IsFailed() )
 				return cr;
-			spGrammarAnalyzer.Deref().SetErrorAction(spGrammarError);
+		} //end block
+		//actions
+		{
+			spGrammarAnalyzer.Deref().SetErrorAction(obj.spGrammarError);
 		} //end block
 
 		m_spLexerAnalyzer = spLexerAnalyzer;
@@ -139,6 +138,10 @@ public:
 	{
 		assert( !m_spLexerAnalyzer.IsBlockNull() );
 		m_spLexerAnalyzer.Deref().SetStream(sp);
+	}
+	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw()
+	{
+		m_spMeta = sp;
 	}
 	virtual GKC::CallResult Start() throw()
 	{
@@ -200,6 +203,8 @@ private:
 
 	ShareCom<ILexerAnalyzer> m_spLexerAnalyzer;
 	ShareCom<IGrammarAnalyzer> m_spGrammarAnalyzer;
+
+	ShareCom<ICplMetaData> m_spMeta;
 
 private:
 	//noncopyable

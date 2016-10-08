@@ -212,11 +212,11 @@ public:
 	static int MainProcess(const ConstArray<ConstStringS>& args, _UnitTestMessageBuffer& buffer)
 	{
 		//const strings
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep1, l_iSep1Len, _S("=========================="))
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep2, l_iSep2Len, _S("**************************"))
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep3, l_iSep3Len, _S("--------------------------"))
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szColon, l_iColonLen, _S(":"))
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szNoTest, l_iNoTestLen, _S("ERROR: NO SUCH TEST!"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep1, l_uSep1Len, _S("=========================="))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep2, l_uSep2Len, _S("**************************"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szSep3, l_uSep3Len, _S("--------------------------"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szColon, l_uColonLen, _S(":"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szNoTest, l_uNoTestLen, _S("ERROR: NO SUCH TEST!"))
 
 		//map
 		_UnitTestMap& map = _UnitTestMapHelper::GetUnitTestMap();
@@ -229,14 +229,14 @@ public:
 			bool bContinue = map.EnumFirst(info);
 			while( bContinue ) {
 				//current test
-				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_uSep1Len));
 				ConsoleHelper::Write(info.strName);
-				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_iColonLen));
+				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_uColonLen));
 				if( !info.pFunc(buffer) ) {
 					ConsoleHelper::WriteLine(buffer);
 					uFailed ++;
 				}
-				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_uSep2Len));
 				uTotal ++;
 				bContinue = map.EnumNext(info);
 				//sleep
@@ -251,14 +251,14 @@ public:
 			iter.MoveNext();  //from 1
 			for( ; iter != args.GetEnd(); iter.MoveNext() ) {
 				//current test
-				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_iSep1Len));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep1, l_uSep1Len));
 				ConsoleHelper::Write(iter.get_Value());
-				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_iColonLen));
+				ConsoleHelper::WriteLine(ConstStringS(l_szColon, l_uColonLen));
 				//find
 				StringUtilHelper::MakeString(iter.get_Value(), strM);
 				_UnitTestFunc pFunc = map.Find(strM);
 				if( pFunc == NULL ) {
-					ConsoleHelper::WriteLine(ConstStringS(l_szNoTest, l_iNoTestLen));
+					ConsoleHelper::WriteLine(ConstStringS(l_szNoTest, l_uNoTestLen));
 					uFailed ++;
 				}
 				else {
@@ -268,7 +268,7 @@ public:
 						uFailed ++;
 					}
 				}
-				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_iSep2Len));
+				ConsoleHelper::WriteLine(ConstStringS(l_szSep2, l_uSep2Len));
 				uTotal ++;
 			}
 		} //end if
@@ -280,9 +280,9 @@ public:
 									_S("Total (%Iu), Failed (%Iu)"), uTotal, uFailed);
 			if( ret >= 0 )
 				buffer.SetLength(ret);
-			ConsoleHelper::WriteLine(ConstStringS(l_szSep3, l_iSep3Len));
+			ConsoleHelper::WriteLine(ConstStringS(l_szSep3, l_uSep3Len));
 			ConsoleHelper::WriteLine(buffer);
-		}
+		} //end block
 
 		return 0;
 	}
@@ -303,9 +303,9 @@ public:
 	static void FormatErrorByCallResult(const CallResult& cr, const CharS* szFileName, int iLineNumber, bool bFixture, bool bError, _UnitTestMessageBuffer& buffer) throw()
 	{
 		//const strings
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szFixture, l_iFixtureLen, _S("[fixture]"))
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szError, l_iErrorLen, _S("error:"))
-		DECLARE_LOCAL_CONST_STRING(CharS, l_szCorrect, l_iCorrectLen, _S("correct:"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szFixture, l_uFixtureLen, _S("[fixture]"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szError, l_uErrorLen, _S("error:"))
+		DECLARE_LOCAL_CONST_STRING(CharS, l_szCorrect, l_uCorrectLen, _S("correct:"))
 		//format
 		_UnitTestMessageBuffer bufTemp;
 		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(bufTemp), _UnitTestMessageBuffer::c_size,
@@ -315,13 +315,13 @@ public:
 		buffer.SetLength(0);
 		StringUtilHelper::Append(bufTemp, buffer);
 		if( bFixture ) {
-			StringUtilHelper::Append(ConstStringS(l_szFixture, l_iFixtureLen), buffer);
+			StringUtilHelper::Append(ConstStringS(l_szFixture, l_uFixtureLen), buffer);
 			StringUtilHelper::Append(ConstStringS(_S(" "), 1), buffer);
 		}
 		if( bError )
-			StringUtilHelper::Append(ConstStringS(l_szError, l_iErrorLen), buffer);
+			StringUtilHelper::Append(ConstStringS(l_szError, l_uErrorLen), buffer);
 		else
-			StringUtilHelper::Append(ConstStringS(l_szCorrect, l_iCorrectLen), buffer);
+			StringUtilHelper::Append(ConstStringS(l_szCorrect, l_uCorrectLen), buffer);
 		result_to_string(cr, FixedArrayHelper::GetInternalPointer(bufTemp), _UnitTestMessageBuffer::c_size);
 		bufTemp.RecalcLength();
 		StringUtilHelper::Append(bufTemp, buffer);

@@ -37,15 +37,17 @@ Change the port number of Terminal Server:
 
 ## Linux
 
-Install Ubuntu Server 14.04.
+Install Ubuntu Server 16.04.
 
 Install packages:
+
 ```
 sudo apt-get install xserver-xorg-video-dummy
 sudo apt-get install xpra
 ```
 
 Add user to groups:
+
 ```
 sudo adduser <user> tty
 sudo adduser <user> video
@@ -53,6 +55,7 @@ sudo adduser <user> dialout
 ```
 
 Reboot the server, login to the server remotely (e.g., via ssh) and start the xpra:
+
 ```
 xpra --xvfb="Xorg -noreset -nolisten tcp +extension GLX -config /etc/xpra/xorg.conf +extension RANDR +extension RENDER -logfile ${HOME}/.xpra/Xorg-10.log" start :100
 ```

@@ -99,6 +99,11 @@ public:
 		assert( uCount >= (uintptr)sizeof(uint) );
 		return to_object<BeType<uint>>(0).get_Value();
 	}
+	//address
+	uintptr GetAddress() const throw()
+	{
+		return (uintptr)ShareArrayHelper::GetInternalPointer(m_arr);
+	}
 
 private:
 	template <typename T>

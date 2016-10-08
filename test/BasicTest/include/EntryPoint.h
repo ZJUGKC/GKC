@@ -31,15 +31,15 @@ public:
 	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env)
 	{
 		//const strings
-		DECLARE_LOCAL_CONST_STRING(CharS, c_szSep, c_iSepLen, _S("======================="))
+		DECLARE_LOCAL_CONST_STRING(CharS, c_szSep, c_uSepLen, _S("======================="))
 
 		//output argments
-		ConsoleHelper::WriteLine(ConstStringS(c_szSep, c_iSepLen));
+		ConsoleHelper::WriteLine(ConstStringS(c_szSep, c_uSepLen));
 		for( auto iter(args.GetBegin()); iter != args.GetEnd(); iter.MoveNext() ) {
 			ConsoleHelper::WriteLine(iter.get_Value());
 		}
 		//output environments
-		ConsoleHelper::WriteLine(ConstStringS(c_szSep, c_iSepLen));
+		ConsoleHelper::WriteLine(ConstStringS(c_szSep, c_uSepLen));
 		for( auto iter(env.GetBegin()); iter != env.GetEnd(); iter.MoveNext() ) {
 			ConsoleHelper::WriteLine(iter.get_Value());
 		}

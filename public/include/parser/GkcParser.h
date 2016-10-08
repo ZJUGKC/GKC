@@ -33,6 +33,11 @@ namespace GKC {
 
 // classes
 
+// IWlangUtility
+typedef _IWlangUtility  IWlangUtility;
+
+#define GUID_IWlangUtility  GUID__IWlangUtility
+
 // IWlangParser
 typedef _IWlangParser  IWlangParser;
 
@@ -43,10 +48,16 @@ typedef _IWlangParser  IWlangParser;
 class ParserHelper
 {
 public:
+	static CallResult CreateWlangUtility(ShareCom<IWlangUtility>& sp) throw()
+	{
+		CallResult cr;
+		::_WlangUtility_Create(sp, cr);
+		return cr;
+	}
 	static CallResult CreateWlangParser(ShareCom<IWlangParser>& sp) throw()
 	{
 		CallResult cr;
-		_WlangParser_Create(sp, cr);
+		::_WlangParser_Create(sp, cr);
 		return cr;
 	}
 };

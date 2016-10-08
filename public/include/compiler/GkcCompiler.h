@@ -164,6 +164,67 @@ public:
 	}
 };
 
+// ICplMetaData
+typedef _ICplMetaData  ICplMetaData;
+
+#define GUID_ICplMetaData  GUID__ICplMetaData
+
+// CplMetaDataHelper
+
+class CplMetaDataHelper
+{
+public:
+	//meta data
+	static CallResult CreateCplMetaData(ShareCom<ICplMetaData>& sp) throw()
+	{
+		CallResult cr;
+		::_CplMetaData_Create(sp, cr);
+		return cr;
+	}
+};
+
+// CplLevelStack
+
+class CplLevelStack
+{
+public:
+	CplLevelStack() throw()
+	{
+	}
+	~CplLevelStack() throw()
+	{
+	}
+
+// methods
+	uint& Add()
+	{
+		if( m_arr.IsBlockNull() )
+			m_arr = ShareArrayHelper::MakeShareArray<uint>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		return m_arr.Add().get_Value();  //may throw
+	}
+	void Pop() throw()
+	{
+		m_arr.RemoveAt(m_arr.GetCount() - 1);
+	}
+
+	uint GetTop() const throw()
+	{
+		return m_arr[m_arr.GetCount() - 1].get_Value();
+	}
+	bool IsEmpty() const throw()
+	{
+		return m_arr.GetCount() == 0;
+	}
+
+private:
+	ShareArray<uint> m_arr;
+
+private:
+	//noncopyable
+	CplLevelStack(const CplLevelStack&) throw();
+	CplLevelStack& operator=(const CplLevelStack&) throw();
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

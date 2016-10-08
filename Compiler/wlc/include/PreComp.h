@@ -27,6 +27,8 @@ This is pre-compiled header file.
 #include "sys/GkcPath.h"
 #include "sys/GkcCharset.h"
 
+#include "compiler/GkcCompiler.h"
+
 #include "parser/GkcParser.h"
 
 ////////////////////////////////////////////////////////////////////////////////

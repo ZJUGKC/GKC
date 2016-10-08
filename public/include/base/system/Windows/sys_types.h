@@ -136,7 +136,7 @@ public:
 	static char_h* gen_global_name(const char_h* pSrc) throw()
 	{
 		//global
-		DECLARE_LOCAL_STATIC_CONST_STRING(char_h, c_szGlobal, c_uGlobalLength, L"Global\\")
+		DECLARE_LOCAL_CONST_STRING(char_h, c_szGlobal, c_uGlobalLength, L"Global\\")
 		//generate
 		uintptr uCount = calc_string_length(pSrc);
 		uintptr uNewCount;

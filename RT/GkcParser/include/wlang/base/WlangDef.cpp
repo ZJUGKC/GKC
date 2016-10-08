@@ -11,17 +11,13 @@
 */
 
 /*
-This file contains global variables for _GkcParser.
+This file contains global variables for WLang interfaces.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// GUID__IWlangUtility
-//   {87907844-5F24-45AA-A405-560234ADDC21}
-IMPLEMENT_GUID(GUID__IWlangUtility, 0x87907844, 0x5f24, 0x45aa, 0xa4, 0x5, 0x56, 0x2, 0x34, 0xad, 0xdc, 0x21)
-
-// GUID__IWlangParser
-//  {21A6C386-1142-4AC8-AB50-EA48A348D51A}
-IMPLEMENT_GUID(GUID__IWlangParser, 0x21a6c386, 0x1142, 0x4ac8, 0xab, 0x50, 0xea, 0x48, 0xa3, 0x48, 0xd5, 0x1a)
+// GUID__IWlangUtility_Access
+//   {610E64AF-637C-4103-B8AC-3B60710DB699}
+IMPLEMENT_GUID(GUID__IWlangUtility_Access, 0x610e64af, 0x637c, 0x4103, 0xb8, 0xac, 0x3b, 0x60, 0x71, 0xd, 0xb6, 0x99)
 
 ////////////////////////////////////////////////////////////////////////////////

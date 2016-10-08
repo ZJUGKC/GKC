@@ -15,6 +15,7 @@
 
 Install the GitHub for windows from [GitHub](https://github.com "GitHub"),
 with the typical folder
+
 ```
 C:\Users\<USER>\AppData\Local\GitHub
 ```
@@ -26,16 +27,18 @@ noted as `<GitHubInstallDir>`.
 	Create a shortcut on desktop with the name `GIT BASH`.
 Right-click the shortcut and select property in popup menu,
 then edit the destination as:
+
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\git-bash.exe"
-```
+	"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\git-bash.exe"
+	```
 
 	The `<LatestVersionNumber>` should be found in `<GitHubInstallDir>`.
 
 	The start location should be written as:
+
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>"
-```
+	"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>"
+	```
 
 	Save the shortcut.
 
@@ -44,13 +47,15 @@ then edit the destination as:
 	Create a shortcut on desktop with the name `GIT GUI`.
 Right-click the shortcut and select property in popup menu,
 then edit the destination as:
+
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\cmd\git-gui.exe"
-```
+	"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\cmd\git-gui.exe"
+	```
 
 	The start location should be written as:
+
 	```
-"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\cmd"
-```
+	"<GitHubInstallDir>\PortableGit_<LatestVersionNumber>\cmd"
+	```
 
 	Save the shortcut.

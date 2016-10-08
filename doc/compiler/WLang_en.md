@@ -49,7 +49,7 @@ The comment of WLang is the same as C++ with two types, /**/ and //.
 The basic data types of WLang are shown as follows:
 
 | Type | Description |
-|-----|-----|
+|------|-------------|
 |char| signed character, 1 byte |
 |byte| unsigned character, 1 byte |
 |short| signed short integer, 2 bytes |
@@ -106,7 +106,7 @@ Constant can be defined for each data type except share and share array.
 The constants of the basic data types are shown as follows:
 
 |Type|Description|
-|---|---|
+|----|-----------|
 |char,short,int,int64,intptr|Number(s)|
 |byte,ushort,uint,uint64,uintptr|Number(s)+U|
 |float|Number(s)+.+Number(s)+\[e+-Number(s)\]+f|
@@ -137,7 +137,7 @@ The string constants are defined by a pair of quotation marks.
 The escape characters:
 
 |Symbols|Description|Values|
-|---|---|---|
+|-------|-----------|------|
 |\a| bell | 007 |
 |\b| backspace | 008 |
 |\f| form feed | 012 |
@@ -218,7 +218,7 @@ An object will occupy some memory and its data will form the memory layout
 except the static member object.
 
 |Memory manager in process|Description|
-|---|---|
+|-------------------------|-----------|
 |Stack|Local variables, including objects, reference objects, shared objects and weak objects|
 |Heap|The memory managed by shared objects, weak objects and some reference objects|
 |Global Data|Static objects or constant objects, the static member object in class|
@@ -230,13 +230,13 @@ The data managed by object can be located in memory or device memory
 The object also can manage the persistent storage (disk file or virtual device).
 
 |In process|Description|
-|---|---|
+|----------|-----------|
 |The kernel space|Various kernel objects, such as shared memory. No support for driver programming|
 |Assemblies|The object occupies the stack and heap providing by process|
 |The executable assemblies|The object occupies the stack and heap providing by process|
 
 |Intraprocess|Description|
-|---|---|
+|------------|-----------|
 |The remote assemblies|The proxy object occupies the stack and heap providing by process, the service object occupies the stack and heap providing by local or remote host process|
 
 The copy constructor, assignment operator and move operator of object are

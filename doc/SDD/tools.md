@@ -32,9 +32,9 @@ Download it and compile it under Windows and Linux.
 
 1. Execute:
 
-	``
-mdc <source directory> <output directory>
-``
+	```
+	mdc <source directory> <output directory>
+	```
 
 1. Install `HTML Help Workshop`, execute `hhc XXX.hhp`.
 
@@ -46,16 +46,16 @@ mdc <source directory> <output directory>
 
 1. Execute:
 
-	``
-mdc <source directory> <output directory>
-``
+	```
+	mdc <source directory> <output directory>
+	```
 
 1. Download chmc (http://sourceforge.net/projects/chmc/) and compile it.
 
 1. Execute:
 
-	``
-chmc -c XXX.conf -o XXX.chm <source directory>
-``
+	```
+	chmc -c XXX.conf -o XXX.chm <source directory>
+	```
 
 1. Install the package `kchmviewer` and view `XXX.chm`.

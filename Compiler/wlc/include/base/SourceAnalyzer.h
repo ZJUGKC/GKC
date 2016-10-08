@@ -30,13 +30,24 @@ inline CallResult _Create_WlangParser(ShareCom<IWlangParser>& sp) throw()
 {
 	const uint c_uMaxErrorNumber = 400;
 	CallResult cr;
-	cr = ParserHelper::CreateWlangParser(sp);
+	//utility
+	ShareCom<IWlangUtility> spU;
+	cr = ParserHelper::CreateWlangUtility(spU);
+	if( cr.IsFailed() )
+		return cr;
+	cr = spU.Deref().Initialize();
+	if( cr.IsFailed() )
+		return cr;
+	//parser
+	ShareCom<IWlangParser> spS;
+	cr = ParserHelper::CreateWlangParser(spS);
 	if( cr.IsFailed() )
 		return cr;
 	//init
-	cr = sp.Deref().Initialize(c_uMaxErrorNumber);
+	cr = spS.Deref().Initialize(c_uMaxErrorNumber, spU);
 	if( cr.IsFailed() )
 		return cr;
+	sp = spS;
 	return cr;
 }
 

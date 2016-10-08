@@ -52,49 +52,49 @@ The syntax of regular expression is shown in the following tables:
 
 1. The basic operations:
 
-| Symbols | Description |
-|-----|-----|
-| x | Visible ASCII character, 0x21-0x7E (remove space - 0x20) |
-| \x | Escape character |
-| [xyz...] or [...x-z...] or [^...] | Define a character set |
+	| Symbols | Description |
+	|---------|-------------|
+	| x  | Visible ASCII character, 0x21-0x7E (remove space - 0x20) |
+	| \x | Escape character |
+	| [xyz...] or [...x-z...] or [^...] | Define a character set |
 
 1. Repeat operators (high priority level, the priority order is from top to bottom):
 
-| Symbols | Description |
-|-----|-----|
-| R? | zero or one R |
-| R* | zero or more R |
-| R+ | one or more R |
+	| Symbols | Description |
+	|---------|-------------|
+	| R? | zero or one R |
+	| R* | zero or more R |
+	| R+ | one or more R |
 
 1. Combination operators (low priority level, the priority order is from top to bottom):
 
-| Symbols | Description |
-|-----|-----|
-| R1R2 |  R1 followed by R2 |
-| R1`|`R2 | R1 or R2 |
+	| Symbols | Description |
+	|---------|-------------|
+	| R1R2    | R1 followed by R2 |
+	| R1`|`R2 | R1 or R2 |
 
 1. Others:
 
-| Symbols | Description |
-|-----|-----|
-| (R) | Grouped by R |
-| {macro} | Quote the macro defined in definition block (it cannot be nested) |
+	| Symbols | Description |
+	|---------|-------------|
+	| (R) | Grouped by R |
+	| {macro} | Quote the macro defined in definition block (it cannot be nested) |
 
 1. Escape characters:
 
-| Symbols | Description |
-|-----|-----|
-| \\ | '\' |
-| \xDD | Hexadecimal number |
-| \r | Carriage return |
-| \n | Line break |
-| \t | Tab |
-| \s | Space |
-| \[, \] | Brackets |
-| \(, \) | Parentheses |
-| \{, \} | Curly braces |
-| \?, \*, \+, \- | Question, Star, Plus, Minus |
-| \^, `\|` | UpArrow, Vertical Line |
+	| Symbols | Description |
+	|---------|-------------|
+	| \\ | '\' |
+	| \xDD | Hexadecimal number |
+	| \r | Carriage return |
+	| \n | Line break |
+	| \t | Tab |
+	| \s | Space |
+	| \[, \] | Brackets |
+	| \(, \) | Parentheses |
+	| \{, \} | Curly braces |
+	| \?, \*, \+, \- | Question, Star, Plus, Minus |
+	| \^, `\|` | UpArrow, Vertical Line |
 
 The lex file for WLANG is named as `wlang.lex`.
 

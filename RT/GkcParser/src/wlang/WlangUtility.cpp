@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains global variables for WLang parser component.
+This file contains global variables for WLang utility component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,16 +22,19 @@ This file contains global variables for WLang parser component.
 
 #include "wlang/base/WlangDef.h"
 
-#include "wlang/WlangParser.h"
+#include "wlang/WlangGrammarError.h"
+#include "wlang/WlangAction.h"
+#include "wlang/WlangUtility.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// WlangParser
+// WlangUtility
 
-BEGIN_COM_TYPECAST(WlangParser)
-	COM_TYPECAST_ENTRY(_IWlangParser, _IWlangParser)
+BEGIN_COM_TYPECAST(WlangUtility)
+	COM_TYPECAST_ENTRY(_IWlangUtility, _IWlangUtility)
+	COM_TYPECAST_ENTRY(_IWlangUtility_Access, _IWlangUtility_Access)
 END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////

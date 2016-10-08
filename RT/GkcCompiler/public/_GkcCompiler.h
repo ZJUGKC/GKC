@@ -385,6 +385,28 @@ SA_FUNCTION void _GrammarTables_Create(GKC::ShareCom<_IGrammarTables>& sp, GKC::
 SA_FUNCTION void _GrammarAnalyzer_Create(GKC::ShareCom<_IGrammarAnalyzer>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw();
 
+//------------------------------------------------------------------------------
+// Meta Data
+
+#pragma pack(push, 1)
+
+// _ICplMetaData
+
+class NOVTABLE _ICplMetaData
+{
+public:
+	virtual uint GetCount() throw() = 0;
+	virtual GKC::CallResult Save(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
+};
+
+DECLARE_GUID(GUID__ICplMetaData)
+
+#pragma pack(pop)
+
+//functions
+
+SA_FUNCTION void _CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::CallResult& cr) throw();
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_COMPILER_H__
 ////////////////////////////////////////////////////////////////////////////////

@@ -26,13 +26,24 @@ This file contains GkcParser functions.
 
 #pragma pack(push, 1)
 
+// _IWlangUtility
+
+class NOVTABLE _IWlangUtility
+{
+public:
+	virtual GKC::CallResult Initialize() throw() = 0;
+};
+
+DECLARE_GUID(GUID__IWlangUtility)
+
 // _IWlangParser
 
 class NOVTABLE _IWlangParser
 {
 public:
-	virtual GKC::CallResult Initialize(const uint& uMaxErrorNumber) throw() = 0;
+	virtual GKC::CallResult Initialize(const uint& uMaxErrorNumber, const GKC::ShareCom<_IWlangUtility>& sp) throw() = 0;
 	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
+	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw() = 0;
 	virtual GKC::CallResult Start() throw() = 0;
 	// return value : SystemCallResults::OK, the call is successful.
 	//                SystemCallResults::S_False, it reaches the end of stream.
@@ -47,6 +58,7 @@ DECLARE_GUID(GUID__IWlangParser)
 
 //functions
 
+SA_FUNCTION void _WlangUtility_Create(GKC::ShareCom<_IWlangUtility>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _WlangParser_Create(GKC::ShareCom<_IWlangParser>& sp, GKC::CallResult& cr) throw();
 
 ////////////////////////////////////////////////////////////////////////////////

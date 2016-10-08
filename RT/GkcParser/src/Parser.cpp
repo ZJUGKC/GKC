@@ -20,8 +20,11 @@ This file contains parser functions.
 
 #include "_GkcParser.h"
 
+#include "wlang/base/WlangDef.h"
+
 #include "wlang/WlangGrammarError.h"
 #include "wlang/WlangAction.h"
+#include "wlang/WlangUtility.h"
 #include "wlang/WlangParser.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +32,13 @@ This file contains parser functions.
 //functions
 
 namespace GKC {
+
+// WlangUtility
+
+inline void _Internal_WlangUtility_Create(GKC::ShareCom<_IWlangUtility>& sp, GKC::CallResult& cr) throw()
+{
+	_CREATE_COMPONENT_INSTANCE(WlangUtility, _IWlangUtility, sp, cr);
+}
 
 // WlangParser
 
@@ -38,6 +48,13 @@ inline void _Internal_WlangParser_Create(GKC::ShareCom<_IWlangParser>& sp, GKC::
 }
 
 } //namespace
+
+// WlangUtility
+
+void _WlangUtility_Create(GKC::ShareCom<_IWlangUtility>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_WlangUtility_Create(sp, cr);
+}
 
 // WlangParser
 

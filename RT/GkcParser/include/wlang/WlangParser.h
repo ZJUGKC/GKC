@@ -141,6 +141,7 @@ public:
 	}
 	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw()
 	{
+		assert( !sp.IsBlockNull() );
 		m_spMeta = sp;
 	}
 	virtual GKC::CallResult Start() throw()

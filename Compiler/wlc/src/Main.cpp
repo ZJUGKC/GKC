@@ -20,6 +20,7 @@ This file contains main function.
 
 #include "base/SourceAnalyzer.h"
 
+#include "cmd/CompileBase.h"
 #include "cmd/CompileSingleFile.h"
 
 #include "Global.h"

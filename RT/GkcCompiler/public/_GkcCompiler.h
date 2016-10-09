@@ -390,6 +390,47 @@ SA_FUNCTION void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>&
 
 #pragma pack(push, 1)
 
+// _CplMetaDataPosition
+
+class _CplMetaDataPosition
+{
+public:
+	_CplMetaDataPosition() throw() : m_uAddr(0)
+	{
+	}
+	_CplMetaDataPosition(const _CplMetaDataPosition& src) throw() : m_uAddr(src.m_uAddr)
+	{
+	}
+	~_CplMetaDataPosition() throw()
+	{
+	}
+
+	_CplMetaDataPosition& operator=(const _CplMetaDataPosition& src) throw()
+	{
+		if( this != &src ) {
+			m_uAddr = src.m_uAddr;
+		}
+		return *this;
+	}
+
+	bool IsNull() const throw()
+	{
+		return m_uAddr == 0;
+	}
+
+	uint GetAddr() const throw()
+	{
+		return m_uAddr;
+	}
+	void SetAddr(uint uAddr) throw()
+	{
+		m_uAddr = uAddr;
+	}
+
+private:
+	uint m_uAddr;  //address
+};
+
 // _ICplMetaData
 
 class NOVTABLE _ICplMetaData
@@ -400,6 +441,85 @@ public:
 };
 
 DECLARE_GUID(GUID__ICplMetaData)
+
+// _ICplMetaDataPositionSymbolDataUtility
+
+class NOVTABLE _ICplMetaDataPositionSymbolDataUtility
+{
+public:
+	virtual _CplMetaDataPosition GetPosition() throw() = 0;
+	virtual void SetPosition(const _CplMetaDataPosition& pos) throw() = 0;
+};
+
+DECLARE_GUID(GUID__ICplMetaDataPositionSymbolDataUtility)
+
+// _CplMetaDataPositionSymbolDataBase
+
+class NOVTABLE _CplMetaDataPositionSymbolDataBase : public _ICplMetaDataPositionSymbolDataUtility
+{
+public:
+	_CplMetaDataPositionSymbolDataBase() throw()
+	{
+	}
+	~_CplMetaDataPositionSymbolDataBase() throw()
+	{
+	}
+
+// _ICplMetaDataPositionSymbolDataUtility methods
+	virtual _CplMetaDataPosition GetPosition() throw()
+	{
+		return m_pos;
+	}
+	virtual void SetPosition(const _CplMetaDataPosition& pos) throw()
+	{
+		m_pos = pos;
+	}
+
+private:
+	_CplMetaDataPosition m_pos;
+
+private:
+	//noncopyable
+	_CplMetaDataPositionSymbolDataBase(const _CplMetaDataPositionSymbolDataBase&) throw();
+	_CplMetaDataPositionSymbolDataBase& operator=(const _CplMetaDataPositionSymbolDataBase&) throw();
+};
+
+// _ICplMetaDataActionUtility
+
+class NOVTABLE _ICplMetaDataActionUtility
+{
+public:
+	virtual void SetMetaData(const GKC::ShareCom<_ICplMetaData>& sp) throw() = 0;
+};
+
+DECLARE_GUID(GUID__ICplMetaDataActionUtility)
+
+// _CplMetaDataActionBase
+
+class NOVTABLE _CplMetaDataActionBase : public _ICplMetaDataActionUtility
+{
+public:
+	_CplMetaDataActionBase() throw()
+	{
+	}
+	~_CplMetaDataActionBase() throw()
+	{
+	}
+
+// _ICplMetaDataActionUtility methods
+	virtual void SetMetaData(const GKC::ShareCom<_ICplMetaData>& sp) throw()
+	{
+		m_spMeta = sp;
+	}
+
+private:
+	GKC::ShareCom<_ICplMetaData> m_spMeta;
+
+private:
+	//noncopyable
+	_CplMetaDataActionBase(const _CplMetaDataActionBase&) throw();
+	_CplMetaDataActionBase& operator=(const _CplMetaDataActionBase&) throw();
+};
 
 #pragma pack(pop)
 

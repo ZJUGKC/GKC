@@ -56,4 +56,12 @@ IMPLEMENT_GUID(GUID__IGrammarAnalyzer, 0xc456f369, 0xbf15, 0x4518, 0xba, 0xa9, 0
 //   {65D9884C-5486-4894-86C6-8F5643343CFC}
 IMPLEMENT_GUID(GUID__ICplMetaData, 0x65d9884c, 0x5486, 0x4894, 0x86, 0xc6, 0x8f, 0x56, 0x43, 0x34, 0x3c, 0xfc)
 
+// GUID__ICplMetaDataPositionSymbolDataUtility
+//   {9E77F578-F483-4B7E-BB9C-FD492238425B}
+IMPLEMENT_GUID(GUID__ICplMetaDataPositionSymbolDataUtility, 0x9e77f578, 0xf483, 0x4b7e, 0xbb, 0x9c, 0xfd, 0x49, 0x22, 0x38, 0x42, 0x5b)
+
+// GUID__ICplMetaDataActionUtility
+//   {ABB054A8-0A70-4D6F-85D1-E4E8CE3BFA23}
+IMPLEMENT_GUID(GUID__ICplMetaDataActionUtility, 0xabb054a8, 0xa70, 0x4d6f, 0x85, 0xd1, 0xe4, 0xe8, 0xce, 0x3b, 0xfa, 0x23)
+
 ////////////////////////////////////////////////////////////////////////////////

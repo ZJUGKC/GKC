@@ -164,6 +164,9 @@ public:
 	}
 };
 
+// CplMetaDataPosition
+typedef _CplMetaDataPosition  CplMetaDataPosition;
+
 // ICplMetaData
 typedef _ICplMetaData  ICplMetaData;
 
@@ -200,6 +203,11 @@ public:
 	{
 		if( m_arr.IsBlockNull() )
 			m_arr = ShareArrayHelper::MakeShareArray<uint>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		//overflow
+		uintptr uCount = m_arr.GetCount();
+		if( uCount >= (uintptr)(Limits<uint>::Max) )
+			throw OverflowException();
+		//add
 		return m_arr.Add().get_Value();  //may throw
 	}
 	void Pop() throw()
@@ -211,6 +219,11 @@ public:
 	{
 		return m_arr[m_arr.GetCount() - 1].get_Value();
 	}
+	uint GetTopLevel() const throw()
+	{
+		return (uint)(m_arr.GetCount() - 1);
+	}
+
 	bool IsEmpty() const throw()
 	{
 		return m_arr.GetCount() == 0;

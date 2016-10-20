@@ -40,6 +40,85 @@ public:
 	{
 		CallResult cr;
 
+		//lexer analyzer
+		if( m_spLexerAnalyzer.IsBlockNull() ) {
+			m_spGrammarAnalyzer = spGrammarAnalyzer;
+		}
+
+		m_uMaxErrorNumber = uMaxErrorNumber;
+
+		return cr;
+	}
+	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
+	{
+		assert( !m_spLexerAnalyzer.IsBlockNull() );
+		m_spLexerAnalyzer.Deref().SetStream(sp);
+	}
+	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw()
+	{
+		assert( !sp.IsBlockNull() );
+		m_spMeta = sp;
+	}
+	virtual GKC::CallResult Start() throw()
+	{
+		assert( !m_spGrammarAnalyzer.IsBlockNull() );
+		return m_spGrammarAnalyzer.Deref().Start(true);
+	}
+	virtual GKC::CallResult Parse() throw()
+	{
+		assert( !m_spGrammarAnalyzer.IsBlockNull() );
+		CallResult cr = m_spGrammarAnalyzer.Deref().Parse();
+		if( cr.GetResult() == SystemCallResults::OK ) {
+			if( m_spGrammarAnalyzer.Deref().IsErrorState() ) {
+				cr = m_spGrammarAnalyzer.Deref().Revert();
+				if( cr.IsFailed() )
+					return cr;
+			}
+			const GKC::ShareArray<GKC::StringS> arrError(m_spGrammarAnalyzer.Deref().get_ErrorArray());
+			uintptr uCount = arrError.GetCount();
+			if( m_uMaxErrorNumber != 0 && uCount >= (uintptr)m_uMaxErrorNumber )
+				cr.SetResult(SystemCallResults::S_False);
+		}
+		return cr;
+	}
+	virtual const GKC::ShareArray<GKC::StringS> get_ErrorArray() throw()
+	{
+		assert( !m_spGrammarAnalyzer.IsBlockNull() );
+		return m_spGrammarAnalyzer.Deref().get_ErrorArray();
+	}
+
+private:
+	static CallResult load_text(const ConstStringS& str, ShareCom<ITextStream>& sp) throw()
+	{
+		CallResult cr;
+		// stream
+		ShareCom<IByteStream> spStream;
+		cr = StreamHelper::CreateFileStream(str, FileOpenTypes::Read, 0, spStream);
+		if( cr.IsFailed() )
+			return cr;
+		ShareCom<ITextStream> spText;
+		cr = StreamHelper::CreateTextStream(spText);
+		if( cr.IsFailed() )
+			return cr;
+		spText.Deref().SetStream(spStream);
+		// BOM
+		int iBOMType;
+		cr = spText.Deref().CheckBOM(iBOMType);
+		if( cr.IsFailed() )
+			return cr;
+		if( iBOMType != BOMTypes::UTF8 ) {
+			cr.SetResult(SystemCallResults::Fail);
+			return cr;
+		}
+		sp = spText;
+		return cr;
+	}
+
+	//create grammar analyzer
+	CallResult create_grammar_analyzer(const ShareCom<_IWlangUtility>& sp, ShareCom<IGrammarAnalyzer>& spGrammar)
+	{
+		CallResult cr;
+
 		//access
 		_WlangUtility_Objects obj;
 		{
@@ -50,13 +129,12 @@ public:
 			spAccess.Deref().GetObjects(obj);
 		} //end block
 
-		//lexer analyzer
 		ShareCom<ILexerAnalyzer> spLexerAnalyzer;
 		cr = CplAnalyzerHelper::CreateLexerAnalyzer(spLexerAnalyzer);
 		if( cr.IsFailed() )
 			return cr;
-		//lexer tables
 		ShareCom<ILexerTables> spLexerTables;
+		//lexer tables
 		{
 			cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
 			if( cr.IsFailed() )
@@ -118,84 +196,44 @@ public:
 		spGrammarAnalyzer.Deref().SetLexerAnalyzer(spLexerAnalyzer);
 		//factory
 		{
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_KEY_NAMESPACE"), obj.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_IDENTIFIER"), obj.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LCURLY"), obj.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RCURLY"), obj.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
 			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_SEMI"), obj.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "body"), obj.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "namespace_block"), obj.spPositionFactory);
 			if( cr.IsFailed() )
 				return cr;
 		} //end block
 		//actions
 		{
+			//grammar error
 			spGrammarAnalyzer.Deref().SetErrorAction(obj.spGrammarError);
+			ShareCom<IGrammarAction> spAction;
+			//Do-Body-Semi
+			cr = _Create_WlangDoBodySemiAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_body_semi"), spAction);
+			if( cr.IsFailed() )
+				return cr;
 		} //end block
 
 		m_spLexerAnalyzer = spLexerAnalyzer;
-		m_spGrammarAnalyzer = spGrammarAnalyzer;
 
-		m_uMaxErrorNumber = uMaxErrorNumber;
-
-		return cr;
-	}
-	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
-	{
-		assert( !m_spLexerAnalyzer.IsBlockNull() );
-		m_spLexerAnalyzer.Deref().SetStream(sp);
-	}
-	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw()
-	{
-		assert( !sp.IsBlockNull() );
-		m_spMeta = sp;
-	}
-	virtual GKC::CallResult Start() throw()
-	{
-		assert( !m_spGrammarAnalyzer.IsBlockNull() );
-		return m_spGrammarAnalyzer.Deref().Start(true);
-	}
-	virtual GKC::CallResult Parse() throw()
-	{
-		assert( !m_spGrammarAnalyzer.IsBlockNull() );
-		CallResult cr = m_spGrammarAnalyzer.Deref().Parse();
-		if( cr.GetResult() == SystemCallResults::OK ) {
-			if( m_spGrammarAnalyzer.Deref().IsErrorState() ) {
-				cr = m_spGrammarAnalyzer.Deref().Revert();
-				if( cr.IsFailed() )
-					return cr;
-			}
-			const GKC::ShareArray<GKC::StringS> arrError(m_spGrammarAnalyzer.Deref().get_ErrorArray());
-			uintptr uCount = arrError.GetCount();
-			if( m_uMaxErrorNumber != 0 && uCount >= (uintptr)m_uMaxErrorNumber )
-				cr.SetResult(SystemCallResults::S_False);
-		}
-		return cr;
-	}
-	virtual const GKC::ShareArray<GKC::StringS> get_ErrorArray() throw()
-	{
-		assert( !m_spGrammarAnalyzer.IsBlockNull() );
-		return m_spGrammarAnalyzer.Deref().get_ErrorArray();
-	}
-
-private:
-	CallResult load_text(const ConstStringS& str, ShareCom<ITextStream>& sp) throw()
-	{
-		CallResult cr;
-		// stream
-		ShareCom<IByteStream> spStream;
-		cr = StreamHelper::CreateFileStream(str, FileOpenTypes::Read, 0, spStream);
-		if( cr.IsFailed() )
-			return cr;
-		ShareCom<ITextStream> spText;
-		cr = StreamHelper::CreateTextStream(spText);
-		if( cr.IsFailed() )
-			return cr;
-		spText.Deref().SetStream(spStream);
-		// BOM
-		int iBOMType;
-		cr = spText.Deref().CheckBOM(iBOMType);
-		if( cr.IsFailed() )
-			return cr;
-		if( iBOMType != BOMTypes::UTF8 ) {
-			cr.SetResult(SystemCallResults::Fail);
-			return cr;
-		}
-		sp = spText;
 		return cr;
 	}
 

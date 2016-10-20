@@ -80,6 +80,11 @@ public:
 	{
 		stdout_attr_helper::get_attr().SetAttribute(uAttrs);
 	}
+	//restore
+	static void RestoreTextAttribute() throw()
+	{
+		stdout_attr_helper::get_attr().Restore();
+	}
 
 //input
 	template <uintptr t_size>

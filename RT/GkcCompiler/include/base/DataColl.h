@@ -404,6 +404,14 @@ public:
 			pNode->SetLevel(uLevel);
 		}
 
+		//for undetermined symbol
+		void SetLevel(uint uLevel) throw()
+		{
+			assert( !IsNull() );
+			_Node* pNode = (_Node*)(m_pPool->ToPointer(GetNodeAddr()));
+			pNode->SetLevel(uLevel | MASK_ANALYSIS);
+		}
+
 		//user data
 		void* GetDataPointer() const throw()
 		{
@@ -454,9 +462,9 @@ public:
 	{
 	}
 
-	void Reset() throw()
+	void Reset(uint uStart = 0) throw()
 	{
-		m_uStart = 0;
+		m_uStart = uStart;
 	}
 
 	bool IsNull() const throw()
@@ -512,7 +520,7 @@ public:
 	}
 
 // create without find
-	Iterator CreateNode(const ConstStringA& str, uint uDataSize, uint uType, uint uLevel, uint& uLevelHead)
+	Iterator CreateNode(const ConstStringA& str, uint uDataSize, uint uType, uint uLevel, bool bLevelLink, uint& uLevelHead)
 	{
 		assert( !str.IsNull() );
 		assert( uDataSize > 0 );
@@ -566,8 +574,10 @@ public:
 		//fill list
 		node.SetHashNext(uFirstNode);
 		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_BUCKET_FIRST + uBin * sizeof(uint)).set_Value(uNode);
-		node.SetLevelNext(uLevelHead);
-		uLevelHead = uNode;
+		if( bLevelLink ) {
+			node.SetLevelNext(uLevelHead);
+			uLevelHead = uNode;
+		}
 		//count
 		uint uCount = _RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_COUNT).get_Value();
 		uCount = SafeOperators::AddThrow(uCount, (uint)1);  //may throw
@@ -593,6 +603,27 @@ public:
 	{
 		assert( !IsNull() );
 		_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ZERO_LEVEL_HEAD).set_Value(uHead);
+	}
+
+	void ReverseLevelLink(uint& uLevelHead) throw()
+	{
+		uint uNode = uLevelHead;
+		uLevelHead = 0;
+		while( uNode != 0 ) {
+			_Node& node = *((_Node*)ToPointer(uNode));
+			uint uNext = node.GetLevelNext();
+			node.SetLevelNext(uLevelHead);
+			uLevelHead = uNode;
+			uNode = uNext;
+		}
+	}
+	void ClearLevelLinkAnalysisFlag(uint uLevelHead) throw()
+	{
+		Iterator iter(this, uLevelHead);
+		while( !iter.IsNull() ) {
+			iter.ClearAnalysisFlag();
+			iter.MoveLevelNext();
+		}
 	}
 
 private:

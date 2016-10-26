@@ -216,6 +216,7 @@ DECLARE_GUID(GUID__ILexerTables)
 class NOVTABLE _ILexerAnalyzer
 {
 public:
+	virtual GKC::ShareCom<_ILexerTables> GetTables() throw() = 0;
 	virtual GKC::CallResult SetTables(const GKC::ShareCom<_ILexerTables>& sp) throw() = 0;
 	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
 	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strToken, const GKC::ShareCom<_ILexerAction>& spAction) throw() = 0;
@@ -385,6 +386,52 @@ SA_FUNCTION void _GrammarTables_Create(GKC::ShareCom<_IGrammarTables>& sp, GKC::
 SA_FUNCTION void _GrammarAnalyzer_Create(GKC::ShareCom<_IGrammarAnalyzer>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw();
 
+// helper
+
+// _CplErrorStringHelper
+
+class _CplErrorStringHelper
+{
+public:
+	static void GenerateError(uint uRow, uint uCol, const GKC::ConstStringS& strMark, const GKC::ConstStringS& strAdd, GKC::StringS& str)
+	{
+		_CplErrorBuffer tmp;
+		int ret;
+		if( strMark.GetCount() == 0 )
+			ret = value_to_string(GKC::FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
+								_S("Error : (%u:%u)"),
+								GKC::SafeOperators::AddThrow(uRow, (uint)1),
+								GKC::SafeOperators::AddThrow(uCol, (uint)1)
+								);  //may throw
+		else
+			ret = value_to_string(GKC::FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
+								_S("Error : (%u:%u) [%s]"),
+								GKC::SafeOperators::AddThrow(uRow, (uint)1),
+								GKC::SafeOperators::AddThrow(uCol, (uint)1),
+								GKC::ConstArrayHelper::GetInternalPointer(strMark)
+								);  //may throw
+		if( ret >= 0 )
+			tmp.SetLength(ret);
+		GKC::StringUtilHelper::MakeString(tmp, str);  //may throw
+		if( strAdd.GetCount() != 0 ) {
+			GKC::StringHelper::Append(_S(' '), str);  //may throw
+			GKC::StringUtilHelper::Append(strAdd, str);  //may throw
+		}
+	}
+	static void GenerateError(uint uRow, uint uCol, const GKC::ConstStringS& strAdd, GKC::StringS& str)
+	{
+		GenerateError(uRow, uCol, DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S("")), strAdd, str);  //may throw
+	}
+	static void GenerateError(const GKC::CallResult& cr, GKC::StringS& str)
+	{
+		_CplErrorBuffer tmp;
+		result_to_string(cr, GKC::FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size);
+		tmp.RecalcLength();
+		GKC::StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S("Error : ")), str);  //may throw
+		GKC::StringUtilHelper::Append(tmp, str);  //may throw
+	}
+};
+
 //------------------------------------------------------------------------------
 // Meta Data
 
@@ -395,7 +442,7 @@ SA_FUNCTION void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>&
 class _CplMetaDataPosition
 {
 public:
-	_CplMetaDataPosition() throw() : m_uAddr(0)
+	explicit _CplMetaDataPosition(uint uAddr = 0) throw() : m_uAddr(uAddr)
 	{
 	}
 	_CplMetaDataPosition(const _CplMetaDataPosition& src) throw() : m_uAddr(src.m_uAddr)
@@ -431,12 +478,38 @@ private:
 	uint m_uAddr;  //address
 };
 
+// _CplMetaDataInfo
+
+struct _CplMetaDataInfo
+{
+	uint uType;
+	uint uLevel;
+	_CplMetaDataPosition posData;
+};
+
 // _ICplMetaData
 
 class NOVTABLE _ICplMetaData
 {
 public:
 	virtual uint GetCount() throw() = 0;
+	virtual _CplMetaDataPosition Find(const GKC::ConstStringA& str) throw() = 0;
+	virtual _CplMetaDataPosition FindNext(const _CplMetaDataPosition& pos) throw() = 0;
+	virtual _CplMetaDataPosition GetZeroLevelHead() throw() = 0;
+	virtual _CplMetaDataPosition GetLevelNext(const _CplMetaDataPosition& pos) throw() = 0;
+	virtual void GetInfo(const _CplMetaDataPosition& pos, _CplMetaDataInfo& info, bool& bAnalysis) throw() = 0;
+	virtual uintptr GetData(const _CplMetaDataPosition& posData) throw() = 0;
+	virtual void SetType(const _CplMetaDataPosition& pos, const uint& uType) throw() = 0;
+	virtual void SetLevel(const _CplMetaDataPosition& pos, const uint& uLevel) throw() = 0;
+	virtual void SetData(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posData) throw() = 0;
+	virtual void ClearAnalysisFlag(const _CplMetaDataPosition& pos) throw() = 0;
+	virtual GKC::CallResult InsertSymbol(const GKC::ConstStringA& str, const uint& uType, const bool& bLevelLink, _CplMetaDataPosition& pos) throw() = 0;
+	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw() = 0;
+	virtual GKC::CallResult EnterLevel() throw() = 0;
+	virtual _CplMetaDataPosition LeaveLevel() throw() = 0;
+	virtual uint GetCurrentLevel() throw() = 0;
+	virtual void FinishZeroLevel() throw() = 0;
+	virtual GKC::CallResult Load(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
 	virtual GKC::CallResult Save(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
 };
 
@@ -512,7 +585,7 @@ public:
 		m_spMeta = sp;
 	}
 
-private:
+protected:
 	GKC::ShareCom<_ICplMetaData> m_spMeta;
 
 private:

@@ -30,6 +30,7 @@ struct _WlangUtility_Objects
 	GKC::ShareCom<GKC::ILexerAction> spReturn;
 	//factory
 	GKC::ShareCom<GKC::IComFactory> spBasicFactory;
+	GKC::ShareCom<GKC::IComFactory> spPositionFactory;
 	//grammar actions
 	GKC::ShareCom<GKC::IGrammarError> spGrammarError;
 };
@@ -43,6 +44,129 @@ public:
 };
 
 DECLARE_GUID(GUID__IWlangUtility_Access)
+
+//specifier
+
+// noun
+
+#define WLANG_NOUN_MASK         (0x000000FF)
+//  pending symbol
+#define WLANG_NOUN_NONE         (0)
+//  outer symbol
+#define WLANG_NOUN_OUTER        (1)
+
+#define WLANG_NOUN_NAMESPACE    (15)
+
+// adj
+
+// classes
+
+#pragma pack(push, 1)
+
+// _WlangMetaDataBase
+
+class _WlangMetaDataBase
+{
+public:
+	_WlangMetaDataBase() throw()
+	{
+	}
+	~_WlangMetaDataBase() throw()
+	{
+	}
+
+	//properties
+	uint GetStringAddr() const throw()
+	{
+		return m_uStringAddr.get_Value();
+	}
+	void SetStringAddr(uint uAddr) throw()
+	{
+		m_uStringAddr.set_Value(uAddr);
+	}
+	uint GetRow() const throw()
+	{
+		return m_uRow.get_Value();
+	}
+	void SetRow(uint uRow) throw()
+	{
+		m_uRow.set_Value(uRow);
+	}
+	uint GetCol() const throw()
+	{
+		return m_uCol.get_Value();
+	}
+	void SetCol(uint uCol) throw()
+	{
+		m_uCol.set_Value(uCol);
+	}
+
+protected:
+	GKC::BeType<uint> m_uStringAddr;
+	GKC::BeType<uint> m_uRow;
+	GKC::BeType<uint> m_uCol;
+
+private:
+	//noncopyable
+	_WlangMetaDataBase(const _WlangMetaDataBase&) throw();
+	_WlangMetaDataBase& operator=(const _WlangMetaDataBase&) throw();
+};
+
+// _WlangNsClassData
+
+class _WlangNsClassData
+{
+public:
+	_WlangNsClassData() throw()
+	{
+	}
+	~_WlangNsClassData() throw()
+	{
+	}
+
+	uint GetMembers() const throw()
+	{
+		return m_uMembers.get_Value();
+	}
+	void SetMembers(uint uAddr) throw()
+	{
+		m_uMembers.set_Value(uAddr);
+	}
+
+private:
+	GKC::BeType<uint> m_uMembers;
+
+private:
+	//noncopyable
+	_WlangNsClassData(const _WlangNsClassData&) throw();
+	_WlangNsClassData& operator=(const _WlangNsClassData&) throw();
+};
+
+// _WlangNsClassMetaData
+
+class _WlangNsClassMetaData : public _WlangMetaDataBase,
+							public _WlangNsClassData
+{
+public:
+	_WlangNsClassMetaData() throw()
+	{
+	}
+	~_WlangNsClassMetaData() throw()
+	{
+	}
+
+private:
+	//noncopyable
+	_WlangNsClassMetaData(const _WlangNsClassMetaData&) throw();
+	_WlangNsClassMetaData& operator=(const _WlangNsClassMetaData&) throw();
+};
+
+#pragma pack(pop)
+
+//declarator
+
+// kind
+//   ARRAY
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif

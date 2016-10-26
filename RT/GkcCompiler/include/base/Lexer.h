@@ -51,7 +51,7 @@ public:
 	{
 		assert( uID >= CPL_TK_FIRST );
 		assert( m_symbol_pool.Find(strToken).IsNull() );
-		auto iter(m_symbol_pool.CreateNode(strToken, sizeof(uint), 0, 0, m_uLevelHead));  //may throw
+		auto iter(m_symbol_pool.CreateNode(strToken, sizeof(uint), 0, 0, true, m_uLevelHead));  //may throw
 		iter.GetData<BeType<uint>>().set_Value(uID);
 		m_symbol_pool.SetZeroLevelHead(m_uLevelHead);
 	}

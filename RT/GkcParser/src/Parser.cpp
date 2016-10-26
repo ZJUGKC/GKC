@@ -22,7 +22,13 @@ This file contains parser functions.
 
 #include "wlang/base/WlangDef.h"
 
-#include "wlang/WlangGrammarError.h"
+#include "wlang/action/WlangGrammarError.h"
+#include "wlang/action/WlangGrammarAccepted.h"
+#include "wlang/action/WlangPositionSymbolData.h"
+#include "wlang/action/WlangPositionSymbolData_Factory.h"
+#include "wlang/action/WlangDoNsBodyAction.h"
+#include "wlang/action/WlangDoBodySemiAction.h"
+
 #include "wlang/WlangAction.h"
 #include "wlang/WlangUtility.h"
 #include "wlang/WlangParser.h"

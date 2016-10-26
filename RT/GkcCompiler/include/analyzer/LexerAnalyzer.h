@@ -37,6 +37,10 @@ public:
 	}
 
 // _ILexerAnalyzer methods
+	virtual GKC::ShareCom<_ILexerTables> GetTables() throw()
+	{
+		return CALL_COM_TYPECAST(m_spAccess, _ILexerTablesAccess, _ILexerTables);
+	}
 	virtual GKC::CallResult SetTables(const GKC::ShareCom<_ILexerTables>& sp) throw()
 	{
 		assert( !sp.IsBlockNull() );

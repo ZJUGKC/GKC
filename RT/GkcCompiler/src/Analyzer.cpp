@@ -37,7 +37,9 @@ This file contains analyzer functions.
 #include "analyzer/GrammarAnalyzer.h"
 #include "analyzer/BasicSymbolData.h"
 #include "analyzer/BasicSymbolData_Factory.h"
-#include "analyzer/CplMetaData.h"
+
+#include "meta/MetaDef.h"
+#include "meta/CplMetaData.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 

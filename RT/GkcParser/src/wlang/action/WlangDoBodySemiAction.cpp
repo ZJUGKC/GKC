@@ -11,32 +11,24 @@
 */
 
 /*
-This file contains global variables for meta data component.
+This file contains global variables for Do-Body-Semi action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcCompiler.h"
-
-#include "base/DataColl.h"
-
-#include "meta/MetaDef.h"
-#include "meta/CplMetaData.h"
+#include "wlang/action/WlangDoBodySemiAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// CplMetaData
+// WlangDoBodySemiAction
 
-BEGIN_COM_TYPECAST(CplMetaData)
-	COM_TYPECAST_ENTRY(_ICplMetaData, _ICplMetaData)
+BEGIN_COM_TYPECAST(WlangDoBodySemiAction)
+	COM_TYPECAST_ENTRY(IGrammarAction, IGrammarAction)
 END_COM_TYPECAST()
-
-//const string
-IMPLEMENT_STATIC_CONST_STRING_MEMBER(CplMetaData, c_header, CharA, "WOBJ")
 
 ////////////////////////////////////////////////////////////////////////////////
 }

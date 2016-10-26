@@ -11,32 +11,21 @@
 */
 
 /*
-This file contains global variables for meta data component.
+This file contains global variables for WLANG position symbol data factory component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcCompiler.h"
-
-#include "base/DataColl.h"
-
-#include "meta/MetaDef.h"
-#include "meta/CplMetaData.h"
+#include "wlang/action/WlangPositionSymbolData.h"
+#include "wlang/action/WlangPositionSymbolData_Factory.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// CplMetaData
-
-BEGIN_COM_TYPECAST(CplMetaData)
-	COM_TYPECAST_ENTRY(_ICplMetaData, _ICplMetaData)
-END_COM_TYPECAST()
-
-//const string
-IMPLEMENT_STATIC_CONST_STRING_MEMBER(CplMetaData, c_header, CharA, "WOBJ")
+IMPLEMENT_COM_FACTORY_CLASS(WlangPositionSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

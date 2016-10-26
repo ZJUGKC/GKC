@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES(
 LINK_DIRECTORIES("${PROJECT_BINARY_DIR}/bin")
 SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
-SET(SRC_LIST "src/Main.cpp" "src/Global.cpp")
+SET(SRC_LIST "src/Main.cpp" "src/Global.cpp" "src/Public.cpp")
 ADD_EXECUTABLE(mdc ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(mdc "exe" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Foreground")

@@ -1436,8 +1436,8 @@ const_string_type(x, sizeof(x) / sizeof(const_string_type::EType) - 1)
 
 // define static constant string
 
-#define DECLARE_STATIC_CONST_STRING(cls)  \
-	DECLARE_STATIC_CONST_ARRAY(cls, cls::EType)
+#define DECLARE_STATIC_CONST_STRING(cls, char_type)  \
+	DECLARE_STATIC_CONST_ARRAY(cls, char_type)
 
 // define constant string member
 

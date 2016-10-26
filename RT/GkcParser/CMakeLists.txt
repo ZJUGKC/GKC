@@ -20,7 +20,7 @@ INCLUDE_DIRECTORIES(
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Parser.cpp"
-	"src/wlang/action/WlangGrammarError.cpp"
+	"src/wlang/action/WlangGrammarError.cpp" "src/wlang/action/WlangGrammarAccepted.cpp"
 	"src/wlang/action/WlangPositionSymbolData.cpp" "src/wlang/action/WlangPositionSymbolData_Factory.cpp"
 	"src/wlang/action/WlangDoNsBodyAction.cpp" "src/wlang/action/WlangDoBodySemiAction.cpp"
 	"src/wlang/WlangUtility.cpp" "src/wlang/WlangParser.cpp")

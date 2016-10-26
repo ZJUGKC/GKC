@@ -1634,32 +1634,39 @@ public:
 	}
 	const Iterator GetAtPosition(const Position& pos) const throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
 	}
 	Iterator GetAtPosition(const Position& pos) throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
 	}
 	Position ToPosition(const Iterator& iter) const throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return Position(GKC::RefPtrHelper::GetInternalPointer(iter.get_Ref()) - get_array_address());
 	}
 
 	//iterator
 	const Iterator GetBegin() const throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address()));
 	}
 	Iterator GetBegin() throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address()));
 	}
 	const Iterator GetEnd() const throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + GetCount()));
 	}
 	Iterator GetEnd() throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + GetCount()));
 	}
 	const Iterator GetReverseBegin() const throw()
@@ -1682,21 +1689,25 @@ public:
 	const Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
 	}
 	Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < GetCount() );
+		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
 	}
 	void SetAt(uintptr index, const T& t)  //may throw
 	{
 		assert( index < GetCount() );
+		assert( !(baseClass::IsBlockNull()) );
 		get_array_address()[index] = t;
 	}
 	void SetAt(uintptr index, T&& t)  //may throw
 	{
 		assert( index < GetCount() );
+		assert( !(baseClass::IsBlockNull()) );
 		get_array_address()[index] = rv_forward(t);
 	}
 
@@ -1782,9 +1793,11 @@ public:
 		assert( !(baseClass::IsBlockNull()) );
 		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		uintptr uOldSize = pB->GetLength();
-		uintptr uNewSize = GKC::SafeOperators::AddThrow(uOldSize, src.GetCount());
+		uintptr uSrcSize = src.GetCount();
+		uintptr uNewSize = GKC::SafeOperators::AddThrow(uOldSize, uSrcSize);
 		SetCount(uNewSize, 0);
-		copy_elements(src.get_array_address(), get_array_address() + uOldSize, src.GetCount());
+		if( uSrcSize != 0 )
+			copy_elements(src.get_array_address(), get_array_address() + uOldSize, uSrcSize);
 	}
 
 	void Copy(const _ShareArray<T>& src)  //may throw
@@ -1792,7 +1805,8 @@ public:
 		assert( this != &src );  // cannot append to itself
 		uintptr uSize = src.GetCount();
 		SetCount(uSize, 0);
-		copy_elements(src.get_array_address(), get_array_address(), uSize);
+		if( uSize != 0 )
+			copy_elements(src.get_array_address(), get_array_address(), uSize);
 	}
 
 	// count: the default value is 1.
@@ -2200,10 +2214,12 @@ public:
 	//iterators
 	const typename thisClass::Iterator GetEnd() const throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
 	}
 	typename thisClass::Iterator GetEnd() throw()
 	{
+		assert( !(baseClass::IsBlockNull()) );
 		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
 	}
 	const typename thisClass::Iterator GetReverseBegin() const throw()
@@ -2218,21 +2234,25 @@ public:
 	const typename thisClass::Iterator GetAt(uintptr index) const throw()
 	{
 		assert( index < GetLength() );
+		assert( !(baseClass::IsBlockNull()) );
 		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
 	}
 	typename thisClass::Iterator GetAt(uintptr index) throw()
 	{
 		assert( index < GetLength() );
+		assert( !(baseClass::IsBlockNull()) );
 		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
 	}
 	void SetAt(uintptr index, const Tchar& t)  //may throw
 	{
 		assert( index < GetLength() );
+		assert( !(baseClass::IsBlockNull()) );
 		baseClass::get_array_address()[index] = t;
 	}
 	void SetAt(uintptr index, Tchar&& t)  //may throw
 	{
 		assert( index < GetLength() );
+		assert( !(baseClass::IsBlockNull()) );
 		baseClass::get_array_address()[index] = rv_forward(t);
 	}
 

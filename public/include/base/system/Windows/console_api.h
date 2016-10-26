@@ -75,6 +75,9 @@ inline void print_string(const char_h* sz) throw()
 #define STDOUT_ATTR_UNDERSCORE         COMMON_LVB_UNDERSCORE
 #define STDOUT_ATTR_REVERSE            COMMON_LVB_REVERSE_VIDEO
 
+#define STDOUT_ATTR_FORE_KEEP          (0)
+#define STDOUT_ATTR_BACK_KEEP          (0)
+
 // stdout_attr
 class stdout_attr
 {
@@ -118,6 +121,8 @@ public:
 	void SetAttribute(uint uAttrs) throw()
 	{
 		if( m_bInit ) {
+			// only lower word-bits are used.
+			// STDOUT_ATTR_FORE_KEEP and STDOUT_ATTR_BACK_KEEP are unuseful.
 			::SetConsoleTextAttribute(m_hStdOutput, (WORD)uAttrs);  //no check
 		}
 	}

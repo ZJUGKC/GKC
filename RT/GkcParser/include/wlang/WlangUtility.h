@@ -67,6 +67,11 @@ public:
 			if( cr.IsFailed() )
 				return cr;
 		}
+		if( m_spPositionFactory.IsBlockNull() ) {
+			cr = _Create_WlangPositionSymbolDataFactory(m_spPositionFactory);
+			if( cr.IsFailed() )
+				return cr;
+		}
 		//grammar actions
 		if( m_spGrammarError.IsBlockNull() ) {
 			cr = _Create_WlangGrammarError(m_spGrammarError);
@@ -86,6 +91,7 @@ public:
 		obj.spReturn           = m_spReturn;
 		//factory
 		obj.spBasicFactory     = m_spBasicFactory;
+		obj.spPositionFactory  = m_spPositionFactory;
 		//grammar actions
 		obj.spGrammarError     = m_spGrammarError;
 	}
@@ -98,6 +104,7 @@ private:
 	ShareCom<ILexerAction> m_spReturn;
 	//factory
 	ShareCom<IComFactory> m_spBasicFactory;
+	ShareCom<IComFactory> m_spPositionFactory;
 	//grammar actions
 	ShareCom<IGrammarError> m_spGrammarError;
 

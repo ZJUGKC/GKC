@@ -278,10 +278,8 @@ private:
 		//token
 		cr = m_lexer.Deref().Parse();  //may throw
 		if( cr.IsFailed() ) {
-			_CplErrorBuffer eb;
-			result_to_string(cr, FixedArrayHelper::GetInternalPointer(eb), _CplErrorBuffer::c_size);
 			StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-			StringUtilHelper::MakeString(eb, strError);  //may throw
+			_CplErrorStringHelper::GenerateError(cr, strError);  //may throw
 			m_arrError.Add(strError);  //may throw
 			return cr;
 		}
@@ -301,19 +299,14 @@ private:
 		}
 		if( uTokenID == CPL_TK_ERROR ) {
 			const _CplErrorBuffer& eb = tokenInfo.get_ErrorString();
-			_CplErrorBuffer tmp;
-			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
-									_S("Error : (%u:%u) token [%s]."), 
-									SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uRow, (uint)1),
-									SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uCol, (uint)1),
-									eb.GetLength() == 0 ?
-										ConstArrayHelper::GetInternalPointer(CS_U2S(StringUtilHelper::To_ConstString(tokenInfo.get_Buffer())).GetC())
-										: FixedArrayHelper::GetInternalPointer(eb)
-									);  //may throw
-			if( ret >= 0 )
-				tmp.SetLength(ret);
 			StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-			StringUtilHelper::MakeString(tmp, strError);  //may throw
+			_CplErrorStringHelper::GenerateError(tokenInfo.get_WordInfo().infoStart.uRow,
+												tokenInfo.get_WordInfo().infoStart.uCol,
+												eb.GetLength() == 0 ?
+													CS_U2S(StringUtilHelper::To_ConstString(tokenInfo.get_Buffer())).GetC()
+													: StringUtilHelper::To_ConstString(eb),
+												DECLARE_TEMP_CONST_STRING(ConstStringS, _S("error token.")),
+												strError);  //may throw
 			//add to error string list
 			m_arrError.Add(strError);  //may throw
 			cr.SetResult(SystemCallResults::Fail);
@@ -408,16 +401,11 @@ private:
 	void add_unexpected_error()
 	{
 		_LexerTokenInfo& tokenInfo = m_lexer.Deref().GetTokenInfo();
-		_CplErrorBuffer tmp;
-		int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
-								_S("Error : (%u:%u) Unexpected."),
-								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uRow, (uint)1),
-								SafeOperators::AddThrow(tokenInfo.get_WordInfo().infoStart.uCol, (uint)1)
-								);  //may throw
-		if( ret >= 0 )
-			tmp.SetLength(ret);
 		StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-		StringUtilHelper::MakeString(tmp, strError);  //may throw
+		_CplErrorStringHelper::GenerateError(tokenInfo.get_WordInfo().infoStart.uRow,
+											tokenInfo.get_WordInfo().infoStart.uCol,
+											DECLARE_TEMP_CONST_STRING(ConstStringS, _S("unexpected.")),
+											strError);  //may throw
 		m_arrError.Add(strError);  //may throw
 	}
 

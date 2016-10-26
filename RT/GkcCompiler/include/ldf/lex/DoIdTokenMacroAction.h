@@ -69,16 +69,11 @@ private:
 		ConstStringA cs_token(StringUtilHelper::To_ConstString(strToken));
 		if( m_table.Deref().get_ID(cs_token) > 0 ) {
 			StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-			_CplErrorBuffer tmp;
-			int ret = value_to_string(FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
-									_S("Error (%u) : (%u) %s redifinition"),
-									SafeOperators::AddThrow(info.Deref().infoStart.uRow, (uint)1),
-									SafeOperators::AddThrow(info.Deref().infoStart.uCol, (uint)1),
-									ConstArrayHelper::GetInternalPointer(CS_U2S(cs_token).GetC())
-									);  //may throw
-			if( ret >= 0 )
-				tmp.SetLength(ret);
-			StringUtilHelper::MakeString(tmp, strError);  //may throw
+			_CplErrorStringHelper::GenerateError(info.Deref().infoStart.uRow,
+												info.Deref().infoStart.uCol,
+												CS_U2S(cs_token).GetC(),
+												DECLARE_TEMP_CONST_STRING(ConstStringS, _S("redifinition.")),
+												strError);  //may throw
 			errorArray.Add(strError);  //may throw
 			return ;
 		}

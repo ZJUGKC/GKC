@@ -36,7 +36,13 @@ public:
 	}
 
 // methods
-	uint& Add()
+	void Clear() throw()
+	{
+		if( !m_arr.IsBlockNull() )
+			m_arr.RemoveAll();
+	}
+
+	void Add()
 	{
 		if( m_arr.IsBlockNull() )
 			m_arr = ShareArrayHelper::MakeShareArray<uint>(MemoryHelper::GetCrtMemoryManager());  //may throw
@@ -45,14 +51,18 @@ public:
 		if( uCount > (uintptr)SymbolPool::MAX_LEVEL )
 			throw OverflowException();
 		//add
-		return m_arr.Add().get_Value();  //may throw
+		m_arr.Add(0);  //may throw
 	}
 	void Pop() throw()
 	{
 		m_arr.RemoveAt(m_arr.GetCount() - 1);
 	}
 
-	uint GetTop() const throw()
+	const uint& GetTop() const throw()
+	{
+		return m_arr[m_arr.GetCount() - 1].get_Value();
+	}
+	uint& GetTop() throw()
 	{
 		return m_arr[m_arr.GetCount() - 1].get_Value();
 	}
@@ -74,6 +84,44 @@ private:
 	CplLevelStack(const CplLevelStack&) throw();
 	CplLevelStack& operator=(const CplLevelStack&) throw();
 };
+
+#pragma pack(push, 1)
+
+// _MetaDataAddr
+
+class _MetaDataAddr
+{
+public:
+	_MetaDataAddr() throw()
+	{
+	}
+	_MetaDataAddr(const _MetaDataAddr& src) throw() : m_addr(src.m_addr)
+	{
+	}
+	~_MetaDataAddr() throw()
+	{
+	}
+
+	_MetaDataAddr& operator=(const _MetaDataAddr& src) throw()
+	{
+		m_addr = src.m_addr;
+		return *this;
+	}
+
+	uint GetAddr() const throw()
+	{
+		return m_addr.get_Value();
+	}
+	void SetAddr(uint uAddr) throw()
+	{
+		m_addr.set_Value(uAddr);
+	}
+
+private:
+	BeType<uint> m_addr;
+};
+
+#pragma pack(pop)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

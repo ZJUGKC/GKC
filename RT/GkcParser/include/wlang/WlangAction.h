@@ -22,10 +22,46 @@ namespace GKC {
 
 //functions
 
+// WlangPositionSymbolDataFactory
+
+inline CallResult _Create_WlangPositionSymbolDataFactory(ShareCom<IComFactory>& sp) throw()
+{
+	return USE_COM_FACTORY_CLASS_NAME(WlangPositionSymbolData)::Create(sp);
+}
+
+// Do-Ns-Body action
+
+inline CallResult _Create_WlangDoNsBodyAction(ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WlangDoNsBodyAction, IGrammarAction, sp, cr);
+	return cr;
+}
+
+// Do-Body-Semi action
+
+inline CallResult _Create_WlangDoBodySemiAction(ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WlangDoBodySemiAction, IGrammarAction, sp, cr);
+	return cr;
+}
+
+// grammar error
+
 inline CallResult _Create_WlangGrammarError(ShareCom<IGrammarError>& sp) throw()
 {
 	CallResult cr;
 	_CREATE_COMPONENT_INSTANCE(WlangGrammarError, IGrammarError, sp, cr);
+	return cr;
+}
+
+// grammar accepted
+
+inline CallResult _Create_WlangGrammarAccepted(ShareCom<IGrammarAccepted>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WlangGrammarAccepted, IGrammarAccepted, sp, cr);
 	return cr;
 }
 

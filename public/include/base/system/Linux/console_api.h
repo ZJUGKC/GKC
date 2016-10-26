@@ -83,6 +83,9 @@ inline void print_string(const char_l* sz) throw()
 #define STDOUT_ATTR_UNDERSCORE         (0x00000100)
 #define STDOUT_ATTR_REVERSE            (0x00000200)
 
+#define STDOUT_ATTR_FORE_KEEP          (0x00100000)
+#define STDOUT_ATTR_BACK_KEEP          (0x00200000)
+
 // stdout_attr
 class stdout_attr
 {
@@ -110,11 +113,12 @@ public:
 	{
 		char szFormat[256];
 		szFormat[0] = 0;
+		bool bUnderScore = (uAttrs & STDOUT_ATTR_UNDERSCORE) != 0;
 		int ret = value_to_string(szFormat, sizeof(szFormat) / sizeof(char),
 								"\033[%d;%d;%dm",
-								(uAttrs & STDOUT_ATTR_REVERSE) ? (7) : ((uAttrs & STDOUT_ATTR_UNDERSCORE) ? (4) : ((uAttrs & (STDOUT_ATTR_FORE_INTENSITY | STDOUT_ATTR_BACK_INTENSITY)) ? (1) : (0))),  //mode
-								(uAttrs & (STDOUT_ATTR_FORE_RED | STDOUT_ATTR_FORE_GREEN | STDOUT_ATTR_FORE_BLUE)) + 30,         //foreground
-								((uAttrs & (STDOUT_ATTR_BACK_RED | STDOUT_ATTR_BACK_GREEN | STDOUT_ATTR_BACK_BLUE)) >> 4) + 40   //background
+								(uAttrs & STDOUT_ATTR_REVERSE) ? (7) : (bUnderScore ? (4) : ((uAttrs & (STDOUT_ATTR_FORE_INTENSITY | STDOUT_ATTR_BACK_INTENSITY)) ? (1) : (0))),       //mode
+								(uAttrs & STDOUT_ATTR_FORE_KEEP) ? (bUnderScore ? 38 : 39) : (uAttrs & (STDOUT_ATTR_FORE_RED | STDOUT_ATTR_FORE_GREEN | STDOUT_ATTR_FORE_BLUE)) + 30,  //foreground
+								(uAttrs & STDOUT_ATTR_BACK_KEEP) ? (49) : ((uAttrs & (STDOUT_ATTR_BACK_RED | STDOUT_ATTR_BACK_GREEN | STDOUT_ATTR_BACK_BLUE)) >> 4) + 40               //background
 								);
 		if( ret >= 0 )
 			szFormat[ret] = 0;

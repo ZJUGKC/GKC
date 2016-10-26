@@ -93,7 +93,7 @@ inline uintptr _Compile_One_File(ShareCom<IWlangParser>& spParser, const StringS
 	ShareArray<StringS> arrError(spParser.Deref().get_ErrorArray());
 	uintptr uCount = arrError.GetCount();
 	if( uCount != 0 ) {
-		ConsoleHelper::SetTextAttribute(STDOUT_ATTR_FORE_RED);
+		ConsoleHelper::SetTextAttribute(STDOUT_ATTR_FORE_RED | STDOUT_ATTR_BACK_KEEP);
 		auto iter(arrError.GetBegin());
 		for( ; iter != arrError.GetEnd(); iter.MoveNext() ) {
 			ConsoleHelper::WriteLine(iter.get_Value());

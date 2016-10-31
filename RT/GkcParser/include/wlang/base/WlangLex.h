@@ -11,39 +11,24 @@
 */
 
 /*
-This file contains global variables for WLang parser component.
+Internal Header
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "PreComp.h"
-
-#include "_GkcParser.h"
-
-#include "wlang/base/WlangDef.h"
-#include "wlang/base/WlangLex.h"
-#include "wlang/base/WlangGra.h"
-
-#include "wlang/action/WlangGrammarError.h"
-#include "wlang/action/WlangGrammarAccepted.h"
-#include "wlang/action/WlangPositionSymbolData.h"
-#include "wlang/action/WlangPositionSymbolData_Factory.h"
-#include "wlang/action/WlangDoNsBodyAction.h"
-#include "wlang/action/WlangDoBodySemiAction.h"
-
-#include "wlang/WlangAction.h"
-#include "wlang/WlangParser.h"
+#ifndef __WLANG_LEX_H__
+#define __WLANG_LEX_H__
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// WlangParser
+// g_wlang_lex
 
-BEGIN_COM_TYPECAST(WlangParser)
-	COM_TYPECAST_ENTRY(_IWlangParser, _IWlangParser)
-END_COM_TYPECAST()
+DECLARE_STATIC_CONST_STRING(g_wlang_lex, CharA)
 
 ////////////////////////////////////////////////////////////////////////////////
 }
+////////////////////////////////////////////////////////////////////////////////
+#endif
 ////////////////////////////////////////////////////////////////////////////////

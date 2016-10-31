@@ -124,20 +124,16 @@ public:
 
 private:
 	//load text
-	static CallResult load_text(const ConstStringS& str, ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_from_stream(const ShareCom<IByteStream>& spStream, ShareCom<ITextStream>& sp) throw()
 	{
 		CallResult cr;
-		// stream
-		ShareCom<IByteStream> spStream;
-		cr = StreamHelper::CreateFileStream(str, FileOpenTypes::Read, 0, spStream);
-		if( cr.IsFailed() )
-			return cr;
+		//text
 		ShareCom<ITextStream> spText;
 		cr = StreamHelper::CreateTextStream(spText);
 		if( cr.IsFailed() )
 			return cr;
 		spText.Deref().SetStream(spStream);
-		// BOM
+		//BOM
 		int iBOMType;
 		cr = spText.Deref().CheckBOM(iBOMType);
 		if( cr.IsFailed() )
@@ -148,6 +144,54 @@ private:
 		}
 		sp = spText;
 		return cr;
+	}
+	static CallResult load_text_from_file(const ConstStringS& str, ShareCom<ITextStream>& sp) throw()
+	{
+		CallResult cr;
+		//stream
+		ShareCom<IByteStream> spStream;
+		cr = StreamHelper::CreateFileStream(str, FileOpenTypes::Read, 0, spStream);
+		if( cr.IsFailed() )
+			return cr;
+		//text
+		cr = load_text_from_stream(spStream, sp);
+		return cr;
+	}
+	static CallResult load_text_from_buffer(const ConstStringA& str, ShareCom<ITextStream>& sp) throw()
+	{
+		CallResult cr;
+		//stream
+		ShareCom<IByteStream> spStream;
+		cr = StreamHelper::CreateBufferStream((uintptr)ConstArrayHelper::GetInternalPointer(str), str.GetCount() * sizeof(CharA), spStream);
+		if( cr.IsFailed() )
+			return cr;
+		//text
+		cr = load_text_from_stream(spStream, sp);
+		return cr;
+	}
+	static CallResult load_text_wlang_lex_file(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_from_file(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")), sp);
+	}
+	static CallResult load_text_wlang_gra_file(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_from_file(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")), sp);
+	}
+	static CallResult load_text_wlang_lex_buffer(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_from_buffer(ConstStringA(g_wlang_lex::GetAddress(), g_wlang_lex::GetCount()), sp);
+	}
+	static CallResult load_text_wlang_gra_buffer(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_from_buffer(ConstStringA(g_wlang_gra::GetAddress(), g_wlang_gra::GetCount()), sp);
+	}
+	static CallResult load_text_wlang_lex(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_wlang_lex_buffer(sp);
+	}
+	static CallResult load_text_wlang_gra(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_wlang_gra_buffer(sp);
 	}
 
 	//create lexer analyzer
@@ -166,7 +210,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			ShareCom<ITextStream> spText;
-			cr = load_text(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")), spText);
+			cr = load_text_wlang_lex(spText);
 			if( cr.IsFailed() )
 				return cr;
 			// generate
@@ -220,7 +264,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			ShareCom<ITextStream> spText;
-			cr = load_text(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")), spText);
+			cr = load_text_wlang_gra(spText);
 			if( cr.IsFailed() )
 				return cr;
 			// generate

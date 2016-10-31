@@ -75,8 +75,8 @@ inline void print_string(const char_h* sz) throw()
 #define STDOUT_ATTR_UNDERSCORE         COMMON_LVB_UNDERSCORE
 #define STDOUT_ATTR_REVERSE            COMMON_LVB_REVERSE_VIDEO
 
-#define STDOUT_ATTR_FORE_KEEP          (0)
-#define STDOUT_ATTR_BACK_KEEP          (0)
+#define STDOUT_ATTR_FORE_KEEP          (0x00100000)
+#define STDOUT_ATTR_BACK_KEEP          (0x00200000)
 
 // stdout_attr
 class stdout_attr
@@ -97,16 +97,9 @@ public:
 		m_hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
 		if( m_hStdOutput == INVALID_HANDLE_VALUE || m_hStdOutput == NULL ) {
 			m_bInit = false;
+			return ;
 		}
-		else {
-			CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
-			if( !::GetConsoleScreenBufferInfo(m_hStdOutput, &csbiInfo) ) {
-				m_bInit = false;
-			}
-			else {
-				m_wOldAttr = csbiInfo.wAttributes;
-			}
-		} //end if
+		m_bInit = get_console_text_attribute(m_wOldAttr);
 	}
 
 	//restore
@@ -121,10 +114,32 @@ public:
 	void SetAttribute(uint uAttrs) throw()
 	{
 		if( m_bInit ) {
+			// keep
+			if( uAttrs & (STDOUT_ATTR_FORE_KEEP | STDOUT_ATTR_BACK_KEEP) ) {
+				WORD wAttr;
+				get_console_text_attribute(wAttr);  //no check
+				if( uAttrs & STDOUT_ATTR_FORE_KEEP ) {
+					uint uForeMask = STDOUT_ATTR_FORE_RED | STDOUT_ATTR_FORE_GREEN | STDOUT_ATTR_FORE_BLUE | STDOUT_ATTR_FORE_INTENSITY;
+					uAttrs = ((uAttrs & ~STDOUT_ATTR_FORE_KEEP) & ~uForeMask) | (uint)(wAttr & uForeMask);
+				}
+				if( uAttrs & STDOUT_ATTR_BACK_KEEP ) {
+					uint uBackMask = STDOUT_ATTR_BACK_RED | STDOUT_ATTR_BACK_GREEN | STDOUT_ATTR_BACK_BLUE | STDOUT_ATTR_BACK_INTENSITY;
+					uAttrs = ((uAttrs & ~STDOUT_ATTR_BACK_KEEP) & ~uBackMask) | (uint)(wAttr & uBackMask);
+				}
+			}
 			// only lower word-bits are used.
-			// STDOUT_ATTR_FORE_KEEP and STDOUT_ATTR_BACK_KEEP are unuseful.
 			::SetConsoleTextAttribute(m_hStdOutput, (WORD)uAttrs);  //no check
 		}
+	}
+
+private:
+	bool get_console_text_attribute(WORD& wAttr) throw()
+	{
+		CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+		if( !::GetConsoleScreenBufferInfo(m_hStdOutput, &csbiInfo) )
+			return false;
+		wAttr = csbiInfo.wAttributes;
+		return true;
 	}
 
 private:

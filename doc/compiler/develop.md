@@ -96,7 +96,7 @@ The syntax of regular expression is shown in the following tables:
 	| \?, \*, \+, \- | Question, Star, Plus, Minus |
 	| \^, `\|` | UpArrow, Vertical Line |
 
-The lex file for WLANG is named as `wlang.lex`.
+The lex file for WLANG is named as `WlangLex.cpp`.
 
 The basic principles are shown as follows:
 
@@ -138,7 +138,7 @@ The basic principles are shown as follows:
 1. The first nonterminal in the left-hand side of the first production rule is considered as the start nonterminal.
 The PDA generator would add a special production rule `S->start_nonterminal $` implicitly.
 
-The grammar file for WLANG is named as `wlang.gra`.
+The grammar file for WLANG is named as `WlangGra.cpp`.
 
 ## Analyze the Language Definition File
 

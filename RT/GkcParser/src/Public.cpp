@@ -14,10 +14,15 @@
 
 #include "PreComp.h"
 
+#include "wlang/base/WlangLex.h"
+#include "wlang/base/WlangGra.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "_GkcParser.cpp"
 
 #include "wlang/base/WlangDef.cpp"
+#include "wlang/base/WlangLex.cpp"
+#include "wlang/base/WlangGra.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

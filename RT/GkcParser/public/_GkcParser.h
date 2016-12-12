@@ -42,7 +42,7 @@ class NOVTABLE _IWlangParser
 {
 public:
 	virtual GKC::CallResult Initialize(const uint& uMaxErrorNumber, const GKC::ShareCom<_IWlangUtility>& sp) throw() = 0;
-	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
+	virtual void SetInput(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
 	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw() = 0;
 	virtual GKC::CallResult Start() throw() = 0;
 	// return value : SystemCallResults::OK, the call is successful.

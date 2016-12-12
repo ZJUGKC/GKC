@@ -182,7 +182,9 @@ private:
 #define CR_S_FALSE           (1)
 #define CR_OK                (0)
 #define CR_FAIL              E_FAIL
+#define CR_UNEXPECTED        E_UNEXPECTED
 #define CR_OUTOFMEMORY       E_OUTOFMEMORY
+#define CR_BADADDRESS        E_POINTER
 #define CR_OVERFLOW          CR_FROM_ERROR(ERROR_ARITHMETIC_OVERFLOW)
 #define CR_SABAD             CR_FROM_ERROR(ERROR_DLL_INIT_FAILED)
 #define CR_INVALID           E_INVALIDARG
@@ -192,6 +194,8 @@ private:
 #define CR_FDBAD             E_HANDLE
 #define CR_CORRUPT           STG_E_DOCFILECORRUPT
 #define CR_NOACCESS          E_ACCESSDENIED
+#define CR_ABORT             E_ABORT
+#define CR_CANCELED          CR_FROM_ERROR(ERROR_CANCELLED)
 
 //------------------------------------------------------------------------------
 // Service

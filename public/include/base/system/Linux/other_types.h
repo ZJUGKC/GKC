@@ -191,8 +191,10 @@ private:
 #define CR_S_EOF             (38)
 #define CR_S_FALSE           (1)
 #define CR_OK                (0)
-#define CR_FAIL              CR_FROM_ERROR(EFAULT)
+#define CR_FAIL              CR_FROM_ERROR(1000)
+#define CR_UNEXPECTED        CR_FROM_ERROR(1001)
 #define CR_OUTOFMEMORY       CR_FROM_ERROR(ENOMEM)
+#define CR_BADADDRESS        CR_FROM_ERROR(EFAULT)
 #define CR_OVERFLOW          CR_FROM_ERROR(EOVERFLOW)
 #define CR_SABAD             CR_FROM_ERROR(ELIBBAD)
 #define CR_INVALID           CR_FROM_ERROR(EINVAL)
@@ -202,6 +204,8 @@ private:
 #define CR_FDBAD             CR_FROM_ERROR(EBADF)
 #define CR_CORRUPT           CR_FROM_ERROR(EILSEQ)
 #define CR_NOACCESS          CR_FROM_ERROR(EACCES)
+#define CR_ABORT             CR_FROM_ERROR(EINTR)
+#define CR_CANCELED          CR_FROM_ERROR(ECANCELED)
 
 //------------------------------------------------------------------------------
 // Service

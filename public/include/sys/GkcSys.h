@@ -232,6 +232,7 @@ public:
 		return cr;
 	}
 	// text stream
+	//   this object is not thread-safe
 	static CallResult CreateTextStream(ShareCom<ITextStream>& sp) throw()
 	{
 		CallResult cr;

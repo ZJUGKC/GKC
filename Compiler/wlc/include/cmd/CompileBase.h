@@ -68,7 +68,7 @@ inline uintptr _Compile_One_File(ShareCom<IWlangParser>& spParser, const StringS
 		}
 
 		//parser
-		spParser.Deref().SetStream(spText);
+		spParser.Deref().SetInput(spText);
 		spParser.Deref().SetOutput(spMeta);
 	} //end block
 

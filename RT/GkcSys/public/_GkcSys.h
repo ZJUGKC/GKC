@@ -1852,8 +1852,14 @@ public:
 		uintptr uSize = src.GetCount();
 		if( uSize > 0 ) {
 			InsertAt(index, uSize);
-			for( uintptr i = 0; i < uSize; i ++ ) {
-				SetAt(index + i, src[i].get_Value());
+			try {
+				for( uintptr i = 0; i < uSize; i ++ ) {
+					SetAt(index + i, src[i].get_Value());
+				}
+			}
+			catch(...) {
+				RemoveAt(index, uSize);
+				throw ;  //re-throw
 			}
 		} //end if
 	}
@@ -3216,6 +3222,7 @@ public:
 	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw() = 0;
 	virtual void Reset() throw() = 0;
 	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
+	virtual void SetBOM(const int& iType) throw() = 0;
 	// The return value SystemCallResults::S_EOF means the end of file is reached.
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
@@ -3223,6 +3230,11 @@ public:
 	virtual GKC::CallResult UngetCharH(const int64& iCharNum) throw() = 0;
 	virtual GKC::CallResult GetCharL(GKC::CharL& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharL(const int64& iCharNum) throw() = 0;
+	virtual GKC::CallResult WriteBOM() throw() = 0;
+	virtual GKC::CallResult MoveToEnd() throw() = 0;
+	virtual GKC::CallResult PutCharA(const GKC::CharA& ch) throw() = 0;
+	virtual GKC::CallResult PutCharH(const GKC::CharH& ch) throw() = 0;
+	virtual GKC::CallResult PutCharL(const GKC::CharL& ch) throw() = 0;
 };
 
 DECLARE_GUID(GUID__ITextStream)

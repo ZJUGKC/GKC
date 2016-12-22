@@ -506,9 +506,9 @@ public:
 	virtual GKC::CallResult InsertSymbol(const GKC::ConstStringA& str, const uint& uType, const bool& bLevelLink, _CplMetaDataPosition& pos) throw() = 0;
 	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw() = 0;
 	virtual GKC::CallResult EnterLevel() throw() = 0;
-	virtual _CplMetaDataPosition LeaveLevel() throw() = 0;
+	virtual _CplMetaDataPosition LeaveLevel(const bool& bReverseLevelLink) throw() = 0;
 	virtual uint GetCurrentLevel() throw() = 0;
-	virtual void FinishZeroLevel() throw() = 0;
+	virtual void FinishZeroLevel(const bool& bReverseLevelLink) throw() = 0;
 	virtual GKC::CallResult Load(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
 	virtual GKC::CallResult Save(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
 };

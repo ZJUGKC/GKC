@@ -37,8 +37,8 @@ Visual Studio Express 2015 for Desktop
 ##### Latex
 
 Install MikTex, and use TexWorks. Install other packages through Maintenance UI such as CJK packages.
-Two patterns, `pdfLaTeX+MakeIndex+BibTeX` and `XeLaTeX+MakeIndex+BibTeX` can be used for composing
-papers, books and slides.
+Two patterns, `pdfLaTeX+MakeIndex+BibTeX` and `XeLaTeX+MakeIndex+BibTeX` with 'xeCJK' can be used
+for composing papers, books and slides.
 
 #### Linux
 

@@ -137,14 +137,15 @@ public:
 		}
 		return cr;
 	}
-	virtual _CplMetaDataPosition LeaveLevel() throw()
+	virtual _CplMetaDataPosition LeaveLevel(const bool& bReverseLevelLink) throw()
 	{
 		_CplMetaDataPosition pos;
 		if( m_stack.IsEmpty() )
 			return pos;  //zero
 		uint uAddr = m_stack.GetTop();
 		m_stack.Pop();
-		m_sym_pool.ReverseLevelLink(uAddr);
+		if( bReverseLevelLink )
+			m_sym_pool.ReverseLevelLink(uAddr);
 		m_sym_pool.ClearLevelLinkAnalysisFlag(uAddr);
 		pos.SetAddr(uAddr);
 		return pos;
@@ -153,9 +154,9 @@ public:
 	{
 		return m_stack.IsEmpty() ? 0 : m_stack.GetTopLevel();
 	}
-	virtual void FinishZeroLevel() throw()
+	virtual void FinishZeroLevel(const bool& bReverseLevelLink) throw()
 	{
-		uint uAddr = LeaveLevel().GetAddr();
+		uint uAddr = LeaveLevel(bReverseLevelLink).GetAddr();
 		assert( m_stack.IsEmpty() );
 		m_sym_pool.SetZeroLevelHead(uAddr);
 	}

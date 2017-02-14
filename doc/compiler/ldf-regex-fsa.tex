@@ -1,0 +1,315 @@
+﻿\documentclass[a3paper]{article}
+
+\usepackage[landscape]{geometry}
+
+\usepackage{palatino}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+%document
+
+\begin{document}
+
+% define
+
+\tikzstyle{nt-state} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=blue!60]
+\tikzstyle{t-state} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=black!35!green!100]
+
+\tikzstyle{arrow} = [->, >=stealth]
+
+% page
+
+\thispagestyle{empty}
+
+\begin{tikzpicture}[node distance=1cm]
+% nodes
+\node[nt-state, draw, align=left](start){
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$$\backslash$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$r} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$n} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$t} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$s} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$$[$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$$]$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$(} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$)} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$$\{$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$$\}$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$?} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$*} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$+} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$-} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$\^{}} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\backslash$$\backslash$$\vert$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$[$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$]$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$-} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$\^{}} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$?} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$*} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$+} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$$\vert$} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$(} \\
+\textcolor{red}{.}\textcolor{white}{$\backslash$)} \\
+\textcolor{red}{.}\textcolor{white}{[$\backslash$x21-$\backslash$x7E]$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]$\vert$\textcolor{red}{.}[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{1}] () at (-10.5cm, 0cm);
+\node[t-state, left of = start, xshift=-13cm, yshift=5cm](state-2){\textcolor{brown!60}{2}};
+\node[t-state, left of = start, xshift=-14cm, yshift=3cm, draw, align=left](state-3){
+\textcolor{white}{$\backslash$$[$}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{3}] () at (-18cm, 3cm);
+\node[t-state, left of = start, xshift=-14cm, yshift=1cm, draw, align=left](state-4){
+\textcolor{white}{$\backslash$$]$}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{4}] () at (-18cm, 1cm);
+\node[t-state, left of = start, xshift=-14cm, yshift=-1cm, draw, align=left](state-5){
+\textcolor{white}{$\backslash$-}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{5}] () at (-18cm, -1cm);
+\node[t-state, left of = start, xshift=-14cm, yshift=-3cm, draw, align=left](state-6){
+\textcolor{white}{$\backslash$\^{}}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{6}] () at (-18cm, -3cm);
+\node[t-state, left of = start, xshift=-14cm, yshift=-5cm, draw, align=left](state-7){
+\textcolor{white}{$\backslash$?}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{7}] () at (-18cm, -5cm);
+\node[t-state, left of = start, xshift=-14cm, yshift=-7cm, draw, align=left](state-8){
+\textcolor{white}{$\backslash$*}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{8}] () at (-18cm, -7cm);
+\node[t-state, left of = start, xshift=-14cm, yshift=-9.5cm, draw, align=left](state-9){
+\textcolor{white}{$\backslash$+}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{9}] () at (-18cm, -9.5cm);
+\node[t-state, left of = start, xshift=-14cm, yshift=-12cm, draw, align=left](state-10){
+\textcolor{white}{$\backslash$$\vert$}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{10}] () at (-18cm, -12cm);
+\node[t-state, below of = start, xshift=-8.5cm, yshift=-8.5cm, draw, align=left](state-11){
+\textcolor{white}{$\backslash$(}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{11}] () at (-8.5cm, -8.5cm);
+\node[t-state, below of = start, xshift=-5.5cm, yshift=-11cm, draw, align=left](state-12){
+\textcolor{white}{$\backslash$)}\textcolor{red}{.} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{12}] () at (-5.5cm, -11cm);
+\node[t-state, below of = start, xshift=-0.5cm, yshift=-8.5cm, draw, align=left](state-13){
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{13}] () at (-0.5cm, -8.5cm);
+\node[t-state, below of = start, xshift=4cm, yshift=-11cm, draw, align=left](state-14){
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]\textcolor{red}{.}}
+};
+\coordinate [label=left:\textcolor{brown}{14}] () at (5cm, -11cm);
+% connections
+\draw [arrow] (start) -- node [above] {$\backslash$} (state-2);
+\draw [arrow] (start) -- node [above] {$[$} (state-3);
+\draw [arrow] (start) -- node [above] {$]$} (state-4);
+\draw [arrow] (start) -- node [above] {-} (state-5);
+\draw [arrow] (start) -- node [above] {\^{}} (state-6);
+\draw [arrow] (start) -- node [above] {?} (state-7);
+\draw [arrow] (start) -- node [above] {*} (state-8);
+\draw [arrow] (start) -- node [above] {+} (state-9);
+\draw [arrow] (start) -- node [above] {$\vert$} (state-10);
+\draw [arrow] (start) -- node [left] {(} (state-11);
+\draw [arrow] (start) -- node [left] {)} (state-12);
+\draw [arrow] (start) -- node [left] {0x21-0x7E(Rest)} (state-13);
+\draw [arrow] (start) -- node [right] {0x7F-0xFFFFFFFF} (state-14);
+\end{tikzpicture}
+
+\newpage
+
+\thispagestyle{empty}
+
+\begin{tikzpicture}[node distance=1cm]
+% nodes
+\node[t-state, draw, align=left](state-2){
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash\backslash$} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}r} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}n} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}t} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}s} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash[$} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash]$} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash$(} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash$)} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash\{$} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash\}$} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash$?} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash$*} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash$+} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash$-} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash$\^{}} \\
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}$\backslash\vert$} \\
+\textcolor{white}{[$\backslash$x21-$\backslash$x7E]\textcolor{red}{.}$\vert$[$\backslash$x7F-$\backslash$xFFFFFFFF]}
+};
+\coordinate [label=left:\textcolor{brown}{2}] () at (-10.5cm, 0cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=5cm, draw, align=left](state-15){
+\textcolor{white}{$\backslash\backslash\backslash\backslash$}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{15}] () at (-16.5cm, 5cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=3.5cm, draw, align=left](state-16){
+\textcolor{white}{$\backslash\backslash$r}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{16}] () at (-16.5cm, 3.5cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=2cm, draw, align=left](state-17){
+\textcolor{white}{$\backslash\backslash$n}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{17}] () at (-16.5cm, 2cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=0.5cm, draw, align=left](state-18){
+\textcolor{white}{$\backslash\backslash$t}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{18}] () at (-16.5cm, 0.5cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=-1cm, draw, align=left](state-19){
+\textcolor{white}{$\backslash\backslash$s}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{19}] () at (-16.5cm, -1cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=-2.5cm, draw, align=left](state-20){
+\textcolor{white}{$\backslash\backslash\backslash[$}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{20}] () at (-16.5cm, -2.5cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=-4cm, draw, align=left](state-21){
+\textcolor{white}{$\backslash\backslash\backslash]$}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{21}] () at (-16.5cm, -4cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=-5.5cm, draw, align=left](state-22){
+\textcolor{white}{$\backslash\backslash\backslash$(}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{22}] () at (-16.5cm, -5.5cm);
+\node[t-state, left of = state-2, xshift=-14cm, yshift=-7cm, draw, align=left](state-23){
+\textcolor{white}{$\backslash\backslash\backslash$)}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{23}] () at (-16.5cm, -7cm);
+\node[t-state, below of = state-2, xshift=-10cm, yshift=-5cm, draw, align=left](state-24){
+\textcolor{white}{$\backslash\backslash\backslash\{$}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{24}] () at (-11cm, -6cm);
+\node[t-state, below of = state-2, xshift=-10cm, yshift=-6.5cm, draw, align=left](state-25){
+\textcolor{white}{$\backslash\backslash\backslash\}$}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{25}] () at (-11cm, -7.5cm);
+\node[t-state, below of = state-2, xshift=-6cm, yshift=-5cm, draw, align=left](state-26){
+\textcolor{white}{$\backslash\backslash\backslash$?}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{26}] () at (-7cm, -6cm);
+\node[t-state, below of = state-2, xshift=-3cm, yshift=-5cm, draw, align=left](state-27){
+\textcolor{white}{$\backslash\backslash\backslash$*}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{27}] () at (-4cm, -6cm);
+\node[t-state, below of = state-2, xshift=0cm, yshift=-5cm, draw, align=left](state-28){
+\textcolor{white}{$\backslash\backslash\backslash$+}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{28}] () at (-1cm, -6cm);
+\node[t-state, below of = state-2, xshift=3cm, yshift=-5cm, draw, align=left](state-29){
+\textcolor{white}{$\backslash\backslash\backslash$-}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{29}] () at (2cm, -6cm);
+\node[t-state, below of = state-2, xshift=6cm, yshift=-5cm, draw, align=left](state-30){
+\textcolor{white}{$\backslash\backslash\backslash$\^{}}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{30}] () at (5cm, -6cm);
+\node[t-state, below of = state-2, xshift=9cm, yshift=-5cm, draw, align=left](state-31){
+\textcolor{white}{$\backslash\backslash\backslash\vert$}\textcolor{red}{.}
+};
+\coordinate [label=left:\textcolor{brown}{31}] () at (8cm, -6cm);
+% connections
+\draw [arrow] (state-2) -- node [above] {$\backslash$} (state-15);
+\draw [arrow] (state-2) -- node [above] {r} (state-16);
+\draw [arrow] (state-2) -- node [above] {n} (state-17);
+\draw [arrow] (state-2) -- node [above] {t} (state-18);
+\draw [arrow] (state-2) -- node [above] {s} (state-19);
+\draw [arrow] (state-2) -- node [above] {$[$} (state-20);
+\draw [arrow] (state-2) -- node [above] {$]$} (state-21);
+\draw [arrow] (state-2) -- node [above] {(} (state-22);
+\draw [arrow] (state-2) -- node [above] {)} (state-23);
+\draw [arrow] (state-2) -- node [left] {$\{$} (state-24);
+\draw [arrow] (state-2) -- node [left] {$\}$} (state-25);
+\draw [arrow] (state-2) -- node [left] {?} (state-26);
+\draw [arrow] (state-2) -- node [left] {*} (state-27);
+\draw [arrow] (state-2) -- node [left] {+} (state-28);
+\draw [arrow] (state-2) -- node [left] {-} (state-29);
+\draw [arrow] (state-2) -- node [left] {\^{}} (state-30);
+\draw [arrow] (state-2) -- node [right] {$\vert$} (state-31);
+\end{tikzpicture}
+
+\newpage
+
+\thispagestyle{empty}
+
+\begin{tikzpicture}[node distance=1cm]
+% nodes
+\node[t-state, draw, align=left](state-2){
+\textcolor{white}{$\backslash\backslash$\textcolor{red}{.}x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{...}
+};
+\coordinate [label=left:\textcolor{brown}{2}] () at (-10.5cm, 0cm);
+\node[nt-state, below of = state-2, xshift=0cm, yshift=-1cm, draw, align=left](state-32){
+\textcolor{white}{$\backslash\backslash$x\textcolor{red}{.}[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{32}] () at (-10.5cm, -2cm);
+\node[nt-state, below of = state-32, xshift=0cm, yshift=-1.5cm, draw, align=left](state-33){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f](\textcolor{red}{.}[0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$\textcolor{red}{.}[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{33}] () at (-10.5cm, -4.5cm);
+\node[t-state, below of = state-33, xshift=0cm, yshift=-1.5cm, draw, align=left](state-34){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]\textcolor{red}{.}$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f]\textcolor{red}{.}[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{34}] () at (-10.5cm, -7cm);
+\node[nt-state, below of = state-34, xshift=0cm, yshift=-1.5cm, draw, align=left](state-35){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f](\textcolor{red}{.}[0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$\textcolor{red}{.}[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{35}] () at (-10.5cm, -9.5cm);
+\node[t-state, below of = state-35, xshift=0cm, yshift=-1.5cm, draw, align=left](state-36){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]\textcolor{red}{.}$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f]\textcolor{red}{.}[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{36}] () at (-10.5cm, -12cm);
+\node[nt-state, below of = state-36, xshift=0cm, yshift=-1.5cm, draw, align=left](state-37){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f](\textcolor{red}{.}[0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$\textcolor{red}{.}[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{37}] () at (-10.5cm, -14.5cm);
+\node[t-state, below of = state-37, xshift=0cm, yshift=-1.5cm, draw, align=left](state-38){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]\textcolor{red}{.}$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))} \\
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f]\textcolor{red}{.}[0-9A-Fa-f][0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{38}] () at (-10.5cm, -17cm);
+\node[nt-state, below of = state-38, xshift=0cm, yshift=-1.5cm, draw, align=left](state-39){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]\textcolor{red}{.}[0-9A-Fa-f])))}
+};
+\coordinate [label=left:\textcolor{brown}{39}] () at (-10.5cm, -19.5cm);
+\node[t-state, below of = state-39, xshift=0cm, yshift=-1.5cm, draw, align=left](state-40){
+\textcolor{white}{$\backslash\backslash$x[0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]$\vert$[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]\textcolor{red}{.})))}
+};
+\coordinate [label=left:\textcolor{brown}{40}] () at (-10.5cm, -22cm);
+% connections
+\draw [arrow] (state-2) -- node [left] {x} (state-32);
+\draw [arrow] (state-32) -- node [left, align=left] {0-9\\A-F\\a-f} (state-33);
+\draw [arrow] (state-33) -- node [left, align=left] {0-9\\A-F\\a-f} (state-34);
+\draw [arrow] (state-34) -- node [left, align=left] {0-9\\A-F\\a-f} (state-35);
+\draw [arrow] (state-35) -- node [left, align=left] {0-9\\A-F\\a-f} (state-36);
+\draw [arrow] (state-36) -- node [left, align=left] {0-9\\A-F\\a-f} (state-37);
+\draw [arrow] (state-37) -- node [left, align=left] {0-9\\A-F\\a-f} (state-38);
+\draw [arrow] (state-38) -- node [left, align=left] {0-9\\A-F\\a-f} (state-39);
+\draw [arrow] (state-39) -- node [left, align=left] {0-9\\A-F\\a-f} (state-40);
+\end{tikzpicture}
+
+\end{document}

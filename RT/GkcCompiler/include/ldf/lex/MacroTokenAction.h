@@ -52,10 +52,10 @@ public:
 	}
 
 private:
-	static CallResult _get_next_char(ShareCom<ITextStream>& stream, CharA& ch) throw()
+	static CallResult _get_next_char(ShareCom<ITextStream>& stream, CharF& ch) throw()
 	{
 		CallResult cr;
-		cr = stream.Deref().GetCharA(ch);
+		cr = stream.Deref().GetChar(ch);
 		if( cr.GetResult() == SystemCallResults::S_EOF )
 			cr.SetResult(SystemCallResults::Fail);  //not a line
 		return cr;
@@ -63,7 +63,7 @@ private:
 	static CallResult do_action(ShareCom<ITextStream>& stream, _LexerTokenInfo& info)
 	{
 		CallResult cr;
-		CharA ch;
+		CharF ch;
 
 		//receive the regular expression
 		info.get_Data().SetLength(0);  //may throw
@@ -92,7 +92,7 @@ private:
 			cr = info.AddCharEndCol(1);
 			if( cr.IsFailed() )
 				return cr;
-			StringHelper::Append(ch, info.get_Data());  //may throw
+			info.get_Data().Append(ch);  //may throw
 			//next char
 			cr = _get_next_char(stream, ch);
 			if( cr.IsFailed() )
@@ -100,7 +100,7 @@ private:
 		}
 
 		//back char
-		cr = stream.Deref().UngetCharA(1);
+		cr = stream.Deref().UngetChar(1);
 		return cr;
 	}
 

@@ -56,7 +56,7 @@ private:
 	CallResult do_action(ShareArray<ShareCom<_IGrammarSymbolData>>& arrSymbol)
 	{
 		CallResult cr;
-		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer());
+		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		//nonterminal
 		uint uID = m_data.Deref().AddToNonterminalTable(StringUtilHelper::To_ConstString(str));  //may throw
 		//left part

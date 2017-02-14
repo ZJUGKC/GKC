@@ -134,6 +134,7 @@ typedef char_l  CharL;
 
 typedef char_s  CharS;
 typedef char_w  CharW;
+typedef char_f  CharF;
 
 //------------------------------------------------------------------------------
 // CallResult

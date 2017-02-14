@@ -93,9 +93,9 @@ public:
 	void Init()
 	{
 		if( m_token_regex.IsBlockNull() )
-			m_token_regex = ShareArrayHelper::MakeShareArray<StringA>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			m_token_regex = ShareArrayHelper::MakeShareArray<_LexerTokenString>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		if( m_macro_regex.IsBlockNull() )
-			m_macro_regex = ShareArrayHelper::MakeShareArray<StringA>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			m_macro_regex = ShareArrayHelper::MakeShareArray<_LexerTokenString>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		m_token_id = CPL_TK_FIRST;
 		m_macro_id = CPL_TK_FIRST;
 	}
@@ -113,11 +113,11 @@ public:
 	{
 		return RefPtr<TokenTable>(m_macro_table);
 	}
-	ShareArray<StringA>& GetTokenRegex() throw()
+	ShareArray<_LexerTokenString>& GetTokenRegex() throw()
 	{
 		return m_token_regex;
 	}
-	ShareArray<StringA>& GetMacroRegex() throw()
+	ShareArray<_LexerTokenString>& GetMacroRegex() throw()
 	{
 		return m_macro_regex;
 	}
@@ -137,59 +137,63 @@ public:
 	}
 
 private:
-	void expand_macro_one(StringA& str)
+	void expand_macro_one(_LexerTokenString& str)
 	{
-		if( str.IsBlockNull() )
-			return ;
-
 		//loop
 		do {
+			uintptr uLength = str.GetLength();
 			//find
 			uintptr uCount = 0;
 			uintptr uStart = 0;
 			do {
-				auto iter(StringHelper::Find(str, '{', uStart));
-				if( iter.IsNull() )
+				if( uStart >= uLength )
 					break;
-				intptr delta = iter.CalcDelta(str.GetAt(uStart));
-				if( iter != str.GetBegin() ) {
-					auto iter1(iter);
-					iter1.MovePrev();
+				CharF ch;
+				str.GetAt(uStart, ch);
+				if( ch != '{' ) {
+					uStart ++;
+					continue;
+				}
+				if( uStart != 0 ) {
+					str.GetAt(uStart - 1, ch);
 					// \{
-					if( iter1.get_Value() == '\\' ) {
-						uStart += (delta + 1);
+					if( ch == '\\' ) {
+						uStart ++;
 						continue;
 					}
 				}
-				uStart += (delta + 1);
-				uCount ++;
 				uintptr uLeftC = uStart;
+				uCount ++;
+				uStart ++;
 				do {
-					auto iterE(StringHelper::Find(str, '}', uStart));
-					if( iterE.IsNull() ) {
+					if( uStart >= uLength ) {
 						uCount --;
 						break;
 					}
-					delta = iterE.CalcDelta(str.GetAt(uStart));
-					auto iter1(iterE);
-					iter1.MovePrev();
-					// \}
-					if( iter1.get_Value() == '\\' ) {
-						uStart += (delta + 1);
+					str.GetAt(uStart, ch);
+					if( ch != '}' ) {
+						uStart ++;
 						continue;
 					}
-					uStart += (delta + 1);
-					intptr len = iterE.CalcDelta(iter);
+					str.GetAt(uStart - 1, ch);
+					// \}
+					if( ch == '\\' ) {
+						uStart ++;
+						continue;
+					}
+					uintptr uLen = uStart - uLeftC - 1;
+					uStart ++;
 					//empty
-					if( len <= 1 ) {
+					if( uLen == 0 ) {
 						uCount --;
 						break;
 					}
 					//macro name
-					StringA strMacro(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-					StringUtilHelper::Sub(str, uLeftC, len - 1, strMacro);  //may throw
-					ConstStringA c_macro_name(StringUtilHelper::To_ConstString(strMacro));
-					StringA strV;
+					_LexerTokenString strMacro;
+					str.ToSubString(uLeftC + 1, uLen, strMacro);  //may throw
+					StringA strU(strMacro.ToUTF8());  //may throw
+					ConstStringA c_macro_name(StringUtilHelper::To_ConstString(strU));
+					RefPtr<_LexerTokenString> rStrV;
 					uint id = m_macro_table.get_ID(c_macro_name);
 					if( id == 0 ) {
 						id = m_token_table.get_ID(c_macro_name);
@@ -197,17 +201,18 @@ private:
 							uCount --;
 							break;
 						}
-						strV = m_token_regex[id - m_token_table.GetMinID()].get_Value();
+						rStrV = RefPtr<_LexerTokenString>(m_token_regex[id - m_token_table.GetMinID()].get_Value());
 					}
 					else {
-						strV = m_macro_regex[id - m_macro_table.GetMinID()].get_Value();
+						rStrV = RefPtr<_LexerTokenString>(m_macro_regex[id - m_macro_table.GetMinID()].get_Value());
 					}
-					iter.get_Value() = '(';
-					iterE.get_Value() = ')';
-					StringHelper::Delete(uLeftC, len - 1, str);
-					StringUtilHelper::Insert(uLeftC, strV, str);  //may throw
-					//now iterators are invalid
-					uStart = uLeftC + strV.GetLength() + 1;
+					str.SetAt(uLeftC, '(');
+					str.SetAt(uStart - 1, ')');
+					str.Delete(uLeftC + 1, uLen);
+					str.Insert(uLeftC + 1, rStrV.Deref());  //may throw
+					//now uStart and uLength are invalid
+					uStart = uLeftC + 1 + rStrV.Deref().GetLength() + 1;
+					uLength = str.GetLength();
 					break;
 				} while(true);
 			} while(true);
@@ -221,8 +226,8 @@ private:
 	TokenTable& m_token_table;
 	TokenTable m_macro_table;
 	//regular expression
-	ShareArray<StringA> m_token_regex;
-	ShareArray<StringA> m_macro_regex;
+	ShareArray<_LexerTokenString> m_token_regex;
+	ShareArray<_LexerTokenString> m_macro_regex;
 	//id
 	uint m_token_id;
 	uint m_macro_id;
@@ -252,7 +257,8 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp, TokenTable& t
 		lexer.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TOKEN"), spMacroToken);  //may throw
 	} //end block
 	//stream
-	lexer.SetStream(sp);
+	int iCharType;
+	lexer.SetStream(sp, iCharType);
 
 	//grammar
 	_LdfGrammarParser grammar;
@@ -323,6 +329,8 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp, TokenTable& t
 	lex_data.Finish();  //may throw
 	lex_data.ExpandTokenMacros();  //may throw
 
+	assert( lex_data.GetTokenRegex().GetCount() > 0 );
+
 	//check overflow
 	{
 #ifdef DEBUG
@@ -335,7 +343,7 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp, TokenTable& t
 	//AST
 	_Regex_AST rast;
 	rast.Init();  //may throw
-	cr = _Regex_Generate_AST(lex_data.GetTokenRegex(), rast);  //may throw
+	cr = _Regex_Generate_AST(lex_data.GetTokenRegex(), iCharType, rast);  //may throw
 	if( cr.IsFailed() )
 		return cr;
 

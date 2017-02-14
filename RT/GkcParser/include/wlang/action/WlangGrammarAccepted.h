@@ -40,7 +40,7 @@ public:
 	virtual GKC::CallResult DoAccepted(INOUT GKC::ShareCom<_IGrammarSymbolData>& sym) throw()
 	{
 		CallResult cr;
-		m_spMeta.Deref().FinishZeroLevel();
+		m_spMeta.Deref().FinishZeroLevel(true);
 		return cr;
 	}
 

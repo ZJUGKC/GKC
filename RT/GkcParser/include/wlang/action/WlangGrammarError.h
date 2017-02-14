@@ -42,7 +42,7 @@ public:
 
 		// ">>" --> ">"
 		if( ConstStringCompareTrait<ConstStringA>::IsEQ(strEvent, DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RIGHT_SHIFT")) ) {
-			cr = spText.Deref().UngetCharA(1);
+			cr = spText.Deref().UngetChar(1);
 			if( cr.IsFailed() )
 				return cr;
 			strEvent = DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_LOG_GT");

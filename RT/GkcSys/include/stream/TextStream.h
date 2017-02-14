@@ -142,6 +142,10 @@ public:
 	{
 		set_BOM_type(iType);
 	}
+	virtual int GetBOM() throw()
+	{
+		return m_iBomType;
+	}
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw()
 	{
 		assert( is_valid() );
@@ -213,6 +217,60 @@ public:
 		if( cr.IsFailed() )
 			return cr;
 		return back_bytes_buffer(iBytes);
+	}
+	virtual GKC::CallResult GetChar(GKC::CharF& ch) throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			{
+				CharH chRead;
+				cr = GetCharH(chRead);
+				if( cr.IsFailed() )
+					return cr;
+				ch = (CharF)chRead;
+			} //end block
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			{
+				CharL chRead;
+				cr = GetCharL(chRead);
+				if( cr.IsFailed() )
+					return cr;
+				ch = (CharF)chRead;
+			} //end block
+			break;
+		default:
+			{
+				CharA chRead;
+				cr = GetCharA(chRead);
+				if( cr.IsFailed() )
+					return cr;
+				ch = (CharF)chRead;
+			} //end block
+			break;
+		}
+		return cr;
+	}
+	virtual GKC::CallResult UngetChar(const int64& iCharNum) throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			cr = UngetCharH(iCharNum);
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			cr = UngetCharL(iCharNum);
+			break;
+		default:
+			cr = UngetCharA(iCharNum);
+			break;
+		}
+		return cr;
 	}
 	virtual GKC::CallResult WriteBOM() throw()
 	{
@@ -312,6 +370,24 @@ public:
 		if( uActChars != 1 ) {
 			cr.SetResult(SystemCallResults::DiskFull);
 			return cr;
+		}
+		return cr;
+	}
+	virtual GKC::CallResult PutChar(const GKC::CharF& ch) throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			cr = PutCharH((CharH)ch);
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			cr = PutCharL((CharL)ch);
+			break;
+		default:
+			cr = PutCharA((CharA)ch);
+			break;
 		}
 		return cr;
 	}

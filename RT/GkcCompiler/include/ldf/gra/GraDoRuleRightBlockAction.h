@@ -57,7 +57,7 @@ private:
 	{
 		CallResult cr;
 		//left part
-		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer());
+		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		uint uID = m_data.Deref().AddToNonterminalTable(StringUtilHelper::To_ConstString(str));  //may throw
 		//start index
 		ShareCom<_I_GraPositionSymbolData_Utility> spU;

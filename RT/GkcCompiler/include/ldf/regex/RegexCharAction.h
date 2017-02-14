@@ -39,28 +39,25 @@ public:
 	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
 	{
 		//fetch the actual character
-		StringA& str = info.get_Buffer();
+		_LexerTokenString& str = info.get_Buffer();
 		assert( str.GetLength() > 1 );
 		//value
-		CharA ch = str.GetAt(1).get_Value();
-		if( ch == 'r' )
-			str.GetAt(0).set_Value('\r');
-		else if( ch == 'n' )
-			str.GetAt(0).set_Value('\n');
-		else if( ch == 't' )
-			str.GetAt(0).set_Value('\t');
-		else if( ch == 's' )
-			str.GetAt(0).set_Value(' ');
-		else if( ch == 'x' ) {
-			bool bOK;
-			uint v;
-			string_to_value(ShareArrayHelper::GetInternalPointer(str) + 2, 16, v, bOK);  //no check
-			assert( bOK );
-			str.GetAt(0).set_Value((CharA)v);
+		CharF ch;
+		str.GetAt(1, ch);
+		//reserve "\xDD..."
+		if( ch != 'x' ) {
+			if( ch == 'r' )
+				str.SetAt(0, '\r');
+			else if( ch == 'n' )
+				str.SetAt(0, '\n');
+			else if( ch == 't' )
+				str.SetAt(0, '\t');
+			else if( ch == 's' )
+				str.SetAt(0, ' ');
+			else
+				str.SetAt(0, ch);
+			str.SetLength(1);
 		}
-		else
-			str.GetAt(0).set_Value(ch);
-		str.SetLength(1);
 		//change ID
 		strToken = DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_CHAR");
 		bTokenChanged = true;

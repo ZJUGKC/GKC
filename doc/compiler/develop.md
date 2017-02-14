@@ -54,7 +54,7 @@ The syntax of regular expression is shown in the following tables:
 
 	| Symbols | Description |
 	|---------|-------------|
-	| x  | Visible ASCII character, 0x21-0x7E (remove space - 0x20) |
+	| x  | Visible ASCII character, 0x21-0x7E (remove space - 0x20), or unicode character (wide character) |
 	| \x | Escape character |
 	| [xyz...] or [...x-z...] or [^...] | Define a character set |
 
@@ -85,7 +85,7 @@ The syntax of regular expression is shown in the following tables:
 	| Symbols | Description |
 	|---------|-------------|
 	| \\ | '\' |
-	| \xDD | Hexadecimal number |
+	| \xDD, \xDDDD, \xDDDDDD, \xDDDDDDDD | Hexadecimal number |
 	| \r | Carriage return |
 	| \n | Line break |
 	| \t | Tab |
@@ -183,7 +183,7 @@ The lexical elements of regular expression can be described as the following lex
 ```
 %%
 TK_CHAR_BACKSLASH       \\\\
-TK_CHAR_HEX             \\x[0-9A-Fa-f][0-9A-Fa-f]
+TK_CHAR_HEX             \\x[0-9A-Fa-f]([0-9A-Fa-f]|[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]|[0-9A-Fa-f][0-9A-Fa-f]([0-9A-Fa-f]|[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])))
 TK_CHAR_CR              \\r
 TK_CHAR_LN              \\n
 TK_CHAR_TAB             \\t
@@ -210,10 +210,10 @@ TK_PLUS                 \+
 TK_VERT                 \|
 TK_LPAREN               \(
 TK_RPAREN               \)
-TK_CHAR                 [\x21-\x7E]
+TK_CHAR                 [\x21-\x7E]|[\x7F-\xFFFFFFFF]
 ```
 
-The corresponding FSA tables are shown in `ldf-regex-fsa.odg`, `LdfRegexFsa.h` and `LdfRegexFsa.cpp`.
+The corresponding FSA tables are shown in `ldf-regex-fsa.tex`, `LdfRegexFsa.h` and `LdfRegexFsa.cpp`.
 
 The syntax of regular expression can be described as the following grammar file:
 

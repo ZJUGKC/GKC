@@ -237,8 +237,11 @@ public:
 			if( cr.IsFailed() )
 				break;
 			_LexerTokenInfo& tokenInfo = m_lexer.Deref().GetTokenInfo();
-			spData.Deref().set_Buffer(StringHelper::Clone(tokenInfo.get_Buffer()));  //may throw
-			spData.Deref().set_Data(StringHelper::Clone(tokenInfo.get_Data()));  //may throw
+			_LexerTokenString strTmp;
+			tokenInfo.get_Buffer().CloneTo(strTmp);  //may throw
+			spData.Deref().set_Buffer(strTmp);
+			tokenInfo.get_Data().CloneTo(strTmp);  //may throw
+			spData.Deref().set_Data(strTmp);
 			spData.Deref().set_WordInfo(tokenInfo.get_WordInfo());
 		} while( true );  //end while
 
@@ -303,7 +306,7 @@ private:
 			_CplErrorStringHelper::GenerateError(tokenInfo.get_WordInfo().infoStart.uRow,
 												tokenInfo.get_WordInfo().infoStart.uCol,
 												eb.GetLength() == 0 ?
-													CS_U2S(StringUtilHelper::To_ConstString(tokenInfo.get_Buffer())).GetC()
+													StringUtilHelper::To_ConstString(tokenInfo.get_Buffer().ToSystemString())
 													: StringUtilHelper::To_ConstString(eb),
 												DECLARE_TEMP_CONST_STRING(ConstStringS, _S("error token.")),
 												strError);  //may throw

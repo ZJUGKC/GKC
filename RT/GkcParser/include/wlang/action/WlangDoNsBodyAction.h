@@ -74,7 +74,7 @@ private:
 	{
 		CallResult cr;
 		//namespace
-		StringA str(arrSymbol[2].get_Value().Deref().get_Buffer());
+		StringA str(arrSymbol[2].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		ConstStringA c_str(StringUtilHelper::To_ConstString(str));
 		_CplMetaDataPosition pos;
 		pos = find_symbol(c_str);

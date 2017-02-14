@@ -56,7 +56,7 @@ private:
 	void do_action(ShareArray<ShareCom<_IGrammarSymbolData>>& arrSymbol)
 	{
 		//action
-		StringA str(arrSymbol[3].get_Value().Deref().get_Buffer());
+		StringA str(arrSymbol[3].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
 #ifdef DEBUG
 		uint uID =
 #endif

@@ -40,7 +40,23 @@ public:
 	virtual GKC::CallResult DoAction(INOUT GKC::ShareArray<GKC::ShareCom<_IGrammarSymbolData>>& arrSymbol, INOUT GKC::ShareArray<GKC::StringS>& errorArray) throw()
 	{
 		CallResult cr;
-		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer());
+		try {
+			cr = do_action(arrSymbol);  //may throw
+		}
+		catch(Exception& e) {
+			cr = e.GetResult();
+		}
+		catch(...) {
+			cr.SetResult(SystemCallResults::Fail);
+		}
+		return cr;
+	}
+
+private:
+	CallResult do_action(ShareArray<ShareCom<_IGrammarSymbolData>>& arrSymbol)
+	{
+		CallResult cr;
+		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		//terminal
 		uint uID = m_data.Deref().GetTerminalTable().get_ID(StringUtilHelper::To_ConstString(str));
 		assert( uID != 0 );

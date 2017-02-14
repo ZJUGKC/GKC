@@ -40,7 +40,22 @@ public:
 	{
 		CallResult cr;
 		//character value
-		uint uValue = (uint)(arrSymbol[1].get_Value().Deref().get_Buffer().GetAt(0).get_Value());
+		uint uValue = 0;
+		{
+			_LexerTokenString& str = arrSymbol[1].get_Value().Deref().get_Buffer().Deref();
+			if( str.GetLength() > 2 ) {
+#ifdef DEBUG
+				bool bOK =
+#endif
+				str.ToHexadecimalInteger(2, uValue);
+				assert( bOK );
+			}
+			else {
+				CharF ch;
+				str.GetAt(0, ch);
+				uValue = (uint)ch;
+			}
+		} //end block
 		assert( uValue != 0 );
 		//set value
 		ShareCom<_I_RegexCharSymbolData_Utility> spU;

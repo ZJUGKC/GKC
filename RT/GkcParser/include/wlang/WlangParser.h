@@ -80,7 +80,8 @@ public:
 	virtual void SetInput(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
 	{
 		assert( !m_spLexerAnalyzer.IsBlockNull() );
-		m_spLexerAnalyzer.Deref().SetStream(sp);
+		int iCharType;
+		m_spLexerAnalyzer.Deref().SetStream(sp, iCharType);
 	}
 	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw()
 	{

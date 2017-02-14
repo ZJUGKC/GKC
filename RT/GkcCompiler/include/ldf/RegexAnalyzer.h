@@ -76,7 +76,7 @@ private:
 	_Regex_AST& operator=(const _Regex_AST&) throw();
 };
 
-inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST& rast)
+inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, int iCharType, _Regex_AST& rast)
 {
 	CallResult cr;
 
@@ -156,7 +156,10 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 		if( cr.IsFailed() )
 			return cr;
 		spText.Deref().SetStream(spStream);
-		lexer.SetStream(spText);
+		spText.Deref().SetBOM(_LexerTokenCharTypeToBOMType(iCharType));
+		int iCharType2;
+		lexer.SetStream(spText, iCharType2);
+		assert( iCharType == iCharType2 );
 	} //end block
 
 	//grammar
@@ -382,12 +385,13 @@ inline CallResult _Regex_Generate_AST(const ShareArray<StringA>& arr, _Regex_AST
 	rast.SetCount(arr.GetCount());  //may throw
 	uintptr index = 0;
 	for( auto iter(arr.GetBegin()); iter != arr.GetEnd(); iter.MoveNext() ) {
-		StringA& str = iter.get_Value();
-		if( str.IsBlockNull() )
+		_LexerTokenString& str = iter.get_Value();
+		uintptr uLength = str.GetLength();
+		if( uLength == 0 )
 			continue;
 
 		//buffer
-		cr = spBU.Deref().SetBuffer((uintptr)ShareArrayHelper::GetInternalPointer(str), str.GetLength());
+		cr = spBU.Deref().SetBuffer(str.GetAddress(), uLength);
 		if( cr.IsFailed() )
 			return cr;
 		spText.Deref().Reset();

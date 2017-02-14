@@ -22,6 +22,7 @@ This is pre-compiled header file.
 #include "base/GkcDef.h"
 
 #include "sys/GkcSys.h"
+#include "sys/GkcCharset.h"
 
 #include "compiler/GkcCompiler.h"
 

@@ -20,11 +20,12 @@ General Kind C++
 1. Use one of the *.UTF8 locales for Linux system.
 1. The source code files are encoded as UTF8 with BOM.
 1. All constant strings with CharA type should be considered as UTF8 encoding.
+1. All constant wide strings and global data with multi-byte types are stored as compiling machine endian in assemblies.
 
 ## Production
 
 Install the necessary softwares in the production machine.
-Assume the building directory has the same level of directory GKC.
+Assume the building directory has the same level of directory `GKC`.
 
 ### Preparation
 

@@ -40,7 +40,7 @@ public:
 	{
 		CallResult cr;
 
-		CharA ch;
+		CharF ch;
 		//next char
 		cr = _get_next_char(stream, info, ch);
 		if( cr.IsFailed() )
@@ -103,10 +103,10 @@ public:
 	}
 
 private:
-	static CallResult _get_next_char(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, CharA& ch) throw()
+	static CallResult _get_next_char(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, CharF& ch) throw()
 	{
 		CallResult cr;
-		cr = stream.Deref().GetCharA(ch);
+		cr = stream.Deref().GetChar(ch);
 		if( cr.GetResult() == SystemCallResults::S_EOF ) {
 			cr.SetResult(SystemCallResults::Fail);
 		}

@@ -3223,6 +3223,7 @@ public:
 	virtual void Reset() throw() = 0;
 	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
 	virtual void SetBOM(const int& iType) throw() = 0;
+	virtual int GetBOM() throw() = 0;
 	// The return value SystemCallResults::S_EOF means the end of file is reached.
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
@@ -3230,11 +3231,14 @@ public:
 	virtual GKC::CallResult UngetCharH(const int64& iCharNum) throw() = 0;
 	virtual GKC::CallResult GetCharL(GKC::CharL& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharL(const int64& iCharNum) throw() = 0;
+	virtual GKC::CallResult GetChar(GKC::CharF& ch) throw() = 0;
+	virtual GKC::CallResult UngetChar(const int64& iCharNum) throw() = 0;
 	virtual GKC::CallResult WriteBOM() throw() = 0;
 	virtual GKC::CallResult MoveToEnd() throw() = 0;
 	virtual GKC::CallResult PutCharA(const GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult PutCharH(const GKC::CharH& ch) throw() = 0;
 	virtual GKC::CallResult PutCharL(const GKC::CharL& ch) throw() = 0;
+	virtual GKC::CallResult PutChar(const GKC::CharF& ch) throw() = 0;
 };
 
 DECLARE_GUID(GUID__ITextStream)

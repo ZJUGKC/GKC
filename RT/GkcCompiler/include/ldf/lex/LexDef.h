@@ -25,7 +25,7 @@ class NOVTABLE _I_IdTokenMacroAction_Utility
 {
 public:
 	// uID : the input value is considered as the minimum value.
-	virtual void SetOutput(const GKC::RefPtr<GKC::TokenTable>& table, const GKC::ShareArray<GKC::StringA>& arr, const GKC::RefPtr<uint>& uID) throw() = 0;
+	virtual void SetOutput(const GKC::RefPtr<GKC::TokenTable>& table, const GKC::ShareArray<_LexerTokenString>& arr, const GKC::RefPtr<uint>& uID) throw() = 0;
 };
 
 DECLARE_GUID(GUID__I_IdTokenMacroAction_Utility)

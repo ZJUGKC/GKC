@@ -69,7 +69,8 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStream>& sp, const Token
 	if( cr.IsFailed() )
 		return cr;
 	//stream
-	lexer.SetStream(sp);
+	int iCharType;
+	lexer.SetStream(sp, iCharType);
 
 	//grammar
 	_LdfGrammarParser grammar;

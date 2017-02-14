@@ -19,8 +19,8 @@ This file contains GkcCompiler helper classes.
 #define __GKC_COMPILER_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __GKC_SYS_H__
-	#error GkcCompiler.h requires GkcSys.h to be included first.
+#ifndef __GKC_CHARSET_H__
+	#error GkcCompiler.h requires GkcCharset.h to be included first.
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +38,15 @@ typedef _LEXER_CHAR_INFO  LEXER_CHAR_INFO;
 
 // LEXER_WORD_INFO
 typedef _LEXER_WORD_INFO  LEXER_WORD_INFO;
+
+// LexerTokenString
+typedef _LexerTokenString  LexerTokenString;
+
+// BOMTypeToLexerTokenCharType
+#define BOMTypeToLexerTokenCharType  _BOMTypeToLexerTokenCharType
+
+// LexerTokenCharTypeToBOMType
+#define LexerTokenCharTypeToBOMType  _LexerTokenCharTypeToBOMType
 
 // LexerTokenInfo
 typedef _LexerTokenInfo  LexerTokenInfo;

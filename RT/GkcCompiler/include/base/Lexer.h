@@ -176,9 +176,12 @@ public:
 			m_arrAction.SetCount((uintptr)uLeastCount, 0);  //may throw
 		m_arrAction.SetAt(uID, spAction);
 	}
-	void SetStream(IN const ShareCom<ITextStream>& stream) throw()
+	void SetStream(IN const ShareCom<ITextStream>& stream, OUT int& iCharType) throw()
 	{
 		m_stream = stream;
+		//character type of token
+		iCharType = _BOMTypeToLexerTokenCharType(m_stream.Deref().GetBOM());
+		m_token_info.SetCharType(iCharType);
 	}
 	ShareCom<ITextStream> GetStream() const throw()
 	{
@@ -214,9 +217,9 @@ public:
 		}
 
 		uint uEvent;
-		CharA ch;
+		CharF ch;
 		//read a character
-		cr = m_stream.Deref().GetCharA(ch);
+		cr = m_stream.Deref().GetChar(ch);
 		if( cr.IsFailed() )
 			return cr;
 		if( cr.GetResult() == SystemCallResults::S_EOF ) {
@@ -228,7 +231,7 @@ public:
 		m_fsa.SetStartState();
 		m_token_info.Reset();  //may throw
 		//first character
-		uEvent = ch;
+		uEvent = (uint)ch;
 		m_token_info.Append(ch);  //may throw
 
 		//loop
@@ -250,7 +253,7 @@ public:
 				m_token_info.set_ID(iMatch);
 				//back
 				if( uBackNum > 0 ) {
-					cr = m_stream.Deref().UngetCharA((int64)uBackNum);
+					cr = m_stream.Deref().UngetChar((int64)uBackNum);
 					assert( cr.IsOK() );
 					m_token_info.BackChar(uBackNum);  //may throw
 				}
@@ -272,7 +275,7 @@ public:
 				break;
 			} //end if
 			//get next char
-			cr = m_stream.Deref().GetCharA(ch);
+			cr = m_stream.Deref().GetChar(ch);
 			if( cr.IsFailed() )
 				break;
 			if( cr.GetResult() == SystemCallResults::S_EOF ) {
@@ -280,7 +283,7 @@ public:
 				cr.SetResult(SystemCallResults::OK);
 			}
 			else {
-				uEvent = ch;
+				uEvent = (uint)ch;
 				m_token_info.Append(ch);  //may throw
 			}
 		} while( true );

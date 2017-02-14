@@ -52,10 +52,10 @@ public:
 		m_lexer.SetFsaTable(m_spAccess.Deref().GetFsaTable());
 		return CallResult();
 	}
-	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
+	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp, int& iCharType) throw()
 	{
 		assert( !sp.IsBlockNull() );
-		m_lexer.SetStream(sp);
+		m_lexer.SetStream(sp, iCharType);
 	}
 	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strToken, const GKC::ShareCom<_ILexerAction>& spAction) throw()
 	{

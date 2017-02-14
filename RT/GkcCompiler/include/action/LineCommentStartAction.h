@@ -40,7 +40,7 @@ public:
 	{
 		CallResult cr;
 
-		CharA ch;
+		CharF ch;
 		bool  bCheckLN = false;
 		do {
 			//next char
@@ -55,7 +55,7 @@ public:
 			//check LN
 			if( bCheckLN ) {
 				if( ch != '\n' ) {
-					cr = stream.Deref().UngetCharA(1);
+					cr = stream.Deref().UngetChar(1);
 					if( cr.IsFailed() )
 						break;
 					info.set_ID(CPL_TK_NULL);  //comment end
@@ -95,10 +95,10 @@ public:
 	}
 
 private:
-	static CallResult _get_next_char(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, CharA& ch) throw()
+	static CallResult _get_next_char(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, CharF& ch) throw()
 	{
 		CallResult cr;
-		cr = stream.Deref().GetCharA(ch);
+		cr = stream.Deref().GetChar(ch);
 		if( cr.IsFailed() ) {
 			info.set_ID(CPL_TK_ERROR);
 			info.set_ErrorString(DECLARE_TEMP_CONST_STRING(GKC::ConstStringS, _S("No expected comment end")));

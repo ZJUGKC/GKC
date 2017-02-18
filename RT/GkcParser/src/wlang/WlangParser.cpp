@@ -21,8 +21,6 @@ This file contains global variables for WLang parser component.
 #include "_GkcParser.h"
 
 #include "wlang/base/WlangDef.h"
-#include "wlang/base/WlangLex.h"
-#include "wlang/base/WlangGra.h"
 
 #include "wlang/action/WlangGrammarError.h"
 #include "wlang/action/WlangGrammarAccepted.h"

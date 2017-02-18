@@ -20,6 +20,8 @@ This file contains parser functions.
 
 #include "_GkcParser.h"
 
+#include "base/ParserDef.h"
+
 #include "wlang/base/WlangDef.h"
 #include "wlang/base/WlangLex.h"
 #include "wlang/base/WlangGra.h"

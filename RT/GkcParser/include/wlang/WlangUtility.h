@@ -40,6 +40,37 @@ public:
 	virtual GKC::CallResult Initialize() throw()
 	{
 		CallResult cr;
+		//tables
+		if( m_spLexerTables.IsBlockNull() ) {
+			ShareCom<ILexerTables> spLexerTables;
+			cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
+			if( cr.IsFailed() )
+				return cr;
+			ShareCom<ITextStream> spText;
+			cr = load_text_wlang_lex(spText);
+			if( cr.IsFailed() )
+				return cr;
+			// generate
+			cr = spLexerTables.Deref().GenerateTables(spText);
+			if( cr.IsFailed() )
+				return cr;
+			m_spLexerTables = spLexerTables;
+		}
+		if( m_spGrammarTables.IsBlockNull() ) {
+			ShareCom<IGrammarTables> spGrammarTables;
+			cr = CplAnalyzerHelper::CreateGrammarTables(spGrammarTables);
+			if( cr.IsFailed() )
+				return cr;
+			ShareCom<ITextStream> spText;
+			cr = load_text_wlang_gra(spText);
+			if( cr.IsFailed() )
+				return cr;
+			// generate
+			cr = spGrammarTables.Deref().GenerateTables(spText, m_spLexerTables);
+			if( cr.IsFailed() )
+				return cr;
+			m_spGrammarTables = spGrammarTables;
+		}
 		//lexer actions
 		if( m_spCommentStart.IsBlockNull() ) {
 			cr = LexerActionHelper::CreateCommentStartAction(m_spCommentStart);
@@ -84,6 +115,9 @@ public:
 // _IWlangUtility_Access methods
 	virtual void GetObjects(_WlangUtility_Objects& obj) throw()
 	{
+		//tables
+		obj.spLexerTables      = m_spLexerTables;
+		obj.spGrammarTables    = m_spGrammarTables;
 		//lexer actions
 		obj.spCommentStart     = m_spCommentStart;
 		obj.spLineCommentStart = m_spLineCommentStart;
@@ -97,6 +131,36 @@ public:
 	}
 
 private:
+	//load text
+	static CallResult load_text_wlang_lex_file(ShareCom<ITextStream>& sp) throw()
+	{
+		return _ParserInputHelper::LoadTextFromFile(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")), true, sp);
+	}
+	static CallResult load_text_wlang_gra_file(ShareCom<ITextStream>& sp) throw()
+	{
+		return _ParserInputHelper::LoadTextFromFile(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")), true, sp);
+	}
+	static CallResult load_text_wlang_lex_buffer(ShareCom<ITextStream>& sp) throw()
+	{
+		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_wlang_lex::GetAddress(), g_wlang_lex::GetCount()), true, sp);
+	}
+	static CallResult load_text_wlang_gra_buffer(ShareCom<ITextStream>& sp) throw()
+	{
+		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_wlang_gra::GetAddress(), g_wlang_gra::GetCount()), true, sp);
+	}
+	static CallResult load_text_wlang_lex(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_wlang_lex_buffer(sp);
+	}
+	static CallResult load_text_wlang_gra(ShareCom<ITextStream>& sp) throw()
+	{
+		return load_text_wlang_gra_buffer(sp);
+	}
+
+private:
+	//tables
+	ShareCom<ILexerTables>   m_spLexerTables;
+	ShareCom<IGrammarTables> m_spGrammarTables;
 	//lexer actions
 	ShareCom<ILexerAction> m_spCommentStart;
 	ShareCom<ILexerAction> m_spLineCommentStart;

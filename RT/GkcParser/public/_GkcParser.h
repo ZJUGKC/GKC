@@ -61,6 +61,27 @@ DECLARE_GUID(GUID__IWlangParser)
 SA_FUNCTION void _WlangUtility_Create(GKC::ShareCom<_IWlangUtility>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _WlangParser_Create(GKC::ShareCom<_IWlangParser>& sp, GKC::CallResult& cr) throw();
 
+//------------------------------------------------------------------------------
+// Won Parser
+
+#pragma pack(push, 1)
+
+// _IWonUtility
+
+class NOVTABLE _IWonUtility
+{
+public:
+	virtual GKC::CallResult Initialize() throw() = 0;
+};
+
+DECLARE_GUID(GUID__IWonUtility)
+
+
+
+#pragma pack(pop)
+
+//functions
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_PARSER_H__
 ////////////////////////////////////////////////////////////////////////////////

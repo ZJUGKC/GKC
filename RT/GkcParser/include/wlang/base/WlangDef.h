@@ -23,6 +23,9 @@ Internal Header
 
 struct _WlangUtility_Objects
 {
+	//tables
+	GKC::ShareCom<GKC::ILexerTables>   spLexerTables;
+	GKC::ShareCom<GKC::IGrammarTables> spGrammarTables;
 	//lexer actions
 	GKC::ShareCom<GKC::ILexerAction> spCommentStart;
 	GKC::ShareCom<GKC::ILexerAction> spLineCommentStart;

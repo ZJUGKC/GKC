@@ -210,7 +210,7 @@ TK_PLUS                 \+
 TK_VERT                 \|
 TK_LPAREN               \(
 TK_RPAREN               \)
-TK_CHAR                 [\x21-\x7E]|[\x7F-\xFFFFFFFF]
+TK_CHAR                 [\x21-\x5B]|[\x5D-\xFFFFFFFF]
 ```
 
 The corresponding FSA tables are shown in `ldf-regex-fsa.tex`, `LdfRegexFsa.h` and `LdfRegexFsa.cpp`.

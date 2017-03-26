@@ -70,6 +70,8 @@ VOID WINAPI _ServiceMain(
 	g_dwThreadID = ::GetCurrentThreadId();
 	g_hServiceStatus = ::RegisterServiceCtrlHandlerW(L"", _Handler);
 	if( g_hServiceStatus == NULL ) {
+		g_status.dwWin32ExitCode = ::GetLastError();
+		g_status.dwCurrentState = SERVICE_STOPPED;
 		report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_ERROR, _S("Handler not installed"));
 		return ;
 	}
@@ -87,6 +89,7 @@ VOID WINAPI _ServiceMain(
 		_cmdline_to_strings(dwArgc, lpszArgv, spArgs, args);  //may throw
 	}
 	catch(...) {
+		g_status.dwWin32ExitCode = ERROR_OUTOFMEMORY;
 		_set_service_status(SERVICE_STOPPED);
 		report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_ERROR, _S("Out of memory"));
 		return ;
@@ -95,6 +98,7 @@ VOID WINAPI _ServiceMain(
 //COM
 	HRESULT hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 	if( FAILED(hr) ) {
+		g_status.dwWin32ExitCode = HRESULT_CODE(hr);
 		_set_service_status(SERVICE_STOPPED);
 		report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_ERROR, _S("Cannot initialize MTA!"));
 		return ;
@@ -108,6 +112,7 @@ VOID WINAPI _ServiceMain(
 
 	service_main_loop sml;
 	if( !sml.Prepare(args) ) {
+		g_status.dwWin32ExitCode = ERROR_NOTHING_TO_TERMINATE;
 		::CoUninitialize();
 		_set_service_status(SERVICE_STOPPED);
 		report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_ERROR, _S("Initialize loop failed!"));

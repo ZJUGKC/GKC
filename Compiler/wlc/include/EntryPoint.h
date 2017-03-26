@@ -49,15 +49,15 @@ public:
 		if( uArgCount <= 2 ) {
 			_PrintVersion();
 			_PrintHelp();
-			return 0;
+			return 1;
 		}
-		int ret = 0;
+		bool ret = true;
 		//-c
 		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
 			if( uArgCount > 4 ) {
 				_PrintVersion();
 				_PrintHelp();
-				return 0;
+				return 1;
 			}
 			StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 			StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
@@ -80,12 +80,13 @@ public:
 			FsPathHelper::ConvertPathStringToPlatform(strSrc);
 			FsPathHelper::ConvertPathStringToPlatform(strDest);
 
-			//process
 			_PrintVersion();
+
+			//process
 			ret = _Compile_Single_File(strSrc, strDest);
 		}
 
-		return ret;
+		return ret ? 0 : 2;
 	}
 };
 

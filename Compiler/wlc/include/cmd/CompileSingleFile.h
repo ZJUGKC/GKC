@@ -25,7 +25,7 @@ namespace GKC {
 
 // compile single file
 
-inline int _Compile_Single_File(const StringS& strSrc, const StringS& strDest) throw()
+inline bool _Compile_Single_File(const StringS& strSrc, const StringS& strDest) throw()
 {
 	CallResult cr;
 
@@ -36,7 +36,7 @@ inline int _Compile_Single_File(const StringS& strSrc, const StringS& strDest) t
 	cr = _Create_WlangParser(spParser);
 	if( cr.IsFailed() ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Initialization Failed!")));
-		return 0;
+		return false;
 	}
 
 	//compile
@@ -45,7 +45,7 @@ inline int _Compile_Single_File(const StringS& strSrc, const StringS& strDest) t
 	//result
 	_Print_Compiled_Result(uCount);
 
-	return 0;
+	return uCount == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

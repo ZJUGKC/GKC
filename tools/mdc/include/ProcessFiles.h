@@ -25,7 +25,7 @@ namespace GKC {
 
 //process
 
-inline void ProcessFiles(const StringS& strSrc, const StringS& strDest)
+inline bool ProcessFiles(const StringS& strSrc, const StringS& strDest)
 {
 	StringS strCurrentPath(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 	StringS strFile(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
@@ -34,6 +34,8 @@ inline void ProcessFiles(const StringS& strSrc, const StringS& strDest)
 	while( stack.GetCount() > 0 ) {
 
 	} //end while
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

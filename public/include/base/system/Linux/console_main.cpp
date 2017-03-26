@@ -24,7 +24,7 @@ void __sig_int(int signo)
 {
 	//break key is pressed
 	stdout_attr_helper::get_attr().Restore();
-	::exit(0);
+	::exit(255);
 }
 
 //main

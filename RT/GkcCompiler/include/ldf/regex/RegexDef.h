@@ -154,7 +154,7 @@ public:
 		//clear
 		rs.m_arr.RemoveAll();
 		//empty
-		const uint c_Max = 0xFFFFFFFF;
+		const uint c_Max = 0xFFFFFFFE;
 		uint uLeft = 0;
 		_RegexCharRange rcrNow;
 		uintptr uCount = GetCount();

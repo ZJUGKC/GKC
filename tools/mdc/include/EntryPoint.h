@@ -49,11 +49,11 @@ public:
 		if( uArgCount != 3 ) {
 			_PrintVersion();
 			_PrintHelp();
-			return 0;
+			return 1;
 		}
 		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), args[2].get_Value()) ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The source directory and the destination directory cannot be the same!\n")));
-			return 0;
+			return 1;
 		}
 		StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 		StringUtilHelper::MakeString(args[1].get_Value(), strSrc);
@@ -63,11 +63,10 @@ public:
 		FsPathHelper::ConvertPathStringToPlatform(strSrc);
 		FsPathHelper::ConvertPathStringToPlatform(strDest);
 
-		//process
 		_PrintVersion();
-		ProcessFiles(strSrc, strDest);
 
-		return 0;
+		//process
+		return ProcessFiles(strSrc, strDest) ? 0 : 2;
 	}
 };
 

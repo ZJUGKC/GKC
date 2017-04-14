@@ -262,11 +262,11 @@ public:
 	{
 		GKC::StringS str;
 		if( m_iType == Char8 )
-			str = GKC::CS_U2S(GKC::StringUtilHelper::To_ConstString(get_string<GKC::StringA>())).GetV();  //may throw
+			str = GKC::CS_U2S(get_string<GKC::StringA>()).GetV();  //may throw
 		else if( m_iType == Char16 )
-			str = GKC::CS_H2S(GKC::StringUtilHelper::To_ConstString(get_string<GKC::StringH>())).GetV();  //may throw
+			str = GKC::CS_H2S(get_string<GKC::StringH>()).GetV();  //may throw
 		else if( m_iType == Char32 )
-			str = GKC::CS_L2S(GKC::StringUtilHelper::To_ConstString(get_string<GKC::StringL>())).GetV();  //may throw
+			str = GKC::CS_L2S(get_string<GKC::StringL>()).GetV();  //may throw
 		return str;
 	}
 	GKC::StringA ToUTF8() const

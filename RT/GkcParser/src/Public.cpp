@@ -17,6 +17,9 @@
 #include "wlang/base/WlangLex.h"
 #include "wlang/base/WlangGra.h"
 
+#include "won/base/WonLex.h"
+#include "won/base/WonGra.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "_GkcParser.cpp"
@@ -24,5 +27,9 @@
 #include "wlang/base/WlangDef.cpp"
 #include "wlang/base/WlangLex.cpp"
 #include "wlang/base/WlangGra.cpp"
+
+#include "won/base/WonDef.cpp"
+#include "won/base/WonLex.cpp"
+#include "won/base/WonGra.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

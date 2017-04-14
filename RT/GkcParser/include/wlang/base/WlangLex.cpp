@@ -47,7 +47,7 @@ BEGIN_STATIC_CONST_STRING(g_wlang_lex)
 "oct_digit    [0-7]" "\r\n"
 "oct_byte     {oct_digit}({oct_digit}{oct_digit}?)?" "\r\n"
 "escape_char  \\\\([\'\"\\\\0abfnrtv]|x{hex_byte}|{oct_byte})" "\r\n"
-"byte_char    [^\'\"\\r\\n]|{escape_char}" "\r\n"
+"byte_char    [^\\\\\'\"\\x00-\\x1F]|{escape_char}" "\r\n"
 "TK_CONST_CHAR     \'{byte_char}\'" "\r\n"
 "TK_CONST_WCHAR    L{TK_CONST_CHAR}" "\r\n"
 "TK_CONST_STRING   \"{byte_char}*\"" "\r\n"

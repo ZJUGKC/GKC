@@ -43,6 +43,19 @@ typedef _IWlangParser  IWlangParser;
 
 #define GUID_IWlangParser  GUID__IWlangParser
 
+// IWonUtility
+typedef _IWonUtility  IWonUtility;
+
+#define GUID_IWonUtility  GUID__IWonUtility
+
+// WonTokenTypes
+typedef _WonTokenTypes  WonTokenTypes;
+
+// IWonParser
+typedef _IWonParser  IWonParser;
+
+#define GUID_IWonParser  GUID__IWonParser
+
 // ParserHelper
 
 class ParserHelper
@@ -58,6 +71,18 @@ public:
 	{
 		CallResult cr;
 		::_WlangParser_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreateWonUtility(ShareCom<IWonUtility>& sp) throw()
+	{
+		CallResult cr;
+		::_WonUtility_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreateWonParser(ShareCom<IWonParser>& sp) throw()
+	{
+		CallResult cr;
+		::_WonParser_Create(sp, cr);
 		return cr;
 	}
 };

@@ -367,6 +367,11 @@ public:
 	{
 		Init(str, rv_forward<Args>(args)...);
 	}
+	template <typename... Args>
+	explicit _CS_CVT_S(const StringT<Tchar1>& str, Args&&... args)  //may throw
+	{
+		Init(str, rv_forward<Args>(args)...);
+	}
 	_CS_CVT_S(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src)),
 											m_strC(src.m_strC)
 	{
@@ -420,6 +425,19 @@ public:
 			return ;
 		}
 		baseClass::cvt_string(str, cc, baseClass::m_str);
+		ConstArrayHelper::SetInternalPointer<Tchar2>(NULL, 0, m_strC);
+	}
+	template <typename... Args>
+	void Init(const StringT<Tchar1>& str, Args&&... args)  //may throw
+	{
+		charset_converter cc;
+		bool bSame;
+		if( !TInit::DoInit(cc, bSame, rv_forward<Args>(args)...) )
+			throw Exception(CallResult(SystemCallResults::Fail));
+		if( bSame )
+			baseClass::m_str = *((const StringT<Tchar2>*)(&str));
+		else
+			baseClass::cvt_string(StringUtilHelper::To_ConstString(str), cc, baseClass::m_str);
 		ConstArrayHelper::SetInternalPointer<Tchar2>(NULL, 0, m_strC);
 	}
 

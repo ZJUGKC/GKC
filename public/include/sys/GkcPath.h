@@ -53,19 +53,25 @@ public:
 	{
 		assert( !str.IsBlockNull() );
 		uintptr uLength = str.GetLength();
-		if( uLength == 0 || !check_path_separator(str.GetAt(uLength - 1).get_Value()) ) {
+		if( !check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) ) {
 			Tchar ch;
 			get_path_separator(ch);
-			StringHelper::Append(ch, str);
+			StringHelper::Append(ch, str);  //may throw
 		}
 	}
 	template <typename Tchar>
 	static void RemoveSeparator(StringT<Tchar>& str) throw()
 	{
 		uintptr uLength = str.GetLength();
-		if( uLength > 0 && check_path_separator(str.GetAt(uLength - 1).get_Value()) ) {
+		if( check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
 			StringHelper::Delete(uLength - 1, 1, str);
-		}
+	}
+	template <typename Tchar, uintptr t_size>
+	static void RemoveSeparator(FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
+			str.SetLength(uLength - 1);
 	}
 
 	//extension
@@ -73,36 +79,19 @@ public:
 	static bool FindExtensionStart(IN const ConstStringT<Tchar>& str, OUT uintptr& uPos) throw()
 	{
 		uintptr uLength = str.GetCount();
-		if( uLength == 0 )
+		const Tchar* szSrc = ConstArrayHelper::GetInternalPointer(str);
+		Tchar* szFind = find_path_extension_start(szSrc, uLength);
+		if( szFind == NULL )
 			return false;
-		auto iterB(str.GetReverseBegin());
-		auto iter(iterB);
-		for( ; iter != str.GetReverseEnd(); iter.MoveNext() ) {
-			const Tchar& ch = iter.get_Value();
-			if( check_path_separator(ch) )
-				return false;
-			if( check_path_extension_start(ch) ) {
-				uPos = uLength + iter.CalcDelta(iterB) - 1;
-				return true;
-			}
-		}
-		return false;
+		uPos = szFind - szSrc;
+		return true;
 	}
 	//file part
 	template <typename Tchar>
 	static uintptr FindFilePartStart(IN const ConstStringT<Tchar>& str) throw()
 	{
-		uintptr uLength = str.GetCount();
-		if( uLength == 0 )
-			return 0;
-		auto iterB(str.GetReverseBegin());
-		auto iter(iterB);
-		for( ; iter != str.GetReverseEnd(); iter.MoveNext() ) {
-			const Tchar& ch = iter.get_Value();
-			if( check_path_separator(ch) || check_drive_separator(ch) )
-				return uLength + iter.CalcDelta(iterB);
-		}
-		return 0;
+		const Tchar* szSrc = ConstArrayHelper::GetInternalPointer(str);
+		return find_path_file_part_start(szSrc, str.GetCount()) - szSrc;
 	}
 
 	//path prefix modification
@@ -121,9 +110,10 @@ public:
 		const Tchar* sz;
 		get_current_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
-		StringHelper::Insert(0, c_strPrefix, str);
+		StringHelper::Insert(0, c_strPrefix, str);  //may throw
 	}
-	//called after ConvertPathStringToPlatform with absolute path
+	//Called after ConvertPathStringToPlatform with absolute path
+	//  Now this method can be ignored under the latest OS.
 	template <typename Tchar>
 	static void AppendAbsolutePathPrefix(StringT<Tchar>& str)
 	{
@@ -134,7 +124,7 @@ public:
 		const Tchar* sz;
 		get_absolute_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
-		StringHelper::Insert(0, c_strPrefix, str);
+		StringHelper::Insert(0, c_strPrefix, str);  //may throw
 	}
 };
 

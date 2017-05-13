@@ -37,6 +37,17 @@ void _PrintHelp() throw()
 	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
 }
 
+// tools
+inline
+bool _CheckFileExtension(const ConstStringS& str, const ConstStringS& strExt, uintptr& uPos) throw()
+{
+	if( !FsPathHelper::FindExtensionStart(str, uPos) )
+		return false;
+	return ConstStringCompareTrait<ConstStringS>::IsEQ(
+		ConstStringS(ConstArrayHelper::GetInternalPointer(str) + uPos, str.GetCount() - uPos),
+		strExt);
+}
+
 // ProgramEntryPoint
 
 class ProgramEntryPoint
@@ -45,12 +56,14 @@ public:
 	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env)
 	{
 		uintptr uArgCount = args.GetCount();
+
 		//args
 		if( uArgCount <= 2 ) {
 			_PrintVersion();
 			_PrintHelp();
 			return 1;
 		}
+
 		bool ret = true;
 		//-c
 		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
@@ -59,23 +72,34 @@ public:
 				_PrintHelp();
 				return 1;
 			}
+
 			StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 			StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
 			StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
-			if( uArgCount == 4 ) {
-				StringUtilHelper::MakeString(args[3].get_Value(), strDest);
-			}
-			else {
-				strDest = StringHelper::Clone(strSrc);
+			{
 				uintptr uPos;
-				if( FsPathHelper::FindExtensionStart(StringUtilHelper::To_ConstString(strDest), uPos) ) {
+				//source
+				if( !_CheckFileExtension(StringUtilHelper::To_ConstString(strSrc), DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".w")), uPos) ) {
+					ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The source file name must have the extension \".w\"!")));
+					return 1;
+				}
+				//destination
+				if( uArgCount == 4 ) {
+					//extension
+					ConstStringS c_strDest(args[3].get_Value());
+					if( !_CheckFileExtension(c_strDest, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".wo")), uPos) ) {
+						ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The destination file name must have the extension \".wo\"!")));
+						return 1;
+					}
+					StringUtilHelper::MakeString(c_strDest, strDest);
+				}
+				else {
+					strDest = StringHelper::Clone(strSrc);
 					StringHelper::Delete(uPos, strDest.GetLength() - uPos, strDest);
 					StringUtilHelper::Insert(uPos, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".wo")), strDest);
 				}
-				else {
-					StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".wo")), strDest);
-				}
-			}
+			} //end block
+
 			//file name
 			FsPathHelper::ConvertPathStringToPlatform(strSrc);
 			FsPathHelper::ConvertPathStringToPlatform(strDest);
@@ -84,6 +108,53 @@ public:
 
 			//process
 			ret = _Compile_Single_File(strSrc, strDest);
+		}
+		//-p
+		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-p"))) ) {
+			if( uArgCount > 4 ) {
+				_PrintVersion();
+				_PrintHelp();
+				return 1;
+			}
+
+			StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+			StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
+			StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+			{
+				uintptr uPos;
+				//source
+				if( !_CheckFileExtension(StringUtilHelper::To_ConstString(strSrc), DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".wp")), uPos) ) {
+					ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The project file name must have the extension \".wp\"!")));
+					return 1;
+				}
+				//destination
+				if( uArgCount == 4 ) {
+					StringUtilHelper::MakeString(args[3].get_Value(), strDest);
+				}
+				else {
+					if( !FileManagementHelper::GetCurrentDirectory(strDest) ) {
+						ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The current directory cannot be obtained!")));
+						return 1;
+					}
+					FsPathHelper::AppendSeparator(strDest);
+					StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("build")), strDest);
+				}
+			} //end block
+
+			//file name
+			FsPathHelper::ConvertPathStringToPlatform(strSrc);
+			FsPathHelper::ConvertPathStringToPlatform(strDest);
+
+			//create directory
+			if( !FileManagementHelper::ForceDirectory(strDest) ) {
+				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The destination directory cannot be created!")));
+				return 1;
+			}
+
+			_PrintVersion();
+
+			//process
+			ret = _Process_Project_File(strSrc, strDest);
 		}
 
 		return ret ? 0 : 2;

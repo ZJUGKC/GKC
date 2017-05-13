@@ -22,6 +22,7 @@ This file contains main function.
 
 #include "cmd/CompileBase.h"
 #include "cmd/CompileSingleFile.h"
+#include "cmd/ProcessProjectFile.h"
 
 #include "Global.h"
 

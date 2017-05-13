@@ -58,4 +58,33 @@ inline bool set_current_directory(const char_s* szPath) throw()
 	return ::chdir(szPath) == 0;  //-1, errno
 }
 
+// check_file_exists
+inline bool check_file_exists(const char_s* szFile) throw()
+{
+	return ::access(szFile, F_OK) == 0;  //-1, errno
+}
+
+// check_directory_exists
+inline bool check_directory_exists(const char_s* szPath) throw()
+{
+	//stat
+	struct stat st;
+	if( ::stat(szPath, &st) == -1 )
+		return false;  //errno
+	return S_ISDIR(st.st_mode) ? true : false;
+}
+
+// create_directory
+//   this function returns failure if the directory/file already exists.
+inline bool create_directory(const char_s* szPath) throw()
+{
+	return ::mkdir(szPath, S_IRWXU | S_IRWXG | S_IRWXO) == 0;  //-1, errno, may be EEXIST
+}
+
+// delete_directory
+inline bool delete_directory(const char_s* szPath) throw()
+{
+	return ::rmdir(szPath) == 0;  //-1, errno
+}
+
 ////////////////////////////////////////////////////////////////////////////////

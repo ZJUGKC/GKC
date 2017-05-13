@@ -33,7 +33,7 @@ Assume the building directory has the same level of directory `GKC`.
 
 ##### Compiler
 
-Visual Studio Express 2015 for Desktop
+Build Tools for Visual Studio 2017 without ATL, MFC and C++/CLI.
 
 ##### Latex
 
@@ -133,13 +133,13 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x86 machine:
 
 		```
-		cmake ../GKC -G "Visual Studio 14"
+		cmake ../GKC -G "Visual Studio 15"
 		```
 
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 14 Win64"
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 15 Win64"
 		```
 
 1. make:
@@ -191,13 +191,13 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x86 machine:
 
 		```
-		cmake ../GKC -G "Visual Studio 14"
+		cmake ../GKC -G "Visual Studio 15"
 		```
 
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 14 Win64"
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 15 Win64"
 		```
 
 1. make:

@@ -45,16 +45,19 @@ public:
 	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env)
 	{
 		uintptr uArgCount = args.GetCount();
+
 		//args
 		if( uArgCount != 3 ) {
 			_PrintVersion();
 			_PrintHelp();
 			return 1;
 		}
+
 		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), args[2].get_Value()) ) {
-			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The source directory and the destination directory cannot be the same!\n")));
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The source directory and the destination directory cannot be the same!\n")));
 			return 1;
 		}
+
 		StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 		StringUtilHelper::MakeString(args[1].get_Value(), strSrc);
 		StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));

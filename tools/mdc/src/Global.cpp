@@ -32,7 +32,9 @@ END_STATIC_CONST_ARRAY(g_const_array_version)
 
 //help
 BEGIN_STATIC_CONST_ARRAY(g_const_array_help)
-	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  Usage : mdc source-dir destination-dir")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  Usage : mdc <options> file [destination]")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  options : -c Compile the source file.")))
+
 	STATIC_CONST_ARRAY_ENTRY_LAST(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("")))
 END_STATIC_CONST_ARRAY(g_const_array_help)
 

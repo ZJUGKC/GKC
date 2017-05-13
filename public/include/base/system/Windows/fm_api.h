@@ -81,4 +81,42 @@ inline bool set_current_directory(const char_s* szPath) throw()
 	return ::SetCurrentDirectoryW(szPath) != FALSE;  //::GetLastError()
 }
 
+// check_file_exists
+//   szFile: use platform path prefix
+inline bool check_file_exists(const char_s* szFile) throw()
+{
+	WIN32_FIND_DATAW findFileData;
+	HANDLE hFind = ::FindFirstFileW(szFile, &findFileData);
+	if( hFind == INVALID_HANDLE_VALUE )
+		return false;  //::GetLastError()
+	BOOL bRet = ::FindClose(hFind);
+	assert( bRet );  //::GetLastError()
+	return true;
+}
+
+// check_directory_exists
+//   szPath: use platform path prefix
+inline bool check_directory_exists(const char_s* szPath) throw()
+{
+	DWORD dwCode = ::GetFileAttributesW(szPath);
+	if( dwCode == INVALID_FILE_ATTRIBUTES )
+		return false;  //::GetLastError()
+	return (FILE_ATTRIBUTE_DIRECTORY & dwCode) ? true : false;  //CO_E_BAD_PATH
+}
+
+// create_directory
+//   szPath: use platform path prefix
+//   this function returns failure if the directory already exists.
+inline bool create_directory(const char_s* szPath) throw()
+{
+	return ::CreateDirectoryW(szPath, NULL) ? true : false;  //::GetLastError(), may be ERROR_ALREADY_EXISTS
+}
+
+// delete_directory
+//   szPath: use platform path prefix
+inline bool delete_directory(const char_s* szPath) throw()
+{
+	return ::RemoveDirectoryW(szPath) ? true : false;  //::GetLastError()
+}
+
 ////////////////////////////////////////////////////////////////////////////////

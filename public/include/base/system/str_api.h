@@ -286,4 +286,44 @@ inline bool check_path_extension_start(const char_a& ch) throw()
 	return ch == '.';
 }
 
+//check last separator of path
+inline bool check_path_last_separator(const char_s* szString, uintptr uLength) throw()
+{
+	return uLength > 0 && check_path_separator(szString[uLength - 1]);
+}
+
+//find extension start of path
+inline char_s* find_path_extension_start(const char_s* szString, uintptr uLength) throw()
+{
+	if( uLength == 0 )
+		return NULL;
+	char_s* sz = (char_s*)szString;
+	sz += uLength;
+	do {
+		sz --;
+		char_s& ch = *sz;
+		if( check_path_separator(ch) || check_drive_separator(ch) )
+			return NULL;
+		if( check_path_extension_start(ch) )
+			return sz;
+	} while( sz != szString );
+	return NULL;
+}
+
+//find file part start of path
+inline char_s* find_path_file_part_start(const char_s* szString, uintptr uLength) throw()
+{
+	if( uLength == 0 )
+		return (char_s*)szString;
+	char_s* sz = (char_s*)szString;
+	sz += uLength;
+	do {
+		sz --;
+		char_s& ch = *sz;
+		if( check_path_separator(ch) || check_drive_separator(ch) )
+			return sz + 1;
+	} while( sz != szString );
+	return (char_s*)szString;
+}
+
 ////////////////////////////////////////////////////////////////////////////////

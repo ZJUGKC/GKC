@@ -119,4 +119,19 @@ inline bool delete_directory(const char_s* szPath) throw()
 	return ::RemoveDirectoryW(szPath) ? true : false;  //::GetLastError()
 }
 
+// delete_file
+//   szFile: use platform path prefix
+inline bool delete_file(const char_s* szFile) throw()
+{
+	return ::DeleteFileW(szFile) != FALSE;  //::GetLastError()
+}
+
+// rename_file
+//   rename directory/file
+//   szOldName, szNewName: use platform path prefix
+inline bool rename_file(const char_s* szOldName, const char_s* szNewName) throw()
+{
+	return ::MoveFileW(szOldName, szNewName) != FALSE;  //::GetLastError()
+}
+
 ////////////////////////////////////////////////////////////////////////////////

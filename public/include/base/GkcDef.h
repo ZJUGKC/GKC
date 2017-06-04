@@ -1066,6 +1066,12 @@ inline void Swap<int>(int& t1, int& t2)
 }
 
 //------------------------------------------------------------------------------
+// File System
+
+// FileSearcher
+typedef file_searcher  FileSearcher;
+
+//------------------------------------------------------------------------------
 // Synchronization
 
 // Semaphore

@@ -87,4 +87,17 @@ inline bool delete_directory(const char_s* szPath) throw()
 	return ::rmdir(szPath) == 0;  //-1, errno
 }
 
+// delete_file
+inline bool delete_file(const char_s* szFile) throw()
+{
+	return ::unlink(szFile) == 0;  //-1, errno
+}
+
+// rename_file
+//   rename directory/file
+inline bool rename_file(const char_s* szOldName, const char_s* szNewName) throw()
+{
+	return ::rename(szOldName, szNewName) == 0;  //-1, errno
+}
+
 ////////////////////////////////////////////////////////////////////////////////

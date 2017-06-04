@@ -102,6 +102,18 @@ public:
 		assert( !str.IsBlockNull() );
 		return force_directory(ShareArrayHelper::GetInternalPointer(str));
 	}
+
+	template <typename Tchar>
+	static bool DeleteFile(const ConstStringT<Tchar>& str) throw()
+	{
+		return delete_file(ConstArrayHelper::GetInternalPointer(str));
+	}
+	//Rename directory/file
+	template <typename Tchar>
+	static bool RenameFile(const ConstStringT<Tchar>& strOld, const ConstStringT<Tchar>& strNew) throw()
+	{
+		return rename_file(ConstArrayHelper::GetInternalPointer(strOld), ConstArrayHelper::GetInternalPointer(strNew));
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

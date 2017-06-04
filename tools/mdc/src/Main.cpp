@@ -20,7 +20,10 @@ This file contains main function.
 
 #include "Global.h"
 
-#include "ProcessFiles.h"
+#include "base/MdcBase.h"
+
+#include "cmd/CompileSingleFile.h"
+#include "cmd/ProcessProjectFile.h"
 
 #include "EntryPoint.h"
 

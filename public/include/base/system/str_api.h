@@ -287,21 +287,29 @@ inline bool check_path_extension_start(const char_a& ch) throw()
 }
 
 //check last separator of path
-inline bool check_path_last_separator(const char_s* szString, uintptr uLength) throw()
+template <typename t_char>
+inline bool check_path_last_separator(const t_char* szString, uintptr uLength) throw()
 {
 	return uLength > 0 && check_path_separator(szString[uLength - 1]);
 }
+template <typename t_char>
+inline bool check_path_deletable_last_separator(const t_char* szString, uintptr uLength) throw()
+{
+	return check_path_last_separator(szString, uLength)
+		&& (uLength > 1) && !check_drive_separator(szString[uLength - 2]);
+}
 
 //find extension start of path
-inline char_s* find_path_extension_start(const char_s* szString, uintptr uLength) throw()
+template <typename t_char>
+inline t_char* find_path_extension_start(const t_char* szString, uintptr uLength) throw()
 {
 	if( uLength == 0 )
 		return NULL;
-	char_s* sz = (char_s*)szString;
+	t_char* sz = (t_char*)szString;
 	sz += uLength;
 	do {
 		sz --;
-		char_s& ch = *sz;
+		t_char& ch = *sz;
 		if( check_path_separator(ch) || check_drive_separator(ch) )
 			return NULL;
 		if( check_path_extension_start(ch) )
@@ -311,19 +319,20 @@ inline char_s* find_path_extension_start(const char_s* szString, uintptr uLength
 }
 
 //find file part start of path
-inline char_s* find_path_file_part_start(const char_s* szString, uintptr uLength) throw()
+template <typename t_char>
+inline t_char* find_path_file_part_start(const t_char* szString, uintptr uLength) throw()
 {
 	if( uLength == 0 )
-		return (char_s*)szString;
-	char_s* sz = (char_s*)szString;
+		return (t_char*)szString;
+	t_char* sz = (t_char*)szString;
 	sz += uLength;
 	do {
 		sz --;
-		char_s& ch = *sz;
+		t_char& ch = *sz;
 		if( check_path_separator(ch) || check_drive_separator(ch) )
 			return sz + 1;
 	} while( sz != szString );
-	return (char_s*)szString;
+	return (t_char*)szString;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

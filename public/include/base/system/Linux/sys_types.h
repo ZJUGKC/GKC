@@ -137,6 +137,105 @@ private:
 };
 
 //------------------------------------------------------------------------------
+// File System
+
+// file_searcher
+
+class file_searcher
+{
+public:
+	file_searcher() throw() : m_uLength(0)
+	{
+	}
+	~file_searcher() throw()
+	{
+	}
+
+	void Close() throw()
+	{
+		m_fs.Close();
+		m_uLength = 0;
+	}
+
+	bool IsValid() const throw()
+	{
+		return m_fs.IsValid();
+	}
+
+// Operations
+
+	//strName: It can be a file name, or a directory without unnecessary trailing separator,
+	//         or a directory with format '.../*'.
+	bool Find(const const_string_s& strName) throw()
+	{
+		bool bRet = m_fs.Find(const_array_helper::GetInternalPointer(strName));
+		if( bRet )
+			m_uLength = calc_string_length(m_fs.GetFileName());
+		return bRet;
+	}
+	bool FindNext() throw()
+	{
+		bool bRet = m_fs.FindNext();
+		if( bRet )
+			m_uLength = calc_string_length(m_fs.GetFileName());
+		return bRet;
+	}
+
+// Attributes
+
+	int64 GetFileSize() const throw()
+	{
+		return m_fs.GetFileSize();
+	}
+	const_string_s GetFileName() const throw()
+	{
+		return const_string_s(m_fs.GetFileName(), m_uLength);
+	}
+	void GetCreationTime(system_time& tm) const throw()
+	{
+		timespec_to_system_time(&(m_fs.GetCreationTime()), tm);
+	}
+	void GetAccessTime(system_time& tm) const throw()
+	{
+		timespec_to_system_time(&(m_fs.GetAccessTime()), tm);
+	}
+	void GetModifyTime(system_time& tm) const throw()
+	{
+		timespec_to_system_time(&(m_fs.GetModifyTime()), tm);
+	}
+	//It must be called after checking whether the file is a directory.
+	bool IsDots() const throw()
+	{
+		return m_fs.IsDots();
+	}
+	bool IsDirectory() const throw()
+	{
+		return m_fs.IsDirectory();
+	}
+
+private:
+	static void timespec_to_system_time(const struct timespec* pTS, system_time& tm) throw()
+	{
+		struct tm tmz;
+		struct tm* ptm;
+		ptm = ::gmtime_r(pTS, &tmz);
+		assert( ptm != NULL );
+		_os_tm_to_system_time(&tmz, tm);
+		tm.uMilliseconds = (ushort)(pTS->tv_nsec / 1000000);
+	}
+
+private:
+	_os_file_searcher m_fs;
+	//for file name
+	uintptr m_uLength;
+
+private:
+	//noncopyable
+	file_searcher(const file_searcher&) throw();
+	file_searcher& operator=(const file_searcher&) throw();
+};
+
+//------------------------------------------------------------------------------
 // Synchronization
 
 // helper

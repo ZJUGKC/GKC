@@ -126,6 +126,103 @@ private:
 };
 
 //------------------------------------------------------------------------------
+// File System
+
+// file_searcher
+
+class file_searcher
+{
+public:
+	file_searcher() throw() : m_uLength(0)
+	{
+	}
+	~file_searcher() throw()
+	{
+	}
+
+	void Close() throw()
+	{
+		m_ff.Close();
+		m_uLength = 0;
+	}
+
+	bool IsValid() const throw()
+	{
+		return m_ff.IsValid();
+	}
+
+// Operations
+
+	//strName: It can be a file name, or a directory without unnecessary trailing separator,
+	//         or a directory with format '...\*'.
+	bool Find(const const_string_s& strName) throw()
+	{
+		bool bRet = m_ff.Find(const_array_helper::GetInternalPointer(strName));
+		if( bRet )
+			m_uLength = calc_string_length(m_ff.GetFileName());
+		return bRet;
+	}
+	bool FindNext() throw()
+	{
+		bool bRet = m_ff.FindNext();
+		if( bRet )
+			m_uLength = calc_string_length(m_ff.GetFileName());
+		return bRet;
+	}
+
+// Attributes
+
+	int64 GetFileSize() const throw()
+	{
+		return m_ff.GetFileSize();
+	}
+	const_string_s GetFileName() const throw()
+	{
+		return const_string_s(m_ff.GetFileName(), m_uLength);
+	}
+	void GetCreationTime(system_time& tm) const throw()
+	{
+		file_time_to_system_time(&(m_ff.GetCreationTime()), tm);
+	}
+	void GetAccessTime(system_time& tm) const throw()
+	{
+		file_time_to_system_time(&(m_ff.GetLastAccessTime()), tm);
+	}
+	void GetModifyTime(system_time& tm) const throw()
+	{
+		file_time_to_system_time(&(m_ff.GetLastWriteTime()), tm);
+	}
+	//It must be called after checking whether the file is a directory.
+	bool IsDots() const throw()
+	{
+		return m_ff.IsDots();
+	}
+	bool IsDirectory() const throw()
+	{
+		return m_ff.IsDirectory();
+	}
+
+private:
+	static void file_time_to_system_time(const FILETIME* pFT, system_time& tm) throw()
+	{
+		SYSTEMTIME st;
+		BOOL bRet = ::FileTimeToSystemTime(pFT, &st);
+		assert( bRet );
+		_os_cvt_system_time(&st, tm);
+	}
+
+private:
+	_os_file_finder m_ff;
+	//for file name
+	uintptr m_uLength;
+
+private:
+	//noncopyable
+	file_searcher(const file_searcher&) throw();
+	file_searcher& operator=(const file_searcher&) throw();
+};
+
+//------------------------------------------------------------------------------
 // Synchronization
 
 // helper

@@ -59,20 +59,6 @@ public:
 			StringHelper::Append(ch, str);  //may throw
 		}
 	}
-	template <typename Tchar>
-	static void RemoveSeparator(StringT<Tchar>& str) throw()
-	{
-		uintptr uLength = str.GetLength();
-		if( check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
-			StringHelper::Delete(uLength - 1, 1, str);
-	}
-	template <typename Tchar, uintptr t_size>
-	static void RemoveSeparator(FixedStringT<Tchar, t_size>& str) throw()
-	{
-		uintptr uLength = str.GetLength();
-		if( check_path_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
-			str.SetLength(uLength - 1);
-	}
 
 	//extension
 	template <typename Tchar>
@@ -86,12 +72,73 @@ public:
 		uPos = szFind - szSrc;
 		return true;
 	}
+	//  uPos: this value is returned by FindExtensionStart().
+	template <typename Tchar>
+	static void RemoveExtension(uintptr uPos, StringT<Tchar>& str) throw()
+	{
+		StringHelper::Delete(uPos, str.GetLength() - uPos, str);
+	}
+	template <typename Tchar, uintptr t_size>
+	static void RemoveExtension(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
+	{
+		str.SetLength(uPos);
+	}
+
 	//file part
 	template <typename Tchar>
 	static uintptr FindFilePartStart(IN const ConstStringT<Tchar>& str) throw()
 	{
 		const Tchar* szSrc = ConstArrayHelper::GetInternalPointer(str);
 		return find_path_file_part_start(szSrc, str.GetCount()) - szSrc;
+	}
+
+	//path part
+	//  The result string may have the trailing path separator.
+	//  uPos: this value is returned by FindFilePartStart().
+	template <typename Tchar>
+	static void ToPathPart(uintptr uPos, StringT<Tchar>& str) throw()
+	{
+		StringHelper::Delete(uPos, str.GetLength() - uPos, str);
+	}
+	template <typename Tchar, uintptr t_size>
+	static void ToPathPart(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
+	{
+		str.SetLength(uPos);
+	}
+
+	template <typename Tchar>
+	static void RemovePathTrailingSeparator(StringT<Tchar>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_deletable_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
+			StringHelper::Delete(uLength - 1, 1, str);
+	}
+	template <typename Tchar, uintptr t_size>
+	static void RemovePathTrailingSeparator(FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_deletable_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
+			str.SetLength(uLength - 1);
+	}
+
+	//upper directory
+	//  The result string may have the trailing path separator.
+	//  The return value is the length of result string. It can be compared with the length of input string for determining whether the string is unchanged.
+	template <typename Tchar>
+	static uintptr ToUpperDirectory(StringT<Tchar>& str) throw()
+	{
+		remove_separator(str);
+		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
+		ToPathPart(uPos, str);
+		return uPos;
+	}
+	template <typename Tchar, uintptr t_size>
+	static uintptr ToUpperDirectory(FixedStringT<Tchar, t_size>& str) throw()
+	{
+		remove_separator(str);
+		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
+		ToPathPart(uPos, str);
+		return uPos;
 	}
 
 	//path prefix modification
@@ -125,6 +172,22 @@ public:
 		get_absolute_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
 		StringHelper::Insert(0, c_strPrefix, str);  //may throw
+	}
+
+private:
+	template <typename Tchar>
+	static void remove_separator(StringT<Tchar>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
+			StringHelper::Delete(uLength - 1, 1, str);
+	}
+	template <typename Tchar, uintptr t_size>
+	static void remove_separator(FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
+			str.SetLength(uLength - 1);
 	}
 };
 

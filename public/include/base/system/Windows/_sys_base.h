@@ -587,4 +587,140 @@ private:
 //global variable
 extern _os_module _os_g_module;
 
+//------------------------------------------------------------------------------
+// File System
+
+class _os_file_finder
+{
+public:
+	_os_file_finder() throw() : m_hFind(INVALID_HANDLE_VALUE)
+	{
+	}
+	~_os_file_finder() throw()
+	{
+		Close();
+	}
+
+	void Close() throw()
+	{
+		if( IsValid() ) {
+			BOOL bRet = ::FindClose(m_hFind);
+			assert( bRet );  //::GetLastError()
+			m_hFind = INVALID_HANDLE_VALUE;
+		}
+	}
+
+	bool IsValid() const throw()
+	{
+		return m_hFind != INVALID_HANDLE_VALUE;
+	}
+
+// Operations
+
+	//szName: use platform path prefix
+	//        It can include wildcard characters, for example, an asterisk (*) or a question mark (?).
+	//        A common wildcard format is [...\...\[xxx...]]*[.[xxx...]*[xxx...]].
+	bool Find(const char_s* szName = NULL) throw()
+	{
+		assert( !IsValid() );
+		if( szName == NULL )
+			szName = _S("*");
+		m_hFind = ::FindFirstFileW(szName, &m_fd);
+		return IsValid();  //::GetLastError()
+	}
+	bool FindNext() throw()
+	{
+		assert( IsValid() );
+		return ::FindNextFileW(m_hFind, &m_fd) != FALSE;  //::GetLastError()
+	}
+
+// Attributes
+
+	int64 GetFileSize() const throw()
+	{
+		assert( IsValid() );
+		//size
+		assert( m_fd.nFileSizeHigh <= (DWORD)(limits_base<int>::Max) );
+		LARGE_INTEGER li;
+		li.LowPart = m_fd.nFileSizeLow;
+		li.HighPart = m_fd.nFileSizeHigh;
+		return li.QuadPart;
+	}
+	const char_s* GetFileName() const throw()
+	{
+		assert( IsValid() );
+		return m_fd.cFileName;
+	}
+	const FILETIME& GetCreationTime() const throw()
+	{
+		assert( IsValid() );
+		return m_fd.ftCreationTime;
+	}
+	const FILETIME& GetLastAccessTime() const throw()
+	{
+		assert( IsValid() );
+		return m_fd.ftLastAccessTime;
+	}
+	const FILETIME& GetLastWriteTime() const throw()
+	{
+		assert( IsValid() );
+		return m_fd.ftLastWriteTime;
+	}
+	// Return true if the file name is "." or "..".
+	// It must be called after checking whether the file is a directory.
+	bool IsDots() const throw()
+	{
+		assert( IsValid() );
+		return m_fd.cFileName[0] == _S('.') && (m_fd.cFileName[1] == _S('\0') || (m_fd.cFileName[1] == _S('.') && m_fd.cFileName[2] == _S('\0')));
+	}
+	bool IsReadOnly() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_READONLY);
+	}
+	bool IsDirectory() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_DIRECTORY);
+	}
+	bool IsCompressed() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_COMPRESSED);
+	}
+	bool IsSystem() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_SYSTEM);
+	}
+	bool IsHidden() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_HIDDEN);
+	}
+	bool IsTemporary() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_TEMPORARY);
+	}
+	bool IsNormal() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_NORMAL);
+	}
+	bool IsArchived() const throw()
+	{
+		return matches_mask(FILE_ATTRIBUTE_ARCHIVE);
+	}
+
+private:
+	bool matches_mask(DWORD dwMask) const throw()
+	{
+		assert( IsValid() );
+		return (m_fd.dwFileAttributes & dwMask) != 0;
+	}
+
+private:
+	WIN32_FIND_DATAW m_fd;
+	HANDLE m_hFind;
+
+private:
+	//noncopyable
+	_os_file_finder(const _os_file_finder&) throw();
+	_os_file_finder& operator=(const _os_file_finder&) throw();
+};
+
 ////////////////////////////////////////////////////////////////////////////////

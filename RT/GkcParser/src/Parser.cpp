@@ -37,6 +37,16 @@ This file contains parser functions.
 #include "wlang/WlangUtility.h"
 #include "wlang/WlangParser.h"
 
+#include "won/base/WonDef.h"
+#include "won/base/WonLex.h"
+#include "won/base/WonGra.h"
+
+#include "won/action/WonDoCommonAction.h"
+
+#include "won/WonAction.h"
+#include "won/WonUtility.h"
+#include "won/WonParser.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 
 //functions
@@ -57,6 +67,20 @@ inline void _Internal_WlangParser_Create(GKC::ShareCom<_IWlangParser>& sp, GKC::
 	_CREATE_COMPONENT_INSTANCE(WlangParser, _IWlangParser, sp, cr);
 }
 
+// WonUtility
+
+inline void _Internal_WonUtility_Create(GKC::ShareCom<_IWonUtility>& sp, GKC::CallResult& cr) throw()
+{
+	_CREATE_COMPONENT_INSTANCE(WonUtility, _IWonUtility, sp, cr);
+}
+
+// WonParser
+
+inline void _Internal_WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::CallResult& cr) throw()
+{
+	_CREATE_COMPONENT_INSTANCE(WonParser, _IWonParser, sp, cr);
+}
+
 } //namespace
 
 // WlangUtility
@@ -71,6 +95,20 @@ void _WlangUtility_Create(GKC::ShareCom<_IWlangUtility>& sp, GKC::CallResult& cr
 void _WlangParser_Create(GKC::ShareCom<_IWlangParser>& sp, GKC::CallResult& cr) throw()
 {
 	GKC::_Internal_WlangParser_Create(sp, cr);
+}
+
+// WonUtility
+
+void _WonUtility_Create(GKC::ShareCom<_IWonUtility>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_WonUtility_Create(sp, cr);
+}
+
+// WonParser
+
+void _WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_WonParser_Create(sp, cr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

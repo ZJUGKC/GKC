@@ -23,6 +23,16 @@ Internal Header
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+// delete output file
+
+inline void _Delete_Output_File(const StringS& str) throw()
+{
+	thread_sleep(10);
+	bool bRet = FileManagementHelper::DeleteFile(StringUtilHelper::To_ConstString(str));
+	bRet;
+	assert( bRet );
+}
+
 // compile one file
 
 inline uintptr _Compile_One_File(ShareCom<IWlangParser>& spParser, const StringS& strSrc, const StringS& strDest) throw()
@@ -72,9 +82,11 @@ inline uintptr _Compile_One_File(ShareCom<IWlangParser>& spParser, const StringS
 		spParser.Deref().SetOutput(spMeta);
 	} //end block
 
+	//loop
+
 	cr = spParser.Deref().Start();
 	if( cr.IsFailed() ) {
-		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Parser cannot start!")));
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The parser cannot start!")));
 		return 1;
 	}
 
@@ -114,6 +126,9 @@ inline uintptr _Compile_One_File(ShareCom<IWlangParser>& spParser, const StringS
 		}
 		cr = spMeta.Deref().Save(spStream);
 		if( cr.IsFailed() ) {
+			spStream.Release();
+			_Delete_Output_File(strDest);
+			//saving failed
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot save to the Destination File!")));
 			return 1;
 		}

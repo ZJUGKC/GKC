@@ -122,6 +122,46 @@ DECLARE_GUID(GUID__IWonParser)
 SA_FUNCTION void _WonUtility_Create(GKC::ShareCom<_IWonUtility>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::CallResult& cr) throw();
 
+//------------------------------------------------------------------------------
+// Wmark Parser
+
+#pragma pack(push, 1)
+
+// _IWmarkUtility
+
+class NOVTABLE _IWmarkUtility
+{
+public:
+	virtual GKC::CallResult Initialize() throw() = 0;
+};
+
+DECLARE_GUID(GUID__IWmarkUtility)
+
+// _IWmarkParser
+
+class NOVTABLE _IWmarkParser
+{
+public:
+	virtual GKC::CallResult Initialize(const uint& uMaxErrorNumber, const GKC::ShareCom<_IWmarkUtility>& sp) throw() = 0;
+	virtual void SetInput(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
+	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw() = 0;
+	virtual GKC::CallResult Start() throw() = 0;
+	// return value : SystemCallResults::OK, the call is successful.
+	//                SystemCallResults::S_False, it reaches the end of stream.
+	//                otherwise, this call is failed.
+	virtual GKC::CallResult Parse() throw() = 0;
+	virtual const GKC::ShareArray<GKC::StringS> get_ErrorArray() throw() = 0;
+};
+
+DECLARE_GUID(GUID__IWmarkParser)
+
+#pragma pack(pop)
+
+//functions
+
+SA_FUNCTION void _WmarkUtility_Create(GKC::ShareCom<_IWmarkUtility>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _WmarkParser_Create(GKC::ShareCom<_IWmarkParser>& sp, GKC::CallResult& cr) throw();
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_PARSER_H__
 ////////////////////////////////////////////////////////////////////////////////

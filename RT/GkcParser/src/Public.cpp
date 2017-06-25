@@ -14,11 +14,17 @@
 
 #include "PreComp.h"
 
+#include "_GkcParser.h"
+
+#include "wlang/base/WlangDef.h"
 #include "wlang/base/WlangLex.h"
 #include "wlang/base/WlangGra.h"
 
+#include "won/base/WonDef.h"
 #include "won/base/WonLex.h"
 #include "won/base/WonGra.h"
+
+#include "wmark/base/WmarkDef.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,5 +37,7 @@
 #include "won/base/WonDef.cpp"
 #include "won/base/WonLex.cpp"
 #include "won/base/WonGra.cpp"
+
+#include "wmark/base/WmarkDef.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

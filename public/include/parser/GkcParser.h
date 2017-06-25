@@ -56,6 +56,16 @@ typedef _IWonParser  IWonParser;
 
 #define GUID_IWonParser  GUID__IWonParser
 
+// IWmarkUtility
+typedef _IWmarkUtility  IWmarkUtility;
+
+#define GUID_IWmarkUtility  GUID__IWmarkUtility
+
+// IWmarkParser
+typedef _IWmarkParser  IWmarkParser;
+
+#define GUID_IWmarkParser  GUID__IWmarkParser
+
 // ParserHelper
 
 class ParserHelper
@@ -83,6 +93,18 @@ public:
 	{
 		CallResult cr;
 		::_WonParser_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreateWmarkUtility(ShareCom<IWmarkUtility>& sp) throw()
+	{
+		CallResult cr;
+		::_WmarkUtility_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreateWmarkParser(ShareCom<IWmarkParser>& sp) throw()
+	{
+		CallResult cr;
+		::_WmarkParser_Create(sp, cr);
 		return cr;
 	}
 };

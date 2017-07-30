@@ -44,10 +44,8 @@ public:
 		{
 			_LexerTokenString& str = arrSymbol[1].get_Value().Deref().get_Buffer().Deref();
 			if( str.GetLength() > 2 ) {
-#ifdef DEBUG
-				bool bOK =
-#endif
-				str.ToHexadecimalInteger(2, uValue);
+				bool bOK = str.ToHexadecimalInteger(2, uValue);
+				bOK;
 				assert( bOK );
 			}
 			else {

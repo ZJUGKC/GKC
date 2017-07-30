@@ -333,9 +333,9 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp, TokenTable& t
 
 	//check overflow
 	{
-#ifdef DEBUG
+		//for debugging
 		TokenTable& tt = lex_data.GetTokenTable().Deref();
-#endif
+		tt;
 		assert( tt.GetMinID() == CPL_TK_FIRST
 				&& tt.GetMaxID() < (uint)(Limits<int>::Max - 1) );  //with last NULL item
 	} //end block

@@ -79,10 +79,8 @@ public:
 	void Close() throw()
 	{
 		if( IsValid() ) {
-#ifdef DEBUG
-			int res =
-#endif
-			::close(m_fd);
+			int res = ::close(m_fd);
+			res;
 			assert( res == 0 );
 			m_fd = -1;
 		}
@@ -306,10 +304,8 @@ public:
 	void Unlock() throw()
 	{
 		assert( m_bInitialized );
-#ifdef DEBUG
-		int res =
-#endif
-		::sem_post(&m_sem);
+		int res = ::sem_post(&m_sem);
+		res;
 		assert( res == 0 );
 	}
 	bool TryLock() throw()
@@ -337,10 +333,8 @@ public:
 	void Term() throw()
 	{
 		if( m_bInitialized ) {
-#ifdef DEBUG
-			int res =
-#endif
-			::sem_destroy(&m_sem);
+			int res = ::sem_destroy(&m_sem);
+			res;
 			assert( res == 0 );
 			m_bInitialized = false;
 		}
@@ -379,10 +373,8 @@ public:
 	void Unlock() throw()
 	{
 		assert( m_psem != NULL );
-#ifdef DEBUG
-		int res =
-#endif
-		::sem_post(m_psem);
+		int res = ::sem_post(m_psem);
+		res;
 		assert( res == 0 );
 	}
 	bool TryLock() throw()
@@ -439,10 +431,8 @@ public:
 	void Term() throw()
 	{
 		if( m_psem != NULL ) {
-#ifdef DEBUG
-			int res =
-#endif
-			::sem_close(m_psem);
+			int res = ::sem_close(m_psem);
+			res;
 			assert( res == 0 );
 			m_psem = NULL;
 			assert( m_szName != NULL );
@@ -631,10 +621,8 @@ public:
 	void Term() throw()
 	{
 		if( m_bInitialized ) {
-#ifdef DEBUG
-			int res =
-#endif
-			::pthread_cond_destroy(&m_cv);
+			int res = ::pthread_cond_destroy(&m_cv);
+			res;
 			assert( res == 0 );
 			m_bInitialized = false;
 		}
@@ -668,37 +656,29 @@ public:
 	void LockShared() throw()
 	{
 		assert( m_bInitialized );
-#ifdef DEBUG
-		int res =
-#endif
-		::pthread_rwlock_rdlock(&m_rw);
+		int res = ::pthread_rwlock_rdlock(&m_rw);
+		res;
 		assert( res == 0 );
 	}
 	void LockExclusive() throw()
 	{
 		assert( m_bInitialized );
-#ifdef DEBUG
-		int res =
-#endif
-		::pthread_rwlock_wrlock(&m_rw);
+		int res = ::pthread_rwlock_wrlock(&m_rw);
+		res;
 		assert( res == 0 );
 	}
 	void UnlockShared() throw()
 	{
 		assert( m_bInitialized );
-#ifdef DEBUG
-		int res =
-#endif
-		::pthread_rwlock_unlock(&m_rw);
+		int res = ::pthread_rwlock_unlock(&m_rw);
+		res;
 		assert( res == 0 );
 	}
 	void UnlockExclusive() throw()
 	{
 		assert( m_bInitialized );
-#ifdef DEBUG
-		int res =
-#endif
-		::pthread_rwlock_unlock(&m_rw);
+		int res = ::pthread_rwlock_unlock(&m_rw);
+		res;
 		assert( res == 0 );
 	}
 	bool TryLockShared() throw()
@@ -715,20 +695,16 @@ public:
 	void Init() throw()
 	{
 		assert( !m_bInitialized );
-#ifdef DEBUG
-		int res =
-#endif
-		::pthread_rwlock_init(&m_rw, NULL);
+		int res = ::pthread_rwlock_init(&m_rw, NULL);
+		res;
 		assert( res == 0 );
 		m_bInitialized = true;
 	}
 	void Term() throw()
 	{
 		if( m_bInitialized ) {
-#ifdef DEBUG
-			int res =
-#endif
-			::pthread_rwlock_destroy(&m_rw);
+			int res = ::pthread_rwlock_destroy(&m_rw);
+			res;
 			assert( res == 0 );
 			m_bInitialized = false;
 		}

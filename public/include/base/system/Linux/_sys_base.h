@@ -212,10 +212,8 @@ public:
 private:
 	void close_dir() throw()
 	{
-#ifdef DEBUG
-		int res =
-#endif
-		::closedir(m_pDir);
+		int res = ::closedir(m_pDir);
+		res;
 		assert( res == 0 );  //-1, errno
 		m_pDir = NULL;
 	}

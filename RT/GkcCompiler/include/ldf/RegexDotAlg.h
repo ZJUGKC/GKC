@@ -261,10 +261,12 @@ inline void _Regex_Initial_ClosureSet(const _Regex_AST& rast, _RegexDotItemSet& 
 		assert( !iterR.IsNull() );
 		iterR.MoveChild();
 		assert( !iterR.IsNull() );
-#ifdef DEBUG
-		uint uType = iterR.GetType();
-#endif
-		assert( uType != REGEX_OP_QUESTION && uType != REGEX_OP_STAR );
+		//for debugging
+		{
+			uint uType = iterR.GetType();
+			uType;
+			assert( uType != REGEX_OP_QUESTION && uType != REGEX_OP_STAR );
+		} //end block
 		//add
 		_RegexDotItem item;
 		item.SetIndex(i);

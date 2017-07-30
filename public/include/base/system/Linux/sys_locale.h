@@ -1326,10 +1326,8 @@ public:
 	void Close() throw()
 	{
 		if( m_cvt != (iconv_t)-1 ) {
-#ifdef DEBUG
-			int ret =
-#endif
-			::iconv_close(m_cvt);
+			int ret = ::iconv_close(m_cvt);
+			ret;
 			assert( ret == 0 );
 			m_cvt = (iconv_t)-1;
 		}

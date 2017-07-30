@@ -1039,6 +1039,8 @@ public:
 	}
 	~fixed_size_memory_pool() throw()
 	{
+		//check memory leakage
+		assert( m_uElements == 0 );
 	}
 
 //methods

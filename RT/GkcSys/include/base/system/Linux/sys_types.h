@@ -169,10 +169,8 @@ public:
 		fl.l_whence = SEEK_SET;
 		fl.l_start  = iOffset;
 		fl.l_len    = iLen;
-#ifdef DEBUG
-		int rv =
-#endif
-		::fcntl((int)(hd.GetHandle()), F_SETLK, &fl);  //nonblocking
+		int rv = ::fcntl((int)(hd.GetHandle()), F_SETLK, &fl);  //nonblocking
+		rv;
 		assert( rv != -1 );
 	}
 };
@@ -236,10 +234,8 @@ public:
 	void Free() throw()
 	{
 		if( m_hd != NULL ) {
-#ifdef DEBUG
-			int ret =
-#endif
-			::dlclose(m_hd);
+			int ret = ::dlclose(m_hd);
+			ret;
 			assert( ret == 0 );
 			m_hd = NULL;
 		}

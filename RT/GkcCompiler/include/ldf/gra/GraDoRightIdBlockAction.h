@@ -57,10 +57,8 @@ private:
 	{
 		//action
 		StringA str(arrSymbol[3].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
-#ifdef DEBUG
-		uint uID =
-#endif
-		m_data.Deref().AddToReductionTable(StringUtilHelper::To_ConstString(str));  //may throw
+		uint uID = m_data.Deref().AddToReductionTable(StringUtilHelper::To_ConstString(str));  //may throw
+		uID;
 		assert( uID == m_data.Deref().GetRuleSet().GetCount() - 1 );
 	}
 

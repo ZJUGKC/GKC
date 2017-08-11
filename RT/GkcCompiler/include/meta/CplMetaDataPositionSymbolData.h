@@ -11,38 +11,38 @@
 */
 
 /*
-This file contains component class of WLANG position symbol data.
+This file contains component class of meta data position symbol data.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __WLANG_POSITION_SYMBOL_DATA_H__
-#define __WLANG_POSITION_SYMBOL_DATA_H__
+#ifndef __CPL_META_DATA_POSITION_SYMBOL_DATA_H__
+#define __CPL_META_DATA_POSITION_SYMBOL_DATA_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// WlangPositionSymbolData
+// CplMetaDataPositionSymbolData
 
-class WlangPositionSymbolData : public _GrammarSymbolDataBase,
-								public _CplMetaDataPositionSymbolDataBase
+class CplMetaDataPositionSymbolData : public _GrammarSymbolDataBase,
+									public _CplMetaDataPositionSymbolDataBase
 {
 public:
-	WlangPositionSymbolData() throw()
+	CplMetaDataPositionSymbolData() throw()
 	{
 	}
-	~WlangPositionSymbolData() throw()
+	~CplMetaDataPositionSymbolData() throw()
 	{
 	}
 
 private:
 	//noncopyable
-	WlangPositionSymbolData(const WlangPositionSymbolData&) throw();
-	WlangPositionSymbolData& operator=(const WlangPositionSymbolData&) throw();
+	CplMetaDataPositionSymbolData(const CplMetaDataPositionSymbolData&) throw();
+	CplMetaDataPositionSymbolData& operator=(const CplMetaDataPositionSymbolData&) throw();
 };
 
-DECLARE_COM_TYPECAST(WlangPositionSymbolData)
+DECLARE_COM_TYPECAST(CplMetaDataPositionSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

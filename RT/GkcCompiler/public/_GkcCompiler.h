@@ -930,6 +930,7 @@ private:
 //functions
 
 SA_FUNCTION void _CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _CplMetaDataPositionSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw();
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_COMPILER_H__

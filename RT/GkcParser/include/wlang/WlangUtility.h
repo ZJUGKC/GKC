@@ -99,7 +99,7 @@ public:
 				return cr;
 		}
 		if( m_spPositionFactory.IsBlockNull() ) {
-			cr = _Create_WlangPositionSymbolDataFactory(m_spPositionFactory);
+			cr = CplMetaDataHelper::CreateCplMetaDataPositionSymbolDataFactory(m_spPositionFactory);
 			if( cr.IsFailed() )
 				return cr;
 		}

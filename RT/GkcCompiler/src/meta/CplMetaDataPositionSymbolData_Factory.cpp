@@ -11,21 +11,21 @@
 */
 
 /*
-This file contains global variables for WLANG position symbol data factory component.
+This file contains global variables for meta data position symbol data factory component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "wlang/action/WlangPositionSymbolData.h"
-#include "wlang/action/WlangPositionSymbolData_Factory.h"
+#include "meta/CplMetaDataPositionSymbolData.h"
+#include "meta/CplMetaDataPositionSymbolData_Factory.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_COM_FACTORY_CLASS(WlangPositionSymbolData)
+IMPLEMENT_COM_FACTORY_CLASS(CplMetaDataPositionSymbolData)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

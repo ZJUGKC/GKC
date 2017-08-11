@@ -24,8 +24,6 @@ This file contains global variables for WLang parser component.
 
 #include "wlang/action/WlangGrammarError.h"
 #include "wlang/action/WlangGrammarAccepted.h"
-#include "wlang/action/WlangPositionSymbolData.h"
-#include "wlang/action/WlangPositionSymbolData_Factory.h"
 #include "wlang/action/WlangDoNsBodyAction.h"
 #include "wlang/action/WlangDoBodySemiAction.h"
 

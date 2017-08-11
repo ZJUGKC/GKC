@@ -22,13 +22,6 @@ namespace GKC {
 
 //functions
 
-// WlangPositionSymbolDataFactory
-
-inline CallResult _Create_WlangPositionSymbolDataFactory(ShareCom<IComFactory>& sp) throw()
-{
-	return USE_COM_FACTORY_CLASS_NAME(WlangPositionSymbolData)::Create(sp);
-}
-
 // Do-Ns-Body action
 
 inline CallResult _Create_WlangDoNsBodyAction(ShareCom<IGrammarAction>& sp) throw()

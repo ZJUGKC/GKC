@@ -193,6 +193,13 @@ public:
 		::_CplMetaData_Create(sp, cr);
 		return cr;
 	}
+	//meta data position symbol data factory
+	static CallResult CreateCplMetaDataPositionSymbolDataFactory(ShareCom<IComFactory>& sp) throw()
+	{
+		CallResult cr;
+		::_CplMetaDataPositionSymbolDataFactory_Create(sp, cr);
+		return cr;
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

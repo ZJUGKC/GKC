@@ -40,6 +40,8 @@ This file contains analyzer functions.
 
 #include "meta/MetaDef.h"
 #include "meta/CplMetaData.h"
+#include "meta/CplMetaDataPositionSymbolData.h"
+#include "meta/CplMetaDataPositionSymbolData_Factory.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -89,6 +91,13 @@ inline void _Internal_CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::
 	_CREATE_COMPONENT_INSTANCE(CplMetaData, _ICplMetaData, sp, cr);
 }
 
+// CplMetaDataPositionSymbolData Factory
+
+inline void _Internal_CplMetaDataPositionSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw()
+{
+	cr = USE_COM_FACTORY_CLASS_NAME(CplMetaDataPositionSymbolData)::Create(sp);
+}
+
 } //namespace
 
 // LexerTables
@@ -131,6 +140,13 @@ void _BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::Ca
 void _CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::CallResult& cr) throw()
 {
 	GKC::_Internal_CplMetaData_Create(sp, cr);
+}
+
+// CplMetaDataPositionSymbolData Factory
+
+void _CplMetaDataPositionSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_CplMetaDataPositionSymbolDataFactory_Create(sp, cr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

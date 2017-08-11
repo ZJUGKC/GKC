@@ -11,23 +11,23 @@
 */
 
 /*
-This file contains global variables for WLANG position symbol data component.
+This file contains global variables for meta data position symbol data component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "wlang/action/WlangPositionSymbolData.h"
+#include "meta/CplMetaDataPositionSymbolData.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// WlangPositionSymbolData
+// CplMetaDataPositionSymbolData
 
-BEGIN_COM_TYPECAST(WlangPositionSymbolData)
-	COM_TYPECAST_ENTRY(IGrammarSymbolData, _GrammarSymbolDataBase)
+BEGIN_COM_TYPECAST(CplMetaDataPositionSymbolData)
+	COM_TYPECAST_ENTRY(_IGrammarSymbolData, _GrammarSymbolDataBase)
 	COM_TYPECAST_ENTRY(_ICplMetaDataPositionSymbolDataUtility, _CplMetaDataPositionSymbolDataBase)
 END_COM_TYPECAST()
 

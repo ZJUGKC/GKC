@@ -72,21 +72,7 @@ for composing papers, books and slides.
 	sudo apt-get install libx11-dev
 	```
 
-1. Set the environment variable `LD_LIBRARY_PATH`:
-
-	Edit the following file:
-
-	```
-	sudo vi /etc/environment
-	```
-
-	and add the variable:
-
-	```
-	LD_LIBRARY_PATH=./
-	```
-
-	Edit the following file:
+1. Edit the following file:
 
 	```
 	sudo vi /etc/X11/Xsession.options
@@ -255,19 +241,35 @@ into a zip file and redistribute it.
 
 Install GKC in the computers on client end or server end for production and running infrastructure.
 
-### Windows
+* Windows
 
-Run the following command as administrator:
+	Run the following command as administrator:
 
-```
-cscript setup-gkc.vbs
-```
+	```
+	cscript setup-gkc.vbs <-c|-d|-s> [Installation directory [Local workspace directory [Unified workspace directory]]]
+	```
 
-### Linux
+* Linux
 
-```
-sudo sh setup-gkc.sh
-```
+	```
+	sudo sh setup-gkc.sh <-c|-d|-s> [Installation directory [Local workspace directory [Unified workspace directory]]]
+	```
+
+The options are listed as follows:
+
+| Options | Notes |
+|:-------:|:------|
+| -c      | This software is installed as client on client end |
+| -d      | This software is installed as development on production machine |
+| -s      | This software is installed as server on server end |
+
+The directories are listed as follows:
+
+| Directories | Notes |
+|:------------|:------|
+| Installation directory      | Specify the installation directory |
+| Local workspace directory   | Specify the directory of local workspace |
+| Unified workspace directory | Specify the directory of unified workspace |
 
 ## Uninstall
 

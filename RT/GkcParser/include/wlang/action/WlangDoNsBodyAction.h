@@ -62,7 +62,7 @@ private:
 			_CplMetaDataInfo info;
 			bool bAnalysis;
 			m_spMeta.Deref().GetInfo(pos, info, bAnalysis);
-			if( (info.uType & WLANG_NOUN_MASK) == WLANG_NOUN_NAMESPACE && info.uLevel == uLevel && bAnalysis )
+			if( GET_CPL_METADATA_NOUN(info.uType) == WLANG_NOUN_NAMESPACE && info.uLevel == uLevel && bAnalysis )
 				return pos;
 			pos = m_spMeta.Deref().FindNext(pos);
 		}
@@ -79,7 +79,7 @@ private:
 		_CplMetaDataPosition pos;
 		pos = find_symbol(c_str);
 		if( pos.IsNull() ) {
-			cr = m_spMeta.Deref().InsertSymbol(c_str, WLANG_NOUN_NAMESPACE & WLANG_NOUN_MASK, true, pos);
+			cr = m_spMeta.Deref().InsertSymbol(c_str, WLANG_NOUN_NAMESPACE & CPL_METADATA_NOUN_MASK, true, pos);
 			if( cr.IsFailed() ) {
 				StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 				_CplErrorStringHelper::GenerateError(cr, strError);  //may throw

@@ -23,6 +23,10 @@ This file contains GkcSys helper classes.
 	#error GkcSys.h requires GkcDef.h to be included first.
 #endif
 
+#ifndef __GKC_SYS_DEF_H__
+	#error GkcSys.h requires GkcSysDef.h to be included first.
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "_GkcSys.h"
@@ -241,8 +245,31 @@ public:
 	}
 };
 
+// EnvironmentVariableHelper
+
+class EnvironmentVariableHelper
+{
+public:
+	template <typename Tchar>
+	static bool Query(const ConstStringT<Tchar>& strName, StringT<Tchar>& strVar)
+	{
+		return get_environment_variable(ConstArrayHelper::GetInternalPointer(strName), strVar);  //may throw
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
+////////////////////////////////////////////////////////////////////////////////
+
+//------------------------------------------------------------------------------
+// The macros of environment variables
+
+#define ENVVAR_GKC_SYSTEM_ROOT        _S("GKC_SYSTEM_ROOT")
+#define ENVVAR_GKC_LOCAL_WORKSPACE    _S("GKC_LOCAL_WORKSPACE")
+#define ENVVAR_GKC_UNIFIED_WORKSPACE  _S("GKC_UNIFIED_WORKSPACE")
+
+//------------------------------------------------------------------------------
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__GKC_SYS_H__
 ////////////////////////////////////////////////////////////////////////////////

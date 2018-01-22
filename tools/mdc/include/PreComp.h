@@ -22,6 +22,7 @@ This is pre-compiled header file.
 #include "base/GkcDef.h"
 #include "base/GkcColl.h"
 
+#include "sys/GkcSysDef.h"
 #include "sys/GkcSys.h"
 #include "sys/GkcConsole.h"
 #include "sys/GkcPath.h"

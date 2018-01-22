@@ -32,26 +32,26 @@ FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/_pack")
 SET_POSTBUILD_PATH_COPY(GkcSys "platform" "machine" "no-config" "no-config" "${PROJECT_SOURCE_DIR}/setup" "*" "${PROJECT_BINARY_DIR}/_pack")
 
 INSTALL(TARGETS GkcSys
-	RUNTIME DESTINATION public/assemblies COMPONENT runtime
-	LIBRARY DESTINATION public/assemblies COMPONENT runtime
-	ARCHIVE DESTINATION public/lib COMPONENT development)
+	RUNTIME DESTINATION core/assemblies COMPONENT runtime
+	LIBRARY DESTINATION core/assemblies COMPONENT runtime
+	ARCHIVE DESTINATION development/lib COMPONENT development)
 
 SET_POSTBUILD_SRC_PATH("platform" "machine" "user-config" "Debug" "${PROJECT_SOURCE_DIR}/others/redist")
 INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
-	DESTINATION public/assemblies COMPONENT runtime
+	DESTINATION core/assemblies COMPONENT runtime
 	CONFIGURATIONS Debug)
 SET_POSTBUILD_SRC_PATH("platform" "machine" "user-config" "Release" "${PROJECT_SOURCE_DIR}/others/redist")
 INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
-	DESTINATION public/assemblies COMPONENT runtime
+	DESTINATION core/assemblies COMPONENT runtime
 	CONFIGURATIONS Release)
 
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/public/include/"
-	DESTINATION public/include COMPONENT development)
+	DESTINATION development/include COMPONENT development)
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcSys/public/"
-	DESTINATION public/include/sys COMPONENT development)
+	DESTINATION development/include/sys COMPONENT development)
 INSTALL(FILES "${PROJECT_SOURCE_DIR}/common.cmk"
-	DESTINATION public/wlang COMPONENT development)
+	DESTINATION development/cmake COMPONENT development)
 INSTALL(FILES "${PROJECT_SOURCE_DIR}/LICENSE"
-	DESTINATION public COMPONENT runtime)
+	DESTINATION core COMPONENT runtime)
 
 #end

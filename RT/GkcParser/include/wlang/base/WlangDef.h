@@ -52,15 +52,18 @@ DECLARE_GUID(GUID__IWlangUtility_Access)
 
 // noun
 
-#define WLANG_NOUN_MASK         (0x000000FF)
-//  pending symbol
-#define WLANG_NOUN_NONE         (0)
-//  outer symbol
-#define WLANG_NOUN_OUTER        (1)
-
 #define WLANG_NOUN_NAMESPACE    (15)
 
 // adj
+
+#ddefine WLANG_ADJ_CONSTANT
+#ddefine WLANG_ADJ_ALIAS
+
+// scope
+
+#define WLANG_SCOPE_PUBLIC
+#define WLANG_SCOPE_PRIVATE
+#define WLANG_SCOPE_STATIC
 
 // classes
 
@@ -169,7 +172,7 @@ private:
 //declarator
 
 // kind
-//   ARRAY
+//   ARRAY POINTER METHOD
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif

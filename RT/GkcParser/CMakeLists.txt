@@ -21,11 +21,13 @@ SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Parser.cpp"
 	"src/wlang/action/WlangGrammarError.cpp" "src/wlang/action/WlangGrammarAccepted.cpp"
-	"src/wlang/action/WlangPositionSymbolData.cpp" "src/wlang/action/WlangPositionSymbolData_Factory.cpp"
 	"src/wlang/action/WlangDoNsBodyAction.cpp" "src/wlang/action/WlangDoBodySemiAction.cpp"
 	"src/wlang/WlangUtility.cpp" "src/wlang/WlangParser.cpp"
 	"src/won/action/WonDoCommonAction.cpp"
-	"src/won/WonUtility.cpp" "src/won/WonParser.cpp")
+	"src/won/WonUtility.cpp" "src/won/WonParser.cpp"
+	"src/wmark/action/WmarkGrammarAccepted.cpp"
+	"src/wmark/action/WmarkCommentStartAction.cpp"
+	"src/wmark/WmarkUtility.cpp")
 ADD_LIBRARY(GkcParser SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcParser "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")
@@ -35,11 +37,11 @@ SET_TARGET_PROPERTIES(GkcParser PROPERTIES OUTPUT_NAME "GkcParser"
 TARGET_LINK_LIBRARIES(GkcParser GkcCompiler ${STRING_LINK_EXTRA_LIBS})
 
 INSTALL(TARGETS GkcParser
-	RUNTIME DESTINATION public/assemblies COMPONENT runtime
-	LIBRARY DESTINATION public/assemblies COMPONENT runtime
-	ARCHIVE DESTINATION public/lib COMPONENT development)
+	RUNTIME DESTINATION core/assemblies COMPONENT runtime
+	LIBRARY DESTINATION core/assemblies COMPONENT runtime
+	ARCHIVE DESTINATION development/lib COMPONENT development)
 
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcParser/public/"
-	DESTINATION public/include/parser COMPONENT development)
+	DESTINATION development/include/parser COMPONENT development)
 
 #end

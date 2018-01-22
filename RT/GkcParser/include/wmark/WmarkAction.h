@@ -11,38 +11,35 @@
 */
 
 /*
-Internal Header
+This file contains Wmark action functions.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __WMARK_DEF_H__
-#define __WMARK_DEF_H__
-////////////////////////////////////////////////////////////////////////////////
-
-// _WmarkUtility_Objects
-
-struct _WmarkUtility_Objects
-{
-	//tables
-	GKC::ShareCom<GKC::ILexerTables>   spLexerTables;
-	GKC::ShareCom<GKC::IGrammarTables> spGrammarTables;
-	//lexer actions
-	GKC::ShareCom<GKC::ILexerAction> spCommentStart;
-	//factory
-	GKC::ShareCom<GKC::IComFactory> spBasicFactory;
-	GKC::ShareCom<GKC::IComFactory> spPositionFactory;
-};
-
-// _IWmarkUtility_Access
-
-class NOVTABLE _IWmarkUtility_Access
-{
-public:
-	virtual void GetObjects(_WmarkUtility_Objects& obj) throw() = 0;
-};
-
-DECLARE_GUID(GUID__IWmarkUtility_Access)
 
 ////////////////////////////////////////////////////////////////////////////////
-#endif
+namespace GKC {
+////////////////////////////////////////////////////////////////////////////////
+
+//functions
+
+// WmarkCommentStartAction
+
+inline CallResult _Create_WmarkCommentStartAction(ShareCom<ILexerAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkCommentStartAction, ILexerAction, sp, cr);
+	return cr;
+}
+
+// grammar accepted
+
+inline CallResult _Create_WmarkGrammarAccepted(ShareCom<IGrammarAccepted>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkGrammarAccepted, IGrammarAccepted, sp, cr);
+	return cr;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+}
 ////////////////////////////////////////////////////////////////////////////////

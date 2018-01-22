@@ -11,10 +11,17 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
 INCLUDE("common.cmk")
+
 PROJECT(GKC)
+
+CHECK_BUILDING_DIR()
+
+#sub-directories
 ADD_SUBDIRECTORY(RT RT)
-ADD_SUBDIRECTORY(Compiler/wlc Compiler/wlc)
+ADD_SUBDIRECTORY(Service Service)
 ADD_SUBDIRECTORY(tools tools)
+ADD_SUBDIRECTORY(Client Client)
+ADD_SUBDIRECTORY(Compiler/wlc Compiler/wlc)
 ADD_SUBDIRECTORY(test test)
 
 #pack

@@ -42,6 +42,7 @@ public:
 	{
 		return m_sym_pool.GetTotalCount();
 	}
+	//symbols
 	virtual _CplMetaDataPosition Find(const ConstStringA& str) throw()
 	{
 		auto iter(m_sym_pool.Find(str));
@@ -65,6 +66,7 @@ public:
 	virtual void GetInfo(const _CplMetaDataPosition& pos, _CplMetaDataInfo& info, bool& bAnalysis) throw()
 	{
 		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
+		info.strKey = iter.GetKey();
 		info.uType = iter.GetType();
 		info.uLevel = iter.GetLevel();
 		info.posData.SetAddr(iter.GetData<_MetaDataAddr>().GetAddr());
@@ -160,6 +162,60 @@ public:
 		assert( m_stack.IsEmpty() );
 		m_sym_pool.SetZeroLevelHead(uAddr);
 	}
+	//ast
+	virtual GKC::CallResult InsertAstNode(const uint& uSize, const uint& uType, _CplMetaDataPosition& pos) throw()
+	{
+		CallResult cr;
+		try {
+			auto iter(m_tree.CreateNode(uSize, uType));  //may throw
+			pos.SetAddr(iter.GetPosition().GetAddr());
+		}
+		catch(Exception& e) {
+			cr = e.GetResult();
+		}
+		catch(...) {
+			cr.SetResult(SystemCallResults::Fail);
+		}
+		return cr;
+	}
+	virtual void SetAstParent(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posParent) throw()
+	{
+		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
+		auto iterP(m_tree.GetAtPosition(AstTree::Position(posParent.GetAddr())));
+		m_tree.SetParent(iter, iterP);
+	}
+	virtual void SetAstChild(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posChild) throw()
+	{
+		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
+		auto iterC(m_tree.GetAtPosition(AstTree::Position(posChild.GetAddr())));
+		m_tree.SetChild(iter, iterC);
+	}
+	virtual void SetAstNext(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posNext) throw()
+	{
+		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
+		auto iterN(m_tree.GetAtPosition(AstTree::Position(posNext.GetAddr())));
+		m_tree.SetNext(iter, iterN);
+	}
+	virtual void ResetAst() throw()
+	{
+		m_tree.Reset();
+	}
+	virtual void GetAstNodeInfo(const _CplMetaDataPosition& pos, _CplAstNodeInfo& info) throw()
+	{
+		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
+		auto iterTemp(iter);
+		info.uType = iter.GetType();
+		iterTemp.MoveParent();
+		info.posParent.SetAddr(iterTemp.GetNodeAddr());
+		iterTemp = iter;
+		iterTemp.MoveChild();
+		info.posChild.SetAddr(iterTemp.GetNodeAddr());
+		iterTemp = iter;
+		iterTemp.MoveNext();
+		info.posNext.SetAddr(iterTemp.GetNodeAddr());
+		info.uData = (uintptr)(iter.GetDataPointer());
+	}
+	//storage
 	virtual GKC::CallResult Load(const GKC::ShareCom<GKC::IByteStream>& sp) throw()
 	{
 		clear_all();

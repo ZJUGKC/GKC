@@ -246,13 +246,13 @@ Install GKC in the computers on client end or server end for production and runn
 	Run the following command as administrator:
 
 	```
-	cscript setup-gkc.vbs <-c|-d|-s> [Installation directory [Local workspace directory [Unified workspace directory]]]
+	cscript setup-gkc.vbs <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]
 	```
 
 * Linux
 
 	```
-	sudo sh setup-gkc.sh <-c|-d|-s> [Installation directory [Local workspace directory [Unified workspace directory]]]
+	sudo sh setup-gkc.sh <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]
 	```
 
 The options are listed as follows:
@@ -267,22 +267,24 @@ The directories are listed as follows:
 
 | Directories | Notes |
 |:------------|:------|
-| Installation directory      | Specify the installation directory |
-| Local workspace directory   | Specify the directory of local workspace |
-| Unified workspace directory | Specify the directory of unified workspace |
+| Installation-directory      | Specify the installation directory |
+| Local-workspace-directory   | Specify the directory of local workspace |
+| Unified-workspace-directory | Specify the directory of unified workspace |
 
 ## Uninstall
 
-### Windows
+* Windows
 
-Run the following command as administrator:
+	Run the following command as administrator:
 
-```
-cscript uninstall-gkc.vbs
-```
+	```
+	cscript uninstall-gkc.vbs [-a]
+	```
 
-### Linux
+* Linux
 
-```
-sudo sh uninstall-gkc.sh
-```
+	```
+	sudo sh uninstall-gkc.sh [-a]
+	```
+
+`-a` means the directories for local workspace and unified workspace will be deleted.

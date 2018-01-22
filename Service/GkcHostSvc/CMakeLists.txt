@@ -13,7 +13,7 @@ INCLUDE_DIRECTORIES(
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${PROJECT_SOURCE_DIR}/RT/GkcSys/public"
-	"${PROJECT_SOURCE_DIR}/RT/GkcHostSvc/include"
+	"${PROJECT_SOURCE_DIR}/Service/GkcHostSvc/include"
 	"${PROJECT_SOURCE_DIR}/public/include")
 LINK_DIRECTORIES("${PROJECT_BINARY_DIR}/bin")
 SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
@@ -27,13 +27,13 @@ SET_TARGET_PROPERTIES(GkcHostSvc PROPERTIES OUTPUT_NAME "GkcHostSvc"
 TARGET_LINK_LIBRARIES(GkcHostSvc GkcSys ${STRING_LINK_EXTRA_LIBS})
 
 #copy
-SET_POSTBUILD_PATH_COPY(GkcHostSvc "platform" "machine" "no-config" "config" "${PROJECT_SOURCE_DIR}/RT/GkcHostSvc/setup" "*" "${EXECUTABLE_OUTPUT_PATH}")
+SET_POSTBUILD_PATH_COPY(GkcHostSvc "platform" "machine" "no-config" "config" "${PROJECT_SOURCE_DIR}/Service/GkcHostSvc/setup" "*" "${EXECUTABLE_OUTPUT_PATH}")
 
 INSTALL(TARGETS GkcHostSvc
-	RUNTIME DESTINATION public/assemblies COMPONENT runtime)
+	RUNTIME DESTINATION core/services COMPONENT runtime)
 
-SET_POSTBUILD_SRC_PATH("platform" "machine" "no-config" "" "${PROJECT_SOURCE_DIR}/RT/GkcHostSvc/setup")
+SET_POSTBUILD_SRC_PATH("platform" "machine" "no-config" "" "${PROJECT_SOURCE_DIR}/Service/GkcHostSvc/setup")
 INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
-	DESTINATION public/assemblies COMPONENT runtime)
+	DESTINATION core/services COMPONENT runtime)
 
 #end

@@ -12,7 +12,7 @@
 #
 
 #copy
-cp /usr/.GKC/public/assemblies/GkcHostSvc /etc/init.d/GkcHostSvc
+cp $1 /etc/init.d/GkcHostSvc
 #right
 chmod ugoa+x /etc/init.d/GkcHostSvc
 #runlevels

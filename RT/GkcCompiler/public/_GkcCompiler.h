@@ -813,9 +813,33 @@ private:
 
 struct _CplMetaDataInfo
 {
+	GKC::ConstStringA strKey;
 	uint uType;
 	uint uLevel;
 	_CplMetaDataPosition posData;
+};
+
+// macros for uType
+
+#define CPL_METADATA_NOUN_MASK      (0x000003FF)
+#define GET_CPL_METADATA_NOUN(x)    (((uint)(x)) & CPL_METADATA_NOUN_MASK)
+
+// pending symbol
+#define CPL_METADATA_NOUN_NONE      (0)
+// outer symbol
+#define CPL_METADATA_NOUN_OUTER     (1)
+// the start of noun value
+#define CPL_METADATA_NOUN_START     (2)
+
+// _CplAstNodeInfo
+
+struct _CplAstNodeInfo
+{
+	uint uType;
+	_CplMetaDataPosition posParent;
+	_CplMetaDataPosition posChild;
+	_CplMetaDataPosition posNext;
+	uintptr uData;
 };
 
 // _ICplMetaData
@@ -824,6 +848,7 @@ class NOVTABLE _ICplMetaData
 {
 public:
 	virtual uint GetCount() throw() = 0;
+	//symbols
 	virtual _CplMetaDataPosition Find(const GKC::ConstStringA& str) throw() = 0;
 	virtual _CplMetaDataPosition FindNext(const _CplMetaDataPosition& pos) throw() = 0;
 	virtual _CplMetaDataPosition GetZeroLevelHead() throw() = 0;
@@ -840,6 +865,14 @@ public:
 	virtual _CplMetaDataPosition LeaveLevel(const bool& bReverseLevelLink) throw() = 0;
 	virtual uint GetCurrentLevel() throw() = 0;
 	virtual void FinishZeroLevel(const bool& bReverseLevelLink) throw() = 0;
+	//ast
+	virtual GKC::CallResult InsertAstNode(const uint& uSize, const uint& uType, _CplMetaDataPosition& pos) throw() = 0;
+	virtual void SetAstParent(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posParent) throw() = 0;
+	virtual void SetAstChild(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posChild) throw() = 0;
+	virtual void SetAstNext(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posNext) throw() = 0;
+	virtual void ResetAst() throw() = 0;
+	virtual void GetAstNodeInfo(const _CplMetaDataPosition& pos, _CplAstNodeInfo& info) throw() = 0;
+	//storage
 	virtual GKC::CallResult Load(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
 	virtual GKC::CallResult Save(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
 };

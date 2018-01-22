@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+# Copyright (c) 2017, Xin YUAN, courses of Zhejiang University
 # All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -9,8 +9,6 @@
 #   yxxinyuan@zju.edu.cn
 #
 
-ADD_SUBDIRECTORY(GkcSys GkcSys)
-ADD_SUBDIRECTORY(GkcCompiler GkcCompiler)
-ADD_SUBDIRECTORY(GkcParser GkcParser)
+ADD_SUBDIRECTORY(GkcHostSvc GkcHostSvc)
 
 #end

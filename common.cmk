@@ -286,4 +286,11 @@ MACRO(SET_POSTBUILD_PATH_COPY targetName strNeedPlatform strNeedMachine strSrcNe
 	SET_POSTBUILD_COPY(${targetName} ${_source} ${_dest})
 ENDMACRO(SET_POSTBUILD_PATH_COPY)
 
+#check the building directory
+MACRO(CHECK_BUILDING_DIR)
+	IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+		MESSAGE(FATAL_ERROR "Do not build in-source.\nPlease remove CMakeCache.txt and the CMakeFiles/ directory.")
+	ENDIF()
+ENDMACRO(CHECK_BUILDING_DIR)
+
 #end

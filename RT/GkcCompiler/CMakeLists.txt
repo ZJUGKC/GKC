@@ -44,11 +44,11 @@ SET_TARGET_PROPERTIES(GkcCompiler PROPERTIES OUTPUT_NAME "GkcCompiler"
 TARGET_LINK_LIBRARIES(GkcCompiler GkcSys ${STRING_LINK_EXTRA_LIBS})
 
 INSTALL(TARGETS GkcCompiler
-	RUNTIME DESTINATION public/assemblies COMPONENT runtime
-	LIBRARY DESTINATION public/assemblies COMPONENT runtime
-	ARCHIVE DESTINATION public/lib COMPONENT development)
+	RUNTIME DESTINATION core/assemblies COMPONENT runtime
+	LIBRARY DESTINATION core/assemblies COMPONENT runtime
+	ARCHIVE DESTINATION development/lib COMPONENT development)
 
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcCompiler/public/"
-	DESTINATION public/include/compiler COMPONENT development)
+	DESTINATION development/include/compiler COMPONENT development)
 
 #end

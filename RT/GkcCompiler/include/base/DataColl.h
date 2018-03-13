@@ -963,9 +963,13 @@ public:
 	{
 	}
 
+	void SetStart(uint uStart) throw()
+	{
+		m_uStart = uStart;
+	}
 	void Reset() throw()
 	{
-		m_uStart = 0;
+		SetStart(0);
 	}
 
 	bool IsNull() const throw()
@@ -1029,14 +1033,36 @@ public:
 	void SetChild(const Iterator& iter, const Iterator& iterChild) throw()
 	{
 		uint uNode = iter.GetNodeAddr();
-		assert( uNode != 0 );
-		set_child(uNode, iterChild.GetNodeAddr());
+		set_child(uNode, get_root(), iterChild.GetNodeAddr());
 	}
 	void SetNext(const Iterator& iter, const Iterator& iterNext) throw()
 	{
 		uint uNode = iter.GetNodeAddr();
 		assert( uNode != 0 );
 		set_next(uNode, iterNext.GetNodeAddr());
+	}
+
+	void SetLinkParent(const Iterator& iterHead, const Iterator& iterParent) throw()
+	{
+		uint uNode = iterHead.GetNodeAddr();
+		uint uParent = iterParent.GetNodeAddr();
+		while( uNode != 0 ) {
+			set_parent(uNode, uParent, get_root());
+			uNode = get_next(uNode);
+		}
+	}
+	//reverse the link of the same level
+	Iterator ReverseLink(const Iterator& iterHead) throw()
+	{
+		uint uNode = iterHead.GetNodeAddr();
+		uint uHead = 0;
+		while( uNode != 0 ) {
+			uint uNext = get_next(uNode);
+			set_next(uNode, uHead);
+			uHead = uNode;
+			uNode = uNext;
+		}
+		return Iterator(this, uHead);
 	}
 
 	//insert
@@ -1108,8 +1134,11 @@ private:
 		_Node& node = *((_Node*)ToPointer(uNode));
 		node.SetParent(uParent);
 	}
-	void set_child(uint uNode, uint uChild) throw()
+	void set_child(uint uNode, uint uRoot, uint uChild) throw()
 	{
+		assert( uRoot != 0 );
+		if( uNode == 0 )
+			uNode = uRoot;
 		_Node& node = *((_Node*)ToPointer(uNode));
 		node.SetChild(uChild);
 	}

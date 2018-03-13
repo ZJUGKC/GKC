@@ -157,6 +157,12 @@ DECLARE_GUID(GUID__IWmarkParser)
 
 #pragma pack(pop)
 
+// macros for WMARK
+
+#define WMARK_ROOT_SYMBOL  "document"
+
+#define WMARK_NOUN_INDENT  (CPL_METADATA_NOUN_START + 20)
+
 //functions
 
 SA_FUNCTION void _WmarkUtility_Create(GKC::ShareCom<_IWmarkUtility>& sp, GKC::CallResult& cr) throw();

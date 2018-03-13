@@ -870,8 +870,12 @@ public:
 	virtual void SetAstParent(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posParent) throw() = 0;
 	virtual void SetAstChild(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posChild) throw() = 0;
 	virtual void SetAstNext(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posNext) throw() = 0;
-	virtual void ResetAst() throw() = 0;
 	virtual void GetAstNodeInfo(const _CplMetaDataPosition& pos, _CplAstNodeInfo& info) throw() = 0;
+	virtual void SetAstLinkParent(const _CplMetaDataPosition& posHead, const _CplMetaDataPosition& posParent) throw() = 0;
+	virtual _CplMetaDataPosition ReverseAstLink(const _CplMetaDataPosition& posHead) throw() = 0;
+	virtual _CplMetaDataPosition ResetAst() throw() = 0;
+	// only called for querying
+	virtual _CplMetaDataPosition GetAstRoot(const _CplMetaDataPosition& posStart) throw() = 0;
 	//storage
 	virtual GKC::CallResult Load(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;
 	virtual GKC::CallResult Save(const GKC::ShareCom<GKC::IByteStream>& sp) throw() = 0;

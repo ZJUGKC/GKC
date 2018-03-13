@@ -176,6 +176,12 @@ public:
 // CplMetaDataPosition
 typedef _CplMetaDataPosition  CplMetaDataPosition;
 
+// CplMetaDataInfo
+typedef _CplMetaDataInfo  CplMetaDataInfo;
+
+// CplAstNodeInfo
+typedef _CplAstNodeInfo  CplAstNodeInfo;
+
 // ICplMetaData
 typedef _ICplMetaData  ICplMetaData;
 

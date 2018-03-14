@@ -631,7 +631,8 @@ private:
 	StringPool&  m_string_pool;
 	//allocator
 	RefPtr<IMemoryAllocatorRef32>  m_allocator;
-	uint  m_uStart;  //address in data pool, indicating the hash header ( this value is sizeof(uint) )
+	uint  m_uStart;  //address in data pool, indicating the hash header
+					//this value is sizeof(uint), and it means that the data pool has only one symbol pool.
 	/*
 	uCount (the number of nodes)
 	uZeroLevelHead (list head of 0 level)

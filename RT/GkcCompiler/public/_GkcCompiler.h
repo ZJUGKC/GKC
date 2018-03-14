@@ -839,7 +839,7 @@ struct _CplAstNodeInfo
 	_CplMetaDataPosition posParent;
 	_CplMetaDataPosition posChild;
 	_CplMetaDataPosition posNext;
-	uintptr uData;
+	_CplMetaDataPosition posData;
 };
 
 // _ICplMetaData
@@ -854,22 +854,24 @@ public:
 	virtual _CplMetaDataPosition GetZeroLevelHead() throw() = 0;
 	virtual _CplMetaDataPosition GetLevelNext(const _CplMetaDataPosition& pos) throw() = 0;
 	virtual void GetInfo(const _CplMetaDataPosition& pos, _CplMetaDataInfo& info, bool& bAnalysis) throw() = 0;
-	virtual uintptr GetData(const _CplMetaDataPosition& posData) throw() = 0;
 	virtual void SetType(const _CplMetaDataPosition& pos, const uint& uType) throw() = 0;
 	virtual void SetLevel(const _CplMetaDataPosition& pos, const uint& uLevel) throw() = 0;
 	virtual void SetData(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posData) throw() = 0;
 	virtual void ClearAnalysisFlag(const _CplMetaDataPosition& pos) throw() = 0;
 	virtual GKC::CallResult InsertSymbol(const GKC::ConstStringA& str, const uint& uType, const bool& bLevelLink, _CplMetaDataPosition& pos) throw() = 0;
-	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw() = 0;
 	virtual GKC::CallResult EnterLevel() throw() = 0;
 	virtual _CplMetaDataPosition LeaveLevel(const bool& bReverseLevelLink) throw() = 0;
 	virtual uint GetCurrentLevel() throw() = 0;
 	virtual void FinishZeroLevel(const bool& bReverseLevelLink) throw() = 0;
+	//data
+	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw() = 0;
+	virtual uintptr GetData(const _CplMetaDataPosition& posData) throw() = 0;
 	//ast
-	virtual GKC::CallResult InsertAstNode(const uint& uSize, const uint& uType, _CplMetaDataPosition& pos) throw() = 0;
+	virtual GKC::CallResult InsertAstNode(const uint& uType, _CplMetaDataPosition& pos) throw() = 0;
 	virtual void SetAstParent(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posParent) throw() = 0;
 	virtual void SetAstChild(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posChild) throw() = 0;
 	virtual void SetAstNext(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posNext) throw() = 0;
+	virtual void SetAstData(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posData) throw() = 0;
 	virtual void GetAstNodeInfo(const _CplMetaDataPosition& pos, _CplAstNodeInfo& info) throw() = 0;
 	virtual void SetAstLinkParent(const _CplMetaDataPosition& posHead, const _CplMetaDataPosition& posParent) throw() = 0;
 	virtual _CplMetaDataPosition ReverseAstLink(const _CplMetaDataPosition& posHead) throw() = 0;

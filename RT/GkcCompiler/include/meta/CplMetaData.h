@@ -72,12 +72,6 @@ public:
 		info.posData.SetAddr(iter.GetData<_MetaDataAddr>().GetAddr());
 		bAnalysis = iter.IsAnalysis();
 	}
-	virtual uintptr GetData(const _CplMetaDataPosition& posData) throw()
-	{
-		if( posData.IsNull() )
-			return 0;
-		return m_usr_allocator.ToPointer(posData.GetAddr());
-	}
 	virtual void SetType(const _CplMetaDataPosition& pos, const uint& uType) throw()
 	{
 		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
@@ -112,17 +106,6 @@ public:
 		catch(...) {
 			cr.SetResult(SystemCallResults::Fail);
 		}
-		return cr;
-	}
-	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw()
-	{
-		CallResult cr;
-		uint uAddr = m_usr_allocator.Allocate(uSize);
-		if( uAddr == 0 ) {
-			cr.SetResult(SystemCallResults::OutOfMemory);
-			return cr;
-		}
-		pos.SetAddr(uAddr);
 		return cr;
 	}
 	virtual GKC::CallResult EnterLevel() throw()
@@ -162,12 +145,30 @@ public:
 		assert( m_stack.IsEmpty() );
 		m_sym_pool.SetZeroLevelHead(uAddr);
 	}
+	//data
+	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw()
+	{
+		CallResult cr;
+		uint uAddr = m_usr_allocator.Allocate(uSize);
+		if( uAddr == 0 ) {
+			cr.SetResult(SystemCallResults::OutOfMemory);
+			return cr;
+		}
+		pos.SetAddr(uAddr);
+		return cr;
+	}
+	virtual uintptr GetData(const _CplMetaDataPosition& posData) throw()
+	{
+		if( posData.IsNull() )
+			return 0;
+		return m_usr_allocator.ToPointer(posData.GetAddr());
+	}
 	//ast
-	virtual GKC::CallResult InsertAstNode(const uint& uSize, const uint& uType, _CplMetaDataPosition& pos) throw()
+	virtual GKC::CallResult InsertAstNode(const uint& uType, _CplMetaDataPosition& pos) throw()
 	{
 		CallResult cr;
 		try {
-			auto iter(m_tree.CreateNode(uSize, uType));  //may throw
+			auto iter(m_tree.CreateNode((uint)sizeof(_MetaDataAddr), uType));  //may throw
 			pos.SetAddr(iter.GetPosition().GetAddr());
 		}
 		catch(Exception& e) {
@@ -196,9 +197,10 @@ public:
 		auto iterN(m_tree.GetAtPosition(AstTree::Position(posNext.GetAddr())));
 		m_tree.SetNext(iter, iterN);
 	}
-	virtual void ResetAst() throw()
+	virtual void SetAstData(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posData) throw()
 	{
-		m_tree.Reset();
+		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
+		iter.GetData<_MetaDataAddr>().SetAddr(posData.GetAddr());
 	}
 	virtual void GetAstNodeInfo(const _CplMetaDataPosition& pos, _CplAstNodeInfo& info) throw()
 	{
@@ -213,7 +215,29 @@ public:
 		iterTemp = iter;
 		iterTemp.MoveNext();
 		info.posNext.SetAddr(iterTemp.GetNodeAddr());
-		info.uData = (uintptr)(iter.GetDataPointer());
+		info.posData.SetAddr(iter.GetData<_MetaDataAddr>().GetAddr());
+	}
+	virtual void SetAstLinkParent(const _CplMetaDataPosition& posHead, const _CplMetaDataPosition& posParent) throw()
+	{
+		auto iter(m_tree.GetAtPosition(AstTree::Position(posHead.GetAddr())));
+		auto iterP(m_tree.GetAtPosition(AstTree::Position(posParent.GetAddr())));
+		m_tree.SetLinkParent(iter, iterP);
+	}
+	virtual _CplMetaDataPosition ReverseAstLink(const _CplMetaDataPosition& posHead) throw()
+	{
+		auto iter(m_tree.GetAtPosition(AstTree::Position(posHead.GetAddr())));
+		return _CplMetaDataPosition(m_tree.ReverseLink(iter).GetPosition().GetAddr());
+	}
+	virtual _CplMetaDataPosition ResetAst() throw()
+	{
+		_CplMetaDataPosition pos(m_tree.GetStart());
+		m_tree.Reset();
+		return pos;
+	}
+	virtual _CplMetaDataPosition GetAstRoot(const _CplMetaDataPosition& posStart) throw()
+	{
+		m_tree.SetStart(posStart.GetAddr());
+		return _CplMetaDataPosition(m_tree.GetRoot().GetPosition().GetAddr());
 	}
 	//storage
 	virtual GKC::CallResult Load(const GKC::ShareCom<GKC::IByteStream>& sp) throw()

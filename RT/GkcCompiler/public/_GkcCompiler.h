@@ -863,6 +863,7 @@ public:
 	virtual _CplMetaDataPosition LeaveLevel(const bool& bReverseLevelLink) throw() = 0;
 	virtual uint GetCurrentLevel() throw() = 0;
 	virtual void FinishZeroLevel(const bool& bReverseLevelLink) throw() = 0;
+	virtual _CplMetaDataPosition ReverseLevelLink(const _CplMetaDataPosition& posHead) throw() = 0;
 	//data
 	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw() = 0;
 	virtual uintptr GetData(const _CplMetaDataPosition& posData) throw() = 0;

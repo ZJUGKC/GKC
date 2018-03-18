@@ -145,6 +145,12 @@ public:
 		assert( m_stack.IsEmpty() );
 		m_sym_pool.SetZeroLevelHead(uAddr);
 	}
+	virtual _CplMetaDataPosition ReverseLevelLink(const _CplMetaDataPosition& posHead) throw()
+	{
+		uint uAddr = posHead.GetAddr();
+		m_sym_pool.ReverseLevelLink(uAddr);
+		return _CplMetaDataPosition(uAddr);
+	}
 	//data
 	virtual GKC::CallResult InsertData(const uint& uSize, _CplMetaDataPosition& pos) throw()
 	{

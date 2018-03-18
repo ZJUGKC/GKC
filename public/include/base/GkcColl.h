@@ -347,6 +347,19 @@ public:
 		return get_iterator(NULL);
 	}
 
+	//reverse
+	void Reverse() throw()
+	{
+		_Node* pNode = m_pHead;
+		m_pHead = NULL;
+		while( pNode != NULL ) {
+			_Node* pNext = pNode->m_pNext;
+			pNode->m_pNext = m_pHead;
+			m_pHead = pNode;
+			pNode = pNext;
+		}
+	}
+
 private:
 	//tools
 	void fill_new_node(_Node* pNewNode, _Node* pNext) throw()

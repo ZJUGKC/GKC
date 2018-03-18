@@ -1047,8 +1047,9 @@ public:
 	{
 		uint uNode = iterHead.GetNodeAddr();
 		uint uParent = iterParent.GetNodeAddr();
+		uint uRoot = get_root();
 		while( uNode != 0 ) {
-			set_parent(uNode, uParent, get_root());
+			set_parent(uNode, uParent, uRoot);
 			uNode = get_next(uNode);
 		}
 	}

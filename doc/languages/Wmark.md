@@ -20,3 +20,6 @@ Wmark language is a subset of markdown language.
 1. Comment
 
 The comment begins with `<!--` and ends with `-->`.
+The comment is a block element.
+
+1. Paragraph

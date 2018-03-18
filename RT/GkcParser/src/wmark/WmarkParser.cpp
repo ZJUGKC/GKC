@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2017, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,7 +11,7 @@
 */
 
 /*
-This file contains global variables for Wmark utility component.
+This file contains global variables for Wmark parser component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,28 +20,25 @@ This file contains global variables for Wmark utility component.
 
 #include "_GkcParser.h"
 
-#include "base/ParserDef.h"
-
-#include "wmark/base/WmarkDef.h"
-#include "wmark/base/WmarkLex.h"
-#include "wmark/base/WmarkGra.h"
-
 #include "wmark/action/WmarkReturnAction.h"
 #include "wmark/action/WmarkCommentStartAction.h"
 #include "wmark/action/WmarkGrammarAccepted.h"
+#include "wmark/action/WmarkDoDocRsBlockListAction.h"
+#include "wmark/action/WmarkDoBlockListListBlockAction.h"
+#include "wmark/action/WmarkDoBlockBlockBodyAction.h"
+#include "wmark/action/WmarkDoBlockBodyIndentAction.h"
 
 #include "wmark/WmarkAction.h"
-#include "wmark/WmarkUtility.h"
+#include "wmark/WmarkParser.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// WmarkUtility
+// WmarkParser
 
-BEGIN_COM_TYPECAST(WmarkUtility)
-	COM_TYPECAST_ENTRY(_IWmarkUtility, _IWmarkUtility)
-	COM_TYPECAST_ENTRY(_IWmarkUtility_Access, _IWmarkUtility_Access)
+BEGIN_COM_TYPECAST(WmarkParser)
+	COM_TYPECAST_ENTRY(_IWmarkParser, _IWmarkParser)
 END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////

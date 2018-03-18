@@ -22,6 +22,8 @@ This file contains parser functions.
 
 #include "base/ParserDef.h"
 
+//Wlang
+
 #include "wlang/base/WlangDef.h"
 #include "wlang/base/WlangLex.h"
 #include "wlang/base/WlangGra.h"
@@ -35,6 +37,8 @@ This file contains parser functions.
 #include "wlang/WlangUtility.h"
 #include "wlang/WlangParser.h"
 
+//Won
+
 #include "won/base/WonDef.h"
 #include "won/base/WonLex.h"
 #include "won/base/WonGra.h"
@@ -44,6 +48,24 @@ This file contains parser functions.
 #include "won/WonAction.h"
 #include "won/WonUtility.h"
 #include "won/WonParser.h"
+
+//Wmark
+
+#include "wmark/base/WmarkDef.h"
+#include "wmark/base/WmarkLex.h"
+#include "wmark/base/WmarkGra.h"
+
+#include "wmark/action/WmarkReturnAction.h"
+#include "wmark/action/WmarkCommentStartAction.h"
+#include "wmark/action/WmarkGrammarAccepted.h"
+#include "wmark/action/WmarkDoDocRsBlockListAction.h"
+#include "wmark/action/WmarkDoBlockListListBlockAction.h"
+#include "wmark/action/WmarkDoBlockBlockBodyAction.h"
+#include "wmark/action/WmarkDoBlockBodyIndentAction.h"
+
+#include "wmark/WmarkAction.h"
+#include "wmark/WmarkUtility.h"
+#include "wmark/WmarkParser.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -79,6 +101,20 @@ inline void _Internal_WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::Call
 	_CREATE_COMPONENT_INSTANCE(WonParser, _IWonParser, sp, cr);
 }
 
+// WmarkUtility
+
+inline void _Internal_WmarkUtility_Create(GKC::ShareCom<_IWmarkUtility>& sp, GKC::CallResult& cr) throw()
+{
+	_CREATE_COMPONENT_INSTANCE(WmarkUtility, _IWmarkUtility, sp, cr);
+}
+
+// WmarkParser
+
+inline void _Internal_WmarkParser_Create(GKC::ShareCom<_IWmarkParser>& sp, GKC::CallResult& cr) throw()
+{
+	_CREATE_COMPONENT_INSTANCE(WmarkParser, _IWmarkParser, sp, cr);
+}
+
 } //namespace
 
 // WlangUtility
@@ -107,6 +143,20 @@ void _WonUtility_Create(GKC::ShareCom<_IWonUtility>& sp, GKC::CallResult& cr) th
 void _WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::CallResult& cr) throw()
 {
 	GKC::_Internal_WonParser_Create(sp, cr);
+}
+
+// WmarkUtility
+
+void _WmarkUtility_Create(GKC::ShareCom<_IWmarkUtility>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_WmarkUtility_Create(sp, cr);
+}
+
+// WmarkParser
+
+void _WmarkParser_Create(GKC::ShareCom<_IWmarkParser>& sp, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_WmarkParser_Create(sp, cr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

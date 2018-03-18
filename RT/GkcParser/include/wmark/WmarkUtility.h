@@ -72,6 +72,11 @@ public:
 			m_spGrammarTables = spGrammarTables;
 		}
 		//lexer actions
+		if( m_spReturn.IsBlockNull() ) {
+			cr = _Create_WmarkReturnAction(m_spReturn);
+			if( cr.IsFailed() )
+				return cr;
+		}
 		if( m_spCommentStart.IsBlockNull() ) {
 			cr = _Create_WmarkCommentStartAction(m_spCommentStart);
 			if( cr.IsFailed() )
@@ -98,6 +103,7 @@ public:
 		obj.spLexerTables     = m_spLexerTables;
 		obj.spGrammarTables   = m_spGrammarTables;
 		//lexer actions
+		obj.spReturn          = m_spReturn;
 		obj.spCommentStart    = m_spCommentStart;
 		//factory
 		obj.spBasicFactory    = m_spBasicFactory;
@@ -128,6 +134,7 @@ private:
 	ShareCom<ILexerTables>   m_spLexerTables;
 	ShareCom<IGrammarTables> m_spGrammarTables;
 	//lexer actions
+	ShareCom<ILexerAction> m_spReturn;
 	ShareCom<ILexerAction> m_spCommentStart;
 	//factory
 	ShareCom<IComFactory> m_spBasicFactory;

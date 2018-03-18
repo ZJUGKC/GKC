@@ -27,6 +27,7 @@ struct _WmarkUtility_Objects
 	GKC::ShareCom<GKC::ILexerTables>   spLexerTables;
 	GKC::ShareCom<GKC::IGrammarTables> spGrammarTables;
 	//lexer actions
+	GKC::ShareCom<GKC::ILexerAction> spReturn;
 	GKC::ShareCom<GKC::ILexerAction> spCommentStart;
 	//factory
 	GKC::ShareCom<GKC::IComFactory> spBasicFactory;

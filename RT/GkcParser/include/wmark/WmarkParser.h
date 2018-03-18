@@ -77,19 +77,55 @@ public:
 
 		return cr;
 	}
-
-	virtual void SetInput(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
-	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw() = 0;
-	virtual GKC::CallResult Start() throw() = 0;
-	// return value : SystemCallResults::OK, the call is successful.
-	//                SystemCallResults::S_False, it reaches the end of stream.
-	//                otherwise, this call is failed.
-	virtual GKC::CallResult Parse() throw() = 0;
-	virtual const GKC::ShareArray<GKC::StringS> get_ErrorArray() throw() = 0;
+	virtual void SetInput(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
+	{
+		assert( !m_spLexerAnalyzer.IsBlockNull() );
+		int iCharType;
+		m_spLexerAnalyzer.Deref().SetStream(sp, iCharType);
+	}
+	virtual void SetOutput(const GKC::ShareCom<GKC::ICplMetaData>& sp) throw()
+	{
+		assert( !sp.IsBlockNull() );
+		if( sp != m_spMeta ) {
+			m_spMeta = sp;
+			//for actions
+			if( m_arrU.GetCount() != 0 ) {
+				for( auto iter(m_arrU.GetBegin()); iter != m_arrU.GetEnd(); iter.MoveNext() )
+					iter.get_Value().Deref().SetMetaData(sp);
+			}
+		} //end if
+	}
+	virtual GKC::CallResult Start() throw()
+	{
+		assert( !m_spGrammarAnalyzer.IsBlockNull() );
+		return m_spGrammarAnalyzer.Deref().Start(true);
+	}
+	virtual GKC::CallResult Parse() throw()
+	{
+		assert( !m_spGrammarAnalyzer.IsBlockNull() );
+		CallResult cr = m_spGrammarAnalyzer.Deref().Parse();
+		if( cr.GetResult() == SystemCallResults::OK ) {
+			if( m_spGrammarAnalyzer.Deref().IsErrorState() ) {
+				cr = m_spGrammarAnalyzer.Deref().Revert();
+				if( cr.IsFailed() )
+					return cr;
+			}
+			const GKC::ShareArray<GKC::StringS> arrError(m_spGrammarAnalyzer.Deref().get_ErrorArray());
+			uintptr uCount = arrError.GetCount();
+			if( m_uMaxErrorNumber != 0 && uCount >= (uintptr)m_uMaxErrorNumber )
+				cr.SetResult(SystemCallResults::S_False);
+		}
+		return cr;
+	}
+	virtual const GKC::ShareArray<GKC::StringS> get_ErrorArray() throw()
+	{
+		assert( !m_spGrammarAnalyzer.IsBlockNull() );
+		return m_spGrammarAnalyzer.Deref().get_ErrorArray();
+	}
 
 private:
 	//create lexer analyzer
-	static CallResult create_lexer_analyzer(const _WlangUtility_Objects& objs, ShareCom<ILexerAnalyzer>& sp) throw()
+	static CallResult create_lexer_analyzer(const _WmarkUtility_Objects& objs, ShareCom<ILexerAnalyzer>& sp) throw()
 	{
 		CallResult cr;
 		//create
@@ -105,6 +141,9 @@ private:
 		//actions
 		{
 			// set
+			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), objs.spReturn);
+			if( cr.IsFailed() )
+				return cr;
 			cr = spLexerAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), objs.spCommentStart);
 			if( cr.IsFailed() )
 				return cr;
@@ -114,7 +153,7 @@ private:
 		return cr;
 	}
 	//create grammar analyzer
-	static CallResult create_grammar_analyzer(const _WlangUtility_Objects& objs, const ShareCom<ILexerAnalyzer>& spLexerAnalyzer,
+	static CallResult create_grammar_analyzer(const _WmarkUtility_Objects& objs, const ShareCom<ILexerAnalyzer>& spLexerAnalyzer,
 											ShareCom<IGrammarAnalyzer>& sp, ShareArray<ShareCom<_ICplMetaDataActionUtility>>& arrU)
 	{
 		//array
@@ -136,14 +175,28 @@ private:
 			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), objs.spBasicFactory);
 			if( cr.IsFailed() )
 				return cr;
-			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "block"), objs.spPositionFactory);
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), objs.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_INDENT"), objs.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "document"), objs.spPositionFactory);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "block_list"), objs.spPositionFactory);
 			if( cr.IsFailed() )
 				return cr;
-
-
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "block"), objs.spPositionFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "block_body"), objs.spPositionFactory);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "return_set"), objs.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
+		} //end block
 		//actions
 		{
 			ShareCom<_ICplMetaDataActionUtility> spU;
@@ -157,6 +210,63 @@ private:
 				return cr;
 			arrUtility.Add(spU);  //may throw
 			ShareCom<IGrammarAction> spAction;
+			//Do-Doc-Rs-Block-List
+			cr = _Create_WmarkDoDocRsBlockListAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_doc_rs_block_list"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_doc_rs_block_list_rs"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			//Do-Block-List-List-Block
+			cr = _Create_WmarkDoBlockListListBlockAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
+			if( cr.IsFailed() )
+				return cr;
+			arrUtility.Add(spU);  //may throw
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_list_list_block"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			//Do-Block-Block-Body
+			cr = _Create_WmarkDoBlockBlockBodyAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_block_body"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_block_body_rt"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_list_block"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_doc_block_list"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_doc_block_list_rs"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			//Do-Block-Body-Indent
+			cr = _Create_WmarkDoBlockBodyIndentAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
+			if( cr.IsFailed() )
+				return cr;
+			arrUtility.Add(spU);  //may throw
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_body_indent"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+		} //end block
+		//output
+		sp = spGrammarAnalyzer;
+		arrU = arrUtility;
+		return cr;
+	}
 
 private:
 	uint m_uMaxErrorNumber;

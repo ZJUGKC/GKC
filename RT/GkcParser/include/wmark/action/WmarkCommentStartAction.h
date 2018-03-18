@@ -119,8 +119,12 @@ private:
 				default:
 					break;
 				}
-				if( bEnd )
+				if( bEnd ) {
+					/*
+					info.set_ID(CPL_TK_NULL);  //comment end
+					*/
 					break;
+				}
 			}
 			else {
 				//states

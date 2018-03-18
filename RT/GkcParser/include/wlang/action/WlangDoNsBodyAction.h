@@ -57,9 +57,9 @@ private:
 	_CplMetaDataPosition find_symbol(const ConstStringA& str) throw()
 	{
 		uint uLevel = m_spMeta.Deref().GetCurrentLevel();
-		_CplMetaDataPosition pos(m_spMeta.Deref().Find(str));
+		CplMetaDataPosition pos(m_spMeta.Deref().Find(str));
 		while( !pos.IsNull() ) {
-			_CplMetaDataInfo info;
+			CplMetaDataInfo info;
 			bool bAnalysis;
 			m_spMeta.Deref().GetInfo(pos, info, bAnalysis);
 			if( GET_CPL_METADATA_NOUN(info.uType) == WLANG_NOUN_NAMESPACE && info.uLevel == uLevel && bAnalysis )
@@ -76,7 +76,7 @@ private:
 		//namespace
 		StringA str(arrSymbol[2].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		ConstStringA c_str(StringUtilHelper::To_ConstString(str));
-		_CplMetaDataPosition pos;
+		CplMetaDataPosition pos;
 		pos = find_symbol(c_str);
 		if( pos.IsNull() ) {
 			cr = m_spMeta.Deref().InsertSymbol(c_str, WLANG_NOUN_NAMESPACE & CPL_METADATA_NOUN_MASK, true, pos);
@@ -86,7 +86,7 @@ private:
 				errorArray.Add(strError);  //may throw
 				return cr;
 			}
-			_CplMetaDataPosition posData;
+			CplMetaDataPosition posData;
 			cr = m_spMeta.Deref().InsertData(sizeof(_WlangNsClassMetaData), posData);
 			if( cr.IsFailed() ) {
 				StringS strError(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw

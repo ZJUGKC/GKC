@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2017, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,37 +11,23 @@
 */
 
 /*
-This file contains global variables for Wmark utility component.
+This file contains global variables for Do-Doc-Rs-Block-List action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcParser.h"
-
-#include "base/ParserDef.h"
-
-#include "wmark/base/WmarkDef.h"
-#include "wmark/base/WmarkLex.h"
-#include "wmark/base/WmarkGra.h"
-
-#include "wmark/action/WmarkReturnAction.h"
-#include "wmark/action/WmarkCommentStartAction.h"
-#include "wmark/action/WmarkGrammarAccepted.h"
-
-#include "wmark/WmarkAction.h"
-#include "wmark/WmarkUtility.h"
+#include "wmark/action/WmarkDoDocRsBlockListAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// WmarkUtility
+// WmarkDoDocRsBlockListAction
 
-BEGIN_COM_TYPECAST(WmarkUtility)
-	COM_TYPECAST_ENTRY(_IWmarkUtility, _IWmarkUtility)
-	COM_TYPECAST_ENTRY(_IWmarkUtility_Access, _IWmarkUtility_Access)
+BEGIN_COM_TYPECAST(WmarkDoDocRsBlockListAction)
+	COM_TYPECAST_ENTRY(IGrammarAction, IGrammarAction)
 END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////

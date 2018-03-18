@@ -27,6 +27,8 @@ BEGIN_STATIC_CONST_STRING(g_wmark_lex)
 	STATIC_CONST_STRING_ENTRY(
 "\xEF\xBB\xBF"
 "%%" "\r\n"
+"TK_INDENT \\s\\s\\s\\s|\\t" "\r\n"
+"TK_RETURN \\n|\\r\\n?" "\r\n" 
 "TK_COMMENT_START <!\\-\\-" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_wmark_lex)

@@ -22,12 +22,57 @@ namespace GKC {
 
 //functions
 
+// WmarkReturnAction
+
+inline CallResult _Create_WmarkReturnAction(ShareCom<ILexerAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkReturnAction, ILexerAction, sp, cr);
+	return cr;
+}
+
 // WmarkCommentStartAction
 
 inline CallResult _Create_WmarkCommentStartAction(ShareCom<ILexerAction>& sp) throw()
 {
 	CallResult cr;
 	_CREATE_COMPONENT_INSTANCE(WmarkCommentStartAction, ILexerAction, sp, cr);
+	return cr;
+}
+
+// Do-Doc-Rs-Block-List action
+
+inline CallResult _Create_WmarkDoDocRsBlockListAction(ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkDoDocRsBlockListAction, IGrammarAction, sp, cr);
+	return cr;
+}
+
+// Do-Block-List-List-Block action
+
+inline CallResult _Create_WmarkDoBlockListListBlockAction(ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkDoBlockListListBlockAction, IGrammarAction, sp, cr);
+	return cr;
+}
+
+// Do-Block-Block-Body action
+
+inline CallResult _Create_WmarkDoBlockBlockBodyAction(ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkDoBlockBlockBodyAction, IGrammarAction, sp, cr);
+	return cr;
+}
+
+// Do-Block-Body-Indent action
+
+inline CallResult _Create_WmarkDoBlockBodyIndentAction(ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkDoBlockBodyIndentAction, IGrammarAction, sp, cr);
 	return cr;
 }
 

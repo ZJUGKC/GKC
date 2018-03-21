@@ -11,35 +11,24 @@
 */
 
 /*
-This file contains global variables for Wmark parser component.
+This file contains global variables for Do-Block-Body-Comment action component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
-#include "_GkcParser.h"
-
-#include "wmark/action/WmarkReturnAction.h"
-#include "wmark/action/WmarkCommentStartAction.h"
-#include "wmark/action/WmarkGrammarAccepted.h"
-#include "wmark/action/WmarkDoDocRsBlockListAction.h"
-#include "wmark/action/WmarkDoBlockListListBlockAction.h"
-#include "wmark/action/WmarkDoBlockBlockBodyAction.h"
 #include "wmark/action/WmarkDoBlockBodyCommentAction.h"
-#include "wmark/action/WmarkDoBlockBodyIndentAction.h"
-
-#include "wmark/WmarkAction.h"
-#include "wmark/WmarkParser.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// WmarkParser
+// WmarkDoBlockBodyCommentAction
 
-BEGIN_COM_TYPECAST(WmarkParser)
-	COM_TYPECAST_ENTRY(_IWmarkParser, _IWmarkParser)
+BEGIN_COM_TYPECAST(WmarkDoBlockBodyCommentAction)
+	COM_TYPECAST_ENTRY(IGrammarAction, IGrammarAction)
+	COM_TYPECAST_ENTRY(_ICplMetaDataActionUtility, _CplMetaDataActionBase)
 END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////

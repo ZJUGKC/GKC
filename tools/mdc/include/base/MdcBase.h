@@ -23,53 +23,6 @@ Internal Header
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// _Mdc_Process_File
-//   remove BOM and process tables
-
-inline CallResult _Mdc_Process_File(const ShareCom<ITextStream>& sp, ShareCom<ITextStream>& spOut)
-{
-	CallResult cr;
-	ShareCom<ITextStream> spStream(sp);
-	//BOM
-	int iBOMType;
-	cr = spStream.Deref().CheckBOM(iBOMType);
-	if( cr.IsFailed() )
-		return cr;
-	if( iBOMType != BOMTypes::UTF8 && iBOMType != BOMTypes::None ) {
-		cr.SetResult(SystemCallResults::Corrupt);
-		return cr;
-	}
-	int64 iBack = 0;
-	int iState = 0;
-	//loop
-	while( true ) {
-		CharA ch;
-		cr = spStream.Deref().GetCharA(ch);
-		if( cr.IsFailed() )
-			break;
-		if( cr.GetResult() == SystemCallResults::S_EOF ) {
-			cr.SetResult(SystemCallResults::OK);
-			break;
-		}
-		//table
-		switch( iState ) {
-		case 0:
-			if( ch == ' ' || ch == '\t' ) {
-			}
-			else if( ch == '|' ) {
-				iBack = 2;
-			}
-			break;
-		case 1:
-			break;
-		default:
-			assert( false );
-			break;
-		} //end switch
-	} //end while
-	return cr;
-}
-
 // delete output file
 
 inline void _Delete_Output_File(const StringS& str) throw()
@@ -164,23 +117,11 @@ inline uintptr _Compile_One_File(ShareCom<IWmarkParser>& spParser, const StringS
 		return 1;
 
 	//generate
+===
+
+===
 
 	return 0;
-}
-
-// add compiled error count
-
-inline uintptr _Add_Compiled_Error_Count(uintptr u1, uintptr u2) throw()
-{
-	uintptr uRes;
-	const uintptr c_Max = (uintptr)(Limits<uint>::Max);
-	CallResult cr;
-	cr = SafeOperators::Add(u1, u2, uRes);
-	if( cr.IsFailed() )
-		return c_Max;
-	if( uRes > c_Max )
-		return c_Max;
-	return uRes;
 }
 
 // print compiled result

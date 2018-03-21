@@ -61,6 +61,7 @@ This file contains parser functions.
 #include "wmark/action/WmarkDoDocRsBlockListAction.h"
 #include "wmark/action/WmarkDoBlockListListBlockAction.h"
 #include "wmark/action/WmarkDoBlockBlockBodyAction.h"
+#include "wmark/action/WmarkDoBlockBodyCommentAction.h"
 #include "wmark/action/WmarkDoBlockBodyIndentAction.h"
 
 #include "wmark/WmarkAction.h"

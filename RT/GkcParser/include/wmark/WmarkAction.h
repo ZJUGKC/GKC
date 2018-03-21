@@ -67,6 +67,15 @@ inline CallResult _Create_WmarkDoBlockBlockBodyAction(ShareCom<IGrammarAction>& 
 	return cr;
 }
 
+// Do-Block-Body-Comment action
+
+inline CallResult _Create_WmarkDoBlockBodyCommentAction(ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_COMPONENT_INSTANCE(WmarkDoBlockBodyCommentAction, IGrammarAction, sp, cr);
+	return cr;
+}
+
 // Do-Block-Body-Indent action
 
 inline CallResult _Create_WmarkDoBlockBodyIndentAction(ShareCom<IGrammarAction>& sp) throw()

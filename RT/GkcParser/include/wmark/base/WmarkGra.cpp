@@ -41,7 +41,8 @@ BEGIN_STATIC_CONST_STRING(g_wmark_gra)
 "return_set : return_set TK_RETURN { do_rs_rs_rt }" "\r\n"
 "	| TK_RETURN { do_rs_rt }" "\r\n"
 "	;" "\r\n"
-"block_body : TK_INDENT { do_block_body_indent }" "\r\n"
+"block_body : TK_COMMENT_START { do_block_body_comment }" "\r\n"
+"	| TK_INDENT { do_block_body_indent }" "\r\n"
 "	;" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_wmark_gra)

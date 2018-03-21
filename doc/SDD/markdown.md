@@ -19,11 +19,11 @@ The comment begins with `<!--` and ends with `-->`.
 
 1. Copyright
 
-If you want to include a copyright symbol in your article, you can write `&copy;`.
+	If you want to include a copyright symbol in your article, you can write `&copy;`.
 
 1. `<`, `>` and `&`
 
-They would be translated to `&lt;`, `&gt;` and `&amp;`.
+	They would be translated to `&lt;`, `&gt;` and `&amp;`.
 
 # Paragrahs
 
@@ -165,5 +165,5 @@ $$ ... $$
 
 # Specification
 
-CommonMark
-(http://commonmark.org)
+* CommonMark (http://commonmark.org)
+* MultiMarkdown (http://fletcherpenney.net/multimarkdown)

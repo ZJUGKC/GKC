@@ -172,10 +172,10 @@ private:
 		spGrammarAnalyzer.Deref().SetLexerAnalyzer(spLexerAnalyzer);
 		//factory
 		{
-			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), objs.spBasicFactory);
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), objs.spBasicFactory);
 			if( cr.IsFailed() )
 				return cr;
-			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_RETURN"), objs.spBasicFactory);
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_COMMENT_START"), objs.spBasicFactory);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_INDENT"), objs.spBasicFactory);
@@ -248,6 +248,17 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_doc_block_list_rs"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			//Do-Block-Body-Comment
+			cr = _Create_WmarkDoBlockBodyCommentAction(spAction);
+			if( cr.IsFailed() )
+				return cr;
+			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
+			if( cr.IsFailed() )
+				return cr;
+			arrUtility.Add(spU);  //may throw
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_body_comment"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Block-Body-Indent

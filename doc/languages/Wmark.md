@@ -14,12 +14,14 @@
 # Introduction
 
 Wmark language is a subset of markdown language.
+The Wmark document consists of block elements separated by two or more line breaks.
+A block element contains one or more inline elements.
 
 # Syntax
 
 1. Comment
 
-The comment begins with `<!--` and ends with `-->`.
-The comment is a block element.
+	The comment begins with `<!--` and ends with `-->`.
+	The comment is a block element.
 
 1. Paragraph

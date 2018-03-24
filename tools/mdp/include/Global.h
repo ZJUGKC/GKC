@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,28 +11,19 @@
 */
 
 /*
-This is pre-compiled header file.
+This file contains global variables.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __PRECOMP_H__
-#define __PRECOMP_H__
+namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "base/GkcDef.h"
-#include "base/GkcColl.h"
+//version
+DECLARE_STATIC_CONST_ARRAY(g_const_array_version, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
 
-#include "sys/GkcSysDef.h"
-#include "sys/GkcSys.h"
-#include "sys/GkcConsole.h"
-#include "sys/GkcPath.h"
-#include "sys/GkcFm.h"
-#include "sys/GkcCharset.h"
-
-#include "compiler/GkcCompiler.h"
-
-#include "parser/GkcParser.h"
+//help
+DECLARE_STATIC_CONST_ARRAY(g_const_array_help, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
 
 ////////////////////////////////////////////////////////////////////////////////
-#endif //__PRECOMP_H__
+}
 ////////////////////////////////////////////////////////////////////////////////

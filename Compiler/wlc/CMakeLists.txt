@@ -13,8 +13,8 @@ INCLUDE_DIRECTORIES(
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${PROJECT_SOURCE_DIR}/Compiler/wlc/include"
-	"${PROJECT_SOURCE_DIR}/RT/GkcCompiler/public"
 	"${PROJECT_SOURCE_DIR}/RT/GkcParser/public"
+	"${PROJECT_SOURCE_DIR}/RT/GkcCompiler/public"
 	"${PROJECT_SOURCE_DIR}/RT/GkcSys/public"
 	"${PROJECT_SOURCE_DIR}/public/include")
 LINK_DIRECTORIES("${PROJECT_BINARY_DIR}/bin")

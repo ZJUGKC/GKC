@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -26,14 +26,14 @@ namespace GKC {
 
 //version
 BEGIN_STATIC_CONST_ARRAY(g_const_array_version)
-	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("Markdown Document compiler (mdc) version : 1.0.1.1001")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("Process Markdown Project (version : 1.0.1.1001)")))
 	STATIC_CONST_ARRAY_ENTRY_LAST(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("")))
 END_STATIC_CONST_ARRAY(g_const_array_version)
 
 //help
 BEGIN_STATIC_CONST_ARRAY(g_const_array_help)
-	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  Usage : mdc <options> file [destination]")))
-	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  options : -c Compile the source file. The destination is an output HTML file.")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  Usage : mdp <options> file [destination]")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  options : -p Process the project file. The destination is a directory.")))
 	STATIC_CONST_ARRAY_ENTRY_LAST(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("")))
 END_STATIC_CONST_ARRAY(g_const_array_help)
 

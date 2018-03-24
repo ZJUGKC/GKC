@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2015, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -48,9 +48,9 @@ bool _CheckFileExtension(const ConstStringS& str, const ConstStringS& strExt, ui
 		strExt);
 }
 
-//compile single file
+//process project file
 inline
-int _Cmd_CompileSingleFile(const ConstArray<ConstStringS>& args)
+int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args)
 {
 	uintptr uArgCount = args.GetCount();
 
@@ -66,35 +66,38 @@ int _Cmd_CompileSingleFile(const ConstArray<ConstStringS>& args)
 	{
 		uintptr uPos;
 		//source
-		if( !_CheckFileExtension(StringUtilHelper::To_ConstString(strSrc), DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".md")), uPos) ) {
-			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The source file name must have the extension \".md\"!")));
+		if( !_CheckFileExtension(StringUtilHelper::To_ConstString(strSrc), DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".mp")), uPos) ) {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The project file name must have the extension \".mp\"!")));
 			return 1;
 		}
 		//destination
 		if( uArgCount == 4 ) {
-			//extension
-			ConstStringS c_strDest(args[3].get_Value());
-			if( !_CheckFileExtension(c_strDest, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".htm")), uPos) ) {
-				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The destination file name must have the extension \".htm\"!")));
-				return 1;
-			}
-			StringUtilHelper::MakeString(c_strDest, strDest);
+			StringUtilHelper::MakeString(args[3].get_Value(), strDest);
 		}
 		else {
-			strDest = StringHelper::Clone(strSrc);
-			FsPathHelper::RemoveExtension(uPos, strDest);
-			StringUtilHelper::Insert(uPos, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".htm")), strDest);
+			if( !FileManagementHelper::GetCurrentDirectory(strDest) ) {
+				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The current directory cannot be obtained!")));
+				return 1;
+			}
+			FsPathHelper::AppendSeparator(strDest);
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("output")), strDest);
 		}
 	} //end block
 
-	//file names
+	//directory/file names
 	FsPathHelper::ConvertPathStringToPlatform(strSrc);
 	FsPathHelper::ConvertPathStringToPlatform(strDest);
+
+	//create directory
+	if( !FileManagementHelper::ForceDirectory(strDest) ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The destination directory cannot be created!")));
+		return 1;
+	}
 
 	_PrintVersion();
 
 	//process
-	return _Compile_Single_File(strSrc, strDest) ? 0 : 2;
+	return _Process_Project_File(strSrc, strDest) ? 0 : 2;
 }
 
 // ProgramEntryPoint
@@ -114,9 +117,9 @@ public:
 		}
 
 		int ret = 0;
-		//-c
-		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
-			ret = _Cmd_CompileSingleFile(args);
+		//-p
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-p"))) ) {
+			ret = _Cmd_ProcessProjectFile(args);
 		}
 		else {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid parameters!")));

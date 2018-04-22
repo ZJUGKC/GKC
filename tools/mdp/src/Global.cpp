@@ -33,7 +33,9 @@ END_STATIC_CONST_ARRAY(g_const_array_version)
 //help
 BEGIN_STATIC_CONST_ARRAY(g_const_array_help)
 	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  Usage : mdp <options> file [destination]")))
-	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  options : -p Process the project file. The destination is a directory.")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  destination : The destination is a directory.")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  options : -m Generate the script for chm.")))
+	STATIC_CONST_ARRAY_ENTRY(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("  options : -e Generate the script for epub.")))
 	STATIC_CONST_ARRAY_ENTRY_LAST(IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("")))
 END_STATIC_CONST_ARRAY(g_const_array_help)
 

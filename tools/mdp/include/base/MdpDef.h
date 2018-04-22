@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2017, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,24 +11,22 @@
 */
 
 /*
-This file contains functions.
+Internal Header
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __PROCESS_PROJECT_FILE_H__
-#define __PROCESS_PROJECT_FILE_H__
+#ifndef __MDP_DEF_H__
+#define __MDP_DEF_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// process project file
+//output types
 
-inline bool _Process_Project_File(const StringS& strSrc, const StringS& strDest, int iType)
-{
-	return true;
-}
+#define MDP_TYPE_CHM     (0)
+#define MDP_TYPE_EPUB    (1)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

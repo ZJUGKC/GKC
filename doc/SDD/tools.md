@@ -13,49 +13,191 @@
 
 # Specification
 
-All Software Development Documents (SDD) should located in a directory.
+## Basic Structures
+
+All Software Development Documents (SDD) should be located in a directory called *document directory*.
 All documents use markdown format saved as UTF8 encoding with BOM.
-A directory has several sub-directories, several markdown files and other files (e.g., image files).
-All directories and files form a tree structure.
-Each directory has a file named `index.md` as the default page for this directory.
-If a directory does not including that file, the directory will not appear in the tree of final chm book.
-The names of directories and files can use a prefix with the format `XXX-`, where `XXX` is a number with leading zeros which will be removed in final chm book.
+A directory contains several markdown files and sub-directories.
+If the directory is named as `<md-filename>-files`, it will only contain the accessory files (e.g., image files) for the markdown file `<md-filename>.md`.
+One of the markdown files under the directory should be used as *summary file* for that directory.
+The directory named as `files` under the *document directory* contains the accessory files for the entire documents.
+All directories and files form a tree structure and should be named in English without spaces.
 
-# Kernel Tool
+The image formats can be JPEG, PNG and GIF.
 
-The kernel tool is CMark (https://github.com/jgm/cmark).
+## Special Files
+
+These four types of files under the *document directory* are listed as follows:
+
+| Type      | Description  |
+|:---------:|:-------------|
+| Cover     | Image file   |
+| Title     | Mardown file |
+| Content   | Mardown file, can use *summary file* |
+| Copyright | Mardown file |
+
+## Project File
+
+A project file with postfix `.mp` is located in a directory which contains the *document directory*.
+The project file uses WON format, and the whole file is an object containing the following key-value pairs:
+
+| Key                  | Value                                            |
+|:--------------------:|:-------------------------------------------------|
+| "project-name"       | Specify the project name                         |
+| "document-directory" | Specify the *document directory*                 |
+| "language"           | Specify the language ID                          |
+| "command"            | Specify the compiling commands for markdown file |
+| "tree"               | Specify the file tree                            |
+
+The optional key-value pairs are listed as follows:
+
+| Key         | Value                        |
+|:-----------:|:-----------------------------|
+| "cover"     | Specify the cover image file |
+| "title"     | Specify the title page file  |
+| "content"   | Specify the content file     |
+| "copyright" | Specify the copyright file   |
+
+The file tree is an array with the object elements. Each object contains the following key-value pairs:
+
+| Key    | Value                 |
+|:------:|:----------------------|
+| "name" | Specify the node name |
+| "file" | Specify the file name |
+
+The optional key-value pair of file tree is `"tree"` and the corresponding file tree of the sub-level.
+
+The language IDs are listed as follows:
+
+| ID   | Hexadecimal Number | Description             | Code Page     | Short String |
+|:----:|:------------------:|:------------------------|:-------------:|:------------:|
+| 1033 | 0x409              | English (United States) | CODEPAGE_1252 | en-US        |
+| 1025 | 0x401              | Arabic                  | CODEPAGE_1256 | ar-SA        |
+| 2052 | 0x804              | Chinese (Simplified)    | CODEPAGE_936  | zh-CN        |
+| 1028 | 0x404              | Chinese (Traditional)   | CODEPAGE_950  | zh-TW        |
+| 1029 | 0x405              | Czech                   | CODEPAGE_1250 | cs-CZ        |
+| 1032 | 0x408              | Greek                   | CODEPAGE_1253 | el-GR        |
+| 1037 | 0x40D              | Hebrew                  | CODEPAGE_1255 | he-IL        |
+| 1038 | 0x40E              | Hungarian               | CODEPAGE_1250 | hu-HU        |
+| 1041 | 0x411              | Japanese                | CODEPAGE_932  | ja-JP        |
+| 1042 | 0x412              | Korean                  | CODEPAGE_949  | ko-KR        |
+| 1045 | 0x415              | Polish                  | CODEPAGE_1250 | pl-PL        |
+| 1049 | 0x419              | Russian                 | CODEPAGE_1251 | ru-RU        |
+| 1051 | 0x41B              | Slovakian               | CODEPAGE_1250 | sk-SK        |
+| 1060 | 0x424              | Slovenian               | CODEPAGE_1250 | sl-SI        |
+| 1055 | 0x41F              | Turkish                 | CODEPAGE_1254 | tr-TR        |
+| 1026 | 0x402              | Bulgarian               | CODEPAGE_1251 | bg-BG        |
+
+The compiling commands is an array containing one or more command strings for processing the markdown file.
+The macro variables, `$SRC$` and `$DEST$`, can be used in command string for indicating the source file and the destination file.
+
+# Viewer
+
+* Windows
+
+	A `.chm` file can be opened directly under Windows.
+	A tool called SumatraPDF (https://github.com/sumatrapdfreader/sumatrapdf) can be used
+	for browsing `chm` files and `epub` files.
+
+* Linux
+
+	A tool called `KchmViewer` can be used for browsing `chm` files and `epub` files.
+	Use the following command to install it:
+
+	```
+	sudo apt-get install kchmviewer
+	```
+
+# Processing Tools
+
+## Project
+
+Execute the command as follows:
+
+```
+mdp <options> <project file> <output directory>
+```
+
+The options are listed as follows:
+
+| Options | Description                  |
+|:-------:|:-----------------------------|
+| -m      | Generate the script for chm  |
+| -e      | Generate the script for epub |
+
+## Compilers
+
+There are several compilers used for processing markdown files.
+`Multi-Markdown` and `CMark` are two command-line tools.
+
+### Multi-Markdown
+
+Download the software from this [page](http://fletcherpenney.net/multimarkdown, "mmd")
+and use it under Windows:
+
+```
+multimarkdown -o <output file> <source file>
+```
+
+### CMark
+
+The kernel tool of `commonmark` is CMark (https://github.com/jgm/cmark).
 Download it and compile it under Windows and Linux.
 
-# Windows
+* Windows
 
-1. Copy `cmark.exe` and `cmark.dll` to `c:\program files\.GKC\GKC-X.X.X-winXX\public\assemblies`.
+	Copy `cmark.dll` to `%GKC_SYSTEM_ROOT%\core\assemblies`,
+	and copy `cmark.exe` to `%GKC_SYSTEM_ROOT%\core\tools`.
 
-1. Execute:
+* Linux
+
+	Copy `libcmark.so` and `libcmark.so.0.XX.X` to `${GKC_SYSTEM_ROOT}/core/assemblies` with option `-d`,
+	and copy `cmark` to `${GKC_SYSTEM_ROOT}/core/tools`.
+
+Execute the following command:
+
+```
+cmark <source file> -t html > <output file>
+```
+
+## Generator
+
+### CHM
+
+* Windows
+
+	1. Install `HTML Help Workshop`, execute `hhc XXX.hhp`.
+
+	1. Double-click `XXX.chm` and view it.
+
+* Linux
+
+	1. Download chmc (http://sourceforge.net/projects/chmc/) and compile it.
+
+	1. Execute:
+
+		```
+		chmc -c XXX.conf -o XXX.chm <source directory>
+		```
+
+	1. Install the package `kchmviewer` and view `XXX.chm`.
+
+### EPUB
+
+* Windows
+
+	Install 7-zip tool, and execute:
 
 	```
-	mdc <source directory> <output directory>
+	7z a -mx0 -tzip <output file> mimetype
+	7z a -mx9 -r -tzip <output file> META-INF OEBPS
 	```
 
-1. Install `HTML Help Workshop`, execute `hhc XXX.hhp`.
+* Linux
 
-1. Double-click `XXX.chm` and view it.
-
-# Linux
-
-1. Copy `cmark`, `libcmark.so` and `libcmark.so.0.XX.X` to `/usr/.GKC/public/assemblies` with option `-d`.
-
-1. Execute:
+	Install zip tool, and execute:
 
 	```
-	mdc <source directory> <output directory>
+	zip -0Xq <output file> mimetype
+	zip -Xr9Dq <output file> META-INF OEBPS
 	```
-
-1. Download chmc (http://sourceforge.net/projects/chmc/) and compile it.
-
-1. Execute:
-
-	```
-	chmc -c XXX.conf -o XXX.chm <source directory>
-	```
-
-1. Install the package `kchmviewer` and view `XXX.chm`.

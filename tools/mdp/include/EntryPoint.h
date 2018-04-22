@@ -50,7 +50,7 @@ bool _CheckFileExtension(const ConstStringS& str, const ConstStringS& strExt, ui
 
 //process project file
 inline
-int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args)
+int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 {
 	uintptr uArgCount = args.GetCount();
 
@@ -80,7 +80,7 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args)
 				return 1;
 			}
 			FsPathHelper::AppendSeparator(strDest);
-			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("output")), strDest);
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("mdb-output")), strDest);
 		}
 	} //end block
 
@@ -97,7 +97,7 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args)
 	_PrintVersion();
 
 	//process
-	return _Process_Project_File(strSrc, strDest) ? 0 : 2;
+	return _Process_Project_File(strSrc, strDest, type) ? 0 : 2;
 }
 
 // ProgramEntryPoint
@@ -116,17 +116,21 @@ public:
 			return 1;
 		}
 
-		int ret = 0;
-		//-p
-		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-p"))) ) {
-			ret = _Cmd_ProcessProjectFile(args);
+		int type = MDP_TYPE_CHM;
+		//-m
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-m"))) ) {
+			type = MDP_TYPE_CHM;
+		}
+		//-e
+		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-e"))) ) {
+			type = MDP_TYPE_EPUB;
 		}
 		else {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid parameters!")));
 			return 1;
 		}
 
-		return ret;
+		return _Cmd_ProcessProjectFile(args, type);
 	}
 };
 

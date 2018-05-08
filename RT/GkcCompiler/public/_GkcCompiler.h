@@ -60,53 +60,28 @@ typedef struct _tagLexerWordInfo
 class _LexerTokenString
 {
 public:
-	//types
-	enum {
-		None = 0,
-		Char8 = sizeof(GKC::CharA), Char16 = sizeof(GKC::CharH), Char32 = sizeof(GKC::CharL),
-		MaxType
-	};
-
-public:
-	_LexerTokenString() throw() : m_iType(None)
+	_LexerTokenString() throw()
 	{
-		assert( sizeof(GKC::StringA) == sizeof(GKC::StringH)
-			&& sizeof(GKC::StringA) == sizeof(GKC::StringL) );
 	}
-	_LexerTokenString(const _LexerTokenString& src) throw() : m_iType(None)
+	_LexerTokenString(const _LexerTokenString& src) throw() : m_str(src.m_str)
 	{
-		operator=(src);
 	}
-	_LexerTokenString(_LexerTokenString&& src) throw() : m_iType(None)
+	_LexerTokenString(_LexerTokenString&& src) throw() : m_str(rv_forward(src.m_str))
 	{
-		operator=(rv_forward(src));
 	}
 	~_LexerTokenString() throw()
 	{
-		destroy();
 	}
 
 	//assignment
 	_LexerTokenString& operator=(const _LexerTokenString& src) throw()
 	{
-		SetType(src.m_iType);
-		if( m_iType == Char8 )
-			get_string<GKC::StringA>() = src.get_string<GKC::StringA>();
-		else if( m_iType == Char16 )
-			get_string<GKC::StringH>() = src.get_string<GKC::StringH>();
-		else if( m_iType == Char32 )
-			get_string<GKC::StringL>() = src.get_string<GKC::StringL>();
+		m_str = src.m_str;
 		return *this;
 	}
 	_LexerTokenString& operator=(_LexerTokenString&& src) throw()
 	{
-		SetType(src.m_iType);
-		if( m_iType == Char8 )
-			get_string<GKC::StringA>() = rv_forward(src.get_string<GKC::StringA>());
-		else if( m_iType == Char16 )
-			get_string<GKC::StringH>() = rv_forward(src.get_string<GKC::StringH>());
-		else if( m_iType == Char32 )
-			get_string<GKC::StringL>() = rv_forward(src.get_string<GKC::StringL>());
+		m_str = rv_forward(src.m_str);
 		return *this;
 	}
 
@@ -115,169 +90,84 @@ public:
 	// iType : it can be sizeof(CharX)
 	void SetType(int iType) throw()
 	{
-		if( m_iType != iType ) {
-			destroy();
-			construct(iType);
-			m_iType = iType;
-		}
+		m_str.SetType(iType);
 	}
 	int GetType() const throw()
 	{
-		return m_iType;
+		return m_str.GetType();
 	}
 
 	void Reset()
 	{
-		if( m_iType == Char8 ) {
-			GKC::StringA& str = get_string<GKC::StringA>();
-			if( str.IsBlockNull() )
-				str = GKC::StringHelper::MakeEmptyString<GKC::CharA>(GKC::MemoryHelper::GetCrtMemoryManager());  //may throw
-		}
-		else if( m_iType == Char16 ) {
-			GKC::StringH& str = get_string<GKC::StringH>();
-			if( str.IsBlockNull() )
-				str = GKC::StringHelper::MakeEmptyString<GKC::CharH>(GKC::MemoryHelper::GetCrtMemoryManager());  //may throw
-		}
-		else if( m_iType == Char32 ) {
-			GKC::StringL& str = get_string<GKC::StringL>();
-			if( str.IsBlockNull() )
-				str = GKC::StringHelper::MakeEmptyString<GKC::CharL>(GKC::MemoryHelper::GetCrtMemoryManager());  //may throw
-		}
-		SetLength(0);  //may throw
+		m_str.Reset();  //may throw
 	}
 
 	uintptr GetLength() const throw()
 	{
-		uintptr uLength = 0;
-		if( m_iType == Char8 )
-			uLength = get_string<GKC::StringA>().GetLength();
-		else if( m_iType == Char16 )
-			uLength = get_string<GKC::StringH>().GetLength();
-		else if( m_iType == Char32 )
-			uLength = get_string<GKC::StringL>().GetLength();
-		return uLength;
+		return m_str.GetLength();
 	}
 	void SetLength(uintptr uLength)
 	{
-		if( m_iType == Char8 )
-			get_string<GKC::StringA>().SetLength(uLength);  //may throw
-		else if( m_iType == Char16 )
-			get_string<GKC::StringH>().SetLength(uLength);  //may throw
-		else if( m_iType == Char32 )
-			get_string<GKC::StringL>().SetLength(uLength);  //may throw
+		m_str.SetLength(uLength);  //may throw
 	}
 	void GetAt(uintptr uIndex, GKC::CharF& ch) const throw()
 	{
-		ch = 0;
-		if( m_iType == Char8 )
-			ch = (GKC::CharF)(get_string<GKC::StringA>().GetAt(uIndex).get_Value());
-		else if( m_iType == Char16 )
-			ch = (GKC::CharF)(get_string<GKC::StringH>().GetAt(uIndex).get_Value());
-		else if( m_iType == Char32 )
-			ch = (GKC::CharF)(get_string<GKC::StringL>().GetAt(uIndex).get_Value());
-		else
-			assert( false );
+		m_str.GetAt(uIndex, ch);
 	}
 	void SetAt(uintptr uIndex, const GKC::CharF& ch) throw()
 	{
-		if( m_iType == Char8 )
-			get_string<GKC::StringA>().GetAt(uIndex).set_Value((GKC::CharA)ch);
-		else if( m_iType == Char16 )
-			get_string<GKC::StringH>().GetAt(uIndex).set_Value((GKC::CharH)ch);
-		else if( m_iType == Char32 )
-			get_string<GKC::StringL>().GetAt(uIndex).set_Value((GKC::CharL)ch);
-		else
-			assert( false );
+		m_str.SetAt(uIndex, ch);
 	}
 	uintptr GetAddress() const throw()
 	{
-		uintptr uAddress = 0;
-		if( m_iType == Char8 )
-			uAddress = (uintptr)GKC::ShareArrayHelper::GetInternalPointer(get_string<GKC::StringA>());
-		else if( m_iType == Char16 )
-			uAddress = (uintptr)GKC::ShareArrayHelper::GetInternalPointer(get_string<GKC::StringH>());
-		else if( m_iType == Char32 )
-			uAddress = (uintptr)GKC::ShareArrayHelper::GetInternalPointer(get_string<GKC::StringL>());
-		return uAddress;
+		return m_str.GetAddress();
 	}
 
 	void Delete(uintptr uStart, uintptr uLength) throw()
 	{
-		if( m_iType == Char8 )
-			GKC::StringHelper::Delete(uStart, uLength, get_string<GKC::StringA>());
-		else if( m_iType == Char16 )
-			GKC::StringHelper::Delete(uStart, uLength, get_string<GKC::StringH>());
-		else if( m_iType == Char32 )
-			GKC::StringHelper::Delete(uStart, uLength, get_string<GKC::StringL>());
-		else
-			assert( false );
+		m_str.Delete(uStart, uLength);
 	}
 	void Append(const GKC::CharF& uChar)
 	{
-		if( m_iType == Char8 )
-			GKC::StringHelper::Append((GKC::CharA)uChar, get_string<GKC::StringA>());  //may throw
-		else if( m_iType == Char16 )
-			GKC::StringHelper::Append((GKC::CharH)uChar, get_string<GKC::StringH>());  //may throw
-		else if( m_iType == Char32 )
-			GKC::StringHelper::Append((GKC::CharL)uChar, get_string<GKC::StringL>());  //may throw
+		m_str.Append(uChar);  //may throw
 	}
 	void Insert(uintptr uStart, const _LexerTokenString& strAdd)
 	{
-		if( m_iType == Char8 )
-			GKC::StringUtilHelper::Insert(uStart, strAdd.get_string<GKC::StringA>(), get_string<GKC::StringA>());  //may throw
-		else if( m_iType == Char16 )
-			GKC::StringUtilHelper::Insert(uStart, strAdd.get_string<GKC::StringH>(), get_string<GKC::StringH>());  //may throw
-		else if( m_iType == Char32 )
-			GKC::StringUtilHelper::Insert(uStart, strAdd.get_string<GKC::StringL>(), get_string<GKC::StringL>());  //may throw
-		else
-			assert( false );
+		m_str.Insert(uStart, strAdd.m_str);  //may throw
 	}
 
 	void CloneTo(_LexerTokenString& str) const
 	{
-		str.SetType(GetType());
-		if( m_iType == Char8 )
-			str.get_string<GKC::StringA>() = GKC::StringHelper::Clone(get_string<GKC::StringA>());  //may throw
-		else if( m_iType == Char16 )
-			str.get_string<GKC::StringH>() = GKC::StringHelper::Clone(get_string<GKC::StringH>());  //may throw
-		else if( m_iType == Char32 )
-			str.get_string<GKC::StringL>() = GKC::StringHelper::Clone(get_string<GKC::StringL>());  //may throw
+		m_str.CloneTo(str.m_str);  //may throw
 	}
 	void ToSubString(uintptr uStart, uintptr uLength, _LexerTokenString& str) const
 	{
-		str.SetType(GetType());
-		str.Reset();  //may throw
-		if( m_iType == Char8 )
-			GKC::StringUtilHelper::Sub(get_string<GKC::StringA>(), uStart, uLength, str.get_string<GKC::StringA>());  //may throw
-		else if( m_iType == Char16 )
-			GKC::StringUtilHelper::Sub(get_string<GKC::StringH>(), uStart, uLength, str.get_string<GKC::StringH>());  //may throw
-		else if( m_iType == Char32 )
-			GKC::StringUtilHelper::Sub(get_string<GKC::StringL>(), uStart, uLength, str.get_string<GKC::StringL>());  //may throw
-		else
-			assert( false );
+		m_str.ToSubString(uStart, uLength, str.m_str);  //may throw
 	}
 
 	//convert
 	GKC::StringS ToSystemString() const
 	{
 		GKC::StringS str;
-		if( m_iType == Char8 )
-			str = GKC::CS_U2S(get_string<GKC::StringA>()).GetV();  //may throw
-		else if( m_iType == Char16 )
-			str = GKC::CS_H2S(get_string<GKC::StringH>()).GetV();  //may throw
-		else if( m_iType == Char32 )
-			str = GKC::CS_L2S(get_string<GKC::StringL>()).GetV();  //may throw
+		int iType = GetType();
+		if( iType == GKC::VariantString::Char8 )
+			str = GKC::CS_U2S(m_str.GetString<GKC::StringA>()).GetV();  //may throw
+		else if( iType == GKC::VariantString::Char16 )
+			str = GKC::CS_H2S(m_str.GetString<GKC::StringH>()).GetV();  //may throw
+		else if( iType == GKC::VariantString::Char32 )
+			str = GKC::CS_L2S(m_str.GetString<GKC::StringL>()).GetV();  //may throw
 		return str;
 	}
 	GKC::StringA ToUTF8() const
 	{
 		GKC::StringA str;
-		if( m_iType == Char8 )
-			str = get_string<GKC::StringA>();
-		else if( m_iType == Char16 )
-			str = GKC::CS_H2U(GKC::StringUtilHelper::To_ConstString(get_string<GKC::StringH>())).GetV();  //may throw
-		else if( m_iType == Char32 )
-			str = GKC::CS_L2U(GKC::StringUtilHelper::To_ConstString(get_string<GKC::StringL>())).GetV();  //may throw
+		int iType = GetType();
+		if( iType == GKC::VariantString::Char8 )
+			str = m_str.GetString<GKC::StringA>();
+		else if( iType == GKC::VariantString::Char16 )
+			str = GKC::CS_H2U(GKC::StringUtilHelper::To_ConstString(m_str.GetString<GKC::StringH>())).GetV();  //may throw
+		else if( iType == GKC::VariantString::Char32 )
+			str = GKC::CS_L2U(GKC::StringUtilHelper::To_ConstString(m_str.GetString<GKC::StringL>())).GetV();  //may throw
 		return str;
 	}
 
@@ -304,59 +194,22 @@ public:
 	}
 
 private:
-	void destroy() throw()
-	{
-		if( m_iType == Char8 )
-			_SObjSoloHelper::object_destruction<GKC::StringA>(&get_string<GKC::StringA>());
-		else if( m_iType == Char16 )
-			_SObjSoloHelper::object_destruction<GKC::StringH>(&get_string<GKC::StringH>());
-		else if( m_iType == Char32 )
-			_SObjSoloHelper::object_destruction<GKC::StringL>(&get_string<GKC::StringL>());
-		m_iType = None;
-	}
-	void construct(int iType) throw()
-	{
-		assert( iType >= None && iType < MaxType );
-		if( iType == Char8 )
-			call_constructor(get_string<GKC::StringA>());
-		else if( iType == Char16 )
-			call_constructor(get_string<GKC::StringH>());
-		else if( iType == Char32 )
-			call_constructor(get_string<GKC::StringL>());
-	}
-
-	template <class TString>
-	TString& get_string() throw()
-	{
-		TString* p = (TString*)m_bt;
-		return *p;
-	}
-	template <class TString>
-	const TString& get_string() const throw()
-	{
-		const TString* p = (const TString*)m_bt;
-		return *p;
-	}
-
-private:
-	byte m_bt[sizeof(GKC::StringA)];
-
-	int m_iType;  //character type
+	GKC::VariantString m_str;
 };
 
 // _BOMTypeToLexerTokenCharType
 
 inline int _BOMTypeToLexerTokenCharType(int iBomType) throw()
 {
-	int iCharType = _LexerTokenString::Char8;
+	int iCharType = GKC::VariantString::Char8;
 	switch( iBomType ) {
 	case GKC::BOMTypes::UTF16LE:
 	case GKC::BOMTypes::UTF16BE:
-		iCharType = _LexerTokenString::Char16;
+		iCharType = GKC::VariantString::Char16;
 		break;
 	case GKC::BOMTypes::UTF32LE:
 	case GKC::BOMTypes::UTF32BE:
-		iCharType = _LexerTokenString::Char32;
+		iCharType = GKC::VariantString::Char32;
 		break;
 	default:
 		break;
@@ -370,13 +223,13 @@ inline int _LexerTokenCharTypeToBOMType(int iCharType) throw()
 {
 	int iBomType = GKC::BOMTypes::None;
 	switch( iCharType ) {
-	case _LexerTokenString::Char8:
+	case GKC::VariantString::Char8:
 		iBomType = GKC::BOMTypes::UTF8;
 		break;
-	case _LexerTokenString::Char16:
+	case GKC::VariantString::Char16:
 		iBomType = GKC::ByteOrderHelper::IsBigEndianHost() ? GKC::BOMTypes::UTF16BE : GKC::BOMTypes::UTF16LE;
 		break;
-	case _LexerTokenString::Char32:
+	case GKC::VariantString::Char32:
 		iBomType = GKC::ByteOrderHelper::IsBigEndianHost() ? GKC::BOMTypes::UTF32BE : GKC::BOMTypes::UTF32LE;
 		break;
 	default:

@@ -60,33 +60,33 @@ The optional key-value pairs are listed as follows:
 
 The file tree is an array with the object elements. Each object contains the following key-value pairs:
 
-| Key    | Value                 |
-|:------:|:----------------------|
-| "name" | Specify the node name |
-| "file" | Specify the file name |
+| Key    | Value                                                  |
+|:------:|:-------------------------------------------------------|
+| "name" | Specify the node name                                  |
+| "file" | Specify the file name, which can use anchor optionally |
 
 The optional key-value pair of file tree is `"tree"` and the corresponding file tree of the sub-level.
 
 The language IDs are listed as follows:
 
-| ID   | Hexadecimal Number | Description             | Code Page     | Short String |
-|:----:|:------------------:|:------------------------|:-------------:|:------------:|
-| 1033 | 0x409              | English (United States) | CODEPAGE_1252 | en-US        |
-| 1025 | 0x401              | Arabic                  | CODEPAGE_1256 | ar-SA        |
-| 2052 | 0x804              | Chinese (Simplified)    | CODEPAGE_936  | zh-CN        |
-| 1028 | 0x404              | Chinese (Traditional)   | CODEPAGE_950  | zh-TW        |
-| 1029 | 0x405              | Czech                   | CODEPAGE_1250 | cs-CZ        |
-| 1032 | 0x408              | Greek                   | CODEPAGE_1253 | el-GR        |
-| 1037 | 0x40D              | Hebrew                  | CODEPAGE_1255 | he-IL        |
-| 1038 | 0x40E              | Hungarian               | CODEPAGE_1250 | hu-HU        |
-| 1041 | 0x411              | Japanese                | CODEPAGE_932  | ja-JP        |
-| 1042 | 0x412              | Korean                  | CODEPAGE_949  | ko-KR        |
-| 1045 | 0x415              | Polish                  | CODEPAGE_1250 | pl-PL        |
-| 1049 | 0x419              | Russian                 | CODEPAGE_1251 | ru-RU        |
-| 1051 | 0x41B              | Slovakian               | CODEPAGE_1250 | sk-SK        |
-| 1060 | 0x424              | Slovenian               | CODEPAGE_1250 | sl-SI        |
-| 1055 | 0x41F              | Turkish                 | CODEPAGE_1254 | tr-TR        |
-| 1026 | 0x402              | Bulgarian               | CODEPAGE_1251 | bg-BG        |
+| ID   | Hexadecimal Number | Description             | Code Page     | Short String | Charset     |
+|:----:|:------------------:|:------------------------|:-------------:|:------------:|:------------|
+| 1033 | 0x409              | English (United States) | CODEPAGE_1252 | en-US        | US-ASCII    |
+| 1025 | 0x401              | Arabic                  | CODEPAGE_1256 | ar-SA        | Arabic      |
+| 2052 | 0x804              | Chinese (Simplified)    | CODEPAGE_936  | zh-CN        | GB2312      |
+| 1028 | 0x404              | Chinese (Traditional)   | CODEPAGE_950  | zh-TW        | Big5        |
+| 1029 | 0x405              | Czech                   | CODEPAGE_1250 | cs-CZ        | ISO-8859-2  |
+| 1032 | 0x408              | Greek                   | CODEPAGE_1253 | el-GR        | Greek       |
+| 1037 | 0x40D              | Hebrew                  | CODEPAGE_1255 | he-IL        | Hebrew      |
+| 1038 | 0x40E              | Hungarian               | CODEPAGE_1250 | hu-HU        | ISO-8859-2  |
+| 1041 | 0x411              | Japanese                | CODEPAGE_932  | ja-JP        | Shift-JIS   |
+| 1042 | 0x412              | Korean                  | CODEPAGE_949  | ko-KR        | ISO-2022-KR |
+| 1045 | 0x415              | Polish                  | CODEPAGE_1250 | pl-PL        | ISO-8859-2  |
+| 1049 | 0x419              | Russian                 | CODEPAGE_1251 | ru-RU        | ISO-8859-5  |
+| 1051 | 0x41B              | Slovakian               | CODEPAGE_1250 | sk-SK        | ISO-8859-2  |
+| 1060 | 0x424              | Slovenian               | CODEPAGE_1250 | sl-SI        | ISO-8859-2  |
+| 1055 | 0x41F              | Turkish                 | CODEPAGE_1254 | tr-TR        | ISO-8859-9  |
+| 1026 | 0x402              | Bulgarian               | CODEPAGE_1251 | bg-BG        | ISO-8859-5  |
 
 The compiling commands is an array containing one or more command strings for processing the markdown file.
 The macro variables, `$SRC$` and `$DEST$`, can be used in command string for indicating the source file and the destination file.
@@ -132,7 +132,7 @@ There are several compilers used for processing markdown files.
 
 ### Multi-Markdown
 
-Download the software from this [page](http://fletcherpenney.net/multimarkdown, "mmd")
+Download the software from this [page](http://fletcherpenney.net/multimarkdown "mmd")
 and use it under Windows:
 
 ```
@@ -172,12 +172,12 @@ cmark <source file> -t html > <output file>
 
 * Linux
 
-	1. Download chmc (http://sourceforge.net/projects/chmc/) and compile it.
+	1. Download Free Pascal Compiler (https://www.freepascal.org/) and install it.
 
 	1. Execute:
 
 		```
-		chmc -c XXX.conf -o XXX.chm <source directory>
+		chmcmd XXX.hhp
 		```
 
 	1. Install the package `kchmviewer` and view `XXX.chm`.

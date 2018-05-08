@@ -117,6 +117,9 @@ typedef _StringHelper  StringHelper;
 // StringUtilHelper
 typedef _StringUtilHelper  StringUtilHelper;
 
+// VariantString
+typedef _VariantString  VariantString;
+
 // IComFactory
 typedef _IComFactory  IComFactory;
 

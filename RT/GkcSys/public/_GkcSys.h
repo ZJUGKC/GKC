@@ -2813,6 +2813,260 @@ public:
 	}
 };
 
+// _VariantString
+
+class _VariantString
+{
+public:
+	//types
+	enum {
+		None = 0,
+		Char8 = sizeof(GKC::CharA), Char16 = sizeof(GKC::CharH), Char32 = sizeof(GKC::CharL),
+		MaxType
+	};
+
+public:
+	_VariantString() throw() : m_iType(None)
+	{
+		assert( sizeof(_StringA) == sizeof(_StringH)
+			&& sizeof(_StringA) == sizeof(_StringL) );
+	}
+	_VariantString(const _VariantString& src) throw() : m_iType(None)
+	{
+		operator=(src);
+	}
+	_VariantString(_VariantString&& src) throw() : m_iType(None)
+	{
+		operator=(rv_forward(src));
+	}
+	~_VariantString() throw()
+	{
+		destroy();
+	}
+
+	//assignment
+	_VariantString& operator=(const _VariantString& src) throw()
+	{
+		SetType(src.m_iType);
+		if( m_iType == Char8 )
+			get_string<_StringA>() = src.get_string<_StringA>();
+		else if( m_iType == Char16 )
+			get_string<_StringH>() = src.get_string<_StringH>();
+		else if( m_iType == Char32 )
+			get_string<_StringL>() = src.get_string<_StringL>();
+		return *this;
+	}
+	_VariantString& operator=(_VariantString&& src) throw()
+	{
+		SetType(src.m_iType);
+		if( m_iType == Char8 )
+			get_string<_StringA>() = rv_forward(src.get_string<_StringA>());
+		else if( m_iType == Char16 )
+			get_string<_StringH>() = rv_forward(src.get_string<_StringH>());
+		else if( m_iType == Char32 )
+			get_string<_StringL>() = rv_forward(src.get_string<_StringL>());
+		return *this;
+	}
+
+	//methods
+
+	// iType : it can be sizeof(CharX)
+	void SetType(int iType) throw()
+	{
+		if( m_iType != iType ) {
+			destroy();
+			construct(iType);
+			m_iType = iType;
+		}
+	}
+	int GetType() const throw()
+	{
+		return m_iType;
+	}
+
+	template <class TString>
+	TString& GetString() throw()
+	{
+		return get_string<TString>();
+	}
+	template <class TString>
+	const TString& GetString() const throw()
+	{
+		return get_string<TString>();
+	}
+
+	void Reset()
+	{
+		if( m_iType == Char8 ) {
+			_StringA& str = get_string<_StringA>();
+			if( str.IsBlockNull() )
+				str = _StringHelper::MakeEmptyString<GKC::CharA>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));  //may throw
+		}
+		else if( m_iType == Char16 ) {
+			_StringH& str = get_string<_StringH>();
+			if( str.IsBlockNull() )
+				str = _StringHelper::MakeEmptyString<GKC::CharH>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));  //may throw
+		}
+		else if( m_iType == Char32 ) {
+			_StringL& str = get_string<_StringL>();
+			if( str.IsBlockNull() )
+				str = _StringHelper::MakeEmptyString<GKC::CharL>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));  //may throw
+		}
+		SetLength(0);  //may throw
+	}
+
+	uintptr GetLength() const throw()
+	{
+		uintptr uLength = 0;
+		if( m_iType == Char8 )
+			uLength = get_string<_StringA>().GetLength();
+		else if( m_iType == Char16 )
+			uLength = get_string<_StringH>().GetLength();
+		else if( m_iType == Char32 )
+			uLength = get_string<_StringL>().GetLength();
+		return uLength;
+	}
+	void SetLength(uintptr uLength)
+	{
+		if( m_iType == Char8 )
+			get_string<_StringA>().SetLength(uLength);  //may throw
+		else if( m_iType == Char16 )
+			get_string<_StringH>().SetLength(uLength);  //may throw
+		else if( m_iType == Char32 )
+			get_string<_StringL>().SetLength(uLength);  //may throw
+	}
+	void GetAt(uintptr uIndex, GKC::CharF& ch) const throw()
+	{
+		ch = 0;
+		if( m_iType == Char8 )
+			ch = (GKC::CharF)(get_string<_StringA>().GetAt(uIndex).get_Value());
+		else if( m_iType == Char16 )
+			ch = (GKC::CharF)(get_string<_StringH>().GetAt(uIndex).get_Value());
+		else if( m_iType == Char32 )
+			ch = (GKC::CharF)(get_string<_StringL>().GetAt(uIndex).get_Value());
+		else
+			assert( false );
+	}
+	void SetAt(uintptr uIndex, const GKC::CharF& ch) throw()
+	{
+		if( m_iType == Char8 )
+			get_string<_StringA>().GetAt(uIndex).set_Value((GKC::CharA)ch);
+		else if( m_iType == Char16 )
+			get_string<_StringH>().GetAt(uIndex).set_Value((GKC::CharH)ch);
+		else if( m_iType == Char32 )
+			get_string<_StringL>().GetAt(uIndex).set_Value((GKC::CharL)ch);
+		else
+			assert( false );
+	}
+	uintptr GetAddress() const throw()
+	{
+		uintptr uAddress = 0;
+		if( m_iType == Char8 )
+			uAddress = (uintptr)_ShareArrayHelper::GetInternalPointer(get_string<_StringA>());
+		else if( m_iType == Char16 )
+			uAddress = (uintptr)_ShareArrayHelper::GetInternalPointer(get_string<_StringH>());
+		else if( m_iType == Char32 )
+			uAddress = (uintptr)_ShareArrayHelper::GetInternalPointer(get_string<_StringL>());
+		return uAddress;
+	}
+
+	void Delete(uintptr uStart, uintptr uLength) throw()
+	{
+		if( m_iType == Char8 )
+			_StringHelper::Delete(uStart, uLength, get_string<_StringA>());
+		else if( m_iType == Char16 )
+			_StringHelper::Delete(uStart, uLength, get_string<_StringH>());
+		else if( m_iType == Char32 )
+			_StringHelper::Delete(uStart, uLength, get_string<_StringL>());
+		else
+			assert( false );
+	}
+	void Append(const GKC::CharF& uChar)
+	{
+		if( m_iType == Char8 )
+			_StringHelper::Append((GKC::CharA)uChar, get_string<_StringA>());  //may throw
+		else if( m_iType == Char16 )
+			_StringHelper::Append((GKC::CharH)uChar, get_string<_StringH>());  //may throw
+		else if( m_iType == Char32 )
+			_StringHelper::Append((GKC::CharL)uChar, get_string<_StringL>());  //may throw
+	}
+	void Insert(uintptr uStart, const _VariantString& strAdd)
+	{
+		if( m_iType == Char8 )
+			_StringUtilHelper::Insert(uStart, strAdd.get_string<_StringA>(), get_string<_StringA>());  //may throw
+		else if( m_iType == Char16 )
+			_StringUtilHelper::Insert(uStart, strAdd.get_string<_StringH>(), get_string<_StringH>());  //may throw
+		else if( m_iType == Char32 )
+			_StringUtilHelper::Insert(uStart, strAdd.get_string<_StringL>(), get_string<_StringL>());  //may throw
+		else
+			assert( false );
+	}
+
+	void CloneTo(_VariantString& str) const
+	{
+		str.SetType(GetType());
+		if( m_iType == Char8 )
+			str.get_string<_StringA>() = _StringHelper::Clone(get_string<_StringA>());  //may throw
+		else if( m_iType == Char16 )
+			str.get_string<_StringH>() = _StringHelper::Clone(get_string<_StringH>());  //may throw
+		else if( m_iType == Char32 )
+			str.get_string<_StringL>() = _StringHelper::Clone(get_string<_StringL>());  //may throw
+	}
+	void ToSubString(uintptr uStart, uintptr uLength, _VariantString& str) const
+	{
+		str.SetType(GetType());
+		str.Reset();  //may throw
+		if( m_iType == Char8 )
+			_StringUtilHelper::Sub(get_string<_StringA>(), uStart, uLength, str.get_string<_StringA>());  //may throw
+		else if( m_iType == Char16 )
+			_StringUtilHelper::Sub(get_string<_StringH>(), uStart, uLength, str.get_string<_StringH>());  //may throw
+		else if( m_iType == Char32 )
+			_StringUtilHelper::Sub(get_string<_StringL>(), uStart, uLength, str.get_string<_StringL>());  //may throw
+		else
+			assert( false );
+	}
+
+private:
+	void destroy() throw()
+	{
+		if( m_iType == Char8 )
+			_SObjSoloHelper::object_destruction<_StringA>(&get_string<_StringA>());
+		else if( m_iType == Char16 )
+			_SObjSoloHelper::object_destruction<_StringH>(&get_string<_StringH>());
+		else if( m_iType == Char32 )
+			_SObjSoloHelper::object_destruction<_StringL>(&get_string<_StringL>());
+		m_iType = None;
+	}
+	void construct(int iType) throw()
+	{
+		assert( iType >= None && iType < MaxType );
+		if( iType == Char8 )
+			call_constructor(get_string<_StringA>());
+		else if( iType == Char16 )
+			call_constructor(get_string<_StringH>());
+		else if( iType == Char32 )
+			call_constructor(get_string<_StringL>());
+	}
+
+	template <class TString>
+	TString& get_string() throw()
+	{
+		TString* p = (TString*)m_bt;
+		return *p;
+	}
+	template <class TString>
+	const TString& get_string() const throw()
+	{
+		const TString* p = (const TString*)m_bt;
+		return *p;
+	}
+
+private:
+	byte m_bt[sizeof(_StringA)];
+
+	int m_iType;  //character type
+};
+
 #pragma pack(pop)
 
 //------------------------------------------------------------------------------

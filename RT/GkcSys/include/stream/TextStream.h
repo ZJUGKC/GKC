@@ -23,6 +23,21 @@ This file contains component class of text stream.
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+// array
+
+// windows
+DECLARE_STATIC_CONST_ARRAY(g_windows_crlf_a, CharA)
+DECLARE_STATIC_CONST_ARRAY(g_windows_crlf_h, CharH)
+DECLARE_STATIC_CONST_ARRAY(g_windows_crlf_l, CharL)
+// unix
+DECLARE_STATIC_CONST_ARRAY(g_unix_crlf_a, CharA)
+DECLARE_STATIC_CONST_ARRAY(g_unix_crlf_h, CharH)
+DECLARE_STATIC_CONST_ARRAY(g_unix_crlf_l, CharL)
+// mac
+DECLARE_STATIC_CONST_ARRAY(g_mac_crlf_a, CharA)
+DECLARE_STATIC_CONST_ARRAY(g_mac_crlf_h, CharH)
+DECLARE_STATIC_CONST_ARRAY(g_mac_crlf_l, CharL)
+
 // TextStream
 //   The author of buffer implementation : Lijuan Mei
 
@@ -42,7 +57,8 @@ private:
 	};
 
 public:
-	TextStream() throw() : m_iTotal(0), m_uFlags(0), m_iBomType(_BOMTypes::None), m_bSwap(false)
+	TextStream() throw() : m_iTotal(0), m_uFlags(0), m_iBomType(_BOMTypes::None),
+						m_iCRLFStyle(_CRLFStyles::Windows), m_bSwap(false)
 	{
 		assert( sizeof(byte) == 1 );
 	}
@@ -146,19 +162,20 @@ public:
 	{
 		return m_iBomType;
 	}
+	virtual void SetCRLFStyle(const int& iStyle) throw()
+	{
+		assert( iStyle >= 0 && iStyle < _CRLFStyles::Max );
+		m_iCRLFStyle = iStyle;
+	}
+	virtual int GetCRLFStyle() throw()
+	{
+		return m_iCRLFStyle;
+	}
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw()
 	{
 		assert( is_valid() );
-		uint uAcq = 1;
-		uint uAct;
-		CallResult cr(read_bytes_buffer((byte*)(&ch), uAcq, uAct));
-		if( cr.IsFailed() || cr.GetResult() == SystemCallResults::S_EOF )
-			return cr;
-		if( uAct != uAcq ) {
-			cr.SetResult(SystemCallResults::Corrupt);
-			return cr;
-		}
-		return cr;
+		uintptr uActChars;
+		return read_characters((byte*)(&ch), 1, sizeof(CharA), uActChars);
 	}
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw()
 	{
@@ -169,18 +186,8 @@ public:
 	virtual GKC::CallResult GetCharH(GKC::CharH& ch) throw()
 	{
 		assert( is_valid() );
-		uint uAcq = sizeof(CharH);
-		uint uAct;
-		CallResult cr(read_bytes_buffer((byte*)(&ch), uAcq, uAct));
-		if( cr.IsFailed() || cr.GetResult() == SystemCallResults::S_EOF )
-			return cr;
-		if( uAct != uAcq ) {
-			cr.SetResult(SystemCallResults::Corrupt);
-			return cr;
-		}
-		if( m_bSwap )
-			process_swap<CharH>(&ch, 1);
-		return cr;
+		uintptr uActChars;
+		return read_characters((byte*)(&ch), 1, sizeof(CharH), uActChars);
 	}
 	virtual GKC::CallResult UngetCharH(const int64& iCharNum) throw()
 	{
@@ -195,18 +202,8 @@ public:
 	virtual GKC::CallResult GetCharL(GKC::CharL& ch) throw()
 	{
 		assert( is_valid() );
-		uint uAcq = sizeof(CharL);
-		uint uAct;
-		CallResult cr(read_bytes_buffer((byte*)(&ch), uAcq, uAct));
-		if( cr.IsFailed() || cr.GetResult() == SystemCallResults::S_EOF )
-			return cr;
-		if( uAct != uAcq ) {
-			cr.SetResult(SystemCallResults::Corrupt);
-			return cr;
-		}
-		if( m_bSwap )
-			process_swap<CharL>(&ch, 1);
-		return cr;
+		uintptr uActChars;
+		return read_characters((byte*)(&ch), 1, sizeof(CharL), uActChars);
 	}
 	virtual GKC::CallResult UngetCharL(const int64& iCharNum) throw()
 	{
@@ -337,41 +334,17 @@ public:
 	virtual GKC::CallResult PutCharA(const GKC::CharA& ch) throw()
 	{
 		assert( is_valid() );
-		uintptr uActChars;
-		CallResult cr(write_with_buffer((const byte*)(&ch), 1, sizeof(CharA), uActChars));
-		if( cr.IsFailed() )
-			return cr;
-		if( uActChars != 1 ) {
-			cr.SetResult(SystemCallResults::DiskFull);
-			return cr;
-		}
-		return cr;
+		return write_characters((const byte*)(&ch), 1, sizeof(CharA));
 	}
 	virtual GKC::CallResult PutCharH(const GKC::CharH& ch) throw()
 	{
 		assert( is_valid() );
-		uintptr uActChars;
-		CallResult cr(write_with_buffer((const byte*)(&ch), 1, sizeof(CharH), uActChars));
-		if( cr.IsFailed() )
-			return cr;
-		if( uActChars != 1 ) {
-			cr.SetResult(SystemCallResults::DiskFull);
-			return cr;
-		}
-		return cr;
+		return write_characters((const byte*)(&ch), 1, sizeof(CharH));
 	}
 	virtual GKC::CallResult PutCharL(const GKC::CharL& ch) throw()
 	{
 		assert( is_valid() );
-		uintptr uActChars;
-		CallResult cr(write_with_buffer((const byte*)(&ch), 1, sizeof(CharL), uActChars));
-		if( cr.IsFailed() )
-			return cr;
-		if( uActChars != 1 ) {
-			cr.SetResult(SystemCallResults::DiskFull);
-			return cr;
-		}
-		return cr;
+		return write_characters((const byte*)(&ch), 1, sizeof(CharL));
 	}
 	virtual GKC::CallResult PutChar(const GKC::CharF& ch) throw()
 	{
@@ -389,6 +362,100 @@ public:
 			cr = PutCharA((CharA)ch);
 			break;
 		}
+		return cr;
+	}
+	virtual GKC::CallResult PutStringA(const GKC::ConstStringA& str) throw()
+	{
+		assert( is_valid() );
+		return write_characters((const byte*)(ConstArrayHelper::GetInternalPointer(str)), str.GetCount(), sizeof(CharA));
+	}
+	virtual GKC::CallResult PutStringH(const GKC::ConstStringH& str) throw()
+	{
+		assert( is_valid() );
+		return write_characters((const byte*)(ConstArrayHelper::GetInternalPointer(str)), str.GetCount(), sizeof(CharH));
+	}
+	virtual GKC::CallResult PutStringL(const GKC::ConstStringL& str) throw()
+	{
+		assert( is_valid() );
+		return write_characters((const byte*)(ConstArrayHelper::GetInternalPointer(str)), str.GetCount(), sizeof(CharL));
+	}
+	virtual GKC::CallResult PutString(const _VariantString& str) throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			cr = PutStringH(str.GetString<CharH>());
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			cr = PutStringL(str.GetString<CharL>());
+			break;
+		default:
+			cr = PutStringA(str.GetString<CharA>());
+			break;
+		}
+		return cr;
+	}
+	virtual GKC::CallResult PutNewLineA() throw()
+	{
+		assert( is_valid() );
+		return write_crlf(sizeof(CharA));
+	}
+	virtual GKC::CallResult PutNewLineH() throw()
+	{
+		assert( is_valid() );
+		return write_crlf(sizeof(CharH));
+	}
+	virtual GKC::CallResult PutNewLineL() throw()
+	{
+		assert( is_valid() );
+		return write_crlf(sizeof(CharL));
+	}
+	virtual GKC::CallResult PutNewLine() throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			cr = PutNewLineH();
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			cr = PutNewLineL();
+			break;
+		default:
+			cr = PutNewLineA();
+			break;
+		}
+		return cr;
+	}
+	virtual GKC::CallResult PutLineA(const GKC::ConstStringA& str) throw()
+	{
+		CallResult cr(PutStringA(str));
+		if( cr.IsSucceeded() )
+			cr = PutNewLineA();
+		return cr;
+	}
+	virtual GKC::CallResult PutLineH(const GKC::ConstStringH& str) throw()
+	{
+		CallResult cr(PutStringH(str));
+		if( cr.IsSucceeded() )
+			cr = PutNewLineH();
+		return cr;
+	}
+	virtual GKC::CallResult PutLineL(const GKC::ConstStringL& str) throw()
+	{
+		CallResult cr(PutStringL(str));
+		if( cr.IsSucceeded() )
+			cr = PutNewLineL();
+		return cr;
+	}
+	GKC::CallResult PutLine(const _VariantString& str) throw()
+	{
+		CallResult cr(PutString(str));
+		if( cr.IsSucceeded() )
+			cr = PutNewLine();
 		return cr;
 	}
 
@@ -515,6 +582,7 @@ private:
 	//read
 	CallResult read_bytes_buffer(byte* p, uint uBytes, uint& uAct) throw()
 	{
+		assert( uBytes != 0 );
 		CallResult cr;
 		uAct = 0;
 		//flags
@@ -733,6 +801,7 @@ private:
 	}
 	CallResult write_with_buffer(const byte* p, uintptr uChars, uint uBytesPerChar, uintptr& uActChars) throw()
 	{
+		assert( uChars != 0 );
 		CallResult cr;
 		uint uSavedFlags;
 		uint uCopyChars = 0;
@@ -859,6 +928,50 @@ private:
 		return cr;
 	}
 
+	//tools
+	CallResult read_characters(byte* p, uintptr uChars, uint uBytesPerChar, uintptr& uActChars) throw()
+	{
+		CResult cr;
+		uint uMaxChars = Limits<uint>::Max / uBytesPerChar;
+		uActChars = 0;
+		while( uChars != 0 ) {
+			uint uActBytes;
+			uint uAcq = (uint)uChars;
+			if( uChars > (uintptr)uMaxChars )
+				uAcq = uMaxChars;
+			cr = read_bytes_buffer(p, uAcq * uBytesPerChar, uActBytes);
+			if( cr.IsFailed() || cr.GetResult() == SystemCallResults::S_EOF ) {
+				if( uActChars == 0 )
+					return cr;
+				cr.SetResult(SystemCallResults::S_OK);
+				return cr;
+			}
+			if( (uActBytes % uBytesPerChar) != 0 ) {
+				cr.SetResult(SystemCallResults::Corrupt);
+				return cr;
+			}
+			uAcq = uActBytes / uBytesPerChar;
+			_do_swap_buffer(p, uAcq, uBytesPerChar);
+			uChars -= uAcq;
+			p += uActBytes;
+			uActChars += uAcq;
+		} //end while
+		return cr;
+	}
+	CallResult write_characters(const byte* p, uintptr uChars, uint uBytesPerChar) throw()
+	{
+		uintptr uActChars;
+		CallResult cr(write_with_buffer(p, uChars, uBytesPerChar, uActChars));
+		if( cr.IsFailed() )
+			return cr;
+		if( uActChars != uChars ) {
+			cr.SetResult(SystemCallResults::DiskFull);
+			return cr;
+		}
+		return cr;
+	}
+	CallResult write_crlf(uint uBytesPerChar) throw();
+
 	//valid
 	bool is_valid() const throw()
 	{
@@ -881,6 +994,9 @@ private:
 
 	//type
 	int  m_iBomType;
+	//style
+	int  m_iCRLFStyle;
+
 	bool m_bSwap;
 
 private:

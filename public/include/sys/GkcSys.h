@@ -206,6 +206,9 @@ typedef _IBufferUtility  IBufferUtility;
 // BOMTypes
 typedef _BOMTypes  BOMTypes;
 
+// CRLFStyles
+typedef _CRLFStyles  CRLFStyles;
+
 // ITextStream
 typedef _ITextStream  ITextStream;
 

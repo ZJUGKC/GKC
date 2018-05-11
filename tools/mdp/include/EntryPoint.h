@@ -66,8 +66,8 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 	{
 		uintptr uPos;
 		//source
-		if( !_CheckFileExtension(StringUtilHelper::To_ConstString(strSrc), DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".mp")), uPos) ) {
-			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The project file name must have the extension \".mp\"!")));
+		if( !_CheckFileExtension(StringUtilHelper::To_ConstString(strSrc), DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".mdp")), uPos) ) {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The project file name must have the extension \".mdp\"!")));
 			return 1;
 		}
 		//destination

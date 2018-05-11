@@ -2887,11 +2887,13 @@ public:
 	template <class TString>
 	TString& GetString() throw()
 	{
+		assert( m_iType == sizeof(TString::EType) );
 		return get_string<TString>();
 	}
 	template <class TString>
 	const TString& GetString() const throw()
 	{
+		assert( m_iType == sizeof(TString::EType) );
 		return get_string<TString>();
 	}
 
@@ -3468,6 +3470,15 @@ BEGIN_ENUM(_BOMTypes)
 	ENUM_VALUE_ENTRY(UTF32BE, 6)
 END_ENUM()
 
+// _CRLFStyles
+
+BEGIN_ENUM(_CRLFStyles)
+	ENUM_VALUE_ENTRY(Windows, 0)
+	ENUM_VALUE_ENTRY(Unix, 1)
+	ENUM_VALUE_ENTRY(Mac, 2)
+	ENUM_VALUE_ENTRY(Max, 3)
+END_ENUM()
+
 // _ITextStream
 
 class NOVTABLE _ITextStream
@@ -3478,6 +3489,8 @@ public:
 	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
 	virtual void SetBOM(const int& iType) throw() = 0;
 	virtual int GetBOM() throw() = 0;
+	virtual void SetCRLFStyle(const int& iStyle) throw() = 0;
+	virtual int GetCRLFStyle() throw() = 0;
 	// The return value SystemCallResults::S_EOF means the end of file is reached.
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
@@ -3493,6 +3506,19 @@ public:
 	virtual GKC::CallResult PutCharH(const GKC::CharH& ch) throw() = 0;
 	virtual GKC::CallResult PutCharL(const GKC::CharL& ch) throw() = 0;
 	virtual GKC::CallResult PutChar(const GKC::CharF& ch) throw() = 0;
+
+	virtual GKC::CallResult PutStringA(const GKC::ConstStringA& str) throw() = 0;
+	virtual GKC::CallResult PutStringH(const GKC::ConstStringH& str) throw() = 0;
+	virtual GKC::CallResult PutStringL(const GKC::ConstStringL& str) throw() = 0;
+	virtual GKC::CallResult PutString(const _VariantString& str) throw() = 0;
+	virtual GKC::CallResult PutNewLineA() throw() = 0;
+	virtual GKC::CallResult PutNewLineH() throw() = 0;
+	virtual GKC::CallResult PutNewLineL() throw() = 0;
+	virtual GKC::CallResult PutNewLine() throw() = 0;
+	virtual GKC::CallResult PutLineA(const GKC::ConstStringA& str) throw() = 0;
+	virtual GKC::CallResult PutLineH(const GKC::ConstStringH& str) throw() = 0;
+	virtual GKC::CallResult PutLineL(const GKC::ConstStringL& str) throw() = 0;
+	virtual GKC::CallResult PutLine(const _VariantString& str) throw() = 0;
 };
 
 DECLARE_GUID(GUID__ITextStream)

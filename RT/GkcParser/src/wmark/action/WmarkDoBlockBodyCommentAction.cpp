@@ -18,6 +18,8 @@ This file contains global variables for Do-Block-Body-Comment action component.
 
 #include "PreComp.h"
 
+#include "_GkcParser.h"
+
 #include "wmark/action/WmarkDoBlockBodyCommentAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////

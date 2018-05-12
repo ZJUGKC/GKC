@@ -18,6 +18,8 @@ This file contains global variables for meta data position symbol data factory c
 
 #include "PreComp.h"
 
+#include "_GkcCompiler.h"
+
 #include "meta/CplMetaDataPositionSymbolData.h"
 #include "meta/CplMetaDataPositionSymbolData_Factory.h"
 

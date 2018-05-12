@@ -385,14 +385,14 @@ public:
 		switch( m_iBomType ) {
 		case _BOMTypes::UTF16LE:
 		case _BOMTypes::UTF16BE:
-			cr = PutStringH(str.GetString<CharH>());
+			cr = PutStringH(_StringUtilHelper::To_ConstString(str.GetString<_StringH>()));
 			break;
 		case _BOMTypes::UTF32LE:
 		case _BOMTypes::UTF32BE:
-			cr = PutStringL(str.GetString<CharL>());
+			cr = PutStringL(_StringUtilHelper::To_ConstString(str.GetString<_StringL>()));
 			break;
 		default:
-			cr = PutStringA(str.GetString<CharA>());
+			cr = PutStringA(_StringUtilHelper::To_ConstString(str.GetString<_StringA>()));
 			break;
 		}
 		return cr;
@@ -931,7 +931,7 @@ private:
 	//tools
 	CallResult read_characters(byte* p, uintptr uChars, uint uBytesPerChar, uintptr& uActChars) throw()
 	{
-		CResult cr;
+		CallResult cr;
 		uint uMaxChars = Limits<uint>::Max / uBytesPerChar;
 		uActChars = 0;
 		while( uChars != 0 ) {
@@ -943,7 +943,7 @@ private:
 			if( cr.IsFailed() || cr.GetResult() == SystemCallResults::S_EOF ) {
 				if( uActChars == 0 )
 					return cr;
-				cr.SetResult(SystemCallResults::S_OK);
+				cr.SetResult(SystemCallResults::OK);
 				return cr;
 			}
 			if( (uActBytes % uBytesPerChar) != 0 ) {

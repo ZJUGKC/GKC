@@ -39,6 +39,7 @@ public:
 // IGrammarAction methods
 	virtual GKC::CallResult DoAction(INOUT GKC::ShareArray<GKC::ShareCom<_IGrammarSymbolData>>& arrSymbol, INOUT GKC::ShareArray<GKC::StringS>& errorArray) throw()
 	{
+		CallResult cr;
 		//get positions
 		ShareCom<_ICplMetaDataPositionSymbolDataUtility> spU;
 		_COMPONENT_INSTANCE_INTERFACE(IGrammarSymbolData, _ICplMetaDataPositionSymbolDataUtility, arrSymbol[1].get_Value(), spU, cr);

@@ -651,11 +651,11 @@ public:
 
 	bool operator==(const _CplMetaDataPosition& right) const throw()
 	{
-		return m_uAddr == right.m_uaddr;
+		return m_uAddr == right.m_uAddr;
 	}
 	bool operator!=(const _CplMetaDataPosition& right) const throw()
 	{
-		return m_uAddr != right.m_uaddr;
+		return m_uAddr != right.m_uAddr;
 	}
 
 	uint GetAddr() const throw()

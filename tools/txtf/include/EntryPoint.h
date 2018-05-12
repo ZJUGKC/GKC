@@ -11,23 +11,51 @@
 */
 
 /*
-This file contains global variables.
+This file contains entry point function.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __GLOBAL_H__
-#define __GLOBAL_H__
+#ifndef __ENTRY_POINT_H__
+#define __ENTRY_POINT_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-//version
-DECLARE_STATIC_CONST_ARRAY(g_const_array_version, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
+// version
+inline
+void _PrintVersion() throw()
+{
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_version::GetAddress(), g_const_array_version::GetCount()));
+}
 
-//help
-DECLARE_STATIC_CONST_ARRAY(g_const_array_help, DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(CharS))
+// help
+inline
+void _PrintHelp() throw()
+{
+	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
+}
+
+// ProgramEntryPoint
+
+class ProgramEntryPoint
+{
+public:
+	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env)
+	{
+		uintptr uArgCount = args.GetCount();
+
+		//args
+		if( uArgCount <= 3 ) {
+			_PrintVersion();
+			_PrintHelp();
+			return 1;
+		}
+
+		return 0;
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 }

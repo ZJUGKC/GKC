@@ -18,6 +18,8 @@ This file contains global variables for meta data position symbol data component
 
 #include "PreComp.h"
 
+#include "_GkcCompiler.h"
+
 #include "meta/CplMetaDataPositionSymbolData.h"
 
 ////////////////////////////////////////////////////////////////////////////////

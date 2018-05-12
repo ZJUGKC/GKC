@@ -29,6 +29,11 @@ This file contains global variables for Wmark utility component.
 #include "wmark/action/WmarkReturnAction.h"
 #include "wmark/action/WmarkCommentStartAction.h"
 #include "wmark/action/WmarkGrammarAccepted.h"
+#include "wmark/action/WmarkDoDocRsBlockListAction.h"
+#include "wmark/action/WmarkDoBlockListListBlockAction.h"
+#include "wmark/action/WmarkDoBlockBlockBodyAction.h"
+#include "wmark/action/WmarkDoBlockBodyCommentAction.h"
+#include "wmark/action/WmarkDoBlockBodyIndentAction.h"
 
 #include "wmark/WmarkAction.h"
 #include "wmark/WmarkUtility.h"

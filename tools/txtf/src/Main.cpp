@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -10,14 +10,24 @@
 **
 */
 
+/*
+This file contains main function.
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PreComp.h"
 
+#include "Global.h"
+
 #include "base/TxtDef.h"
 
+#include "cmd/HtmlUtility.h"
+
+#include "EntryPoint.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "base/TxtDef.cpp"
+#include "base/GkcConsoleMain.cpp"
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////

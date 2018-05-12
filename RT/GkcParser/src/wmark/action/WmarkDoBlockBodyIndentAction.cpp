@@ -18,6 +18,8 @@ This file contains global variables for Do-Block-Body-Indent action component.
 
 #include "PreComp.h"
 
+#include "_GkcParser.h"
+
 #include "wmark/action/WmarkDoBlockBodyIndentAction.h"
 
 ////////////////////////////////////////////////////////////////////////////////

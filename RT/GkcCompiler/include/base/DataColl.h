@@ -1081,7 +1081,7 @@ public:
 			uint uChild = get_child(uParent);
 			if( uChild != 0 )
 				set_next(uNode, uChild);
-			set_child(uParent, uNode);
+			set_child(uParent, uRoot, uNode);
 		}
 		else {
 			assert( get_parent(uAfter) == uParent );

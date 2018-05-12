@@ -54,7 +54,7 @@ public:
 				uValue = (uint)ch;
 			}
 		} //end block
-		assert( uValue != 0 );
+		//uValue may be 0, such as [^...\x00-\x1F]
 		//set value
 		ShareCom<_I_RegexCharSymbolData_Utility> spU;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSymbolData_Utility, arrSymbol[0].get_Value(), spU, cr);

@@ -20,6 +20,12 @@ This file contains global variables for Wmark parser component.
 
 #include "_GkcParser.h"
 
+#include "base/ParserDef.h"
+
+#include "wmark/base/WmarkDef.h"
+#include "wmark/base/WmarkLex.h"
+#include "wmark/base/WmarkGra.h"
+
 #include "wmark/action/WmarkReturnAction.h"
 #include "wmark/action/WmarkCommentStartAction.h"
 #include "wmark/action/WmarkGrammarAccepted.h"

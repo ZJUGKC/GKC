@@ -59,7 +59,9 @@ public:
 	void Finish()
 	{
 		uint uCount = m_symbol_pool.GetTotalCount();
-		assert( uCount != 0 );
+		//may be an empty table
+		if( uCount == 0 )
+			return ;
 		//find minimum & maximum ID
 		uint uMinID = Limits<uint>::Max;
 		uint uMaxID = 0;
@@ -264,8 +266,12 @@ public:
 					ConstStringA strToken(m_token_table.Deref().get_Token(uID));
 					bool bTokenChanged = false;
 					cr = action.Deref().DoAction(m_stream, m_token_info, strToken, bTokenChanged);
-					if( cr.IsFailed() )
+					if( cr.IsFailed() ) {
+						//process CPL_TK_ERROR
+						if( m_token_info.get_ID() == CPL_TK_ERROR )
+							cr.SetResult(SystemCallResults::OK);
 						break;
+					}
 					if( bTokenChanged ) {
 						uID = m_token_table.Deref().get_ID(strToken);
 						assert( uID >= CPL_TK_FIRST );

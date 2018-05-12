@@ -48,8 +48,8 @@ inline CallResult _Generate_Html(ShareCom<ICplMetaData>& spMeta, ShareCom<ITextS
 	CallResult cr;
 	try {
 		//map
-		_GH_Utility ghu;
-		ghu.Initialize();  //may throw
+		_HG_Utility hgu;
+		hgu.Initialize();  //may throw
 
 		//root
 		CplMetaDataPosition posRoot(_gh_get_root(spMeta));
@@ -76,7 +76,7 @@ inline CallResult _Generate_Html(ShareCom<ICplMetaData>& spMeta, ShareCom<ITextS
 			//links
 			spMeta.Deref().GetAstNodeInfo(pos, astInfo);
 			//output open tag
-			SharePtr<_IHtmlGenerator> spG(ghu.Find(astInfo.uType));
+			SharePtr<_IHtmlGenerator> spG(hgu.Find(astInfo.uType));
 			if( !spG.IsBlockNull() ) {
 				cr = spG.Deref().Generate(true, spMeta, astInfo.posData, spText);  //may throw
 				if( cr.IsFailed() )
@@ -88,7 +88,7 @@ inline CallResult _Generate_Html(ShareCom<ICplMetaData>& spMeta, ShareCom<ITextS
 				while( pos != posRoot ) {
 					spMeta.Deref().GetAstNodeInfo(pos, astInfo);
 					//output close tag
-					spG = ghu.Find(astInfo.uType);
+					spG = hgu.Find(astInfo.uType);
 					if( !spG.IsBlockNull() ) {
 						cr = spG.Deref().Generate(false, spMeta, astInfo.posData, spText);  //may throw
 						if( cr.IsFailed() )

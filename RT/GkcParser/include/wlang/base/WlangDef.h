@@ -56,12 +56,13 @@ DECLARE_GUID(GUID__IWlangUtility_Access)
 
 // adj
 
-#ddefine WLANG_ADJ_CONSTANT
-#ddefine WLANG_ADJ_ALIAS
+#define WLANG_ADJ_CONSTANT
+#define WLANG_ADJ_ALIAS
 
 // scope
 
 #define WLANG_SCOPE_PUBLIC
+#define WLANG_SCOPE_PROTECTED
 #define WLANG_SCOPE_PRIVATE
 #define WLANG_SCOPE_STATIC
 

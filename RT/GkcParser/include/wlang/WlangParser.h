@@ -220,6 +220,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			arrUtility.Add(spU);  //may throw
+			spGrammarAnalyzer.Deref().SetAcceptedAction(spAccepted);
 			ShareCom<IGrammarAction> spAction;
 			//Do-Ns-Body
 			cr = _Create_WlangDoNsBodyAction(spAction);

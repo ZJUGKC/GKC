@@ -51,7 +51,7 @@ public:
 		m_spMeta.Deref().SetAstLinkParent(pos, CplMetaDataPosition());
 		m_spMeta.Deref().SetAstChild(CplMetaDataPosition(), pos);
 		//start
-		pos = m_spMeta().Deref().ResetAst();
+		pos = m_spMeta.Deref().ResetAst();
 		//symbol
 		CplMetaDataPosition posDoc;
 		cr = m_spMeta.Deref().InsertSymbol(DECLARE_TEMP_CONST_STRING(ConstStringA, WMARK_ROOT_SYMBOL), 0, false, posDoc);

@@ -649,6 +649,15 @@ public:
 		return m_uAddr == 0;
 	}
 
+	bool operator==(const _CplMetaDataPosition& right) const throw()
+	{
+		return m_uAddr == right.m_uaddr;
+	}
+	bool operator!=(const _CplMetaDataPosition& right) const throw()
+	{
+		return m_uAddr != right.m_uaddr;
+	}
+
 	uint GetAddr() const throw()
 	{
 		return m_uAddr;

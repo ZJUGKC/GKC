@@ -117,9 +117,26 @@ inline uintptr _Compile_One_File(ShareCom<IWmarkParser>& spParser, const StringS
 		return 1;
 
 	//generate
-===
-
-===
+	{
+		ShareCom<IByteStream> spStream;
+		cr = StreamHelper::CreateFileStream(StringUtilHelper::To_ConstString(strDest), FileOpenTypes::Write, FileCreationTypes::Create, spStream);
+		if( cr.IsFailed() ) {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Destination File cannot be opened!")));
+			return 1;
+		}
+		ShareCom<ITextStream> spText;
+		cr = StreamHelper::CreateTextStream(spText);
+		if( cr.IsFailed() ) {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Destination File cannot be opened as a text file!")));
+			return 1;
+		}
+		spText.Deref().SetStream(spStream);
+		cr = _Generate_Html(spMeta, spText);
+		if( cr.IsFailed() ) {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Destination File cannot be written!")));
+			return 1;
+		}
+	} //end block
 
 	return 0;
 }

@@ -20,7 +20,13 @@ This file contains main function.
 
 #include "Global.h"
 
+#include "base/MdcDef.h"
+
+#include "base/generators/CommentGenerator.h"
+#include "base/generators/IndentGenerator.h"
+
 #include "base/SourceAnalyzer.h"
+#include "base/HtmlGenerator.h"
 
 #include "cmd/CompileBase.h"
 #include "cmd/CompileSingleFile.h"

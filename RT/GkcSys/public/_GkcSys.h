@@ -2887,13 +2887,13 @@ public:
 	template <class TString>
 	TString& GetString() throw()
 	{
-		assert( m_iType == sizeof(TString::EType) );
+		assert( m_iType == sizeof(typename TString::EType) );
 		return get_string<TString>();
 	}
 	template <class TString>
 	const TString& GetString() const throw()
 	{
-		assert( m_iType == sizeof(TString::EType) );
+		assert( m_iType == sizeof(typename TString::EType) );
 		return get_string<TString>();
 	}
 
@@ -3491,6 +3491,9 @@ public:
 	virtual int GetBOM() throw() = 0;
 	virtual void SetCRLFStyle(const int& iStyle) throw() = 0;
 	virtual int GetCRLFStyle() throw() = 0;
+	virtual void SetSeparatorSetA(const _ShareArray<GKC::CharA>& arr) throw() = 0;
+	virtual void SetSeparatorSetH(const _ShareArray<GKC::CharH>& arr) throw() = 0;
+	virtual void SetSeparatorSetL(const _ShareArray<GKC::CharL>& arr) throw() = 0;
 	// The return value SystemCallResults::S_EOF means the end of file is reached.
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
@@ -3506,7 +3509,19 @@ public:
 	virtual GKC::CallResult PutCharH(const GKC::CharH& ch) throw() = 0;
 	virtual GKC::CallResult PutCharL(const GKC::CharL& ch) throw() = 0;
 	virtual GKC::CallResult PutChar(const GKC::CharF& ch) throw() = 0;
-
+	virtual GKC::CallResult GetAllStringA(_StringA& str) throw() = 0;
+	virtual GKC::CallResult GetAllStringH(_StringH& str) throw() = 0;
+	virtual GKC::CallResult GetAllStringL(_StringL& str) throw() = 0;
+	virtual GKC::CallResult GetAllString(_VariantString& str) throw() = 0;
+	// The return value SystemCallResults::S_EOF means the end of file is reached.
+	virtual GKC::CallResult GetStringA(_StringA& str) throw() = 0;
+	virtual GKC::CallResult GetStringH(_StringH& str) throw() = 0;
+	virtual GKC::CallResult GetStringL(_StringL& str) throw() = 0;
+	virtual GKC::CallResult GetString(_VariantString& str) throw() = 0;
+	virtual GKC::CallResult GetLineA(_StringA& str) throw() = 0;
+	virtual GKC::CallResult GetLineH(_StringH& str) throw() = 0;
+	virtual GKC::CallResult GetLineL(_StringL& str) throw() = 0;
+	virtual GKC::CallResult GetLine(_VariantString& str) throw() = 0;
 	virtual GKC::CallResult PutStringA(const GKC::ConstStringA& str) throw() = 0;
 	virtual GKC::CallResult PutStringH(const GKC::ConstStringH& str) throw() = 0;
 	virtual GKC::CallResult PutStringL(const GKC::ConstStringL& str) throw() = 0;

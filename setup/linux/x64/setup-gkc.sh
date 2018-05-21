@@ -54,6 +54,7 @@ do
 			exit 1
 		fi
 		eval strTargetDir = "\$${iIndexNext}"
+		strTargetDir = ${strTargetDir%*/}
 		strLwsDir = "${strTargetDir}/.GKC/LWS"
 		strUwsDir = "${strTargetDir}/.GKC/UWS"
 	elif [ ${strTemp} = "-l" ]; then

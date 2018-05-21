@@ -56,6 +56,14 @@ private:
 		MASK_DIRTY = 0x00000020
 	};
 
+	//string mode
+	enum {
+		MODE_ALL = 0,
+		MODE_SEPARATOR,
+		MODE_CRLF,
+		MODE_MAX
+	};
+
 public:
 	TextStream() throw() : m_iTotal(0), m_uFlags(0), m_iBomType(_BOMTypes::None),
 						m_iCRLFStyle(_CRLFStyles::Windows), m_bSwap(false)
@@ -170,6 +178,18 @@ public:
 	virtual int GetCRLFStyle() throw()
 	{
 		return m_iCRLFStyle;
+	}
+	virtual void SetSeparatorSetA(const _ShareArray<GKC::CharA>& arr) throw()
+	{
+		m_separator_set_a = arr;
+	}
+	virtual void SetSeparatorSetH(const _ShareArray<GKC::CharH>& arr) throw()
+	{
+		m_separator_set_h = arr;
+	}
+	virtual void SetSeparatorSetL(const _ShareArray<GKC::CharL>& arr) throw()
+	{
+		m_separator_set_l = arr;
 	}
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw()
 	{
@@ -360,6 +380,105 @@ public:
 			break;
 		default:
 			cr = PutCharA((CharA)ch);
+			break;
+		}
+		return cr;
+	}
+	virtual GKC::CallResult GetAllStringA(_StringA& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringA>(MODE_ALL, m_separator_set_a, str);
+	}
+	virtual GKC::CallResult GetAllStringH(_StringH& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringH>(MODE_ALL, m_separator_set_h, str);
+	}
+	virtual GKC::CallResult GetAllStringL(_StringL& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringL>(MODE_ALL, m_separator_set_l, str);
+	}
+	virtual GKC::CallResult GetAllString(_VariantString& str) throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			cr = GetAllStringH(str.GetString<_StringH>());
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			cr = GetAllStringL(str.GetString<_StringL>());
+			break;
+		default:
+			cr = GetAllStringA(str.GetString<_StringA>());
+			break;
+		}
+		return cr;
+	}
+	virtual GKC::CallResult GetStringA(_StringA& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringA>(MODE_SEPARATOR, m_separator_set_a, str);
+	}
+	virtual GKC::CallResult GetStringH(_StringH& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringH>(MODE_SEPARATOR, m_separator_set_h, str);
+	}
+	virtual GKC::CallResult GetStringL(_StringL& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringL>(MODE_SEPARATOR, m_separator_set_l, str);
+	}
+	virtual GKC::CallResult GetString(_VariantString& str) throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			cr = GetStringH(str.GetString<_StringH>());
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			cr = GetStringL(str.GetString<_StringL>());
+			break;
+		default:
+			cr = GetStringA(str.GetString<_StringA>());
+			break;
+		}
+		return cr;
+	}
+	virtual GKC::CallResult GetLineA(_StringA& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringA>(MODE_CRLF, m_separator_set_a, str);
+	}
+	virtual GKC::CallResult GetLineH(_StringH& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringH>(MODE_CRLF, m_separator_set_h, str);
+	}
+	virtual GKC::CallResult GetLineL(_StringL& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		return get_string<_StringL>(MODE_CRLF, m_separator_set_l, str);
+	}
+	virtual GKC::CallResult GetLine(_VariantString& str) throw()
+	{
+		CallResult cr;
+		switch( m_iBomType ) {
+		case _BOMTypes::UTF16LE:
+		case _BOMTypes::UTF16BE:
+			cr = GetLineH(str.GetString<_StringH>());
+			break;
+		case _BOMTypes::UTF32LE:
+		case _BOMTypes::UTF32BE:
+			cr = GetLineL(str.GetString<_StringL>());
+			break;
+		default:
+			cr = GetLineA(str.GetString<_StringA>());
 			break;
 		}
 		return cr;
@@ -972,6 +1091,147 @@ private:
 	}
 	CallResult write_crlf(uint uBytesPerChar) throw();
 
+	template <typename Tchar>
+	static void initialize_separator_set(_ShareArray<Tchar>& arr)
+	{
+		if( arr.IsBlockNull() ) {
+			arr = _ShareArrayHelper::MakeShareArray<Tchar>(RefPtr<IMemoryManager>(_CrtMemoryManager_Get()));  //may throw
+			arr.Add(' ');  //may throw
+			arr.Add('\t');  //may throw
+		}
+	}
+	template <typename Tchar>
+	static bool check_separator_set(const Tchar& ch, const _ShareArray<Tchar>& arr) throw()
+	{
+		auto iter(arr.GetBegin());
+		for( ; iter != arr.GetEnd(); iter.MoveNext() ) {
+			if( iter.get_Value() == ch )
+				return true;
+		}
+		return ch == '\r' || ch == '\n';
+	}
+
+	template <class TString>
+	CallResult get_string(int iMode, _ShareArray<typename TString::EType>& arrSeparatorSet, TString& str) throw()
+	{
+		assert( iMode >= 0 && iMode < MODE_MAX );
+		CallResult cr;
+		const uintptr c_chars = BUFFER_SIZE / 4;  //characters
+		uintptr uActChars;
+		try {
+			//separator set
+			if( iMode == MODE_SEPARATOR ) {
+				initialize_separator_set(arrSeparatorSet);  //may throw
+			}
+			//a block
+			uintptr uLength = c_chars;
+			while( true ) {
+				str.SetLength(uLength);  //may throw
+				uintptr uStart = uLength - c_chars;
+				cr = read_characters((byte*)(_ShareArrayHelper::GetInternalPointer(str) + uStart), c_chars, sizeof(typename TString::EType), uActChars);
+				if( cr.IsFailed() )
+					return cr;
+				//file end
+				if( cr.GetResult() == SystemCallResults::S_EOF ) {
+					uLength -= c_chars;
+					str.SetLength(uLength);
+					if( iMode == MODE_ALL || uLength != 0 )
+						cr.SetResult(SystemCallResults::OK);
+					return cr;
+				}
+				if( uActChars < c_chars ) {
+					uLength -= (c_chars - uActChars);
+					str.SetLength(uLength);
+				}
+				//check
+				if( iMode == MODE_CRLF ) {
+					uintptr uNow = uStart;
+					auto iter(str.GetAt(uStart));
+					for( ; iter != str.GetEnd(); iter.MoveNext(), uNow ++ ) {
+						uintptr uBack = uLength - uNow;
+						if( iter.get_Value() == '\n' ) {
+							str.SetLength(uNow);
+							uBack --;
+							if( uBack != 0 ) {
+								cr = back_bytes_buffer(uBack * sizeof(typename TString::EType));
+								assert( cr.IsSucceeded() );
+							}
+							return cr;
+						}
+						if( iter.get_Value() == '\r' ) {
+							uBack --;
+							auto iterNext(iter);
+							iterNext.MoveNext();
+							if( iterNext != str.GetEnd() ) {
+								if( iterNext.get_Value() == '\n' )
+									uBack --;
+								str.SetLength(uNow);
+								if( uBack != 0 ) {
+									cr = back_bytes_buffer(uBack * sizeof(typename TString::EType));
+									assert( cr.IsSucceeded() );
+								}
+								return cr;
+							}
+							str.SetLength(uNow);
+							typename TString::EType ch;
+							uintptr uAct;
+							cr = read_characters((byte*)&ch, 1, sizeof(typename TString::EType), uAct);
+							if( cr.IsFailed() )
+								return cr;
+							if( cr.GetResult() == SystemCallResults::S_EOF ) {
+								cr.SetResult(SystemCallResults::OK);
+								return cr;
+							}
+							if( ch == '\n' )
+								return cr;
+							cr = back_bytes_buffer(1 * sizeof(typename TString::EType));
+							assert( cr.IsSucceeded() );
+							return cr;
+						}
+					} //end for
+				}
+				else if( iMode == MODE_SEPARATOR ) {
+					uintptr uNow = uStart;
+					if( uStart == 0 ) {
+						//skip
+						auto iter(str.GetAt(uStart));
+						for( ; iter != str.GetEnd(); iter.MoveNext(), uNow ++ ) {
+							if( !check_separator_set<typename TString::EType>(iter.get_Value(), arrSeparatorSet) )
+								break;
+						}
+						_StringHelper::Delete(uStart, uNow, str);
+						uLength = str.GetLength();
+						uNow = uStart;
+					}
+					if( uLength != 0 ) {
+						//check
+						auto iter(str.GetAt(uStart));
+						for( ; iter != str.GetEnd(); iter.MoveNext(), uNow ++ ) {
+							if( check_separator_set<typename TString::EType>(iter.get_Value(), arrSeparatorSet) ) {
+								uintptr uBack = uLength - uNow - 1;
+								str.SetLength(uNow);
+								if( uBack != 0 ) {
+									cr = back_bytes_buffer(uBack * sizeof(typename TString::EType));
+									assert( cr.IsSucceeded() );
+								}
+								return cr;
+							}
+						}
+					}
+				} //end if
+				//add size
+				uLength = SafeOperators::AddThrow(uLength, c_chars);  //may throw
+			} //end while
+		}
+		catch(Exception& e) {
+			cr = e.GetResult();
+		}
+		catch(...) {
+			cr.SetResult(SystemCallResults::Fail);
+		}
+		return cr;
+	}
+
 	//valid
 	bool is_valid() const throw()
 	{
@@ -996,6 +1256,10 @@ private:
 	int  m_iBomType;
 	//style
 	int  m_iCRLFStyle;
+	//separator set
+	_ShareArray<CharA>  m_separator_set_a;
+	_ShareArray<CharH>  m_separator_set_h;
+	_ShareArray<CharL>  m_separator_set_l;
 
 	bool m_bSwap;
 

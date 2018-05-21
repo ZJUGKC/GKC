@@ -9,4 +9,6 @@
 #   yxxinyuan@zju.edu.cn
 #
 
+ADD_SUBDIRECTORY(GkcClient GkcClient)
+
 #end

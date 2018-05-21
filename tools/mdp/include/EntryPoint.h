@@ -83,6 +83,13 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("mdb-output")), strDest);
 		}
 	} //end block
+	FsPathHelper::AppendSeparator(strDest);
+	if( type == MDP_TYPE_CHM )
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("chm")), strDest);
+	else if( type == MDP_TYPE_EPUB )
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("epub")), strDest);
+	else
+		assert( false );
 
 	//directory/file names
 	FsPathHelper::ConvertPathStringToPlatform(strSrc);

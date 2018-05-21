@@ -80,7 +80,7 @@ public:
 	{
 		if( IsValid() ) {
 			int res = ::close(m_fd);
-			res;
+			(void)res;
 			assert( res == 0 );
 			m_fd = -1;
 		}
@@ -216,7 +216,8 @@ private:
 	{
 		struct tm tmz;
 		struct tm* ptm;
-		ptm = ::gmtime_r(pTS, &tmz);
+		ptm = ::gmtime_r(&(pTS->tv_sec), &tmz);
+		(void)ptm;
 		assert( ptm != NULL );
 		_os_tm_to_system_time(&tmz, tm);
 		tm.uMilliseconds = (ushort)(pTS->tv_nsec / 1000000);
@@ -305,7 +306,7 @@ public:
 	{
 		assert( m_bInitialized );
 		int res = ::sem_post(&m_sem);
-		res;
+		(void)res;
 		assert( res == 0 );
 	}
 	bool TryLock() throw()
@@ -334,7 +335,7 @@ public:
 	{
 		if( m_bInitialized ) {
 			int res = ::sem_destroy(&m_sem);
-			res;
+			(void)res;
 			assert( res == 0 );
 			m_bInitialized = false;
 		}
@@ -374,7 +375,7 @@ public:
 	{
 		assert( m_psem != NULL );
 		int res = ::sem_post(m_psem);
-		res;
+		(void)res;
 		assert( res == 0 );
 	}
 	bool TryLock() throw()
@@ -432,7 +433,7 @@ public:
 	{
 		if( m_psem != NULL ) {
 			int res = ::sem_close(m_psem);
-			res;
+			(void)res;
 			assert( res == 0 );
 			m_psem = NULL;
 			assert( m_szName != NULL );
@@ -622,7 +623,7 @@ public:
 	{
 		if( m_bInitialized ) {
 			int res = ::pthread_cond_destroy(&m_cv);
-			res;
+			(void)res;
 			assert( res == 0 );
 			m_bInitialized = false;
 		}
@@ -657,28 +658,28 @@ public:
 	{
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_rdlock(&m_rw);
-		res;
+		(void)res;
 		assert( res == 0 );
 	}
 	void LockExclusive() throw()
 	{
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_wrlock(&m_rw);
-		res;
+		(void)res;
 		assert( res == 0 );
 	}
 	void UnlockShared() throw()
 	{
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_unlock(&m_rw);
-		res;
+		(void)res;
 		assert( res == 0 );
 	}
 	void UnlockExclusive() throw()
 	{
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_unlock(&m_rw);
-		res;
+		(void)res;
 		assert( res == 0 );
 	}
 	bool TryLockShared() throw()
@@ -696,7 +697,7 @@ public:
 	{
 		assert( !m_bInitialized );
 		int res = ::pthread_rwlock_init(&m_rw, NULL);
-		res;
+		(void)res;
 		assert( res == 0 );
 		m_bInitialized = true;
 	}
@@ -704,7 +705,7 @@ public:
 	{
 		if( m_bInitialized ) {
 			int res = ::pthread_rwlock_destroy(&m_rw);
-			res;
+			(void)res;
 			assert( res == 0 );
 			m_bInitialized = false;
 		}

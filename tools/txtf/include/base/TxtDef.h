@@ -23,9 +23,21 @@ Internal Header
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// g_html_header
+// _Charset_CP
 
-DECLARE_STATIC_CONST_STRING(g_html_header, CharA)
+struct _Charset_CP
+{
+DECLARE_CONST_STRING_STRUCT_MEMBER(m_charset, CharS)
+DECLARE_CONST_STRING_STRUCT_MEMBER(m_codepage, CharS)
+};
+
+// g_charset_cp_map
+
+DECLARE_STATIC_CONST_ARRAY(g_charset_cp_map, _Charset_CP)
+
+// g_html_github_header
+
+DECLARE_STATIC_CONST_STRING(g_html_github_header, CharA)
 
 // g_html_tail
 

@@ -90,8 +90,8 @@ END_COM_TYPECAST()
 
 CallResult TextStream::write_crlf(uint uBytesPerChar) throw()
 {
-	const byte* p;
-	uintptr uChars;
+	const byte* p = NULL;
+	uintptr uChars = 0;
 	if( m_iCRLFStyle == _CRLFStyles::Unix ) {
 		if( uBytesPerChar == sizeof(CharA) ) {
 			p = (const byte*)g_unix_crlf_a::GetAddress();

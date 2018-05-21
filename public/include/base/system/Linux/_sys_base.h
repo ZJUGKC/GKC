@@ -48,12 +48,14 @@ public:
 
 	void Close() throw()
 	{
-		if( m_pDir != NULL )
-			close_dir();
-		if( m_szBuffer != NULL )
-			free_buffer();
-		m_pDirent = NULL;
-		m_bFound = false;
+		if( m_bFound ) {
+			if( m_pDir != NULL )
+				close_dir();
+			if( m_szBuffer != NULL )
+				free_buffer();
+			m_pDirent = NULL;
+			m_bFound = false;
+		}
 	}
 
 	bool IsValid() const throw()
@@ -108,7 +110,7 @@ public:
 		}
 
 		//directory
-		if( check_path_deletable_last_separator(szName) ) {
+		if( check_path_deletable_last_separator(szName, uOrgLen) ) {
 			m_szBuffer = (char_s*)crt_alloc(uOrgLen * sizeof(char_s));
 			if( m_szBuffer == NULL )
 				return false;
@@ -131,19 +133,14 @@ public:
 		assert( IsValid() );
 
 		//file or directory
-		if( m_pDir == NULL ) {
-			m_bFound = false;
-			return m_bFound;
-		}
+		if( m_pDir == NULL )
+			return false;
 
 		//next entry
-		if( !fetch_next_valid_entry() ) {
-			m_bFound = false;
-			return m_bFound;
-		}
+		if( !fetch_next_valid_entry() )
+			return false;
 
-		m_bFound = true;
-		return m_bFound;
+		return true;
 	}
 
 // Attributes
@@ -213,7 +210,7 @@ private:
 	void close_dir() throw()
 	{
 		int res = ::closedir(m_pDir);
-		res;
+		(void)res;
 		assert( res == 0 );  //-1, errno
 		m_pDir = NULL;
 	}
@@ -239,16 +236,12 @@ private:
 		m_szBuffer = (char_s*)crt_alloc(uBytes);
 		if( m_szBuffer == NULL )
 			return false;
-		if( uOrgLen == 1 ) {
+		if( uOrgLen == 1 )
 			m_uPathLen = 1;
-			mem_copy(szName, m_uPathLen * sizeof(char_s), m_szBuffer);
-			m_szBuffer[m_uPathLen] = 0;
-		}
-		else {
+		else
 			m_uPathLen = uOrgLen - 1;
-			mem_copy(szName, m_uPathLen * sizeof(char_s), m_szBuffer);
-			m_szBuffer[m_uPathLen] = 0;
-		}
+		mem_copy(szName, m_uPathLen * sizeof(char_s), m_szBuffer);
+		m_szBuffer[m_uPathLen] = 0;
 		//actual name max
 		{
 			long name_max =::pathconf(m_szBuffer, _PC_NAME_MAX);
@@ -313,7 +306,7 @@ private:
 	}
 
 private:
-	bool m_bFound;
+	bool m_bFound;  //is a flag for valid state
 
 	//directory
 	DIR* m_pDir;

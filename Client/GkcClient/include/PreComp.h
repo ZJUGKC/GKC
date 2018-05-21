@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,24 +11,25 @@
 */
 
 /*
-This file contains main function for UI program.
+This is pre-compiled header file.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#include "_sys_cmdline.h"
-
+#ifndef __PRECOMP_H__
+#define __PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(GKC_OS_WINDOWS)
-	#include "Windows/ui_main.cpp"
-#elif defined(GKC_OS_LINUX)
-	#include "Linux/ui_main.cpp"
-#else
-	#error Error OS type!
-#endif
+#include "base/GkcDef.h"
+#include "base/GkcColl.h"
 
-//others
-#include "_sys_base.cpp"
+#include "sys/GkcSysDef.h"
+#include "sys/GkcSys.h"
+#include "sys/GkcPath.h"
+#include "sys/GkcFm.h"
+#include "sys/GkcCharset.h"
 
+#include "ui/GkcUIDef.h"
+
+////////////////////////////////////////////////////////////////////////////////
+#endif //__PRECOMP_H__
 ////////////////////////////////////////////////////////////////////////////////

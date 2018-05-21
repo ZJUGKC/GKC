@@ -44,7 +44,7 @@ Dim strTargetDir, strLwsDir, strUwsDir
 strTargetDir = "C:\program files"
 strLwsDir = strTargetDir & "\" & ".GKC" & "\" & "LWS"
 strUwsDir = strTargetDir & "\" & ".GKC" & "\" & "UWS"
-Dim iIndex
+Dim iIndex, iLen
 iIndex = 1
 Do While iIndex < iCount
 	strTemp = WScript.Arguments(iIndex)
@@ -58,6 +58,12 @@ Do While iIndex < iCount
 			WScript.Quit(1)
 		End If
 		strTargetDir = WScript.Arguments(iIndex + 1)
+		iLen = Len(strTargetDir)
+		If iLen <> 0 Then
+			If Right(strTargetDir, 1) = "\" Then
+				strTargetDir = Left(strTargetDir, iLen - 1)
+			End If
+		End If
 		strLwsDir = strTargetDir & "\" & ".GKC" & "\" & "LWS"
 		strUwsDir = strTargetDir & "\" & ".GKC" & "\" & "UWS"
 	ElseIf strTemp = "-l" Then
@@ -102,7 +108,6 @@ If fso.FolderExists(strDest) Then
 	WScript.Quit(1)
 End If
 strDest = strTargetDir & "\" & ".GKC"
-Set objTarget = objShell.NameSpace(strDest)
 
 Set objWsh = WScript.CreateObject("WScript.Shell")
 Set objEnv = objWsh.Environment("SYSTEM")
@@ -123,33 +128,36 @@ If Len(strTemp) <> 0 Then
 	WScript.Quit(1)
 End If
 
-fso.CreateFolder(strDest)
+If Not fso.FolderExists(strDest) Then
+	fso.CreateFolder(strDest)
+End If
+Set objTarget = objShell.NameSpace(strDest)
 objTarget.CopyHere objFolderItem, 4 + 512 + 1024
 WScript.Sleep 500
-fso.GetFolder(strDest & "\" & strPackageName).Name = strDest & "\" & "SYSTEM"
+fso.GetFolder(strDest & "\" & strPackageName).Name = "SYSTEM"
 strDest = strDest & "\" & "SYSTEM"
 
 If iSetupMode = 0 Then
 	strTemp = strDest & "\" & "core" & "\" & "services"
-	fso.DeleteFolder(strTemp, true)
+	fso.DeleteFolder strTemp, true
 	strTemp = strDest & "\" & "development"
-	fso.DeleteFolder(strTemp, true)
+	fso.DeleteFolder strTemp, true
 ElseIf iSetupMode = 1 Then
 	strTemp = strDest & "\" & "core" & "\" & "services"
-	fso.DeleteFolder(strTemp, true)
+	fso.DeleteFolder strTemp, true
 	strTemp = strDest & "\" & "client"
-	fso.DeleteFolder(strTemp, true)
+	fso.DeleteFolder strTemp, true
 	strTemp = strDest & "\" & "software"
 	If fso.FolderExists(strTemp) Then
-		fso.DeleteFolder(strTemp, true)
+		fso.DeleteFolder strTemp, true
 	End If
 ElseIf iSetupMode = 2 Then
 	strTemp = strDest & "\" & "core" & "\" & "tools"
-	fso.DeleteFolder(strTemp, true)
+	fso.DeleteFolder strTemp, true
 	strTemp = strDest & "\" & "development"
-	fso.DeleteFolder(strTemp, true)
+	fso.DeleteFolder strTemp, true
 	strTemp = strDest & "\" & "client"
-	fso.DeleteFolder(strTemp, true)
+	fso.DeleteFolder strTemp, true
 End If
 
 If Not fso.FolderExists(strLwsDir) Then
@@ -164,18 +172,18 @@ objEnv(strEnvSystemRoot) = strDest
 objEnv(strEnvLws) = strLwsDir
 objEnv(strEnvUws) = strUwsDir
 
-strTemp = Chr(34) & strDest & "\" & "core" & "\" & "assemblies" & Chr(34)
+strTemp = strDest & "\" & "core" & "\" & "assemblies"
 If iSetupMode <> 2 Then
-	strTemp = strTemp & ";" & Chr(34) & strDest & "\" & "core" & "\" & "tools" & Chr(34)
+	strTemp = strTemp & ";" & strDest & "\" & "core" & "\" & "tools"
 End If
 If iSetupMode = 0 Then
-	strTemp = strTemp & ";" & Chr(34) & strDest & "\" & "client" & Chr(34)
+	strTemp = strTemp & ";" & strDest & "\" & "client"
 End If
 If iSetupMode = 1 Then
-	strTemp = strTemp & ";" & Chr(34) & strDest & "\" & "development" & "\" & "tools" & Chr(34)
+	strTemp = strTemp & ";" & strDest & "\" & "development" & "\" & "tools"
 End If
 
-Dim strPath, iLen, iPos
+Dim strPath, iPos
 strPath = CStr(objEnv("PATH"))
 iLen = Len(strPath)
 iPos = InStr(1, strPath, strDest, 1)
@@ -193,7 +201,7 @@ End If
 
 'services
 If iSetupMode = 2 Then
-	strTemp = Chr(34) & strDest & "\" & "core" & "\" & "services" & "\" & "ghs-setup.bat" & Chr(34)
+	strTemp = Chr(34) & strDest & "\" & "core" & "\" & "services" & "\" & "ghs-setup.bat" & Chr(34) _
 			& " " & Chr(34) & strDest & "\" & "core" & "\" & "services" & "\" & "GkcHostSvc.exe" & Chr(34)
 	objWsh.Run strTemp, 0, true
 	Wscript.Sleep 500

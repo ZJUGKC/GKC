@@ -29,7 +29,7 @@ inline void _Delete_Output_File(const StringS& str) throw()
 {
 	thread_sleep(10);
 	bool bRet = FileManagementHelper::DeleteFile(StringUtilHelper::To_ConstString(str));
-	bRet;
+	(void)bRet;
 	assert( bRet );
 }
 

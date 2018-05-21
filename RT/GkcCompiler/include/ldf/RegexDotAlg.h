@@ -264,7 +264,7 @@ inline void _Regex_Initial_ClosureSet(const _Regex_AST& rast, _RegexDotItemSet& 
 		//for debugging
 		{
 			uint uType = iterR.GetType();
-			uType;
+			(void)uType;
 			assert( uType != REGEX_OP_QUESTION && uType != REGEX_OP_STAR );
 		} //end block
 		//add

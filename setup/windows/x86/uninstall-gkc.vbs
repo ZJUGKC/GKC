@@ -91,7 +91,7 @@ Dim iLen, iPos, iPos1
 iLen = Len(strPath)
 iPos = 1
 Do
-	iPos = InStr(iPos, strPath, Chr(34) & strInstallDir, 1)
+	iPos = InStr(iPos, strPath, strInstallDir, 1)
 	If iPos <> 0 Then
 		iPos1 = InStr(iPos, strPath, ";", 1)
 		If iPos1 = 0 Then
@@ -117,7 +117,8 @@ fso.DeleteFolder strInstallDir, True
 If iUninstallMode = 1 Then
 	fso.DeleteFolder strLwsDir, True
 	fso.DeleteFolder strUwsDir, True
-	iPos = InStrRev(strInstallDir, "/", -1, 1)
+	Wscript.Sleep 500
+	iPos = InStrRev(strInstallDir, "\", -1, 1)
 	If iPos <> 0 Then
 		strTemp = Left(strInstallDir, iPos - 1)
 		fso.DeleteFolder strTemp, True

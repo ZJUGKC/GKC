@@ -249,6 +249,32 @@ public:
 		::_TextStream_Create(sp, cr);
 		return cr;
 	}
+
+	//copy
+	static CallResult Copy(ShareCom<IByteStream>& spSrc, ShareCom<IByteStream>& spDest) throw()
+	{
+		CallResult cr;
+		const uint c_buffer_size = 4096;
+		byte buffer[c_buffer_size];
+		while( true ) {
+			uint uRead;
+			cr = spSrc.Deref().Read((uintptr)buffer, c_buffer_size, uRead);
+			if( cr.IsFailed() )
+				return cr;
+			//file end
+			if( uRead == 0 )
+				break;
+			uint uWritten;
+			cr = spDest.Deref().Write((uintptr)buffer, uRead, uWritten);
+			if( cr.IsFailed() )
+				return cr;
+			if( uWritten != uRead ) {
+				cr.SetResult(SystemCallResults::DiskFull);
+				return cr;
+			}
+		} //end while
+		return cr;
+	}
 };
 
 // EnvironmentVariableHelper

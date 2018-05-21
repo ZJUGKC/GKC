@@ -1327,7 +1327,7 @@ public:
 	{
 		if( m_cvt != (iconv_t)-1 ) {
 			int ret = ::iconv_close(m_cvt);
-			ret;
+			(void)ret;
 			assert( ret == 0 );
 			m_cvt = (iconv_t)-1;
 		}

@@ -170,7 +170,7 @@ public:
 		fl.l_start  = iOffset;
 		fl.l_len    = iLen;
 		int rv = ::fcntl((int)(hd.GetHandle()), F_SETLK, &fl);  //nonblocking
-		rv;
+		(void)rv;
 		assert( rv != -1 );
 	}
 };
@@ -235,7 +235,7 @@ public:
 	{
 		if( m_hd != NULL ) {
 			int ret = ::dlclose(m_hd);
-			ret;
+			(void)ret;
 			assert( ret == 0 );
 			m_hd = NULL;
 		}

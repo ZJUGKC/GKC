@@ -250,6 +250,12 @@ public:
 		return cr;
 	}
 
+	//variant string
+	static void InitializeVariantString(int iBomType, VariantString& str)
+	{
+		_Initialize_VariantString(iBomType, str);  //may throw
+	}
+
 	//copy
 	static CallResult Copy(ShareCom<IByteStream>& spSrc, ShareCom<IByteStream>& spDest) throw()
 	{

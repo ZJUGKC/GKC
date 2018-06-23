@@ -69,6 +69,143 @@ BEGIN_STATIC_CONST_ARRAY(g_charset_cp_map)
 	END_STATIC_CONST_ARRAY_GROUP_LAST()
 END_STATIC_CONST_ARRAY(g_charset_cp_map)
 
+// _Find_CodePage_From_Charset
+
+ConstStringS _Find_CodePage_From_Charset(const ConstStringS& strCharset) throw()
+{
+	ConstArray<_Charset_CP> c_arr(g_charset_cp_map::GetAddress(), g_charset_cp_map::GetCount());
+	auto iter(c_arr.GetBegin());
+	for( ; iter != c_arr.GetEnd(); iter.MoveNext() ) {
+		const _Charset_CP& cc = iter.get_Value();
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(strCharset, ConstStringS(cc.m_charset.m_first, cc.m_charset.m_size)) ) {
+			return ConstStringS(cc.m_codepage.m_first, cc.m_codepage.m_size);
+		}
+	}
+	return ConstStringS();
+}
+
+// g_lcid_short_string
+
+BEGIN_STATIC_CONST_ARRAY(g_lcid_short_string)
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1033,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("en-US")),
+		0
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1025,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("ar-SA")),
+		1
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		2052,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("zh-CN")),
+		2
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1028,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("zh-TW")),
+		3
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1029,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("cs-CZ")),
+		4
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1032,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("el-GR")),
+		5
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1037,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("he-IL")),
+		6
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1038,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("hu-HU")),
+		4
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1041,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("ja-JP")),
+		7
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1042,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("ko-KR")),
+		8
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1045,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("pl-PL")),
+		4
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1049,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("ru-RU")),
+		9
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1051,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("sk-SK")),
+		4
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1060,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("sl-SI")),
+		4
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1055,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("tr-TR")),
+		10
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		1026,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("bg-BG")),
+		9
+	END_STATIC_CONST_ARRAY_GROUP()
+	BEGIN_STATIC_CONST_ARRAY_GROUP()
+		0,
+		IMPLEMENT_CONST_STRING_ENTRY(CharS, _S("")),
+		(uint)-1
+	END_STATIC_CONST_ARRAY_GROUP_LAST()
+END_STATIC_CONST_ARRAY(g_lcid_short_string)
+
+// _Find_LCID_From_ShortString
+
+uint _Find_LCID_From_ShortString(const ConstStringS& strShortString, uint& uIndex) throw()
+{
+	ConstArray<_LCID_ShortString> c_arr(g_lcid_short_string::GetAddress(), g_lcid_short_string::GetCount());
+	auto iter(c_arr.GetBegin());
+	for( ; iter != c_arr.GetEnd(); iter.MoveNext() ) {
+		const _LCID_ShortString& ls = iter.get_Value();
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(strShortString, ConstStringS(ls.m_short_string.m_first, ls.m_short_string.m_size)) ) {
+			uIndex = ls.m_uIndex;
+			return ls.m_lcid;
+		}
+	}
+	return 0;
+}
+
+// _Find_ShortString_From_LCID
+
+ConstStringS _Find_ShortString_From_LCID(uint uLCID, uint& uIndex) throw()
+{
+	ConstArray<_LCID_ShortString> c_arr(g_lcid_short_string::GetAddress(), g_lcid_short_string::GetCount());
+	auto iter(c_arr.GetBegin());
+	for( ; iter != c_arr.GetEnd(); iter.MoveNext() ) {
+		const _LCID_ShortString& ls = iter.get_Value();
+		if( ls.m_lcid == uLCID ) {
+			uIndex = ls.m_uIndex;
+			return ConstStringS(ls.m_short_string.m_first, ls.m_short_string.m_size);
+		}
+	}
+	return ConstStringS();
+}
+
 // g_html_github_header
 
 //  GitHub-Style
@@ -283,6 +420,36 @@ BEGIN_STATIC_CONST_STRING(g_html_tail)
 		"</html>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_html_tail)
+
+// g_html_xhtml_header
+
+BEGIN_STATIC_CONST_STRING(g_html_xhtml_header)
+	STATIC_CONST_STRING_ENTRY(
+"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>" "\r\n"
+"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">" "\r\n"
+"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"$$LANG$$\">" "\r\n"
+"<head>" "\r\n"
+"<title>untitled</title>" "\r\n"
+"<link href=\"$$CSSFILE$$\" type=\"text/css\" rel=\"stylesheet\"/>" "\r\n"
+"<style type=\"text/css\">" "\r\n"
+"@page { margin-bottom: 5.000000pt; margin-top: 5.000000pt; }" "\r\n"
+"</style>" "\r\n"
+"</head>" "\r\n"
+"\r\n"
+"<body>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_html_xhtml_header)
+
+// g_html_xhtml_tail
+
+BEGIN_STATIC_CONST_STRING(g_html_xhtml_tail)
+	STATIC_CONST_STRING_ENTRY(
+"<div class=\"mbppagebreak\"></div>" "\r\n"
+"</body>" "\r\n"
+"\r\n"
+"</html>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_html_xhtml_tail)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

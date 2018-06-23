@@ -61,6 +61,24 @@ int main(int argc, char *argv[], char *envp[])
 		::perror("cannot initialize session!\n");
 		return -1;
 	}
+	::signal(SIGHUP, SIG_IGN);
+
+/*
+//second
+	//fork
+	pid_t pid2 = ::fork();
+	if( pid2 == -1 ) {
+		::perror("cannot fork 2!\n");
+		exit(EXIT_FAILURE);
+		//return -1;
+	}
+	if( pid2 != 0 ) {
+		exit(EXIT_SUCCESS);  //parent process
+		//return 0;
+	}
+	::signal(SIGHUP, SIG_IGN);
+*/
+
 	//cwd
 	if( ::chdir("/") == -1 ) {
 		::perror("cannot change dir!\n");
@@ -77,6 +95,11 @@ int main(int argc, char *argv[], char *envp[])
 	::umask(0);
 	//signal
 	::signal(SIGCHLD, SIG_IGN);  //no check
+
+/*
+	::signal(SIGINT, SIG_IGN);  //no check
+	::signal(SIGWINCH, SIG_IGN);  //no check
+*/
 
 //command
 	const_array<const_string_s> args;

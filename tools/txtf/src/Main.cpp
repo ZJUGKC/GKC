@@ -21,8 +21,11 @@ This file contains main function.
 #include "Global.h"
 
 #include "base/TxtDef.h"
+#include "base/TxtBase.h"
 
+#include "cmd/BomUtility.h"
 #include "cmd/HtmlUtility.h"
+#include "cmd/EncodingUtility.h"
 
 #include "EntryPoint.h"
 

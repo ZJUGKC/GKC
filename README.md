@@ -252,7 +252,7 @@ Install GKC in the computers on client end or server end for production and runn
 * Linux
 
 	```
-	sudo sh setup-gkc.sh <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]
+	sudo bash setup-gkc.sh <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]
 	```
 
 The options are listed as follows:
@@ -284,7 +284,7 @@ The directories are listed as follows:
 * Linux
 
 	```
-	sudo sh uninstall-gkc.sh [-a]
+	sudo bash uninstall-gkc.sh [-a]
 	```
 
 `-a` means the directories for local workspace and unified workspace will be deleted.

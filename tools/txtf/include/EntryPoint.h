@@ -37,6 +37,16 @@ void _PrintHelp() throw()
 	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
 }
 
+//same file
+inline bool _Check_Same_File(const ConstStringS& str1, const ConstStringS& str2) throw()
+{
+	if( ConstStringCompareTrait<ConstStringS>::IsEQ(str1, str2) ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The source file and the destination file can not be the same!")));
+		return true;
+	}
+	return false;
+}
+
 // ProgramEntryPoint
 
 class ProgramEntryPoint
@@ -53,7 +63,108 @@ public:
 			return 1;
 		}
 
-		return 0;
+		int ret = 0;
+
+		//-bom
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-bom"))) ) {
+			//-d
+			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-d"))) ) {
+				if( uArgCount != 5 ) {
+					_PrintVersion();
+					_PrintHelp();
+					return 1;
+				}
+				if( _Check_Same_File(args[3].get_Value(), args[4].get_Value()) ) {
+					return 1;
+				}
+				ret = _Cmd_Bom_Process(BOMTypes::None, args[3].get_Value(), args[4].get_Value());
+			}
+			//-a
+			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-a"))) ) {
+				if( uArgCount != 6 ) {
+					_PrintVersion();
+					_PrintHelp();
+					return 1;
+				}
+				int iBomType = BOMTypes::None;
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF8"))) ) {
+					iBomType = BOMTypes::UTF8;
+				}
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF16LE"))) ) {
+					iBomType = BOMTypes::UTF16LE;
+				}
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF16BE"))) ) {
+					iBomType = BOMTypes::UTF16BE;
+				}
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF32LE"))) ) {
+					iBomType = BOMTypes::UTF32LE;
+				}
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF32BE"))) ) {
+					iBomType = BOMTypes::UTF32BE;
+				}
+				else {
+					ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid BOM Type!")));
+					return 1;
+				}
+				if( _Check_Same_File(args[4].get_Value(), args[5].get_Value()) ) {
+					return 1;
+				}
+				ret = _Cmd_Bom_Process(iBomType, args[4].get_Value(), args[5].get_Value());
+			}
+			else {
+				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid BOM parameters!")));
+				return 1;
+			}
+		}
+		//-html
+		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-html"))) ) {
+			//-g
+			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-g"))) ) {
+				if( uArgCount != 6 ) {
+					_PrintVersion();
+					_PrintHelp();
+					return 1;
+				}
+				if( _Check_Same_File(args[4].get_Value(), args[5].get_Value()) ) {
+					return 1;
+				}
+				ret = _Cmd_Generate_GitHub_Html(args[3].get_Value(), args[4].get_Value(), args[5].get_Value());  //may throw
+			}
+			//-x
+			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-x"))) ) {
+				if( uArgCount != 7 ) {
+					_PrintVersion();
+					_PrintHelp();
+					return 1;
+				}
+				if( _Check_Same_File(args[5].get_Value(), args[6].get_Value()) ) {
+					return 1;
+				}
+				ret = _Cmd_Generate_XHtml_Html(args[3].get_Value(), args[4].get_Value(), args[5].get_Value(), args[6].get_Value());  //may throw
+			}
+			else {
+				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid HTML parameters!")));
+				return 1;
+			}
+		}
+		//-encoding
+		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-encoding"))) ) {
+			if( uArgCount != 6 ) {
+				_PrintVersion();
+				_PrintHelp();
+				return 1;
+			}
+			if( _Check_Same_File(args[4].get_Value(), args[5].get_Value()) ) {
+				return 1;
+			}
+			ret = _Cmd_Convert_Encoding(args[2].get_Value(), args[3].get_Value(), args[4].get_Value(), args[5].get_Value());  //may throw
+		}
+		else {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid parameters!")));
+			return 1;
+		}
+
+		return ret;
 	}
 };
 

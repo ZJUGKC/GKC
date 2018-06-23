@@ -12,11 +12,11 @@
 #
 
 #package name
-strPackageName = "GKC-1.0.1-Linux.sh"
+strPackageName="GKC-1.0.1-Linux.sh"
 #environment variables
-strEnvSystemRoot = "GKC_SYSTEM_ROOT"
-strEnvLws = "GKC_LOCAL_WORKSPACE"
-strEnvUws = "GKC_UNIFIED_WORKSPACE"
+strEnvSystemRoot="GKC_SYSTEM_ROOT"
+strEnvLws="GKC_LOCAL_WORKSPACE"
+strEnvUws="GKC_UNIFIED_WORKSPACE"
 
 #command parameters
 if [ $# -lt 1 -o $# -gt 7 ]; then
@@ -24,26 +24,26 @@ if [ $# -lt 1 -o $# -gt 7 ]; then
 	exit 1
 fi
 
-iSetupMode = -1
+iSetupMode=-1
 if [ $1 = "-c" ]; then
-	iSetupMode = 0
+	iSetupMode=0
 elif [ $1 = "-d" ]; then
-	iSetupMode = 1
+	iSetupMode=1
 elif [ $1 = "-s" ]; then
-	iSetupMode = 2
+	iSetupMode=2
 else
 	echo "Command error: unknown option!"
 	exit 1
 fi
 
-strTargetDir = "/usr"
-strLwsDir = "${strTargetDir}/.GKC/LWS"
-strUwsDir = "${strTargetDir}/.GKC/UWS"
-iIndex = 2
+strTargetDir="/usr"
+strLwsDir="${strTargetDir}/.GKC/LWS"
+strUwsDir="${strTargetDir}/.GKC/UWS"
+iIndex=2
 while [ $iIndex -le $# ];
 do
-	eval strTemp = "\$${iIndex}"
-	iIndexNext = $(( $iIndex + 1 ))
+	eval strTemp="\$${iIndex}"
+	iIndexNext=$(( $iIndex + 1 ))
 	if [ ${strTemp} = "-i" ]; then
 		if [ $iIndex -ne 2 ]; then
 			echo "Command error: the installation directory should be specified at first!"
@@ -53,27 +53,27 @@ do
 			echo "Command error: the installation directory should be specified!"
 			exit 1
 		fi
-		eval strTargetDir = "\$${iIndexNext}"
-		strTargetDir = ${strTargetDir%*/}
-		strLwsDir = "${strTargetDir}/.GKC/LWS"
-		strUwsDir = "${strTargetDir}/.GKC/UWS"
+		eval strTargetDir="\$${iIndexNext}"
+		strTargetDir=${strTargetDir%*/}
+		strLwsDir="${strTargetDir}/.GKC/LWS"
+		strUwsDir="${strTargetDir}/.GKC/UWS"
 	elif [ ${strTemp} = "-l" ]; then
 		if [ $iIndexNext -gt $# ]; then
 			echo "Command error: the local workspace directory should be specified!"
 			exit 1
 		fi
-		eval strLwsDir = "\$${iIndexNext}"
+		eval strLwsDir="\$${iIndexNext}"
 	elif [ ${strTemp} = "-u" ]; then
 		if [ $iIndexNext -gt $# ]; then
 			echo "Command error: the unified workspace directory should be specified!"
 			exit 1
 		fi
-		eval strUwsDir = "\$${iIndexNext}"
+		eval strUwsDir="\$${iIndexNext}"
 	else
 		echo "Command error: unknown option for directory!"
 		exit 1
 	fi
-	iIndex = $(( $iIndexNext + 1 ))
+	iIndex=$(( $iIndexNext + 1 ))
 done
 
 #install
@@ -84,7 +84,7 @@ if [ ! -x "${strPackageName}" ]; then
 	exit 1
 fi
 
-strDest = "${strTargetDir}/.GKC/SYSTEM"
+strDest="${strTargetDir}/.GKC/SYSTEM"
 if [ -d "${strDest}" ]; then
 	echo "Error: The software is not uninstalled!"
 	exit 1
@@ -103,19 +103,22 @@ if eval [[ -n "\$${strEnvUws}" ]]; then
 	exit 1
 fi
 
-mkdir "${strTargetDir}/.GKC"
+strTemp="${strTargetDir}/.GKC"
+if [ ! -d "${strTemp}" ]; then
+	mkdir "${strTemp}"
+fi
 mkdir "${strDest}"
 ./${strPackageName} --prefix=${strDest} --exclude-subdir
 sleep 0.5
 
-if [ iSetupMode -eq 0 ]; then
+if [ $iSetupMode -eq 0 ]; then
 	rm -r ${strDest}/core/services
 	rm -r ${strDest}/development
-elif [ iSetupMode -eq 1 ]; then
+elif [ $iSetupMode -eq 1 ]; then
 	rm -r ${strDest}/core/services
 	rm -r ${strDest}/client
 	rm -r -f ${strDest}/software
-elif [ iSetupMode -eq 2 ]; then
+elif [ $iSetupMode -eq 2 ]; then
 	rm -r ${strDest}/core/tools
 	rm -r ${strDest}/development
 	rm -r ${strDest}/client
@@ -129,42 +132,36 @@ if [ ! -d "${strUwsDir}" ]; then
 fi
 
 #environment
-strFile = "/etc/environment"
-cat ${strFile} | while read strLine
-do
-	echo "${strLine}" >> ${strFile}_tmp
-done
-echo "${strEnvSystemRoot}=\"${strDest}\"" >> ${strFile}_tmp
-echo "${strEnvLws}=\"${strLwsDir}\"" >> ${strFile}_tmp
-echo "${strEnvUws}=\"${strUwsDir}\"" >> ${strFile}_tmp
-rm ${strFile}
-sleep 0.5
-mv ${strFile}_tmp ${strFile}
-source ${strFile}
-
 echo "${strDest}/core/assemblies" > /etc/ld.so.conf.d/GKC.conf
 ldconfig
 
-strFile = "/etc/profile.d/GKC.sh"
-strTemp = "export PATH=\$PATH"
-if [ iSetupMode -ne 2 ]; then
-	strTemp = "${strTemp}:${strDest}/core/tools"
+strFile="/etc/GKC-bashrc"
+strTemp="export PATH=\$PATH"
+if [ $iSetupMode -ne 2 ]; then
+	strTemp="${strTemp}:${strDest}/core/tools"
 fi
-if [ iSetupMode -eq 0 ]; then
-	strTemp = "${strTemp}:${strDest}/client"
+if [ $iSetupMode -eq 0 ]; then
+	strTemp="${strTemp}:${strDest}/client"
 fi
-if [ iSetupMode -eq 1 ]; then
-	strTemp = "${strTemp}:${strDest}/development/tools"
+if [ $iSetupMode -eq 1 ]; then
+	strTemp="${strTemp}:${strDest}/development/tools"
 fi
-echo "#!/bin/sh" > ${strFile}
+echo "export ${strEnvSystemRoot}=\"${strDest}\"" > ${strFile}
+echo "export ${strEnvLws}=\"${strLwsDir}\"" >> ${strFile}
+echo "export ${strEnvUws}=\"${strUwsDir}\"" >> ${strFile}
 echo "${strTemp}" >> ${strFile}
-chmod ugoa+x ${strFile}
-source /etc/profile
+strFile="/etc/bash.bashrc"
+strTemp="/etc/GKC-bashrc"
+sed -n 'p' ${strFile} > ${strFile}_tmp
+echo "source ${strTemp}" >> ${strFile}_tmp
+rm ${strFile}
+sleep 0.5
+mv ${strFile}_tmp ${strFile}
 
 #services
-if [ iSetupMode -eq 2 ]; then
-	strTemp = "${strDest}/core/services/GkcHostSvc"
-	sh "${strDest}/core/services/ghs-setup.sh" "${strTemp}"
+if [ $iSetupMode -eq 2 ]; then
+	strTemp="${strDest}/core/services/GkcHostSvc.S"
+	bash "${strDest}/core/services/ghs-setup.sh" "${strTemp}" "${strDest}" "${strLwsDir}" "${strUwsDir}"
 	sleep 0.5
 fi
 

@@ -11,10 +11,12 @@
 #   yxxinyuan@zju.edu.cn
 #
 
+source /etc/GKC-bashrc
+
 #environment variables
-strEnvSystemRoot = "GKC_SYSTEM_ROOT"
-strEnvLws = "GKC_LOCAL_WORKSPACE"
-strEnvUws = "GKC_UNIFIED_WORKSPACE"
+strEnvSystemRoot="GKC_SYSTEM_ROOT"
+strEnvLws="GKC_LOCAL_WORKSPACE"
+strEnvUws="GKC_UNIFIED_WORKSPACE"
 
 #command parameters
 if [ $# -gt 1 ]; then
@@ -22,10 +24,10 @@ if [ $# -gt 1 ]; then
 	exit 1
 fi
 
-iUninstallMode = 0
+iUninstallMode=0
 if [ $# -eq 1 ]; then
 	if [ $1 = "-a" ]; then
-		iUninstallMode = 1
+		iUninstallMode=1
 	else
 		echo "Command error: unknown option!"
 		exit 1
@@ -36,17 +38,17 @@ fi
 echo "Uninstall..."
 
 #environment
-eval strInstallDir = "\$${strEnvSystemRoot}"
+eval strInstallDir="\$${strEnvSystemRoot}"
 if [[ -z ${strInstallDir} ]]; then
 	echo "Error: The software is not installed!"
 	exit 1
 fi
-eval strLwsDir = "\$${strEnvLws}"
+eval strLwsDir="\$${strEnvLws}"
 if [[ -z ${strLwsDir} ]]; then
 	echo "Error: The software is not installed!"
 	exit 1
 fi
-eval strUwsDir = "\$${strEnvUws}"
+eval strUwsDir="\$${strEnvUws}"
 if [[ -z ${strUwsDir} ]]; then
 	echo "Error: The software is not installed!"
 	exit 1
@@ -66,37 +68,32 @@ if [ ! -d "${strUwsDir}" ]; then
 fi
 
 #services
-strTemp = "${strInstallDir}/core/services"
+strTemp="${strInstallDir}/core/services"
 if [ -d "${strTemp}" ]; then
 	sh "${strTemp}/ghs-uninstall.sh"
 	sleep 0.5
 fi
 
 #environment
-rm /etc/profile.d/GKC.sh
-source /etc/profile
-
 rm /etc/ld.so.conf.d/GKC.conf
 ldconfig
 
-strFile = "/etc/environment"
-cat ${strFile} | while read strLine
-do
-	if [[ ! $strLine == *$strEnvSystemRoot* ]] && [[ ! $strLine == *$strEnvLws* ]] && [[ ! $strLine == *$strEnvUws* ]]; then
-		echo "${strLine}" >> ${strFile}_tmpd
-	fi
-done
+strTemp="/etc/GKC-bashrc"
+rm ${strTemp}
+strFile="\\/etc\\/GKC-bashrc"
+strTemp="/^source ${strFile}/d"
+strFile="/etc/bash.bashrc"
+sed "${strTemp}" ${strFile} > ${strFile}_tmpd
 rm ${strFile}
 sleep 0.5
 mv ${strFile}_tmpd ${strFile}
-source ${strFile}
 
 #folders
 rm -r "${strInstallDir}"
 if [ $iUninstallMode -eq 1 ]; then
 	rm -r "${strLwsDir}"
 	rm -r "${strUwsDir}"
-	strTemp = ${strInstallDir%/*}
+	strTemp=${strInstallDir%/*}
 	rm -r "${strTemp}"
 fi
 

@@ -28,8 +28,16 @@
 #   yxxinyuan@zju.edu.cn
 #
 
+GKC_SYSTEM_ROOT=
+GKC_LOCAL_WORKSPACE=
+GKC_UNIFIED_WORKSPACE=
+
+export GKC_SYSTEM_ROOT
+export GKC_LOCAL_WORKSPACE
+export GKC_UNIFIED_WORKSPACE
+
 NAME=GkcHostSvc
-BINPATH=/usr/.GKC/public/assemblies/GkcHostSvc
+BINPATH=${GKC_SYSTEM_ROOT}/core/services/GkcHostSvc
 PIDFILE=/var/run/$NAME.pid
 
 RETVAL=0
@@ -55,6 +63,9 @@ start(){
 	RETVAL=$?
 	echo "."
 	[ $RETVAL = 0 ]
+	if [ $RETVAL -eq 0 ]; then
+		pidof $BINPATH > $PIDFILE
+	fi
 	return $RETVAL
 }
 
@@ -63,8 +74,9 @@ stop(){
 	echo "Stopping $NAME ..."
 	if pidof $BINPATH > /dev/null; then
 		#start-stop-daemon --stop --retry TERM/1/TERM/1/TERM/4/KILL --quiet --oknodo --exec $BINPATH
+		start-stop-daemon --stop --retry=TERM/15/KILL/5 --quiet --oknodo --exec $BINPATH
 		#killproc $BINPATH
-		killall -9 $BINPATH > /dev/null
+		#killall -9 $BINPATH > /dev/null
 		RETVAL=$?
 		echo
 		[ $RETVAL = 0 ]

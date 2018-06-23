@@ -2811,6 +2811,62 @@ public:
 		strDest.SetLength(uRet);
 		mem_copy(_ShareArrayHelper::GetInternalPointer(strSrc) + uStart, uRet * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(strDest));
 	}
+
+	//find (return value : check null)
+	template <typename Tchar>
+	static typename GKC::ConstStringT<Tchar>::Iterator Find(const GKC::ConstStringT<Tchar>& str, const GKC::ConstStringT<Tchar>& strFind, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetCount() );
+		return typename GKC::ConstStringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_string(GKC::ConstArrayHelper::GetInternalPointer(str) + uStart, GKC::ConstArrayHelper::GetInternalPointer(strFind))));
+	}
+	template <typename Tchar, uintptr t_size>
+	static typename GKC::FixedStringT<Tchar, t_size>::Iterator Find(const GKC::FixedStringT<Tchar, t_size>& str, const GKC::ConstStringT<Tchar>& strFind, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return typename GKC::FixedStringT<Tchar, t_size>::Iterator(GKC::RefPtr<Tchar>(find_string_string(GKC::FixedArrayHelper::GetInternalPointer(str) + uStart, GKC::ConstArrayHelper::GetInternalPointer(strFind))));
+	}
+	template <typename Tchar>
+	static typename _StringT<Tchar>::Iterator Find(const _StringT<Tchar>& str, const GKC::ConstStringT<Tchar>& strFind, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		assert( !str.IsBlockNull() );
+		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_string(_ShareArrayHelper::GetInternalPointer(str) + uStart, GKC::ConstArrayHelper::GetInternalPointer(strFind))));
+	}
+
+	//replace
+	template <typename Tchar>
+	static uintptr Replace(const GKC::ConstStringT<Tchar>& strOld, const GKC::ConstStringT<Tchar>& strNew, INOUT _StringT<Tchar>& str)
+	{
+		assert( !strOld.IsNull() && !strNew.IsNull() );
+		assert( !str.IsBlockNull() );
+		if( str.IsEmpty() )
+			return 0;
+		uintptr uCount = 0;
+		uintptr uOld = strOld.GetCount();
+		uintptr uNew = strNew.GetCount();
+		Tchar* ps = _ShareArrayHelper::GetInternalPointer(str);
+		Tchar* pr = ps;
+		while( true ) {
+			pr = find_string_string(pr, GKC::ConstArrayHelper::GetInternalPointer(strOld));
+			if( pr == NULL )
+				break;
+			uintptr uPos = pr - ps;
+			if( uOld > uNew ) {
+				_StringHelper::Delete(uPos + uNew, uOld - uNew, str);
+				ps = _ShareArrayHelper::GetInternalPointer(str);
+				pr = ps + uPos;
+			}
+			else if( uOld < uNew ) {
+				str.InsertAt(uPos + uOld, uNew - uOld);  //may throw
+				ps = _ShareArrayHelper::GetInternalPointer(str);
+				pr = ps + uPos;
+			}
+			mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strNew), uNew * sizeof(Tchar), pr);
+			pr += uNew;
+			uCount ++;
+		} //end while
+		return uCount;
+	}
 };
 
 // _VariantString
@@ -3539,6 +3595,21 @@ public:
 DECLARE_GUID(GUID__ITextStream)
 
 #pragma pack(pop)
+
+// _Initialize_VariantString
+
+inline void _Initialize_VariantString(int iBomType, _VariantString& str)
+{
+	if( iBomType == _BOMTypes::UTF16LE || iBomType == _BOMTypes::UTF16BE )
+		str.SetType(_VariantString::Char16);
+	else if( iBomType == _BOMTypes::UTF32LE || iBomType == _BOMTypes::UTF32BE )
+		str.SetType(_VariantString::Char32);
+	else if( iBomType == _BOMTypes::UTF8 || iBomType == _BOMTypes::Ansi )
+		str.SetType(_VariantString::Char8);
+	else
+		str.SetType(_VariantString::None);
+	str.Reset();  //may throw
+}
 
 //functions
 

@@ -12,7 +12,24 @@
 #
 
 #copy
-cp $1 /etc/init.d/GkcHostSvc
+strEnvSystemRoot="GKC_SYSTEM_ROOT="
+strEnvLws="GKC_LOCAL_WORKSPACE="
+strEnvUws="GKC_UNIFIED_WORKSPACE="
+
+cat $1 | while read -rs strLine;
+do
+	if [[ $strLine == *$strEnvSystemRoot* ]]; then
+		echo "${strLine}\"$2\"" >> /etc/init.d/GkcHostSvc
+	elif [[ $strLine == *$strEnvLws* ]]; then
+		echo "${strLine}\"$3\"" >> /etc/init.d/GkcHostSvc
+	elif [[ $strLine == *$strEnvUws* ]]; then
+		echo "${strLine}\"$4\"" >> /etc/init.d/GkcHostSvc
+	else
+		echo "${strLine}" >> /etc/init.d/GkcHostSvc
+	fi
+done
+sleep 0.5
+
 #right
 chmod ugoa+x /etc/init.d/GkcHostSvc
 #runlevels
@@ -21,6 +38,6 @@ update-rc.d GkcHostSvc defaults
 #start
 service GkcHostSvc start
 #status
-service GkcHostSvc status
+#service GkcHostSvc status
 
 #end

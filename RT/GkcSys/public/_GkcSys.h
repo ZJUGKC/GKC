@@ -3620,6 +3620,25 @@ SA_FUNCTION void _BufferStream_Create(const void* p, uintptr uBytes, _ShareCom<_
 SA_FUNCTION void _TextStream_Create(_ShareCom<_ITextStream>& sp, GKC::CallResult& cr) throw();
 
 //------------------------------------------------------------------------------
+// Help Authoring
+
+#pragma pack(push, 1)
+
+struct _HelpLanguageInfo
+{
+	GKC::ConstStringS strShortString;
+	GKC::ConstStringS strCharset;
+	GKC::ConstStringS strCodePage;
+	uint uLCID;
+};
+
+#pragma pack(pop)
+
+SA_FUNCTION bool _HelpAuthoring_FindCodePageFromCharset(const GKC::ConstStringS& strCharset, GKC::ConstStringS& strCodePage) throw();
+SA_FUNCTION bool _HelpAuthoring_FindLCID(uint uLCID, _HelpLanguageInfo& info) throw();
+SA_FUNCTION bool _HelpAuthoring_FindShortString(const GKC::ConstStringS& strShortString, _HelpLanguageInfo& info) throw();
+
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_SYS_H__

@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2016, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,33 +11,42 @@
 */
 
 /*
-Internal Header
+This file contains global variables for Help Authoring.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __TXT_DEF_H__
-#define __TXT_DEF_H__
+#ifndef __HELP_AUTHORING_H__
+#define __HELP_AUTHORING_H__
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// g_html_github_header
+// _Charset_CP
 
-DECLARE_STATIC_CONST_STRING(g_html_github_header, CharA)
+struct _Charset_CP
+{
+DECLARE_CONST_STRING_STRUCT_MEMBER(m_charset, CharS)
+DECLARE_CONST_STRING_STRUCT_MEMBER(m_codepage, CharS)
+};
 
-// g_html_tail
+// g_charset_cp_map
 
-DECLARE_STATIC_CONST_STRING(g_html_tail, CharA)
+DECLARE_STATIC_CONST_ARRAY(g_charset_cp_map, _Charset_CP)
 
-// g_html_xhtml_header
+// _LCID_ShortString
 
-DECLARE_STATIC_CONST_STRING(g_html_xhtml_header, CharA)
+struct _LCID_ShortString
+{
+DECLARE_CONST_STRING_STRUCT_MEMBER(m_short_string, CharS)
+uint m_lcid;
+uint m_uIndex;
+};
 
-// g_html_xhtml_tail
+// g_lcid_short_string_map
 
-DECLARE_STATIC_CONST_STRING(g_html_xhtml_tail, CharA)
+DECLARE_STATIC_CONST_ARRAY(g_lcid_short_string_map, _LCID_ShortString)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

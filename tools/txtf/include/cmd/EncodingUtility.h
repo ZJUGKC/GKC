@@ -44,8 +44,7 @@ inline int _Encoding_To_Type(const ConstStringS& strEncoding, ConstStringS& strC
 		iType = BOMTypes::UTF32BE;
 	}
 	else {
-		strCP = _Find_CodePage_From_Charset(strEncoding);
-		if( strCP.GetCount() != 0 )
+		if( HelpAuthoringHelper::FindCodePageFromCharset(strEncoding, strCP) )
 			iType = BOMTypes::Ansi;
 	} //end if
 	return iType;

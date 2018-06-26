@@ -283,6 +283,30 @@ public:
 	}
 };
 
+// Help Authoring
+
+// HelpLanguageInfo
+typedef _HelpLanguageInfo  HelpLanguageInfo;
+
+// HelpAuthoringHelper
+
+class HelpAuthoringHelper
+{
+public:
+	static bool FindCodePageFromCharset(const GKC::ConstStringS& strCharset, GKC::ConstStringS& strCodePage) throw()
+	{
+		return ::_HelpAuthoring_FindCodePageFromCharset(strCharset, strCodePage);
+	}
+	static bool FindLCID(uint uLCID, HelpLanguageInfo& info) throw()
+	{
+		return ::_HelpAuthoring_FindLCID(uLCID, info);
+	}
+	static bool FindShortString(const GKC::ConstStringS& strShortString, HelpLanguageInfo& info) throw()
+	{
+		return ::_HelpAuthoring_FindShortString(strShortString, info);
+	}
+};
+
 // EnvironmentVariableHelper
 
 class EnvironmentVariableHelper

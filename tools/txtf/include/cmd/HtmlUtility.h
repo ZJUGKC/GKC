@@ -94,8 +94,8 @@ inline int _Cmd_Generate_GitHub_Html(const ConstStringS& strCharset, const Const
 {
 	//charset
 	if( ConstStringCompareTrait<ConstStringS>::IsNE(strCharset, DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF-8"))) ) {
-		ConstStringS strCodePage(_Find_CodePage_From_Charset(strCharset));
-		if( strCodePage.GetCount() == 0 ) {
+		ConstStringS strCodePage;
+		if( !HelpAuthoringHelper::FindCodePageFromCharset(strCharset, strCodePage) ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Invalid charset!")));
 			return 1;
 		}
@@ -116,9 +116,8 @@ inline int _Cmd_Generate_GitHub_Html(const ConstStringS& strCharset, const Const
 inline int _Cmd_Generate_XHtml_Html(const ConstStringS& strLanguage, const ConstStringS& strCssFile, const ConstStringS& strSrc, const ConstStringS& strDest)
 {
 	//language
-	uint uIndex;
-	uint uLCID = _Find_LCID_From_ShortString(strLanguage, uIndex);
-	if( uLCID == 0 ) {
+	HelpLanguageInfo info;
+	if( !HelpAuthoringHelper::FindShortString(strLanguage, info) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Invalid language!")));
 		return 1;
 	}

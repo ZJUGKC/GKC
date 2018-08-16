@@ -21,6 +21,7 @@ This is pre-compiled header file.
 
 #include "base/GkcDef.h"
 #include "base/GkcColl.h"
+#include "base/GkcColls.h"
 
 #include "sys/GkcSysDef.h"
 #include "sys/GkcSys.h"

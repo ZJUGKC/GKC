@@ -2835,34 +2835,38 @@ public:
 
 	//replace
 	template <typename Tchar>
+	static uintptr Replace(uintptr uPos, uintptr uOld, const GKC::ConstStringT<Tchar>& strNew, INOUT _StringT<Tchar>& str)
+	{
+		assert( uPos <= str.GetLength() && uOld <= str.GetLength() - uPos );
+		uintptr uNew = strNew.GetCount();
+		Tchar* pr = _ShareArrayHelper::GetInternalPointer(str) + uPos;
+		if( uOld > uNew ) {
+			_StringHelper::Delete(uPos + uNew, uOld - uNew, str);
+			pr = _ShareArrayHelper::GetInternalPointer(str) + uPos;
+		}
+		else if( uOld < uNew ) {
+			str.InsertAt(uPos + uOld, uNew - uOld);  //may throw
+			pr = _ShareArrayHelper::GetInternalPointer(str) + uPos;
+		}
+		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strNew), uNew * sizeof(Tchar), pr);
+		return uPos + uNew;
+	}
+	template <typename Tchar>
 	static uintptr Replace(const GKC::ConstStringT<Tchar>& strOld, const GKC::ConstStringT<Tchar>& strNew, INOUT _StringT<Tchar>& str)
 	{
-		assert( !strOld.IsNull() && !strNew.IsNull() );
+		assert( !strOld.IsNull() );
 		assert( !str.IsBlockNull() );
 		if( str.IsEmpty() )
 			return 0;
 		uintptr uCount = 0;
 		uintptr uOld = strOld.GetCount();
-		uintptr uNew = strNew.GetCount();
-		Tchar* ps = _ShareArrayHelper::GetInternalPointer(str);
-		Tchar* pr = ps;
+		uintptr uPos = 0;
 		while( true ) {
-			pr = find_string_string(pr, GKC::ConstArrayHelper::GetInternalPointer(strOld));
+			Tchar* ps = _ShareArrayHelper::GetInternalPointer(str);
+			Tchar* pr = find_string_string(ps + uPos, GKC::ConstArrayHelper::GetInternalPointer(strOld));
 			if( pr == NULL )
 				break;
-			uintptr uPos = pr - ps;
-			if( uOld > uNew ) {
-				_StringHelper::Delete(uPos + uNew, uOld - uNew, str);
-				ps = _ShareArrayHelper::GetInternalPointer(str);
-				pr = ps + uPos;
-			}
-			else if( uOld < uNew ) {
-				str.InsertAt(uPos + uOld, uNew - uOld);  //may throw
-				ps = _ShareArrayHelper::GetInternalPointer(str);
-				pr = ps + uPos;
-			}
-			mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strNew), uNew * sizeof(Tchar), pr);
-			pr += uNew;
+			uPos = Replace<Tchar>(pr - ps, uOld, strNew, str);  //may throw
 			uCount ++;
 		} //end while
 		return uCount;

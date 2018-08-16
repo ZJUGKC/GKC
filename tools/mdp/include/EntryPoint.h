@@ -37,17 +37,6 @@ void _PrintHelp() throw()
 	ConsoleHelper::PrintConstStringArray(DECLARE_CONST_STRING_ARRAY_TYPE(CharS)(g_const_array_help::GetAddress(), g_const_array_help::GetCount()));
 }
 
-// tools
-inline
-bool _CheckFileExtension(const ConstStringS& str, const ConstStringS& strExt, uintptr& uPos) throw()
-{
-	if( !FsPathHelper::FindExtensionStart(str, uPos) )
-		return false;
-	return ConstStringCompareTrait<ConstStringS>::IsEQ(
-		ConstStringS(ConstArrayHelper::GetInternalPointer(str) + uPos, str.GetCount() - uPos),
-		strExt);
-}
-
 //process project file
 inline
 int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
@@ -62,6 +51,8 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 
 	StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 	StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
+	StringS strSrcDir(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
+	StringUtilHelper::MakeString(args[2].get_Value(), strSrcDir);
 	StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 	{
 		uintptr uPos;
@@ -70,6 +61,11 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The project file name must have the extension \".mdp\"!")));
 			return 1;
 		}
+		//source directory
+		uPos = FsPathHelper::FindFilePartStart(StringUtilHelper::To_ConstString(strSrcDir));
+		FsPathHelper::ToPathPart(uPos, strSrcDir);
+		if( strSrcDir.IsEmpty() )
+			StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("./")), strSrcDir);
 		//destination
 		if( uArgCount == 4 ) {
 			StringUtilHelper::MakeString(args[3].get_Value(), strDest);
@@ -104,7 +100,7 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 	_PrintVersion();
 
 	//process
-	return _Process_Project_File(strSrc, strDest, type) ? 0 : 2;
+	return _Process_Project_File(strSrc, strSrcDir, strDest, type) ? 0 : 2;
 }
 
 // ProgramEntryPoint

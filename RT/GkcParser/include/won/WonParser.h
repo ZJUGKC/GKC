@@ -327,6 +327,13 @@ private:
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_end_object"), spAction);
 			if( cr.IsFailed() )
 				return cr;
+			//Do-Pair-Key-Value
+			cr = create_action(_WonTokenTypes::EndPair, data, spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_pair_key_value"), spAction);
+			if( cr.IsFailed() )
+				return cr;
 			//Do-Key-String
 			cr = create_action(_WonTokenTypes::Key, data, spAction);
 			if( cr.IsFailed() )

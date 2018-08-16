@@ -38,7 +38,7 @@ These four types of files under the *document directory* are listed as follows:
 
 ## Project File
 
-A project file with postfix `.mp` is located in a directory which contains the *document directory*.
+A project file with postfix `.mdp` is located in a directory which contains the *document directory*.
 The project file uses WON format, and the whole file is an object containing the following key-value pairs:
 
 | Key                  | Value                                            |
@@ -47,16 +47,23 @@ The project file uses WON format, and the whole file is an object containing the
 | "document-directory" | Specify the *document directory*                 |
 | "language"           | Specify the language ID                          |
 | "command"            | Specify the compiling commands for markdown file |
+| "cover"              | Specify the cover image file                     |
+| "cover-name"         | Specify the cover page name                      |
 | "tree"               | Specify the file tree                            |
 
 The optional key-value pairs are listed as follows:
 
-| Key         | Value                        |
-|:-----------:|:-----------------------------|
-| "cover"     | Specify the cover image file |
-| "title"     | Specify the title page file  |
-| "content"   | Specify the content file     |
-| "copyright" | Specify the copyright file   |
+| Key           | Value                        |
+|:-------------:|:-----------------------------|
+| "topic"       | Specify the topic            |
+| "author"      | Specify the author           |
+| "description" | Specify the description      |
+| "date"        | Specify the date             |
+| "contributor" | Specify the contributor      |
+| "publisher"   | Specify the publisher        |
+| "subject"     | Specify the subject          |
+| "rights"      | Specify the rights           |
+| "identifier"  | Specify the identifier       |
 
 The file tree is an array with the object elements. Each object contains the following key-value pairs:
 
@@ -66,6 +73,15 @@ The file tree is an array with the object elements. Each object contains the fol
 | "file" | Specify the file name, which can use anchor optionally |
 
 The optional key-value pair of file tree is `"tree"` and the corresponding file tree of the sub-level.
+
+Another optional key-value pair of file tree is `"guide"`
+and the value listed as follows:
+
+| Value         | Description                       |
+|:-------------:|:----------------------------------|
+| "title"       | Specify the title page file       |
+| "content"     | Specify the content file          |
+| "copyright"   | Specify the copyright page file   |
 
 The language IDs are listed as follows:
 

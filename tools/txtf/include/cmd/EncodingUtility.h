@@ -217,6 +217,7 @@ inline int _Cmd_Convert_Encoding(const ConstStringS& strSrcEncoding, const Const
 		return 1;
 	}
 	spText.Deref().SetStream(spDest);
+	spText.Deref().Reset();
 	spText.Deref().SetBOM(iDestType);
 	cr = spText.Deref().PutString(strConv);
 	if( cr.IsFailed() ) {

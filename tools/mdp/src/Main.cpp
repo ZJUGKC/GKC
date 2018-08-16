@@ -20,7 +20,11 @@ This file contains main function.
 
 #include "Global.h"
 
+#include "base/SysDef.h"
 #include "base/MdpDef.h"
+#include "base/MdpBase.h"
+#include "base/ChmGenerator.h"
+#include "base/EpubGenerator.h"
 
 #include "cmd/ProcessProjectFile.h"
 

@@ -68,6 +68,7 @@ inline int _Cmd_Bom_Process(int iBomType, const ConstStringS& strSrc, const Cons
 	if( iBomType != BOMTypes::None ) {
 		//BOM Add
 		spText.Deref().SetStream(spDest);
+		spText.Deref().Reset();
 		spText.Deref().SetBOM(iBomType);
 		cr = spText.Deref().WriteBOM();
 		if( cr.IsFailed() ) {

@@ -122,7 +122,7 @@ inline bool _Create_Output_FileTree(int iType, const ConstStringS& strDest,
 			return false;
 		//OEBPS
 		strTemp = StringHelper::Clone(strDir);  //may throw
-		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("OPBPS")), strTemp);  //may throw
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("OEBPS")), strTemp);  //may throw
 		FsPathHelper::ConvertPathStringToPlatform(strTemp);
 		//create directory
 		if( !FileManagementHelper::CheckDirectoryExists(StringUtilHelper::To_ConstString(strTemp))
@@ -135,13 +135,43 @@ inline bool _Create_Output_FileTree(int iType, const ConstStringS& strDest,
 	return true;
 }
 
-//get html ext name
+// get html ext name
 inline ConstStringA _Get_Html_Ext_Name(int iType) throw()
 {
 	if( iType == MDP_TYPE_CHM )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, ".htm");
 	else if( iType == MDP_TYPE_EPUB )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, ".xhtml");
+	return ConstStringA();
+}
+
+// get file tree prefix
+inline ConstStringA _Get_FileTree_Prefix(int iType) throw()
+{
+	if( iType == MDP_TYPE_CHM )
+		return DECLARE_TEMP_CONST_STRING(ConstStringA, "doc");
+	else if( iType == MDP_TYPE_EPUB )
+		return DECLARE_TEMP_CONST_STRING(ConstStringA, "doc/OEBPS");
+	return ConstStringA();
+}
+
+// get html options template
+inline ConstStringA _Get_Html_Options_Template(int iType) throw()
+{
+	if( iType == MDP_TYPE_CHM )
+		return DECLARE_TEMP_CONST_STRING(ConstStringA, "-g $$CHARSET$$");
+	else if( iType == MDP_TYPE_EPUB )
+		return get_xhtml_options_template();
+	return ConstStringA();
+}
+
+// get ebook cmd template
+inline ConstStringA _Get_EBook_CMD_Template(int iType) throw()
+{
+	if( iType == MDP_TYPE_CHM )
+		return ConstStringA(g_script_chm_cmd::GetAddress(), g_script_chm_cmd::GetCount());
+	else if( iType == MDP_TYPE_EPUB )
+		return ConstStringA(g_script_epub_cmd::GetAddress(), g_script_epub_cmd::GetCount());
 	return ConstStringA();
 }
 

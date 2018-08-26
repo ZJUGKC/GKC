@@ -2456,6 +2456,8 @@ public:
 		uintptr uLength = str.GetLength();
 		if( uPos > uLength )
 			return ;
+		if( uLength == 0 )
+			str.SetLength(0);
 		str.InsertAt(uPos, 1, ch);
 	}
 	//delete
@@ -2714,6 +2716,8 @@ public:
 		uintptr uAdd = strAdd.GetCount();
 		if( uAdd == 0 || uPos > uLength )
 			return ;
+		if( uLength == 0 )
+			str.SetLength(0);
 		str.InsertAt(uPos, uAdd);
 		mem_copy(GKC::ConstArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(str) + uPos);
 	}
@@ -2724,6 +2728,8 @@ public:
 		uintptr uAdd = strAdd.GetLength();
 		if( uAdd == 0 || uPos > uLength )
 			return ;
+		if( uLength == 0 )
+			str.SetLength(0);
 		str.InsertAt(uPos, uAdd);
 		mem_copy(GKC::FixedArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(str) + uPos);
 	}
@@ -2735,6 +2741,8 @@ public:
 		uintptr uAdd = strAdd.GetLength();
 		if( uAdd == 0 || uPos > uLength )
 			return ;
+		if( uLength == 0 )
+			str.SetLength(0);
 		str.InsertAt(uPos, uAdd);
 		mem_copy(_ShareArrayHelper::GetInternalPointer(strAdd), uAdd * sizeof(Tchar), _ShareArrayHelper::GetInternalPointer(str) + uPos);
 	}
@@ -2845,6 +2853,8 @@ public:
 			pr = _ShareArrayHelper::GetInternalPointer(str) + uPos;
 		}
 		else if( uOld < uNew ) {
+			if( str.GetLength() == 0 )
+				str.SetLength(0);
 			str.InsertAt(uPos + uOld, uNew - uOld);  //may throw
 			pr = _ShareArrayHelper::GetInternalPointer(str) + uPos;
 		}

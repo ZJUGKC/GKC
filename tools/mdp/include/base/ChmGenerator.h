@@ -108,7 +108,7 @@ inline void _Generate_Htm_LI_String(const ConstStringA& strName,
 		StringUtilHelper::MakeString(ConstStringA(g_chm_content_folder::GetAddress(), g_chm_content_folder::GetCount()), strContent);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$NAME$$"), strName, strContent);  //may throw
 	StringUtilHelper::MakeString(strFile, strTemp);  //may throw
-	StringHelper::Replace('/', '\\', strTemp);
+	FsPathHelper::ConvertPathStringToPlatform(strTemp);
 	StringUtilHelper::Replace(strTemp.GetLength() - 3, 3, DECLARE_TEMP_CONST_STRING(ConstStringA, ".htm"), strTemp);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILE$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 }
@@ -153,6 +153,7 @@ inline bool _Generate_Content_File(const ConstStringS& strFile,
 	} //end if
 	//content
 	StringUtilHelper::MakeString(ConstStringA(g_chm_content_body::GetAddress(), g_chm_content_body::GetCount()), strContent);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$GENERATOR$$"), get_chm_generator(), strContent);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TREE$$"), StringUtilHelper::To_ConstString(strTree), strContent);  //may throw
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
@@ -180,6 +181,7 @@ inline bool _Generate_Index_File(const ConstStringS& strFile,
 	} //end while
 	//content
 	StringUtilHelper::MakeString(ConstStringA(g_chm_index_body::GetAddress(), g_chm_index_body::GetCount()), strContent);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$GENERATOR$$"), get_chm_generator(), strContent);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILELIST$$"), StringUtilHelper::To_ConstString(strFileList), strContent);  //may throw
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
@@ -201,6 +203,7 @@ inline bool _Chm_Generate_Description_Files(const ConstStringS& strDestRoot,
 	//project file
 	StringUtilHelper::MakeString(StringUtilHelper::To_ConstString(strRoot), strFile);  //may throw
 	StringUtilHelper::Append(CS_U2S(get_def_file_ext()).GetC(), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Def_File(StringUtilHelper::To_ConstString(strFile),
 							StringUtilHelper::To_ConstString(info.GetProjectName()),
 							StringUtilHelper::To_ConstString(info.GetTopic()),
@@ -211,6 +214,7 @@ inline bool _Chm_Generate_Description_Files(const ConstStringS& strDestRoot,
 	//content file
 	StringUtilHelper::MakeString(StringUtilHelper::To_ConstString(strRoot), strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".hhc")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Content_File(StringUtilHelper::To_ConstString(strFile),
 								StringUtilHelper::To_ConstString(info.GetProjectName()),
 								StringUtilHelper::To_ConstString(info.GetCoverName()),
@@ -220,6 +224,7 @@ inline bool _Chm_Generate_Description_Files(const ConstStringS& strDestRoot,
 	//index file
 	StringUtilHelper::MakeString(StringUtilHelper::To_ConstString(strRoot), strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".hhk")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Index_File(StringUtilHelper::To_ConstString(strFile),
 							StringUtilHelper::To_ConstString(info.GetProjectName()),
 							StringUtilHelper::To_ConstString(info.GetCoverName()),
@@ -229,6 +234,7 @@ inline bool _Chm_Generate_Description_Files(const ConstStringS& strDestRoot,
 	//cover html
 	StringUtilHelper::MakeString(StringUtilHelper::To_ConstString(strRoot), strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-cover.html")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Cover_Html_File(StringUtilHelper::To_ConstString(strFile),
 								StringUtilHelper::To_ConstString(info.GetCoverImageFile())) )  //may throw
 		return false;

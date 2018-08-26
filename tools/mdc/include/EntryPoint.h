@@ -74,8 +74,10 @@ int _Cmd_CompileSingleFile(const ConstArray<ConstStringS>& args)
 		if( uArgCount == 4 ) {
 			//extension
 			ConstStringS c_strDest(args[3].get_Value());
-			if( !_CheckFileExtension(c_strDest, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".htm")), uPos) ) {
-				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The destination file name must have the extension \".htm\"!")));
+			if( !_CheckFileExtension(c_strDest, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".htm")), uPos)
+				&& !_CheckFileExtension(c_strDest, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".html")), uPos)
+				) {
+				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: The destination file name must have the extension \".htm\" or \".html\"!")));
 				return 1;
 			}
 			StringUtilHelper::MakeString(c_strDest, strDest);
@@ -83,7 +85,7 @@ int _Cmd_CompileSingleFile(const ConstArray<ConstStringS>& args)
 		else {
 			strDest = StringHelper::Clone(strSrc);
 			FsPathHelper::RemoveExtension(uPos, strDest);
-			StringUtilHelper::Insert(uPos, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".htm")), strDest);
+			StringUtilHelper::Insert(uPos, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".html")), strDest);
 		}
 	} //end block
 

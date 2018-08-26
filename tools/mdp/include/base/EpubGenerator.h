@@ -72,6 +72,8 @@ inline ConstStringA _Generate_MimeType_String(const ConstStringA& str) throw()
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "image/gif");
 	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".mp4")) )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "video/mp4");
+	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".mp3")) )
+		return DECLARE_TEMP_CONST_STRING(ConstStringA, "audio/mp3");
 	return strType;
 }
 //generate manifest list
@@ -321,6 +323,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("doc")), strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("mimetype")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_MimeType_File(StringUtilHelper::To_ConstString(strFile)) )
 		return false;
 
@@ -332,6 +335,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("META-INF")), strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("container.xml")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Container_File(StringUtilHelper::To_ConstString(strFile)) )
 		return false;
 
@@ -339,6 +343,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	StringUtilHelper::MakeString(strDestRoot, strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("stylesheet.css")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Css_File(StringUtilHelper::To_ConstString(strFile)) )
 		return false;
 
@@ -346,6 +351,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	StringUtilHelper::MakeString(strDestRoot, strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("content.opf")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Opf_File(StringUtilHelper::To_ConstString(strFile),
 							StringUtilHelper::To_ConstString(info.GetProjectName()),
 							StringUtilHelper::To_ConstString(info.GetCoverName()),
@@ -368,6 +374,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	StringUtilHelper::MakeString(strDestRoot, strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("toc.ncx")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Ncx_File(StringUtilHelper::To_ConstString(strFile),
 							StringUtilHelper::To_ConstString(info.GetProjectName()),
 							StringUtilHelper::To_ConstString(info.GetCoverName()),
@@ -383,6 +390,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(CS_U2S(info.GetProjectName()).GetC(), strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-cover.html")), strFile);  //may throw
+	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Cover_Html_File(StringUtilHelper::To_ConstString(strFile),
 								StringUtilHelper::To_ConstString(info.GetCoverImageFile())) )  //may throw
 		return false;

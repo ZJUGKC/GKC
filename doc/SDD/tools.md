@@ -106,6 +106,8 @@ The language IDs are listed as follows:
 
 The compiling commands is an array containing one or more command strings for processing the markdown file.
 The macro variables, `$SRC$` and `$DEST$`, can be used in command string for indicating the source file and the destination file.
+The macro variable `$DEL$` is used as the delete command for windows and linux.
+The macro variables cannot be surrounded by quotation marks.
 
 # Viewer
 

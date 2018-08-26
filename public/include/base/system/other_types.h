@@ -1365,7 +1365,7 @@ struct storage_status
 
 template <class TIterator, class TCompareTrait = default_compare_trait<typename TIterator::EType>>
 inline uintptr coll_replace_elements(const typename TIterator::EType& tOld, const typename TIterator::EType& tNew,
-									TIterator& iterB, TIterator& iterE)
+									TIterator iterB, TIterator iterE)
 {
 	uintptr uCount = 0;
 	//loop

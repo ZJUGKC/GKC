@@ -25,6 +25,7 @@ This file contains main function.
 #include "base/MdpBase.h"
 #include "base/ChmGenerator.h"
 #include "base/EpubGenerator.h"
+#include "base/ScriptGenerator.h"
 
 #include "cmd/ProcessProjectFile.h"
 

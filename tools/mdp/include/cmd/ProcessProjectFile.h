@@ -150,6 +150,23 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 		}
 	}
 
+	//generate script file
+	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Generate script file...")));
+
+	if( !_Generate_Script_File(StringUtilHelper::To_ConstString(strDest),
+							_Get_FileTree_Prefix(iType),
+							iType == MDP_TYPE_CHM,
+							_Get_Html_Ext_Name(iType),
+							_Get_Html_Options_Template(iType),
+							_Get_EBook_CMD_Template(iType),
+							info, hlInfo) ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The script file cannot be generated!")));
+		return false;
+	}
+
+	//done
+	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Done.")));
+
 	return true;
 }
 

@@ -895,6 +895,13 @@ public:
 		assert( uStart <= str.GetLength() );
 		return typename FixedStringT<Tchar, t_size>::Iterator(RefPtr<Tchar>(find_string_char(FixedArrayHelper::GetInternalPointer(str) + uStart, ch)));
 	}
+	//find last (return value : check null)
+	template <typename Tchar, uintptr t_size>
+	static typename FixedStringT<Tchar, t_size>::Iterator FindLast(const FixedStringT<Tchar, t_size>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		return typename FixedStringT<Tchar, t_size>::Iterator(RefPtr<Tchar>(find_string_last_char(FixedArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
 };
 
 // FixedStringCompareTrait<T>

@@ -25,42 +25,42 @@ namespace GKC {
 
 //generate script FILES string
 inline void _Generate_Script_FILES_String(const ConstStringA& strDirPrefix,
-										FileTreeEnumerator& ftEnum,
+										const FileListInfo& flInfo,
 										StringA& strList)
 {
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-	bool bFound = ftEnum.FindFirst();
-	while( bFound ) {
+	uintptr uCount = flInfo.GetCount();
+	for( uintptr i = 0; i < uCount; ) {
 		StringUtilHelper::MakeString(strDirPrefix, strTemp);  //may throw
 		FsPathHelper::AppendSeparator(strTemp);  //may throw
-		StringUtilHelper::Append(ftEnum.GetFile(), strTemp);  //may throw
+		StringUtilHelper::Append(flInfo.GetAt(i), strTemp);  //may throw
 		FsPathHelper::RemoveExtension(strTemp.GetLength() - 3, strTemp);
 		FsPathHelper::ConvertPathStringToPlatform(strTemp);
 		StringHelper::Insert(0, '\"', strTemp);  //may throw
 		StringHelper::Append('\"', strTemp);  //may throw
-		bFound = ftEnum.FindNext();
-		if( bFound )
+		i ++;
+		if( i < uCount )
 			StringUtilHelper::Append(get_array_delimiter(), strTemp);  //may throw
 		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strTemp), strList);  //may throw
 	}
 }
 
 //generate script CSSPREFIX string
-inline void _Generate_Script_CSSPREFIX_String(FileTreeEnumerator& ftEnum,
+inline void _Generate_Script_CSSPREFIX_String(const FileListInfo& flInfo,
 											StringA& strList)
 {
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-	bool bFound = ftEnum.FindFirst();
-	while( bFound ) {
+	uintptr uCount = flInfo.GetCount();
+	for( uintptr i = 0; i < uCount; ) {
 		strTemp.Clear();
-		for( auto iter(ftEnum.GetFile().GetBegin()); iter != ftEnum.GetFile().GetEnd(); iter.MoveNext() ) {
+		for( auto iter(flInfo.GetAt(i).GetBegin()); iter != flInfo.GetAt(i).GetEnd(); iter.MoveNext() ) {
 			if( iter.get_Value() == '/' )
 				StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "../"), strTemp);  //may throw
 		}
 		StringHelper::Insert(0, '\"', strTemp);  //may throw
 		StringHelper::Append('\"', strTemp);  //may throw
-		bFound = ftEnum.FindNext();
-		if( bFound )
+		i ++;
+		if( i < uCount )
 			StringUtilHelper::Append(get_array_delimiter(), strTemp);  //may throw
 		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strTemp), strList);  //may throw
 	}
@@ -107,10 +107,9 @@ inline bool _Generate_Script_File(const ConstStringS& strDest,
 								const ConstStringA& strExt,
 								const ConstStringA& strHtmlOptions,
 								const ConstStringA& strEBookCmd,
-								ProjectInfo& info, HelpLanguageInfo& hlInfo)
+								const ProjectInfo& info, const HelpLanguageInfo& hlInfo,
+								const FileListInfo& flInfo)
 {
-	FileTreeEnumerator ftEnum(info.GetFileTree());
-
 	StringS strFile(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringUtilHelper::MakeString(strDest, strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
@@ -123,12 +122,12 @@ inline bool _Generate_Script_File(const ConstStringS& strDest,
 
 	//files
 	StringA strList(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-	_Generate_Script_FILES_String(strDirPrefix, ftEnum, strList);  //may throw
+	_Generate_Script_FILES_String(strDirPrefix, flInfo, strList);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILES$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 
 	//cssprefix
 	strList.Clear();
-	_Generate_Script_CSSPREFIX_String(ftEnum, strList);  //may throw
+	_Generate_Script_CSSPREFIX_String(flInfo, strList);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$CSSPREFIX$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 
 	//commands

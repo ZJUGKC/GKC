@@ -525,7 +525,11 @@ public:
 	}
 	ConstStringA GetFile() const throw()
 	{
-		return StringUtilHelper::To_ConstString(m_iter.get_Value().get_Second());
+		return StringUtilHelper::To_ConstString(GetFileString());
+	}
+	StringA GetFileString() const throw()
+	{
+		return m_iter.get_Value().get_Second();
 	}
 	bool IsLeaf() const throw()
 	{
@@ -561,18 +565,19 @@ private:
 	FileTreeEnumerator& operator=(const FileTreeEnumerator&) throw();
 };
 
-// DirFileList
+// FileListT<TString>
 
-class DirFileList
+template <class TString>
+class FileListT
 {
 private:
-	typedef HashList<StringS, StringHashTrait<StringS>, StringCompareTrait<StringS>>  HashListClass;
+	typedef HashList<TString, StringHashTrait<TString>, StringCompareTrait<TString>>  HashListClass;
 
 public:
-	DirFileList() throw() : m_hashList(MemoryHelper::GetCrtMemoryManager())
+	FileListT() throw() : m_hashList(MemoryHelper::GetCrtMemoryManager())
 	{
 	}
-	~DirFileList() throw()
+	~FileListT() throw()
 	{
 	}
 
@@ -580,12 +585,12 @@ public:
 	{
 		return m_arrFile.GetCount();
 	}
-	ConstStringS GetAt(uintptr uIndex) const throw()
+	const TString& GetAt(uintptr uIndex) const throw()
 	{
 		assert( uIndex < GetCount() );
-		return StringUtilHelper::To_ConstString(m_arrFile.GetAt(uIndex).get_Value().get_Value());
+		return m_arrFile.GetAt(uIndex).get_Value().get_Value();
 	}
-	bool Find(const StringS& str) const throw()
+	bool Find(const TString& str) const throw()
 	{
 		return m_hashList.Find(str) != m_hashList.GetEnd();
 	}
@@ -597,9 +602,11 @@ public:
 			m_arrFile.RemoveAll();
 	}
 	//add a file
-	void AddFile(const StringS& str)
+	void AddFile(const TString& str)
 	{
-		auto iter(m_hashList.Insert(str));  //may throw
+		if( Find(str) )
+			return ;
+		auto iter(m_hashList.InsertWithoutFind(str));  //may throw
 		if( m_arrFile.IsBlockNull() )
 			m_arrFile = ShareArrayHelper::MakeShareArray<HashListClass::Iterator>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		m_arrFile.Add(iter);  //may throw
@@ -607,13 +614,39 @@ public:
 
 private:
 	HashListClass  m_hashList;
-	ShareArray<HashListClass::Iterator>  m_arrFile;
+	ShareArray<typename HashListClass::Iterator>  m_arrFile;
 
 private:
 	//noncopyable
-	DirFileList(const DirFileList&) throw();
-	DirFileList& operator=(const DirFileList&) throw();
+	FileListT(const FileListT&) throw();
+	FileListT& operator=(const FileListT&) throw();
 };
+
+// DirFileList
+typedef FileListT<StringS>  DirFileList;
+
+// FileListInfo
+typedef FileListT<StringA>  FileListInfo;
+
+// _Generate_Project_FileList
+inline void _Generate_Project_FileList(const ProjectInfo& info, FileListInfo& flInfo)
+{
+	FileTreeEnumerator ftEnum(info.GetFileTree());
+	bool bFound = ftEnum.FindFirst();
+	while( bFound ) {
+		ConstStringA strFile(ftEnum.GetFile());
+		StringA strV(ftEnum.GetFileString());
+		auto iter(ConstStringHelper::FindLast(strFile, '#', 0));
+		if( !iter.IsNull() ) {
+			StringA strTemp(StringHelper::Clone(strV));  //may throw
+			uintptr uPos = iter.CalcDelta(strFile.GetBegin());
+			StringHelper::Delete(uPos, strFile.GetCount() - uPos, strTemp);
+			strV = strTemp;
+		}
+		flInfo.AddFile(strV);  //may throw
+		bFound = ftEnum.FindNext();
+	} //end while
+}
 
 //tools
 
@@ -644,7 +677,7 @@ inline bool _Copy_File(const ConstStringS& strSrc, const ConstStringS& strDest) 
 		return false;
 	return true;
 }
-inline bool _Copy_MD(FileTreeEnumerator& ftEnum, const ConstStringA& strExt,
+inline bool _Copy_MD(const FileListInfo& flInfo, const ConstStringA& strExt,
 					const ConstStringS& strSrc, const ConstStringS& strDest)
 {
 	CallResult cr;
@@ -676,9 +709,9 @@ inline bool _Copy_MD(FileTreeEnumerator& ftEnum, const ConstStringA& strExt,
 	} //end block
 
 	//replace
-	bool bFound = ftEnum.FindFirst();
-	while( bFound ) {
-		ConstStringA strFile(ftEnum.GetFile());
+	uintptr uCount = flInfo.GetCount();
+	for( uintptr i = 0; i < uCount; i ++ ) {
+		ConstStringA strFile(StringUtilHelper::To_ConstString(flInfo.GetAt(i)));
 		uintptr uStart = FsPathHelper::FindFilePartStart(strFile);
 		ConstArrayHelper::SetInternalPointer(ConstArrayHelper::GetInternalPointer(strFile) + uStart, strFile.GetCount() - uStart, strFile);
 		uintptr uPos = 0;
@@ -692,8 +725,7 @@ inline bool _Copy_MD(FileTreeEnumerator& ftEnum, const ConstStringA& strExt,
 			uPos += (strFile.GetCount() - 3);
 			uPos = StringUtilHelper::Replace(uPos, 3, strExt, strContent);  //may throw
 		}
-		bFound = ftEnum.FindNext();
-	} //end while
+	} //end for
 
 	//write
 	{
@@ -790,7 +822,7 @@ inline bool _Copy_Aux_Files(const ConstStringS& strSrcRoot, const ConstStringS& 
 	//loop
 	uintptr uCount = flAux.GetCount();
 	for( uintptr i = 0; i < uCount; i ++ ) {
-		ConstStringS strFile(flAux.GetAt(i));
+		ConstStringS strFile(StringUtilHelper::To_ConstString(flAux.GetAt(i)));
 		//src
 		StringUtilHelper::MakeString(strSrcRoot, strDir);  //may throw
 		FsPathHelper::AppendSeparator(strDir);  //may throw
@@ -811,25 +843,15 @@ inline bool _Copy_Aux_Files(const ConstStringS& strSrcRoot, const ConstStringS& 
 //copy md files
 inline bool _Copy_MD_Files(const ConstStringA& strExt, const ProjectInfo& info,
 						const ConstStringS& strSrcRoot, const ConstStringS& strDestRoot,
-						const DirFileList& flMd)
+						const FileListInfo& flInfo, const DirFileList& flMd)
 {
-	//check project files
-	FileTreeEnumerator ftEnum(info.GetFileTree());
-	bool bFound = ftEnum.FindFirst();
-	while( bFound ) {
-		StringS strV(CS_U2S(ftEnum.GetFile()).GetV());  //may throw
-		if( !flMd.Find(strV) )
-			return false;
-		bFound = ftEnum.FindNext();
-	} //end while
-
 	StringS strDir(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringS strOutput(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 
 	//loop
 	uintptr uCount = flMd.GetCount();
 	for( uintptr i = 0; i < uCount; i ++ ) {
-		ConstStringS strFile(flMd.GetAt(i));
+		ConstStringS strFile(StringUtilHelper::To_ConstString(flMd.GetAt(i)));
 		//src
 		StringUtilHelper::MakeString(strSrcRoot, strDir);  //may throw
 		FsPathHelper::AppendSeparator(strDir);  //may throw
@@ -841,7 +863,7 @@ inline bool _Copy_MD_Files(const ConstStringA& strExt, const ProjectInfo& info,
 		StringUtilHelper::Append(strFile, strOutput);  //may throw
 		FsPathHelper::ConvertPathStringToPlatform(strOutput);
 		//copy this file
-		if( !_Copy_MD(ftEnum, strExt, StringUtilHelper::To_ConstString(strDir), StringUtilHelper::To_ConstString(strOutput)) )  //may throw
+		if( !_Copy_MD(flInfo, strExt, StringUtilHelper::To_ConstString(strDir), StringUtilHelper::To_ConstString(strOutput)) )  //may throw
 			return false;
 	} //end for
 
@@ -876,6 +898,17 @@ inline bool _Generate_Cover_Html_File(const ConstStringS& strFile, const ConstSt
 	StringUtilHelper::MakeString(ConstStringA(g_cover_htm_body::GetAddress(), g_cover_htm_body::GetCount()), strContent);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVER$$"), strCoverImageFile, strContent);  //may throw
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
+}
+
+//generate file-url string
+inline void _Generate_FileUrl_String(const ConstStringA& strFile, const ConstStringA& strExt, StringA& strUrl)
+{
+	uintptr uPos = strFile.GetCount() - 3;
+	auto iter(ConstStringHelper::FindLast(strFile, '#', 0));
+	if( !iter.IsNull() )
+		uPos = iter.CalcDelta(strFile.GetBegin()) - 3;
+	StringUtilHelper::MakeString(strFile, strUrl);  //may throw
+	StringUtilHelper::Replace(uPos, 3, strExt, strUrl);  //may throw
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -65,6 +65,24 @@ inline bool _Check_ProjectFile(const ProjectInfo& info, HelpLanguageInfo& hlInfo
 	return true;
 }
 
+// check project file list
+
+inline bool _Check_Project_FileList(const FileListInfo& flInfo, const DirFileList& flMd)
+{
+	//check project files
+	uintptr uCount = flInfo.GetCount();
+	for( uintptr i = 0; i < uCount; i ++ ) {
+		StringS strV(CS_U2S(flInfo.GetAt(i)).GetV());  //may throw
+		if( !flMd.Find(strV) ) {
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: [")));
+			ConsoleHelper::WriteLine(strV);
+			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("] is not in file tree!")));
+			return false;
+		}
+	} //end for
+	return true;
+}
+
 // process project file
 
 inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
@@ -82,6 +100,9 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 	HelpLanguageInfo hlInfo;
 	if( !_Check_ProjectFile(info, hlInfo) )
 		return false;
+	//file list
+	FileListInfo flInfo;
+	_Generate_Project_FileList(info, flInfo);
 
 	//output
 	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Create output file tree...")));
@@ -122,10 +143,13 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 	//copy md files
 	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Copy md files...")));
 
+	if( !_Check_Project_FileList(flInfo, flMd) )
+		return false;
+
 	if( !_Copy_MD_Files(_Get_Html_Ext_Name(iType), info,
 						StringUtilHelper::To_ConstString(strSrcDir),
 						StringUtilHelper::To_ConstString(strDestRoot),
-						flMd)
+						flInfo, flMd)
 		) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The md files cannot be copied to destination file tree!")));
 		return false;
@@ -136,7 +160,7 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 
 	if( iType == MDP_TYPE_CHM ) {
 		if( !_Chm_Generate_Description_Files(StringUtilHelper::To_ConstString(strDestRoot),
-											info) ) {
+											info, flInfo) ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The description files cannot be generated!")));
 			return false;
 		}
@@ -144,7 +168,7 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 	else if( iType == MDP_TYPE_EPUB ) {
 		if( !_Epub_Generate_Description_Files(StringUtilHelper::To_ConstString(strDest),
 											StringUtilHelper::To_ConstString(strDestRoot),
-											info, hlInfo, flMd, flAux) ) {
+											info, hlInfo, flInfo, flMd, flAux) ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The description files cannot be generated!")));
 			return false;
 		}
@@ -159,7 +183,7 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 							_Get_Html_Ext_Name(iType),
 							_Get_Html_Options_Template(iType),
 							_Get_EBook_CMD_Template(iType),
-							info, hlInfo) ) {
+							info, hlInfo, flInfo) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The script file cannot be generated!")));
 		return false;
 	}

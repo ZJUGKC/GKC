@@ -28,7 +28,7 @@ inline bool _Generate_Def_File(const ConstStringS& strFile,
 							const ConstStringA& strProjectName,
 							const ConstStringA& strTopic,
 							uint uLCID,
-							FileTreeEnumerator& ftEnum)
+							const FileListInfo& flInfo)
 {
 	CallResult cr;
 	ShareCom<IByteStream> spDest;
@@ -56,13 +56,12 @@ inline bool _Generate_Def_File(const ConstStringS& strFile,
 		StringUtilHelper::Append(strProjectName, strFileList);  //may throw
 		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "-cover.htm"), strFileList);  //may throw
 		StringUtilHelper::Append(get_crlf_string(), strFileList);  //may throw
-		bool bFound = ftEnum.FindFirst();
-		while( bFound ) {
-			StringUtilHelper::MakeString(ftEnum.GetFile(), strContent);  //may throw
+		uintptr uCount = flInfo.GetCount();
+		for( uintptr i = 0; i < uCount; i ++ ) {
+			StringUtilHelper::MakeString(StringUtilHelper::To_ConstString(flInfo.GetAt(i)), strContent);  //may throw
 			StringUtilHelper::Replace(strContent.GetLength() - 3, 3, DECLARE_TEMP_CONST_STRING(ConstStringA, ".htm"), strContent);  //may throw
 			StringUtilHelper::Append(strContent, strFileList);  //may throw
 			StringUtilHelper::Append(get_crlf_string(), strFileList);  //may throw
-			bFound = ftEnum.FindNext();
 		}
 		FsPathHelper::ConvertPathStringToPlatform(strFileList);
 	} //end block
@@ -107,9 +106,8 @@ inline void _Generate_Htm_LI_String(const ConstStringA& strName,
 	else
 		StringUtilHelper::MakeString(ConstStringA(g_chm_content_folder::GetAddress(), g_chm_content_folder::GetCount()), strContent);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$NAME$$"), strName, strContent);  //may throw
-	StringUtilHelper::MakeString(strFile, strTemp);  //may throw
+	_Generate_FileUrl_String(strFile, DECLARE_TEMP_CONST_STRING(ConstStringA, ".htm"), strTemp);  //may throw
 	FsPathHelper::ConvertPathStringToPlatform(strTemp);
-	StringUtilHelper::Replace(strTemp.GetLength() - 3, 3, DECLARE_TEMP_CONST_STRING(ConstStringA, ".htm"), strTemp);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILE$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 }
 
@@ -189,7 +187,7 @@ inline bool _Generate_Index_File(const ConstStringS& strFile,
 //generate description files
 
 inline bool _Chm_Generate_Description_Files(const ConstStringS& strDestRoot,
-											ProjectInfo& info)
+											const ProjectInfo& info, const FileListInfo& flInfo)
 {
 	StringS strFile(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringS strRoot(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -208,7 +206,7 @@ inline bool _Chm_Generate_Description_Files(const ConstStringS& strDestRoot,
 							StringUtilHelper::To_ConstString(info.GetProjectName()),
 							StringUtilHelper::To_ConstString(info.GetTopic()),
 							info.GetLCID(),
-							ftEnum) )  //may throw
+							flInfo) )  //may throw
 		return false;
 
 	//content file

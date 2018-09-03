@@ -2489,6 +2489,14 @@ public:
 		assert( !str.IsBlockNull() );
 		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_char(_ShareArrayHelper::GetInternalPointer(str) + uStart, ch)));
 	}
+	//find last (return value : check null)
+	template <typename Tchar>
+	static typename _StringT<Tchar>::Iterator FindLast(const _StringT<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		assert( !str.IsBlockNull() );
+		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_last_char(_ShareArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
 };
 
 // _StringUtilHelper

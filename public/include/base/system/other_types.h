@@ -1506,6 +1506,14 @@ public:
 		assert( !str.IsNull() );
 		return typename const_string_t<Tchar>::Iterator(ref_ptr<Tchar>(find_string_char(const_array_helper::GetInternalPointer(str) + uStart, ch)));
 	}
+	//find last (return value : check null)
+	template <typename Tchar>
+	static typename const_string_t<Tchar>::Iterator FindLast(const const_string_t<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetCount() );
+		assert( !str.IsNull() );
+		return typename const_string_t<Tchar>::Iterator(ref_ptr<Tchar>(find_string_last_char(const_array_helper::GetInternalPointer(str) + uStart, ch)));
+	}
 };
 
 // calc_sub_string_act_length

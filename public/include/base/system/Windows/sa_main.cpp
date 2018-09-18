@@ -30,6 +30,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 		::DisableThreadLibraryCalls(hModule);
+		//time
+		time_initialize();
+		//main
 		bRet = program_entry_point::SAMain(true);
 		break;
 	case DLL_THREAD_ATTACH:

@@ -227,14 +227,14 @@ inline ConstStringS _Find_ShortString_From_LCID(uint uLCID, uint& uIndex) throw(
 bool _HelpAuthoring_FindCodePageFromCharset(const GKC::ConstStringS& strCharset, GKC::ConstStringS& strCodePage) throw()
 {
 	strCodePage = GKC::_Find_CodePage_From_Charset(strCharset);
-	return strCodePage.GetCount() != 0;
+	return !strCodePage.IsEmpty();
 }
 
 bool _HelpAuthoring_FindLCID(uint uLCID, _HelpLanguageInfo& info) throw()
 {
 	uint uIndex;
 	info.strShortString = GKC::_Find_ShortString_From_LCID(uLCID, uIndex);
-	if( info.strShortString.GetCount() == 0 )
+	if( info.strShortString.IsEmpty() )
 		return false;
 	info.uLCID = uLCID;
 	const GKC::_Charset_CP& cc = (GKC::g_charset_cp_map::GetAddress())[uIndex];

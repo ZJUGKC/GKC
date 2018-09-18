@@ -73,6 +73,8 @@ inline ConstStringA _Generate_MimeType_String(const ConstStringA& str) throw()
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "video/mp4");
 	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".mp3")) )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "audio/mp3");
+	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".js")) )
+		return DECLARE_TEMP_CONST_STRING(ConstStringA, "text/javascript");
 	return strType;
 }
 //generate manifest list
@@ -265,9 +267,9 @@ inline void _Generate_Nav_String(FileTreeEnumerator& ftEnum, StringA& strTree, u
 inline bool _Generate_Ncx_File(const ConstStringS& strFile,
 							const ConstStringA& strProjectName,
 							const ConstStringA& strCoverName,
+							const ConstStringA& strShortString,
 							const ConstStringA& strTopic,
 							const ConstStringA& strAuthor,
-							const ConstStringA& strContributor,
 							const ConstStringA& strIdentifier,
 							FileTreeEnumerator& ftEnum)
 {
@@ -279,12 +281,12 @@ inline bool _Generate_Ncx_File(const ConstStringS& strFile,
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROJECTNAME$$"), strProjectName, strContent);  //may throw
 	//cover name
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVERNAME$$"), strCoverName, strContent);  //may throw
+	//language
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LCSS$$"), strShortString, strContent);  //may throw
 	//topic
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TOPIC$$"), strTopic, strContent);  //may throw
 	//author
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$AUTHOR$$"), strAuthor, strContent);  //may throw
-	//contributor
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$CONTRIBUTOR$$"), strContributor, strContent);  //may throw
 	//identifier
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$IDENTIFIER$$"), strIdentifier, strContent);  //may throw
 	//tree
@@ -343,6 +345,8 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	if( !_Generate_Css_File(StringUtilHelper::To_ConstString(strFile)) )
 		return false;
 
+	StringA strShortString(CS_S2U(hlInfo.strShortString).GetV());  //may throw
+
 	//opf
 	StringUtilHelper::MakeString(strDestRoot, strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
@@ -351,7 +355,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	if( !_Generate_Opf_File(StringUtilHelper::To_ConstString(strFile),
 							StringUtilHelper::To_ConstString(info.GetProjectName()),
 							StringUtilHelper::To_ConstString(info.GetCoverName()),
-							CS_S2U(hlInfo.strShortString).GetC(),
+							StringUtilHelper::To_ConstString(strShortString),
 							StringUtilHelper::To_ConstString(info.GetTopic()),
 							StringUtilHelper::To_ConstString(info.GetCoverImageFile()),
 							StringUtilHelper::To_ConstString(info.GetAuthor()),
@@ -374,9 +378,9 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	if( !_Generate_Ncx_File(StringUtilHelper::To_ConstString(strFile),
 							StringUtilHelper::To_ConstString(info.GetProjectName()),
 							StringUtilHelper::To_ConstString(info.GetCoverName()),
+							StringUtilHelper::To_ConstString(strShortString),
 							StringUtilHelper::To_ConstString(info.GetTopic()),
 							StringUtilHelper::To_ConstString(info.GetAuthor()),
-							StringUtilHelper::To_ConstString(info.GetContributor()),
 							StringUtilHelper::To_ConstString(info.GetIdentifier()),
 							ftEnum) )  //may throw
 		return false;

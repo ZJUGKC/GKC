@@ -71,13 +71,17 @@ public:
 	{
 		return m_strCoverName;
 	}
-	const MultiwayTree<Pair<StringA, StringA>>& GetFileTree() const throw()
-	{
-		return m_tree;
-	}
 	const StringA& GetTopic() const throw()
 	{
 		return m_strTopic;
+	}
+	const StringA& GetIdentifier() const throw()
+	{
+		return m_strIdentifier;
+	}
+	const MultiwayTree<Pair<StringA, StringA>>& GetFileTree() const throw()
+	{
+		return m_tree;
 	}
 	const StringA& GetAuthor() const throw()
 	{
@@ -106,10 +110,6 @@ public:
 	const StringA& GetRights() const throw()
 	{
 		return m_strRights;
-	}
-	const StringA& GetIdentifier() const throw()
-	{
-		return m_strIdentifier;
 	}
 
 	bool GetTitleFile(StringA& strName, StringA& strFile) const throw()
@@ -258,12 +258,15 @@ public:
 					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"cover-name\"")) ) {
 						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strCoverName);
 					}
+					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"topic\"")) ) {
+						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strTopic);
+					}
+					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"identifier\"")) ) {
+						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strIdentifier);
+					}
 					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"tree\"")) ) {
 						m_tree.RemoveAll();
 						iState = STATE_TREE;
-					}
-					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"topic\"")) ) {
-						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strTopic);
 					}
 					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"author\"")) ) {
 						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strAuthor);
@@ -285,9 +288,6 @@ public:
 					}
 					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"rights\"")) ) {
 						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strRights);
-					}
-					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"identifier\"")) ) {
-						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strIdentifier);
 					}
 					else {
 						return false;
@@ -429,9 +429,10 @@ private:
 	ShareArray<StringA>  m_arrCommand;
 	StringA m_strCoverImageFile;
 	StringA m_strCoverName;
+	StringA m_strTopic;
+	StringA m_strIdentifier;
 	MultiwayTree<Pair<StringA, StringA>>  m_tree;
 //optional
-	StringA m_strTopic;
 	StringA m_strAuthor;
 	StringA m_strDescription;
 	StringA m_strDate;
@@ -439,7 +440,6 @@ private:
 	StringA m_strPublisher;
 	StringA m_strSubject;
 	StringA m_strRights;
-	StringA m_strIdentifier;
 
 	MultiwayTree<Pair<StringA, StringA>>::Iterator m_iterTitle,
 		m_iterContent,
@@ -608,7 +608,7 @@ public:
 			return ;
 		auto iter(m_hashList.InsertWithoutFind(str));  //may throw
 		if( m_arrFile.IsBlockNull() )
-			m_arrFile = ShareArrayHelper::MakeShareArray<HashListClass::Iterator>(MemoryHelper::GetCrtMemoryManager());  //may throw
+			m_arrFile = ShareArrayHelper::MakeShareArray<typename HashListClass::Iterator>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		m_arrFile.Add(iter);  //may throw
 	}
 

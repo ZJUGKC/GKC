@@ -581,7 +581,7 @@ public:
 	{
 		_CplErrorBuffer tmp;
 		int ret;
-		if( strMark.GetCount() == 0 )
+		if( strMark.IsEmpty() )
 			ret = value_to_string(GKC::FixedArrayHelper::GetInternalPointer(tmp), _CplErrorBuffer::c_size,
 								_S("Error : (%u:%u)"),
 								GKC::SafeOperators::AddThrow(uRow, (uint)1),

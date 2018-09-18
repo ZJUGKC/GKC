@@ -298,6 +298,49 @@ inline char_h* string_to_value(const char_h* szString, int iBase, uint64& v, boo
 }
 
 //------------------------------------------------------------------------------
+// guid
+//   XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+
+inline bool string_to_guid(const char_a* szString, guid& id) throw()
+{
+	return ::UuidFromStringA((RPC_CSTR)szString, (UUID*)(&id)) == RPC_S_OK;
+}
+inline bool string_to_guid(const char_h* szString, guid& id) throw()
+{
+	return ::UuidFromStringW((RPC_WSTR)szString, (UUID*)(&id)) == RPC_S_OK;
+}
+
+// The length of szBuffer must be not less than 37.
+inline bool guid_to_string(const guid& id, char_a* szBuffer) throw()
+{
+	szBuffer[0] = 0;
+	RPC_CSTR str;
+	if( ::UuidToStringA((const UUID*)(&id), &str) != RPC_S_OK )
+		return false;
+	uintptr uLen = calc_string_length((const char_a*)str);
+	mem_copy(str, uLen * sizeof(char_a), szBuffer);
+	szBuffer[uLen] = 0;
+	RPC_STATUS rs = ::RpcStringFreeA(&str);
+	(void)rs;
+	assert( rs == RPC_S_OK );
+	return true;
+}
+inline bool guid_to_string(const guid& id, char_h* szBuffer) throw()
+{
+	szBuffer[0] = 0;
+	RPC_WSTR str;
+	if( ::UuidToStringW((const UUID*)(&id), &str) != RPC_S_OK )
+		return false;
+	uintptr uLen = calc_string_length((const char_h*)str);
+	mem_copy(str, uLen * sizeof(char_h), szBuffer);
+	szBuffer[uLen] = 0;
+	RPC_STATUS rs = ::RpcStringFreeW(&str);
+	(void)rs;
+	assert( rs == RPC_S_OK );
+	return true;
+}
+
+//------------------------------------------------------------------------------
 // result_to_string
 //   uSize : buffer size in typed characters. It must be large than 0.
 inline void result_to_string(const call_result& cr, char_a* szBuffer, uintptr uSize) throw()

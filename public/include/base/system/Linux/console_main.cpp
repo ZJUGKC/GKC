@@ -49,6 +49,9 @@ int main(int argc, char *argv[], char *envp[])
 	//signal
 	::signal(SIGINT, __sig_int);  //no check
 
+	//time
+	time_initialize();
+
 	//main
 	return program_entry_point::ConsoleMain(args, env);
 }

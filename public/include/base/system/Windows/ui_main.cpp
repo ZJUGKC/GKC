@@ -73,6 +73,10 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 		}
 	} //end block
 
+//global
+	//time
+	time_initialize();
+
 //Show Flag is unuseful
 
 	int ret = program_entry_point::UIMain(args);

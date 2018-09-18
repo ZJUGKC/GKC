@@ -41,7 +41,7 @@ typedef struct _tag_os_guid
 	ushort  w1;
 	ushort  w2;
 //big endian
-	byte   d[8];
+	byte    d[8];
 } _os_guid;
 #pragma pack(pop)
 

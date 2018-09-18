@@ -50,6 +50,10 @@ int main(int argc, char *argv[], char *envp[])
 	//convert
 	_cmdline_to_strings(argc, argv, spArgs, args);  //may throw
 
+//global
+	//time
+	time_initialize();
+
 	//main
 	return program_entry_point::UIMain(args);
 }

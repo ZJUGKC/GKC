@@ -37,6 +37,9 @@ int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
 	//locale
 	set_default_locale();
 
+	//time
+	time_initialize();
+
 	//main
 	return program_entry_point::ConsoleMain(args, env);
 }

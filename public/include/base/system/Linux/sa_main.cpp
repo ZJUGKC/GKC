@@ -20,6 +20,10 @@ This file contains main function for Shared Assembly.
 
 __attribute__((constructor)) void my_init()
 {
+	//time
+	time_initialize();
+
+	//entry point
 	if( !program_entry_point::SAMain(true) ) {
 		throw exception_base(call_result(CR_SABAD));  //throw
 	}

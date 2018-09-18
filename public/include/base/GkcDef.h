@@ -64,6 +64,9 @@ for cross-platform.
 //file management
 #include "system/fm_api.h"
 
+//time
+#include "system/time_api.h"
+
 //------------------------------------------------------------------------------
 //system types which can use exceptions
 
@@ -1071,6 +1074,37 @@ inline void Swap<int>(int& t1, int& t2)
 	assert( &t1 != &t2 );
 	t1 ^= t2 ^= t1 ^= t2;
 }
+
+//------------------------------------------------------------------------------
+// Time
+
+// TimeSpan
+typedef time_span  TimeSpan;
+
+// TimeValue
+typedef time_value  TimeValue;
+
+// TimeDetail
+typedef time_detail  TimeDetail;
+
+// TimeHelper
+
+class TimeHelper
+{
+public:
+	static bool IsLeapYear(uint uYear) throw()
+	{
+		return is_leap_year(uYear);
+	}
+	static void GetTickCount(TimeValue& tv) throw()
+	{
+		get_tick_count(tv);
+	}
+	static void GetCurrentTime(TimeValue& tv) throw()
+	{
+		get_current_time(tv);
+	}
+};
 
 //------------------------------------------------------------------------------
 // File System

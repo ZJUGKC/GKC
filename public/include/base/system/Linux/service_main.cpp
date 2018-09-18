@@ -115,6 +115,11 @@ int main(int argc, char *argv[], char *envp[])
 
 	//arrange to catch the signal
 	::signal(SIGTERM, _sig_term);  //no check
+
+//global
+	//time
+	time_initialize();
+
 //loop
 	report_service_log(GKC_SERVICE_NAME, SERVICE_LOG_SUCCESS, _S("Start Service!"));
 	service_main_loop sml;

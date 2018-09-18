@@ -24,6 +24,8 @@
 #include <ole2.h>
 #include <Shellapi.h>
 
+#pragma comment(lib, "rpcrt4.lib")
+
 //CRT
 
 #include <stdlib.h>

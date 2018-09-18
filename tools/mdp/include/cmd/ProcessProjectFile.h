@@ -57,6 +57,16 @@ inline bool _Check_ProjectFile(const ProjectInfo& info, HelpLanguageInfo& hlInfo
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The cover name cannot be empty!")));
 		return false;
 	}
+	//topic
+	if( info.GetTopic().IsEmpty() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The topic name cannot be empty!")));
+		return false;
+	}
+	//identifier
+	if( info.GetIdentifier().IsEmpty() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The identifier cannot be empty!")));
+		return false;
+	}
 	//tree
 	if( info.GetFileTree().IsEmpty() ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The file tree cannot be empty!")));

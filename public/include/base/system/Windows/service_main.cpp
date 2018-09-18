@@ -104,6 +104,10 @@ VOID WINAPI _ServiceMain(
 		return ;
 	}
 
+//global
+	//time
+	time_initialize();
+
 //loop
 	_os_create_thread_message_queue();  //message queue
 

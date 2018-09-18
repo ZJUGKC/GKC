@@ -45,7 +45,7 @@ inline void* crt_realloc(void* p, uintptr uBytes) throw()
 	return ::realloc(p, uBytes);
 }
 
-inline void    crt_free(void* p) throw()
+inline void  crt_free(void* p) throw()
 {
 	::free(p);
 }
@@ -1415,6 +1415,11 @@ public:
 		baseClass::operator=(static_cast<const baseClass&>(src));
 		return *this;
 	}
+
+	bool IsEmpty() const throw()
+	{
+		return GetCount() == 0;
+	}
 };
 
 #pragma pack(pop)
@@ -1484,37 +1489,6 @@ const DECLARE_CONST_STRING_STRUCT_MEMBER_TYPE(char_type) cls::c_name =  \
 IMPLEMENT_CONST_STRING_ENTRY(char_type, x) ;
 
 // --<.cpp end>--
-
-// const_string_helper
-
-class const_string_helper
-{
-public:
-	//To C-style string
-	template <typename Tchar>
-	static ref_ptr<Tchar> To_C_Style(const const_string_t<Tchar>& str, uintptr uStart = 0) throw()
-	{
-		assert( uStart <= str.GetCount() );
-		return ref_ptr<Tchar>(const_array_helper::GetInternalPointer(str) + uStart);
-	}
-
-	//find (return value : check null)
-	template <typename Tchar>
-	static typename const_string_t<Tchar>::Iterator Find(const const_string_t<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
-	{
-		assert( uStart <= str.GetCount() );
-		assert( !str.IsNull() );
-		return typename const_string_t<Tchar>::Iterator(ref_ptr<Tchar>(find_string_char(const_array_helper::GetInternalPointer(str) + uStart, ch)));
-	}
-	//find last (return value : check null)
-	template <typename Tchar>
-	static typename const_string_t<Tchar>::Iterator FindLast(const const_string_t<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
-	{
-		assert( uStart <= str.GetCount() );
-		assert( !str.IsNull() );
-		return typename const_string_t<Tchar>::Iterator(ref_ptr<Tchar>(find_string_last_char(const_array_helper::GetInternalPointer(str) + uStart, ch)));
-	}
-};
 
 // calc_sub_string_act_length
 //   for substring and deletion

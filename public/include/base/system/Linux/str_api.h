@@ -557,6 +557,22 @@ inline char_l* string_to_value(const char_l* szString, int iBase, uint64& v, boo
 }
 
 //------------------------------------------------------------------------------
+// guid
+//   XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+
+inline bool string_to_guid(const char_a* szString, guid& id) throw()
+{
+	return ::uuid_parse(szString, id) == 0;  // -1
+}
+
+// The length of szBuffer must be not less than 37.
+inline bool guid_to_string(const guid& id, char_a* szBuffer) throw()
+{
+	::uuid_unparse(id, szBuffer);
+	return true;
+}
+
+//------------------------------------------------------------------------------
 // result_to_string
 //   uSize : buffer size in typed characters. It must be large than 0.
 inline void result_to_string(const call_result& cr, char_a* szBuffer, uintptr uSize) throw()

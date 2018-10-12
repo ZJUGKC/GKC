@@ -55,6 +55,9 @@ for cross-platform.
 //other types
 #include "system/other_types.h"
 
+//numeric types
+#include "system/numeric_types.h"
+
 //string APIs
 #include "system/str_api.h"
 
@@ -1103,6 +1106,22 @@ public:
 	static void GetCurrentTime(TimeValue& tv) throw()
 	{
 		get_current_time(tv);
+	}
+	static bool MakeLocalTime(int iYear, int iMonth, int iDay,
+							int iHour, int iMinute, int iSecond, int iNanoseconds,
+							TimeValue& tv) throw()
+	{
+		return make_local_time(iYear, iMonth, iDay,
+							iHour, iMinute, iSecond, iNanoseconds,
+							tv);
+	}
+	static bool ToGmtDetail(const TimeValue& tv, TimeDetail& td) throw()
+	{
+		return time_to_gmt_detail(tv, td);
+	}
+	static bool ToLocalDetail(const TimeValue& tv, TimeDetail& td) throw()
+	{
+		return time_to_local_detail(tv, td);
 	}
 };
 

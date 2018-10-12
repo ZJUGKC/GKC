@@ -40,11 +40,13 @@ inline bool _Generate_Container_File(const ConstStringS& strFile) throw()
 }
 
 //generate css file
-inline bool _Generate_Css_File(const ConstStringS& strFile) throw()
+inline bool _Generate_Css_File(const ConstStringS& strFile)
 {
-	return _Generate_Fix_Content_File(strFile,
-				ConstStringA(g_epub_css_body::GetAddress(), g_epub_css_body::GetCount())
-			);
+	//content
+	StringA strContent(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	StringUtilHelper::MakeString(ConstStringA(g_epub_css_body::GetAddress(), g_epub_css_body::GetCount()), strContent);  //may throw
+	//save
+	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
 
 //generate file-id string
@@ -342,7 +344,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("stylesheet.css")), strFile);  //may throw
 	FsPathHelper::ConvertPathStringToPlatform(strFile);
-	if( !_Generate_Css_File(StringUtilHelper::To_ConstString(strFile)) )
+	if( !_Generate_Css_File(StringUtilHelper::To_ConstString(strFile)) )  //may throw
 		return false;
 
 	StringA strShortString(CS_S2U(hlInfo.strShortString).GetV());  //may throw

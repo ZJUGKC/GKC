@@ -84,12 +84,6 @@ namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
-// Time
-
-// SystemTime
-typedef system_time  SystemTime;
-
-//------------------------------------------------------------------------------
 // Pointers
 
 // RefPtr<T>
@@ -590,18 +584,6 @@ public:
 		return T( n & ~(T(uAlign) - 1) );
 	}
 };
-
-//------------------------------------------------------------------------------
-// File
-
-// file open types
-typedef file_open_types  FileOpenTypes;
-
-// file creation types (can combine with <or> operation)
-typedef file_creation_types  FileCreationTypes;
-
-// StorageStatus
-typedef storage_status  StorageStatus;
 
 //------------------------------------------------------------------------------
 // Constant String
@@ -1124,6 +1106,18 @@ public:
 		return time_to_local_detail(tv, td);
 	}
 };
+
+//------------------------------------------------------------------------------
+// File
+
+// file open types
+typedef file_open_types  FileOpenTypes;
+
+// file creation types (can combine with <or> operation)
+typedef file_creation_types  FileCreationTypes;
+
+// StorageStatus
+typedef storage_status  StorageStatus;
 
 //------------------------------------------------------------------------------
 // File System

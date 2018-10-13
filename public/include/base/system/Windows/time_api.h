@@ -38,12 +38,12 @@ inline void get_tick_count(time_value& tv) throw()
 	tv.set_Nanoseconds(((int64)((double)TIME_SECOND_FULL_NS / (double)(_os_g_time_liFreq.QuadPart) * (double)(liCount.QuadPart % _os_g_time_liFreq.QuadPart))) % TIME_SECOND_FULL_NS);
 }
 
-#define TIME_DELTA_1601_1970  (11644473600LL)
+#define _TIME_DELTA_1601_1970  (11644473600LL)
 
 inline void _os_timevalue_to_filetime(const time_value& tv, FILETIME& ft) throw()
 {
 	LARGE_INTEGER liValue;
-	liValue.QuadPart = (tv.get_Seconds() + TIME_DELTA_1601_1970) * TIME_SECOND_100_NS
+	liValue.QuadPart = (tv.get_Seconds() + _TIME_DELTA_1601_1970) * TIME_SECOND_100_NS
 						+ tv.get_Nanoseconds() / 100;
 	ft.dwLowDateTime  = liValue.LowPart;
 	ft.dwHighDateTime = liValue.HighPart;
@@ -53,7 +53,7 @@ inline void _os_filetime_to_timevalue(const FILETIME& ft, time_value& tv) throw(
 	LARGE_INTEGER liValue;
 	liValue.LowPart  = ft.dwLowDateTime;
 	liValue.HighPart = ft.dwHighDateTime;
-	tv.Initialize(liValue.QuadPart / TIME_SECOND_100_NS - TIME_DELTA_1601_1970,
+	tv.Initialize(liValue.QuadPart / TIME_SECOND_100_NS - _TIME_DELTA_1601_1970,
 				(liValue.QuadPart % TIME_SECOND_100_NS) * 100);
 }
 

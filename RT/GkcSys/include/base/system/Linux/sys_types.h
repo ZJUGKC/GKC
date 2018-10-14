@@ -114,32 +114,12 @@ public:
 		//size
 		status.iSize = st.st_size;  //64 bits
 
-		struct tm tmz;
-		struct tm* ptm;
 		//access
-		ptm = ::gmtime_r(&st.st_atime, &tmz);
-		if( ptm == NULL ) {
-			res = CR_FAIL;
-			return call_result(res);
-		}
-		_os_tm_to_system_time(&tmz, status.tmAccess);
-		status.tmAccess.uMilliseconds = (ushort)(st.st_atim.tv_nsec / 1000000);
+		_os_timespec_to_timevalue(st.st_atim, status.tmAccess);
 		//modify
-		ptm = ::gmtime_r(&st.st_mtime, &tmz);
-		if( ptm == NULL ) {
-			res = CR_FAIL;
-			return call_result(res);
-		}
-		_os_tm_to_system_time(&tmz, status.tmModify);
-		status.tmModify.uMilliseconds = (ushort)(st.st_mtim.tv_nsec / 1000000);
+		_os_timespec_to_timevalue(st.st_mtim, status.tmModify);
 		//create
-		ptm = ::gmtime_r(&st.st_ctime, &tmz);
-		if( ptm == NULL ) {
-			res = CR_FAIL;
-			return call_result(res);
-		}
-		_os_tm_to_system_time(&tmz, status.tmCreate);
-		status.tmCreate.uMilliseconds = (ushort)(st.st_ctim.tv_nsec / 1000000);
+		_os_timespec_to_timevalue(st.st_ctim, status.tmCreate);
 
 		return call_result(res);
 	}

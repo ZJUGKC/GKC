@@ -48,7 +48,7 @@ inline void get_current_time(time_value& tv) throw()
 }
 
 inline bool make_local_time(int iYear, int iMonth, int iDay,
-							int iHour, int iMinute, int iSecond, int iNanoseconds,
+							int iHour, int iMinute, int iSecond, int64 iNanoseconds,
 							time_value& tv) throw()
 {
 	assert( iNanoseconds >= 0 && iNanoseconds < TIME_SECOND_FULL_NS );

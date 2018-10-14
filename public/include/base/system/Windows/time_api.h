@@ -40,21 +40,34 @@ inline void get_tick_count(time_value& tv) throw()
 
 #define _TIME_DELTA_1601_1970  (11644473600LL)
 
-inline void _os_timevalue_to_filetime(const time_value& tv, FILETIME& ft) throw()
-{
-	LARGE_INTEGER liValue;
-	liValue.QuadPart = (tv.get_Seconds() + _TIME_DELTA_1601_1970) * TIME_SECOND_100_NS
-						+ tv.get_Nanoseconds() / 100;
-	ft.dwLowDateTime  = liValue.LowPart;
-	ft.dwHighDateTime = liValue.HighPart;
-}
-inline void _os_filetime_to_timevalue(const FILETIME& ft, time_value& tv) throw()
+//FILETIME <-> 100ns
+inline int64 _os_filetime_to_100ns(const FILETIME& ft) throw()
 {
 	LARGE_INTEGER liValue;
 	liValue.LowPart  = ft.dwLowDateTime;
 	liValue.HighPart = ft.dwHighDateTime;
-	tv.Initialize(liValue.QuadPart / TIME_SECOND_100_NS - _TIME_DELTA_1601_1970,
-				(liValue.QuadPart % TIME_SECOND_100_NS) * 100);
+	return liValue.QuadPart;
+}
+inline void _os_100ns_to_filetime(int64 v, FILETIME& ft) throw()
+{
+	LARGE_INTEGER liValue;
+	liValue.QuadPart  = v;
+	ft.dwLowDateTime  = liValue.LowPart;
+	ft.dwHighDateTime = liValue.HighPart;
+}
+
+//FILETIME <-> time_value
+inline void _os_timevalue_to_filetime(const time_value& tv, FILETIME& ft) throw()
+{
+	int64 v = (tv.get_Seconds() + _TIME_DELTA_1601_1970) * TIME_SECOND_100_NS
+				+ tv.get_Nanoseconds() / 100;
+	_os_100ns_to_filetime(v, ft);
+}
+inline void _os_filetime_to_timevalue(const FILETIME& ft, time_value& tv) throw()
+{
+	int64 v = _os_filetime_to_100ns(ft);
+	tv.Initialize(v / TIME_SECOND_100_NS - _TIME_DELTA_1601_1970,
+				(v % TIME_SECOND_100_NS) * 100);
 }
 
 inline bool _os_is_valid_filetime(const FILETIME& ft) throw()
@@ -67,6 +80,12 @@ inline bool _os_is_valid_filetime(const FILETIME& ft) throw()
 		return false;  //FALSE, ::GetLastError()
 	return true;
 }
+inline void _os_fill_tm_from_systemtime(const SYSTEMTIME& st, struct tm& tms) throw()
+{
+	_fill_tm_from_detail((int)(st.wYear), (int)(st.wMonth), (int)(st.wDay),
+						(int)(st.wHour), (int)(st.wMinute), (int)(st.wSecond),
+						tms);
+}
 
 inline void get_current_time(time_value& tv) throw()
 {
@@ -76,7 +95,7 @@ inline void get_current_time(time_value& tv) throw()
 }
 
 inline bool make_local_time(int iYear, int iMonth, int iDay,
-							int iHour, int iMinute, int iSecond, int iNanoseconds,
+							int iHour, int iMinute, int iSecond, int64 iNanoseconds,
 							time_value& tv) throw()
 {
 	assert( iSecond >= 0 && iSecond <= 59 );
@@ -92,6 +111,14 @@ inline bool make_local_time(int iYear, int iMonth, int iDay,
 
 	tv.Initialize(tmu, iNanoseconds);
 	return true;
+}
+
+inline bool _os_make_local_time_from_systemtime(const SYSTEMTIME& st, time_value& tv) throw()
+{
+	return make_local_time((int)(st.wYear), (int)(st.wMonth), (int)(st.wDay),
+							(int)(st.wHour), (int)(st.wMinute), (int)(st.wSecond),
+							(int64)(st.wMilliseconds) * 1000000LL,
+							tv);
 }
 
 inline bool time_to_gmt_detail(const time_value& tv, time_detail& td) throw()

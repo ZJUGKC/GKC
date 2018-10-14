@@ -46,10 +46,10 @@ END_ENUM()
 
 struct storage_status
 {
-	int64        iSize;     //storage size in bytes (such as file, memory)
-	system_time  tmAccess;  //time of last access
-	system_time  tmModify;  //time of last modification
-	system_time  tmCreate;  //time of creation
+	int64       iSize;     //storage size in bytes (such as file, memory)
+	time_value  tmAccess;  //time of last access
+	time_value  tmModify;  //time of last modification
+	time_value  tmCreate;  //time of creation
 };
 
 #pragma pack(pop)

@@ -189,17 +189,17 @@ public:
 	{
 		return const_string_s(m_fs.GetFileName(), m_uLength);
 	}
-	void GetCreationTime(system_time& tm) const throw()
+	void GetCreationTime(time_value& tv) const throw()
 	{
-		timespec_to_system_time(&(m_fs.GetCreationTime()), tm);
+		_os_timespec_to_timevalue(m_fs.GetCreationTime(), tv);
 	}
-	void GetAccessTime(system_time& tm) const throw()
+	void GetAccessTime(time_value& tv) const throw()
 	{
-		timespec_to_system_time(&(m_fs.GetAccessTime()), tm);
+		_os_timespec_to_timevalue(m_fs.GetAccessTime(), tv);
 	}
-	void GetModifyTime(system_time& tm) const throw()
+	void GetModifyTime(time_value& tv) const throw()
 	{
-		timespec_to_system_time(&(m_fs.GetModifyTime()), tm);
+		_os_timespec_to_timevalue(m_fs.GetModifyTime(), tv);
 	}
 	//It must be called after checking whether the file is a directory.
 	bool IsDots() const throw()
@@ -209,18 +209,6 @@ public:
 	bool IsDirectory() const throw()
 	{
 		return m_fs.IsDirectory();
-	}
-
-private:
-	static void timespec_to_system_time(const struct timespec* pTS, system_time& tm) throw()
-	{
-		struct tm tmz;
-		struct tm* ptm;
-		ptm = ::gmtime_r(&(pTS->tv_sec), &tmz);
-		(void)ptm;
-		assert( ptm != NULL );
-		_os_tm_to_system_time(&tmz, tm);
-		tm.uMilliseconds = (ushort)(pTS->tv_nsec / 1000000);
 	}
 
 private:

@@ -177,30 +177,17 @@ public:
 		}
 		status.iSize = li.QuadPart;  //64 bits
 
-		FILETIME   ftA, ftM, ftC;
-		SYSTEMTIME st;
+		FILETIME ftA, ftM, ftC;
 		if( !::GetFileTime((HANDLE)(hd.GetHandle()), &ftC, &ftA, &ftM) ) {
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
 			return call_result((int)hRes);
 		}
 		//access
-		if( !::FileTimeToSystemTime(&ftA, &st) ) {
-			hRes = HRESULT_FROM_WIN32(::GetLastError());
-			return call_result((int)hRes);
-		}
-		_os_cvt_system_time(&st, status.tmAccess);
+		_os_filetime_to_timevalue(ftA, status.tmAccess);
 		//modify
-		if( !::FileTimeToSystemTime(&ftM, &st) ) {
-			hRes = HRESULT_FROM_WIN32(::GetLastError());
-			return call_result((int)hRes);
-		}
-		_os_cvt_system_time(&st, status.tmModify);
+		_os_filetime_to_timevalue(ftM, status.tmModify);
 		//create
-		if( !::FileTimeToSystemTime(&ftC, &st) ) {
-			hRes = HRESULT_FROM_WIN32(::GetLastError());
-			return call_result((int)hRes);
-		}
-		_os_cvt_system_time(&st, status.tmCreate);
+		_os_filetime_to_timevalue(ftC, status.tmCreate);
 
 		return call_result((int)hRes);
 	}

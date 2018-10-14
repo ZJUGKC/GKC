@@ -1090,7 +1090,7 @@ public:
 		get_current_time(tv);
 	}
 	static bool MakeLocalTime(int iYear, int iMonth, int iDay,
-							int iHour, int iMinute, int iSecond, int iNanoseconds,
+							int iHour, int iMinute, int iSecond, int64 iNanoseconds,
 							TimeValue& tv) throw()
 	{
 		return make_local_time(iYear, iMonth, iDay,

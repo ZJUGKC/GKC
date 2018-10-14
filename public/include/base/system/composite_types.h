@@ -87,22 +87,6 @@ inline bool is_derived_from() throw()
 //------------------------------------------------------------------------------
 //classes
 
-// -----Time-----
-
-// system_time
-
-struct system_time
-{
-	ushort uYear;
-	ushort uMonth;         //1--12
-	ushort uDayOfWeek;     //0--6, since Sunday
-	ushort uDay;           //1--31
-	ushort uHour;          //0--23
-	ushort uMinute;        //0--59
-	ushort uSecond;        //0--59/60
-	ushort uMilliseconds;  //0--999
-};
-
 // -----Pointers-----
 
 // ref_ptr<T>

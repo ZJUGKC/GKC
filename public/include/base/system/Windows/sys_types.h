@@ -180,17 +180,17 @@ public:
 	{
 		return const_string_s(m_ff.GetFileName(), m_uLength);
 	}
-	void GetCreationTime(system_time& tm) const throw()
+	void GetCreationTime(time_value& tv) const throw()
 	{
-		file_time_to_system_time(&(m_ff.GetCreationTime()), tm);
+		_os_filetime_to_timevalue(m_ff.GetCreationTime(), tv);
 	}
-	void GetAccessTime(system_time& tm) const throw()
+	void GetAccessTime(time_value& tv) const throw()
 	{
-		file_time_to_system_time(&(m_ff.GetLastAccessTime()), tm);
+		_os_filetime_to_timevalue(m_ff.GetLastAccessTime(), tv);
 	}
-	void GetModifyTime(system_time& tm) const throw()
+	void GetModifyTime(time_value& tv) const throw()
 	{
-		file_time_to_system_time(&(m_ff.GetLastWriteTime()), tm);
+		_os_filetime_to_timevalue(m_ff.GetLastWriteTime(), tv);
 	}
 	//It must be called after checking whether the file is a directory.
 	bool IsDots() const throw()
@@ -200,15 +200,6 @@ public:
 	bool IsDirectory() const throw()
 	{
 		return m_ff.IsDirectory();
-	}
-
-private:
-	static void file_time_to_system_time(const FILETIME* pFT, system_time& tm) throw()
-	{
-		SYSTEMTIME st;
-		BOOL bRet = ::FileTimeToSystemTime(pFT, &st);
-		assert( bRet );
-		_os_cvt_system_time(&st, tm);
 	}
 
 private:

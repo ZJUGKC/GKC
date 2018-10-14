@@ -212,41 +212,6 @@ private:
 };
 
 //------------------------------------------------------------------------------
-// Time
-
-// _os_cvt_system_time
-
-inline void _os_cvt_system_time(SYSTEMTIME* pST, system_time& tm) throw()
-{
-	tm.uYear         = pST->wYear;
-	tm.uMonth        = pST->wMonth;
-	tm.uDayOfWeek    = pST->wDayOfWeek;
-	tm.uDay          = pST->wDay;
-	tm.uHour         = pST->wHour;
-	tm.uMinute       = pST->wMinute;
-	tm.uSecond       = pST->wSecond;
-	tm.uMilliseconds = pST->wMilliseconds;
-}
-
-// _os_filetime_to_ns_value
-//   unit: 100ns
-inline void _os_filetime_to_ns_value(FILETIME* pFT, uint64& v) throw()
-{
-	ULARGE_INTEGER uli;
-	uli.LowPart  = pFT->dwLowDateTime;
-	uli.HighPart = pFT->dwHighDateTime;
-	v = uli.QuadPart;
-}
-// _os_ns_value_to_filetime
-inline void _os_ns_value_to_filetime(uint64 v, FILETIME& ft) throw()
-{
-	ULARGE_INTEGER uli;
-	uli.QuadPart = v;
-	ft.dwLowDateTime  = uli.LowPart;
-	ft.dwHighDateTime = uli.HighPart;
-}
-
-//------------------------------------------------------------------------------
 // Memory
 
 // _os_auto_local_mem

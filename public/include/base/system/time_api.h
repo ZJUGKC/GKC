@@ -291,7 +291,7 @@ typedef struct _tag_time_detail
 	int iYear;           // year
 	int iMonth;          // [1 --- 12]
 	int iDay;            // [1 --- 31]
-	int iDayOfWeek;      // [0 --- 6]
+	int iDayOfWeek;      // [0 --- 6] since Sunday
 	int iDayOfYear;      // [0 --- 365]
 	int iHour;           // [0 --- 23]
 	int iMinute;         // [0 --- 59]

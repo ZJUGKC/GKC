@@ -246,7 +246,7 @@ Install GKC in the computers on client end or server end for production and runn
 	Run the following command as administrator:
 
 	```
-	cscript setup-gkc.vbs <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]
+	cscript setup-gkc.vbs <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory] [-si <user:pwd>]
 	```
 
 * Linux
@@ -262,6 +262,8 @@ The options are listed as follows:
 | -c      | This software is installed as client on client end |
 | -d      | This software is installed as development on production machine |
 | -s      | This software is installed as server on server end |
+
+The user which must be an administrator is used for connecting UWS.
 
 The directories are listed as follows:
 

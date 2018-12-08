@@ -10,4 +10,5 @@ rem   yxxinyuan@zju.edu.cn
 rem
 rem delete service
 sc stop GkcHostSvc
+ping -n 3 127.0.0.1 > nul
 sc delete GkcHostSvc

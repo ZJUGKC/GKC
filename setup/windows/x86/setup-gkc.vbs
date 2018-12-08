@@ -21,8 +21,8 @@ strEnvUws = "GKC_UNIFIED_WORKSPACE"
 'command parameters
 Dim iCount
 iCount = WScript.Arguments.Count
-If iCount < 1 Or iCount > 7 Then
-	WScript.Echo "Usage: cscript setup-gkc.vbs <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]"
+If iCount < 1 Or iCount > 9 Then
+	WScript.Echo "Usage: cscript setup-gkc.vbs <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory] [-si <user:pwd>]"
 	WScript.Quit(1)
 End If
 
@@ -39,6 +39,18 @@ Else
 	WScript.Echo "Command error: unknown option!"
 	WScript.Quit(1)
 End If
+
+If iSetupMode <> 2 Then
+	If iCount > 7 Then
+		WScript.Echo "Command error: user and password should not be specified on client or development server!"
+		WScript.Quit(1)
+	End If
+End If
+
+Dim iPos
+Dim strUser, strPwd
+strUser = ""
+strPwd  = ""
 
 Dim strTargetDir, strLwsDir, strUwsDir
 strTargetDir = "C:\program files"
@@ -78,6 +90,32 @@ Do While iIndex < iCount
 			WScript.Quit(1)
 		End If
 		strUwsDir = WScript.Arguments(iIndex + 1)
+	ElseIf strTemp = "-si" Then
+		If iSetupMode <> 2 Then
+			WScript.Echo "Command error: user and password should not be specified on client or development server!"
+			WScript.Quit(1)
+		End If
+		If iIndex + 1 >= iCount Then
+			WScript.Echo "Command error: user and password should be specified!"
+			WScript.Quit(1)
+		End If
+		strUser = WScript.Arguments(iIndex + 1)
+		iPos = InStr(1, strUser, ":", 1)
+		If iPos = 0 Then
+			WScript.Echo "Command error: user or password should not be empty!"
+			WScript.Quit(1)
+		End If
+		strPwd = Right(strUser, Len(strUser) - iPos)
+		If Len(strPwd) = 0 Then
+			WScript.Echo "Command error: password should not be empty!"
+			WScript.Quit(1)
+		End If
+		strUser = Left(strUser, iPos - 1)
+		If Len(strUser) = 0 Then
+			WScript.Echo "Command error: user should not be empty!"
+			WScript.Quit(1)
+		End If
+		strUser = ".\" & strUser
 	Else
 		WScript.Echo "Command error: unknown option for directory!"
 		WScript.Quit(1)
@@ -183,7 +221,7 @@ If iSetupMode = 1 Then
 	strTemp = strTemp & ";" & strDest & "\" & "development" & "\" & "tools"
 End If
 
-Dim strPath, iPos
+Dim strPath
 strPath = CStr(objEnv("PATH"))
 iLen = Len(strPath)
 iPos = InStr(1, strPath, strDest, 1)
@@ -203,6 +241,9 @@ End If
 If iSetupMode = 2 Then
 	strTemp = Chr(34) & strDest & "\" & "core" & "\" & "services" & "\" & "ghs-setup.bat" & Chr(34) _
 			& " " & Chr(34) & strDest & "\" & "core" & "\" & "services" & "\" & "GkcHostSvc.exe" & Chr(34)
+	If Len(strUser) <> 0 Then
+		strTemp = strTemp & " " & Chr(34) & strUser & Chr(34) & " " & Chr(34) & strPwd & Chr(34)
+	End If
 	objWsh.Run strTemp, 0, true
 	Wscript.Sleep 500
 End If

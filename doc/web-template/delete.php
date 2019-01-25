@@ -5,6 +5,7 @@ session_start();
 $name = $_POST['user'];
 
 //flags
+$session_flag = true;
 $timeout_flag = false;
 
 $conn_flag = true;
@@ -12,9 +13,14 @@ $query_flag = true;
 $user_flag = true;
 $delete_flag = true;
 
-//check timeout
-if( $_SESSION['time'] < time() - 3600 ) {
+//check valid
+if( empty($_SESSION['userid']) ) {
+	$session_flag = false;
+}
+elseif( $_SESSION['time'] < time() - 3600 ) {
+	//timeout
 	$timeout_flag = true;
+	$_SESSION['userid'] = '';
 }
 else {
 	$_SESSION['time'] = time();  //update
@@ -70,7 +76,9 @@ else {
 <head>
 <meta charset="UTF-8">
 <title>
-<?php if( $timeout_flag ) : ?>
+<?php if( !$session_flag ) : ?>
+$$SESSION_INVALID_TITLE$$
+<?php elseif( $timeout_flag ) : ?>
 $$TIMEOUT_TITLE$$
 <?php elseif( $conn_flag == false ) : ?>
 $$CONNECT_FAILED_TITLE$$
@@ -88,7 +96,10 @@ $$TITLE$$
 
 <body>
 
-<?php if( $timeout_flag ) : ?>
+<?php if( !$session_flag ) : ?>
+<h1>The current session is invalid!</h1>
+<p><a href="index.htm">Return to log in page!</a></p>
+<?php elseif( $timeout_flag ) : ?>
 <h1>The current session expired!</h1>
 <p><a href="index.htm">Return to log in page!</a></p>
 <?php elseif( $conn_flag == false ) : ?>

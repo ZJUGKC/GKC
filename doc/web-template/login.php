@@ -1,6 +1,7 @@
 <?php
 session_start();
 $_SESSION['time'] = time();
+$_SESSION['userid'] = '';
 session_regenerate_id();
 
 //variables
@@ -38,6 +39,7 @@ else {
 					if( $name == '$$ADMIN-NAME$$' ) {
 						$admin_flag = true;
 					}
+					$_SESSION['userid'] = $name;
 				}
 				else {
 					$pwd_flag = false;

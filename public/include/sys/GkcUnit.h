@@ -284,14 +284,14 @@ public:
 			ConsoleHelper::WriteLine(buffer);
 		} //end block
 
-		return 0;
+		return uFailed != 0 ? 1 : 0;
 	}
 };
 
 // for main function
 #define UNIT_TEST_MAIN_PROCESS(args)  \
 	_UnitTestMessageBuffer g_buffer;  \
-	_UnitTestMainHelper::MainProcess(args, g_buffer)
+	return _UnitTestMainHelper::MainProcess(args, g_buffer);
 
 // in cpp file
 

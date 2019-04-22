@@ -35,6 +35,7 @@ else {
 			else {
 				//row
 				$arr = pg_fetch_array($result, 0);
+				//if( trim($arr['$$FIELD-PWD-LOWERCASE$$']) == $pwd ) {
 				if( $arr['$$FIELD-PWD-LOWERCASE$$'] == $pwd ) {
 					if( $name == '$$ADMIN-NAME$$' ) {
 						$admin_flag = true;

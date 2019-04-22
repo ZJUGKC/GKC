@@ -45,9 +45,7 @@ public:
 		}
 
 		//unit test
-		UNIT_TEST_MAIN_PROCESS(args);
-
-		return 0;
+		UNIT_TEST_MAIN_PROCESS(args)
 	}
 };
 

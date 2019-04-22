@@ -246,7 +246,7 @@ public:
 				cr = GetCharH(chRead);
 				if( cr.IsFailed() )
 					return cr;
-				ch = (CharF)chRead;
+				ch = (CharF)(ushort)chRead;
 			} //end block
 			break;
 		case _BOMTypes::UTF32LE:
@@ -256,7 +256,7 @@ public:
 				cr = GetCharL(chRead);
 				if( cr.IsFailed() )
 					return cr;
-				ch = (CharF)chRead;
+				ch = (CharF)(uint)chRead;
 			} //end block
 			break;
 		default:
@@ -265,7 +265,7 @@ public:
 				cr = GetCharA(chRead);
 				if( cr.IsFailed() )
 					return cr;
-				ch = (CharF)chRead;
+				ch = (CharF)(byte)chRead;
 			} //end block
 			break;
 		}

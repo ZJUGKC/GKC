@@ -119,13 +119,13 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x86 machine:
 
 		```
-		cmake ../GKC -G "Visual Studio 15"
+		cmake ../GKC -G "Visual Studio 16" -A Win32
 		```
 
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 15 Win64"
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 16" -A x64
 		```
 
 1. make:
@@ -177,13 +177,13 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x86 machine:
 
 		```
-		cmake ../GKC -G "Visual Studio 15"
+		cmake ../GKC -G "Visual Studio 16" -A Win32
 		```
 
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 15 Win64"
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 16" -A x64
 		```
 
 1. make:

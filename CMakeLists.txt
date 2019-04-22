@@ -9,7 +9,7 @@
 #   yxxinyuan@zju.edu.cn
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 INCLUDE("common.cmk")
 
 PROJECT(GKC)

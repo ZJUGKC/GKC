@@ -85,7 +85,7 @@ The manual for running Fossil as a SCGI program can be found
 in [this page](http://www.fossil-scm.org/index.html/doc/trunk/www/server.wiki "CGI")
 and in [that page](http://www.fossil-scm.org/index.html/doc/trunk/www/scgi.wiki "SCGI").
 
-For example, add the following commands to the file `/etc/fossil.local` before `exit 0`:
+For example, add the following commands to the file `/etc/backend-rc.local` before `exit 0`:
 
 ```
 #!/bin/sh -e
@@ -103,17 +103,17 @@ location ~ ^/fossil-repo/ {
 }
 ```
 
-Create a file `/etc/systemd/system/fossil.service` (using `\n`):
+Create a file `/etc/systemd/system/backend-rc.service` (using `\n`):
 
 ```
 [Unit]
-Description=/etc/fossil.local Compatibility
-ConditionPathExists=/etc/fossil.local
+Description=/etc/backend-rc.local Compatibility
+ConditionPathExists=/etc/backend-rc.local
 After=network.target
 
 [Service]
 Type=forking
-ExecStart=/etc/fossil.local start
+ExecStart=/etc/backend-rc.local start
 TimeoutSec=0
 StandardOutput=tty
 RemainAfterExit=yes
@@ -121,13 +121,13 @@ SysVStartPriority=99
 
 [Install]
 WantedBy=multi-user.target
-#Alias=fossil-local.service
+#Alias=backend-rc-local.service
 ```
 
 Enable the service:
 
 ```
-sudo systemctl enable fossil.service
+sudo systemctl enable backend-rc.service
 ```
 
 ## Client
@@ -154,6 +154,7 @@ fossil clone [-A <admin-username>] http(s)://<user>:<password>@<host>/fossil-rep
 fossil setting autosync off -R <repo-name>.fossil
 fossil setting crnl-glob *, -R <repo-name>.fossil
 fossil setting encoding-glob *, -R <repo-name>.fossil
+fossil setting binary-glob *, -R <repo-name>.fossil
 ```
 
 Open a repository:
@@ -210,13 +211,27 @@ Show the difference between the current version of files
 and that same file as it was checked out:
 
 ```
-fossil diff [<FILE1>] [<FILE2> ...]
+fossil diff [--tk] [<FILE1>] [<FILE2> ...]
 ```
+
+The option `--tk` means a Tcl/Tk GUI for display. ActiveTcl can be used under Windows.
 
 Commit the changes to a new version:
 
 ```
-fossil commit -m <comment-message>
+fossil commit -m <comment-message> [<FILE> ...]
+```
+
+List the timeline of current repository:
+
+```
+fossil timeline [-n <number>] (e.g., number =0, >0, <0)
+```
+
+Show the information about the object.
+
+```
+fossil info [<VERSION>]
 ```
 
 Push the local changes to remote repository:
@@ -246,7 +261,7 @@ fossil undo
 Revert the local files:
 
 ```
-fossil revert [-r <REVISION>]
+fossil revert [-r <REVISION>] [<FILE> ...]
 ```
 
 These are branch commands:
@@ -255,13 +270,13 @@ These are branch commands:
 fossil branch list
 fossil branch current
 fossil branch info <branch-name>
-fossil branch new <branch-name> <BASIS>
+fossil branch new <branch-name> <BASIS> [--private]
 ```
 
 Check out any version:
 
 ```
-fossil checkout [<VERSION>] [--force]
+fossil checkout [<VERSION> | --latest] [--force]
 ```
 
 Merge the version to the current checkout:
@@ -273,7 +288,8 @@ fossil merge [<VERSION>]
 These are tag commands:
 
 ```
-fossil tag add <TAG-NAME> <CHECK-IN> [<value>] ([tag:release-X.X][], [closed][], ...)
+fossil tag add <TAG-NAME> <CHECK-IN> [<value>] (e.g., tag-value pairs: [tag:release-X.X][], ...)
+fossil tag add --raw closed <CHECK-IN>
 fossil tag list [<CHECK-IN>]
 ```
 

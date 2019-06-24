@@ -71,6 +71,8 @@ inline ConstStringA _Generate_MimeType_String(const ConstStringA& str) throw()
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "image/png");
 	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".gif")) )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "image/gif");
+	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".svg")) )
+		return DECLARE_TEMP_CONST_STRING(ConstStringA, "image/svg+xml");
 	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".mp4")) )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "video/mp4");
 	if( ConstStringCompareTrait<ConstStringA>::IsEQ(strExt, DECLARE_TEMP_CONST_STRING(ConstStringA, ".mp3")) )

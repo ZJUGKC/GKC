@@ -234,16 +234,18 @@ public:
 		auto iter(m_tree.GetAtPosition(AstTree::Position(posHead.GetAddr())));
 		return _CplMetaDataPosition(m_tree.ReverseLink(iter).GetPosition().GetAddr());
 	}
-	virtual _CplMetaDataPosition ResetAst() throw()
+	virtual _CplMetaDataPosition GetAstStart() throw()
 	{
-		_CplMetaDataPosition pos(m_tree.GetStart());
+		return _CplMetaDataPosition(m_tree.GetStart());
+	}
+	virtual void ResetAst() throw()
+	{
 		m_tree.Reset();
-		return pos;
 	}
 	virtual _CplMetaDataPosition GetAstRoot(const _CplMetaDataPosition& posStart) throw()
 	{
-		m_tree.SetStart(posStart.GetAddr());
-		return _CplMetaDataPosition(m_tree.GetRoot().GetPosition().GetAddr());
+		AstTree tree(RefPtrHelper::TypeCast<ArrayPoolAllocator, IMemoryAllocatorRef32>(RefPtr<ArrayPoolAllocator>(m_ast_allocator)), posStart.GetAddr());
+		return _CplMetaDataPosition(tree.GetRoot().GetPosition().GetAddr());
 	}
 	//storage
 	virtual GKC::CallResult Load(const GKC::ShareCom<GKC::IByteStream>& sp) throw()

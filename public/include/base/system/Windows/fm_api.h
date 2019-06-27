@@ -134,4 +134,7 @@ inline bool rename_file(const char_s* szOldName, const char_s* szNewName) throw(
 	return ::MoveFileW(szOldName, szNewName) != FALSE;  //::GetLastError()
 }
 
+//home directory
+#define ENVVAR_HOME_DIR  _S("HOMEPATH")
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -100,4 +100,7 @@ inline bool rename_file(const char_s* szOldName, const char_s* szNewName) throw(
 	return ::rename(szOldName, szNewName) == 0;  //-1, errno
 }
 
+//home directory
+#define ENVVAR_HOME_DIR  _S("HOME")
+
 ////////////////////////////////////////////////////////////////////////////////

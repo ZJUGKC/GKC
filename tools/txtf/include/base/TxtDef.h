@@ -35,6 +35,10 @@ DECLARE_STATIC_CONST_STRING(g_html_tail, CharA)
 
 DECLARE_STATIC_CONST_STRING(g_html_xhtml_header, CharA)
 
+// g_html_xhtml5_header
+
+DECLARE_STATIC_CONST_STRING(g_html_xhtml5_header, CharA)
+
 // g_html_xhtml_tail
 
 DECLARE_STATIC_CONST_STRING(g_html_xhtml_tail, CharA)

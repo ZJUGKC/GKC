@@ -113,7 +113,7 @@ inline int _Cmd_Generate_GitHub_Html(const ConstStringS& strCharset, const Const
 
 // _Cmd_Generate_XHtml_Html
 
-inline int _Cmd_Generate_XHtml_Html(const ConstStringS& strLanguage, const ConstStringS& strCssFile, const ConstStringS& strSrc, const ConstStringS& strDest)
+inline int _Cmd_Generate_XHtml_Html(bool bLatest, const ConstStringS& strLanguage, const ConstStringS& strCssFile, const ConstStringS& strSrc, const ConstStringS& strDest)
 {
 	//language
 	HelpLanguageInfo info;
@@ -124,7 +124,10 @@ inline int _Cmd_Generate_XHtml_Html(const ConstStringS& strLanguage, const Const
 
 	//head
 	StringA strHead(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-	StringUtilHelper::MakeString(ConstStringA(g_html_xhtml_header::GetAddress(), g_html_xhtml_header::GetCount()), strHead);  //may throw
+	if( bLatest )
+		StringUtilHelper::MakeString(ConstStringA(g_html_xhtml5_header::GetAddress(), g_html_xhtml5_header::GetCount()), strHead);  //may throw
+	else
+		StringUtilHelper::MakeString(ConstStringA(g_html_xhtml_header::GetAddress(), g_html_xhtml_header::GetCount()), strHead);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LANG$$"), CS_S2U(strLanguage).GetC(), strHead);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$CSSFILE$$"), CS_S2U(strCssFile).GetC(), strHead);  //may throw
 

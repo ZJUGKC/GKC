@@ -250,6 +250,22 @@ BEGIN_STATIC_CONST_STRING(g_html_xhtml_header)
 	)
 END_STATIC_CONST_STRING(g_html_xhtml_header)
 
+// g_html_xhtml5_header
+
+BEGIN_STATIC_CONST_STRING(g_html_xhtml5_header)
+	STATIC_CONST_STRING_ENTRY(
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\r\n"
+"<!DOCTYPE html>" "\r\n"
+"<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xml:lang=\"$$LANG$$\">" "\r\n"
+"<head>" "\r\n"
+"<title>untitled</title>" "\r\n"
+"<link href=\"$$CSSFILE$$\" type=\"text/css\" rel=\"stylesheet\"/>" "\r\n"
+"</head>" "\r\n"
+"\r\n"
+"<body>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_html_xhtml5_header)
+
 // g_html_xhtml_tail
 
 BEGIN_STATIC_CONST_STRING(g_html_xhtml_tail)

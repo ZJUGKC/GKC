@@ -13,7 +13,7 @@
 
 # Introduction
 
-Wmark language is a subset of markdown language.
+Wmark language is an authoring language like **markdown**.
 The Wmark document consists of block elements separated by two or more line breaks.
 A block element contains one or more inline elements.
 

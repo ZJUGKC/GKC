@@ -96,7 +96,7 @@ inline bool _Check_Project_FileList(const FileListInfo& flInfo, const DirFileLis
 // process project file
 
 inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
-								StringS& strDest, int iType)
+								StringS& strDest, int iType, bool bLatest)
 {
 	//load
 	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Load project file...")));
@@ -178,7 +178,7 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 	else if( iType == MDP_TYPE_EPUB ) {
 		if( !_Epub_Generate_Description_Files(StringUtilHelper::To_ConstString(strDest),
 											StringUtilHelper::To_ConstString(strDestRoot),
-											info, hlInfo, flInfo, flMd, flAux) ) {
+											info, hlInfo, flInfo, flMd, flAux, bLatest) ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The description files cannot be generated!")));
 			return false;
 		}
@@ -191,7 +191,7 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 							_Get_FileTree_Prefix(iType),
 							iType == MDP_TYPE_CHM,
 							_Get_Html_Ext_Name(iType),
-							_Get_Html_Options_Template(iType),
+							_Get_Html_Options_Template(iType, bLatest),
 							_Get_EBook_CMD_Template(iType),
 							info, hlInfo, flInfo) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The script file cannot be generated!")));

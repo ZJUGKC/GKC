@@ -133,6 +133,7 @@ public:
 			//-x
 			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-x"))) ) {
 				uintptr uStartIndex = 3;
+				//-l
 				if( uArgCount == 8 && ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) )
 					uStartIndex ++;
 				if( (uArgCount != 7 && uArgCount != 8) || (uArgCount == 8 && uStartIndex == 3) ) {

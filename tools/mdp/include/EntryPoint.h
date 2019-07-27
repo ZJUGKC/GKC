@@ -39,20 +39,12 @@ void _PrintHelp() throw()
 
 //process project file
 inline
-int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
+int _Cmd_ProcessProjectFile(const ConstStringS& cstrSrc, const ConstStringS& cstrDest, int type, bool bLatest)
 {
-	uintptr uArgCount = args.GetCount();
-
-	if( uArgCount > 4 ) {
-		_PrintVersion();
-		_PrintHelp();
-		return 1;
-	}
-
 	StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
-	StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
+	StringUtilHelper::MakeString(cstrSrc, strSrc);
 	StringS strSrcDir(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
-	StringUtilHelper::MakeString(args[2].get_Value(), strSrcDir);
+	StringUtilHelper::MakeString(cstrSrc, strSrcDir);
 	StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 	{
 		uintptr uPos;
@@ -67,8 +59,8 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 		if( strSrcDir.IsEmpty() )
 			StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("./")), strSrcDir);
 		//destination
-		if( uArgCount == 4 ) {
-			StringUtilHelper::MakeString(args[3].get_Value(), strDest);
+		if( !cstrDest.IsNull() ) {
+			StringUtilHelper::MakeString(cstrDest, strDest);
 		}
 		else {
 			if( !FileManagementHelper::GetCurrentDirectory(strDest) ) {
@@ -100,7 +92,7 @@ int _Cmd_ProcessProjectFile(const ConstArray<ConstStringS>& args, int type)
 	_PrintVersion();
 
 	//process
-	return _Process_Project_File(strSrc, strSrcDir, strDest, type) ? 0 : 2;
+	return _Process_Project_File(strSrc, strSrcDir, strDest, type, bLatest) ? 0 : 2;
 }
 
 // ProgramEntryPoint
@@ -120,12 +112,26 @@ public:
 		}
 
 		int type = MDP_TYPE_CHM;
+		uintptr uStartIndex = 2;
 		//-m
 		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-m"))) ) {
+			if( uArgCount > 4 ) {
+				_PrintVersion();
+				_PrintHelp();
+				return 1;
+			}
 			type = MDP_TYPE_CHM;
 		}
 		//-e
 		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-e"))) ) {
+			//-l
+			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) )
+				uStartIndex ++;
+			if( (uStartIndex == 2 && uArgCount > 4) || (uStartIndex == 3 && (uArgCount == 3 || uArgCount > 5)) ) {
+				_PrintVersion();
+				_PrintHelp();
+				return 1;
+			}
 			type = MDP_TYPE_EPUB;
 		}
 		else {
@@ -133,7 +139,9 @@ public:
 			return 1;
 		}
 
-		return _Cmd_ProcessProjectFile(args, type);
+		return _Cmd_ProcessProjectFile(args[uStartIndex].get_Value(),
+									(uStartIndex + 1 >= uArgCount) ? ConstStringS() : args[uStartIndex + 1].get_Value(),
+									type, uStartIndex == 3);
 	}
 };
 

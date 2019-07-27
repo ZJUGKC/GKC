@@ -97,9 +97,13 @@ inline const_string_a get_command_del() throw()
 	return DECLARE_TEMP_CONST_STRING(const_string_a, "rm");
 }
 
-inline const_string_a get_xhtml_options_template() throw()
+inline const_string_a get_xhtml_options_template(bool bLatest) throw()
 {
-	return DECLARE_TEMP_CONST_STRING(const_string_a, "-x $$LANG$$ \\\"$2stylesheet.css\\\"");
+	return DECLARE_TEMP_CONST_STRING(const_string_a,
+		bLatest
+		? "-x -l $$LANG$$ \\\"$2stylesheet.css\\\""
+		: "-x $$LANG$$ \\\"$2stylesheet.css\\\""
+		);
 }
 
 //------------------------------------------------------------------------------

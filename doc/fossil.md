@@ -139,6 +139,7 @@ fossil new [-A <admin-username>] <repo-name>.fossil
 fossil setting autosync off -R <repo-name>.fossil
 fossil setting crnl-glob *, -R <repo-name>.fossil
 fossil setting encoding-glob *, -R <repo-name>.fossil
+[fossil setting binary-glob *, -R <repo-name>.fossil]
 ```
 
 Visit the website for configuring the respository:

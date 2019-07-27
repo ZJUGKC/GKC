@@ -276,7 +276,7 @@ BEGIN_STATIC_CONST_STRING(g_epub_opf_body)
 	STATIC_CONST_STRING_ENTRY(
 "<?xml version=\'1.0\' encoding=\'utf-8\'?>" "\r\n"
 "\r\n"
-"<package xmlns=\"http://www.idpf.org/2007/opf\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" unique-identifier=\"bookid\" version=\"2.0\">" "\r\n"
+"<package xmlns=\"http://www.idpf.org/2007/opf\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" $$XMLLANG$$ unique-identifier=\"bookid\" version=\"$$VERSION$$\">" "\r\n"
 "\r\n"
 "<metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">" "\r\n"
 "<dc:title>$$TOPIC$$</dc:title>" "\r\n"
@@ -289,25 +289,22 @@ BEGIN_STATIC_CONST_STRING(g_epub_opf_body)
 "<dc:subject>$$SUBJECT$$</dc:subject>" "\r\n"
 "<dc:rights>$$RIGHTS$$</dc:rights>" "\r\n"
 "<dc:identifier id=\"bookid\">$$IDENTIFIER$$</dc:identifier>" "\r\n"
-"<meta name=\"cover\" content=\"$$COVER$$\" />" "\r\n"
+"$$METALIST$$"
 "</metadata>" "\r\n"
 "\r\n"
 "<manifest>" "\r\n"
-"<item href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" id=\"ncx\"/>" "\r\n"
+"$$ITEMTOC$$" "\r\n"
 "<item href=\"stylesheet.css\" id=\"css\" media-type=\"text/css\"/>" "\r\n"
 "<item href=\"$$PROJECTNAME$$-cover.xhtml\" id=\"$$PROJECTNAME$$-cover\" media-type=\"application/xhtml+xml\"/>" "\r\n"
 "$$ITEMLIST$$"
 "</manifest>" "\r\n"
 "\r\n"
-"<spine toc=\"ncx\">" "\r\n"
+"<spine $$SPINE-TOC$$>" "\r\n"
 "<itemref idref=\"$$PROJECTNAME$$-cover\" linear=\"no\"/>" "\r\n"
 "$$ITEMREFLIST$$"
 "</spine>" "\r\n"
 "\r\n"
-"<guide>" "\r\n"
-"<reference href=\"$$PROJECTNAME$$-cover.xhtml\" type=\"cover\" title=\"$$COVERNAME$$\"/>" "\r\n"
-"$$GUIDELIST$$"
-"</guide>" "\r\n"
+"$$GUIDETAG$$"
 "\r\n"
 "</package>" "\r\n"
 	)
@@ -317,7 +314,7 @@ END_STATIC_CONST_STRING(g_epub_opf_body)
 
 BEGIN_STATIC_CONST_STRING(g_epub_opf_item)
 	STATIC_CONST_STRING_ENTRY(
-"<item href=\"$$FILE$$\" id=\"$$FILEID$$\" media-type=\"$$TYPE$$\"/>" "\r\n"
+"<item href=\"$$FILE$$\" id=\"$$FILEID$$\" $$PROP$$ media-type=\"$$TYPE$$\"/>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_opf_item)
 
@@ -329,13 +326,24 @@ BEGIN_STATIC_CONST_STRING(g_epub_opf_itemref)
 	)
 END_STATIC_CONST_STRING(g_epub_opf_itemref)
 
-// g_epub_opf_guide
+// g_epub_opf_guide_body
 
-BEGIN_STATIC_CONST_STRING(g_epub_opf_guide)
+BEGIN_STATIC_CONST_STRING(g_epub_opf_guide_body)
+	STATIC_CONST_STRING_ENTRY(
+"<guide>" "\r\n"
+"<reference href=\"$$PROJECTNAME$$-cover.xhtml\" type=\"cover\" title=\"$$COVERNAME$$\"/>" "\r\n"
+"$$GUIDELIST$$"
+"</guide>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_epub_opf_guide_body)
+
+// g_epub_opf_guide_item
+
+BEGIN_STATIC_CONST_STRING(g_epub_opf_guide_item)
 	STATIC_CONST_STRING_ENTRY(
 "<reference href=\"$$FILE$$\" type=\"$$TYPE$$\" title=\"$$NAME$$\"/>" "\r\n"
 	)
-END_STATIC_CONST_STRING(g_epub_opf_guide)
+END_STATIC_CONST_STRING(g_epub_opf_guide_item)
 
 // g_epub_ncx_body
 
@@ -395,6 +403,40 @@ BEGIN_STATIC_CONST_STRING(g_epub_ncx_node_tail)
 "</navPoint>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_ncx_node_tail)
+
+//g_epub_END_body
+BEGIN_STATIC_CONST_STRING(g_epub_END_body)
+	STATIC_CONST_STRING_ENTRY(
+"<?xml version=\'1.0\' encoding=\'utf-8\'?>" "\r\n"
+"<!DOCTYPE html>" "\r\n"
+"<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xml:lang=\"$$LCSS$$\">" "\r\n"
+"<head>" "\r\n"
+"<title>untitled</title>" "\r\n"
+"</head>" "\r\n"
+"\r\n"
+"<body>" "\r\n"
+"<nav id=\"toc\" epub:type=\"toc\">" "\r\n"
+"<h1>$$TOPIC$$</h1>" "\r\n"
+"<ol>" "\r\n"
+"<li id=\"$$PROJECTNAME$$-cover\">" "\r\n"
+"<a href=\"$$PROJECTNAME$$-cover.xhtml\">$$COVERNAME$$</a>" "\r\n"
+"</li>" "\r\n"
+"$$TREE$$"
+"</ol>" "\r\n"
+"</nav>" "\r\n"
+"</body>" "\r\n"
+"\r\n"
+"</html>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_epub_END_body)
+
+//g_epub_END_item
+BEGIN_STATIC_CONST_STRING(g_epub_END_item)
+	STATIC_CONST_STRING_ENTRY(
+"<li id=\"$$FILEID$$\">" "\r\n"
+"<a href=\"$$FILE$$\">$$NAME$$</a>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_epub_END_item)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

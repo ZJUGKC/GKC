@@ -75,9 +75,13 @@ DECLARE_STATIC_CONST_STRING(g_epub_opf_item, CharA)
 
 DECLARE_STATIC_CONST_STRING(g_epub_opf_itemref, CharA)
 
-// g_epub_opf_guide
+// g_epub_opf_guide_body
 
-DECLARE_STATIC_CONST_STRING(g_epub_opf_guide, CharA)
+DECLARE_STATIC_CONST_STRING(g_epub_opf_guide_body, CharA)
+
+// g_epub_opf_guide_item
+
+DECLARE_STATIC_CONST_STRING(g_epub_opf_guide_item, CharA)
 
 // g_epub_ncx_body
 
@@ -90,6 +94,14 @@ DECLARE_STATIC_CONST_STRING(g_epub_ncx_node, CharA)
 // g_epub_ncx_node_tail
 
 DECLARE_STATIC_CONST_STRING(g_epub_ncx_node_tail, CharA)
+
+// g_epub_END_body
+
+DECLARE_STATIC_CONST_STRING(g_epub_END_body, CharA)
+
+// g_epub_END_item
+
+DECLARE_STATIC_CONST_STRING(g_epub_END_item, CharA)
 
 //------------------------------------------------------------------------------
 //functions
@@ -156,12 +168,12 @@ inline ConstStringA _Get_FileTree_Prefix(int iType) throw()
 }
 
 // get html options template
-inline ConstStringA _Get_Html_Options_Template(int iType) throw()
+inline ConstStringA _Get_Html_Options_Template(int iType, bool bLatest) throw()
 {
 	if( iType == MDP_TYPE_CHM )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "-g $$CHARSET$$");
 	else if( iType == MDP_TYPE_EPUB )
-		return get_xhtml_options_template();
+		return get_xhtml_options_template(bLatest);
 	return ConstStringA();
 }
 

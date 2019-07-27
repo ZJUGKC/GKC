@@ -128,25 +128,27 @@ inline bool _Generate_Content_File(const ConstStringS& strFile,
 	bool bFound = ftEnum.FindFirst();
 	while( bFound ) {
 		//level
-		intptr iDelta = ftEnum.GetDelta();
-		if( iDelta > 0 ) {
+		bool bNegative;
+		uintptr uDelta = ftEnum.GetDelta(bNegative);
+		if( bNegative ) {
+			//leave
+			for( uintptr i = 0; i < uDelta; i ++ )
+				StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "</UL>\r\n"), strTree);  //may throw
+		}
+		else if( uDelta > 0 ) {
 			//enter
 			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "<UL>\r\n"), strTree);  //may throw
-		}
-		else if( iDelta < 0 ) {
-			//leave
-			for( intptr i = 0; i < -iDelta; i ++ )
-				StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "</UL>\r\n"), strTree);  //may throw
 		} //end if
 		//node
 		_Generate_Htm_LI_String(ftEnum.GetName(), ftEnum.GetFile(), ftEnum.IsLeaf(), strContent);  //may throw
 		StringUtilHelper::Append(strContent, strTree);  //may throw
 		bFound = ftEnum.FindNext();
 	} //end while
-	intptr iDelta = ftEnum.GetDelta();
-	if( iDelta < 0 ) {
+	bool bNegative;
+	uintptr uDelta = ftEnum.GetDelta(bNegative);
+	if( bNegative ) {
 		//leave
-		for( intptr i = 0; i < -iDelta; i ++ )
+		for( uintptr i = 0; i < uDelta; i ++ )
 			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "</UL>\r\n"), strTree);  //may throw
 	} //end if
 	//content

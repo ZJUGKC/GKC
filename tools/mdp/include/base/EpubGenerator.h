@@ -49,6 +49,25 @@ inline bool _Generate_Css_File(const ConstStringS& strFile)
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
 
+//generate time string
+inline void _Generate_Time_String(StringA& str)
+{
+	TimeValue tv;
+	TimeHelper::GetCurrentTime(tv);
+	TimeDetail td;
+	bool bRet = TimeHelper::ToGmtDetail(tv, td);
+	(void)bRet;
+	assert( bRet );
+	FixedString<CharA, 32> buffer;
+	int ret = value_to_string(FixedArrayHelper::GetInternalPointer(buffer), FixedString<CharA, 32>::c_size,
+							"%04d-%02d-%02dT%02d:%02d:%02dZ",
+							td.iYear, td.iMonth, td.iDay,
+							td.iHour, td.iMinute, td.iSecond);
+	if( ret >= 0 )
+		buffer.SetLength(ret);
+	StringUtilHelper::MakeString(buffer, str);  //may throw
+}
+
 //generate file-id string
 inline void _Generate_FileId_String(const ConstStringA& strFile, StringA& strId)
 {
@@ -82,7 +101,7 @@ inline ConstStringA _Generate_MimeType_String(const ConstStringA& str) throw()
 	return strType;
 }
 //generate manifest list
-inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, StringA& strList)
+inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, bool bLatest, StringA& strList)
 {
 	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -96,6 +115,11 @@ inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, StringA& 
 		if( bMd )
 			StringUtilHelper::Replace(strV.GetLength() - 3, 3, DECLARE_TEMP_CONST_STRING(ConstStringA, ".xhtml"), strV);  //may throw
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILE$$"), StringUtilHelper::To_ConstString(strV), strItem);  //may throw
+		//prop
+		strTemp.Clear();
+		if( bMd && bLatest )
+			StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "properties=\"mathml\""), strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROP$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
 		//type
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TYPE$$"), _Generate_MimeType_String(StringUtilHelper::To_ConstString(strV)), strItem);  //may throw
 		//list
@@ -122,7 +146,7 @@ inline void _Generate_Guide_String(const ConstStringA& strName, const ConstStrin
 {
 	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-	StringUtilHelper::MakeString(ConstStringA(g_epub_opf_guide::GetAddress(), g_epub_opf_guide::GetCount()), strItem);  //may throw
+	StringUtilHelper::MakeString(ConstStringA(g_epub_opf_guide_item::GetAddress(), g_epub_opf_guide_item::GetCount()), strItem);  //may throw
 	_Generate_FileUrl_String(strFile, DECLARE_TEMP_CONST_STRING(ConstStringA, ".xhtml"), strTemp);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILE$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TYPE$$"), strType, strItem);  //may throw
@@ -146,16 +170,16 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 							const ConstStringA& strRights,
 							const ConstStringA& strIdentifier,
 							const DirFileList& flMd, const DirFileList& flAux,
-							const FileListInfo& flInfo, const ProjectInfo& info)
+							const FileListInfo& flInfo, const ProjectInfo& info,
+							bool bLatest)
 {
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	StringA strList(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	//content
 	StringA strContent(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringUtilHelper::MakeString(ConstStringA(g_epub_opf_body::GetAddress(), g_epub_opf_body::GetCount()), strContent);  //may throw
 	//project name
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROJECTNAME$$"), strProjectName, strContent);  //may throw
-	//cover name
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVERNAME$$"), strCoverName, strContent);  //may throw
 	//topic
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TOPIC$$"), strTopic, strContent);  //may throw
 	//author
@@ -176,21 +200,65 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$RIGHTS$$"), strRights, strContent);  //may throw
 	//identifier
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$IDENTIFIER$$"), strIdentifier, strContent);  //may throw
-	//cover
-	_Generate_FileId_String(strCoverImageFile, strTemp);  //may throw
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVER$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
+	//meta-list
+	if( bLatest ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<meta property=\"dcterms:modified\">$$TIME$$</meta>\r\n"), strList);  //may throw
+		//time
+		_Generate_Time_String(strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TIME$$"), StringUtilHelper::To_ConstString(strTemp), strList);  //may throw
+	}
+	else {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<meta name=\"cover\" content=\"$$COVER$$\" />\r\n"), strList);  //may throw
+		//cover
+		_Generate_FileId_String(strCoverImageFile, strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVER$$"), StringUtilHelper::To_ConstString(strTemp), strList);  //may throw
+	}
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$METALIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
+	//version
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$VERSION$$"),
+		bLatest
+		? DECLARE_TEMP_CONST_STRING(ConstStringA, "3.0")
+		: DECLARE_TEMP_CONST_STRING(ConstStringA, "2.0"),
+		strContent);  //may throw
+	//xml:lang
+	strTemp.Clear();
+	if( bLatest ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "xml:lang=\"$$LCSS$$\""), strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LCSS$$"), strShortString, strTemp);  //may throw
+	}
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$XMLLANG$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
+	//toc item
+	if( bLatest )
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$ITEMTOC$$"),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "<item href=\"toc.xhtml\" properties=\"nav\" media-type=\"application/xhtml+xml\" id=\"toc-nav\"/>"),
+			strContent);  //may throw
+	else
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$ITEMTOC$$"),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "<item href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" id=\"ncx\"/>"),
+			strContent);  //may throw
 	//manifest
-	StringA strList(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-	_Generate_Manifest_String(flMd, true, strList);  //may throw
-	_Generate_Manifest_String(flAux, false, strList);  //may throw
+	strList.Clear();
+	_Generate_Manifest_String(flMd, true, bLatest, strList);  //may throw
+	_Generate_Manifest_String(flAux, false, bLatest, strList);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$ITEMLIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 	//spine
+	strTemp.Clear();
+	if( !bLatest )
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "toc=\"ncx\""), strTemp);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$SPINE-TOC$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	strList.Clear();
 	_Generate_Spine_String(flInfo, strList);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$ITEMREFLIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 	//guide
-	strList.Clear();
-	{
+	strTemp.Clear();
+	if( !bLatest ) {
+		StringUtilHelper::MakeString(ConstStringA(g_epub_opf_guide_body::GetAddress(), g_epub_opf_guide_body::GetCount()), strTemp);  //may throw
+		//project name
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROJECTNAME$$"), strProjectName, strTemp);  //may throw
+		//cover name
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVERNAME$$"), strCoverName, strTemp);  //may throw
+		//list
+		strList.Clear();
 		StringA str1, str2;
 		if( info.GetTitleFile(str1, str2) )
 			_Generate_Guide_String(StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), DECLARE_TEMP_CONST_STRING(ConstStringA, "title-page"), strList);  //may throw
@@ -198,8 +266,9 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 			_Generate_Guide_String(StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), DECLARE_TEMP_CONST_STRING(ConstStringA, "toc"), strList);  //may throw
 		if( info.GetCopyrightFile(str1, str2) )
 			_Generate_Guide_String(StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), DECLARE_TEMP_CONST_STRING(ConstStringA, "copyright-page"), strList);  //may throw
-	} //end block
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$GUIDELIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$GUIDELIST$$"), StringUtilHelper::To_ConstString(strList), strTemp);  //may throw
+	}
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$GUIDETAG$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	//save
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
@@ -227,10 +296,11 @@ inline void _Generate_Nav_String(FileTreeEnumerator& ftEnum, StringA& strTree, u
 	bool bFound = ftEnum.FindFirst();
 	while( bFound ) {
 		//level
-		intptr iDelta = ftEnum.GetDelta();
-		if( iDelta < 0 ) {
+		bool bNegative;
+		uintptr uDelta = ftEnum.GetDelta(bNegative);
+		if( bNegative ) {
 			//leave
-			for( intptr i = 0; i < -iDelta; i ++ )
+			for( uintptr i = 0; i < uDelta; i ++ )
 				StringUtilHelper::Append(strTail, strTree);  //may throw
 		} //end if
 		if( uMaxLevel < ftEnum.GetLevel() )
@@ -259,10 +329,11 @@ inline void _Generate_Nav_String(FileTreeEnumerator& ftEnum, StringA& strTree, u
 		bFound = ftEnum.FindNext();
 	} //end while
 	//last
-	intptr iDelta = ftEnum.GetDelta();
-	if( iDelta < 0 ) {
+	bool bNegative;
+	uintptr uDelta = ftEnum.GetDelta(bNegative);
+	if( bNegative ) {
 		//leave
-		for( intptr i = 0; i < -iDelta; i ++ )
+		for( uintptr i = 0; i < uDelta; i ++ )
 			StringUtilHelper::Append(strTail, strTree);  //may throw
 	} //end if
 }
@@ -294,10 +365,9 @@ inline bool _Generate_Ncx_File(const ConstStringS& strFile,
 	//identifier
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$IDENTIFIER$$"), strIdentifier, strContent);  //may throw
 	//tree
-	StringA strTree(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	uintptr uMaxLevel;
-	_Generate_Nav_String(ftEnum, strTree, uMaxLevel);  //may throw
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TREE$$"), StringUtilHelper::To_ConstString(strTree), strContent);  //may throw
+	_Generate_Nav_String(ftEnum, strTemp, uMaxLevel);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TREE$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	//depth
 	{
 		IntegerString strDepth;
@@ -308,12 +378,86 @@ inline bool _Generate_Ncx_File(const ConstStringS& strFile,
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
 
+//generate tree string
+inline void _Generate_Tree_String(FileTreeEnumerator& ftEnum, StringA& strTree)
+{
+	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	bool bFound = ftEnum.FindFirst();
+	while( bFound ) {
+		//level
+		bool bNegative;
+		uintptr uDelta = ftEnum.GetDelta(bNegative);
+		if( bNegative ) {
+			//leave
+			for( uintptr i = 0; i < uDelta; i ++ )
+				StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "</ol></li>\r\n"), strTree);  //may throw
+		}
+		else if( uDelta > 0 ) {
+			//enter
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "<ol>\r\n"), strTree);  //may throw
+		} //end if
+		//item
+		StringUtilHelper::MakeString(ConstStringA(g_epub_END_item::GetAddress(), g_epub_END_item::GetCount()), strItem);  //may throw
+		//file id
+		_Generate_FileId_String(ftEnum.GetFile(), strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILEID$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
+		//file
+		_Generate_FileUrl_String(ftEnum.GetFile(), DECLARE_TEMP_CONST_STRING(ConstStringA, ".xhtml"), strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILE$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
+		//name
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$NAME$$"), ftEnum.GetName(), strItem);  //may throw
+		//append
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strTree);  //may throw
+		if( ftEnum.IsLeaf() )
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "</li>\r\n"), strTree);  //may throw
+		//next
+		bFound = ftEnum.FindNext();
+	} //end while
+	//last
+	bool bNegative;
+	uintptr uDelta = ftEnum.GetDelta(bNegative);
+	if( bNegative ) {
+		//leave
+		for( uintptr i = 0; i < uDelta; i ++ )
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "</ol></li>\r\n"), strTree);  //may throw
+	} //end if
+}
+
+//generate END file
+inline bool _Generate_END_File(const ConstStringS& strFile,
+							const ConstStringA& strProjectName,
+							const ConstStringA& strCoverName,
+							const ConstStringA& strShortString,
+							const ConstStringA& strTopic,
+							FileTreeEnumerator& ftEnum)
+{
+	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	//content
+	StringA strContent(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	StringUtilHelper::MakeString(ConstStringA(g_epub_END_body::GetAddress(), g_epub_END_body::GetCount()), strContent);  //may throw
+	//project name
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROJECTNAME$$"), strProjectName, strContent);  //may throw
+	//cover name
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVERNAME$$"), strCoverName, strContent);  //may throw
+	//language
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LCSS$$"), strShortString, strContent);  //may throw
+	//topic
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TOPIC$$"), strTopic, strContent);  //may throw
+	//tree
+	_Generate_Tree_String(ftEnum, strTemp);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TREE$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
+	//save
+	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
+}
+
 //generate description files
 
 inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const ConstStringS& strDestRoot,
 											const ProjectInfo& info, const HelpLanguageInfo& hlInfo,
 											const FileListInfo& flInfo,
-											const DirFileList& flMd, const DirFileList& flAux)
+											const DirFileList& flMd, const DirFileList& flAux,
+											bool bLatest)
 {
 	StringS strFile(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 
@@ -371,23 +515,40 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 							StringUtilHelper::To_ConstString(info.GetRights()),
 							StringUtilHelper::To_ConstString(info.GetIdentifier()),
 							flMd, flAux,
-							flInfo, info) )  //may throw
+							flInfo, info,
+							bLatest) )  //may throw
 		return false;
 
-	//ncx
+	//toc
 	StringUtilHelper::MakeString(strDestRoot, strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
-	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("toc.ncx")), strFile);  //may throw
+	if( bLatest )
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("toc.xhtml")), strFile);  //may throw
+	else
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("toc.ncx")), strFile);  //may throw
 	FsPathHelper::ConvertPathStringToPlatform(strFile);
-	if( !_Generate_Ncx_File(StringUtilHelper::To_ConstString(strFile),
-							StringUtilHelper::To_ConstString(info.GetProjectName()),
-							StringUtilHelper::To_ConstString(info.GetCoverName()),
-							StringUtilHelper::To_ConstString(strShortString),
-							StringUtilHelper::To_ConstString(info.GetTopic()),
-							StringUtilHelper::To_ConstString(info.GetAuthor()),
-							StringUtilHelper::To_ConstString(info.GetIdentifier()),
-							ftEnum) )  //may throw
-		return false;
+	if( bLatest ) {
+		//END
+		if( !_Generate_END_File(StringUtilHelper::To_ConstString(strFile),
+								StringUtilHelper::To_ConstString(info.GetProjectName()),
+								StringUtilHelper::To_ConstString(info.GetCoverName()),
+								StringUtilHelper::To_ConstString(strShortString),
+								StringUtilHelper::To_ConstString(info.GetTopic()),
+								ftEnum)  //may throw
+			return false;
+	}
+	else {
+		//ncx
+		if( !_Generate_Ncx_File(StringUtilHelper::To_ConstString(strFile),
+								StringUtilHelper::To_ConstString(info.GetProjectName()),
+								StringUtilHelper::To_ConstString(info.GetCoverName()),
+								StringUtilHelper::To_ConstString(strShortString),
+								StringUtilHelper::To_ConstString(info.GetTopic()),
+								StringUtilHelper::To_ConstString(info.GetAuthor()),
+								StringUtilHelper::To_ConstString(info.GetIdentifier()),
+								ftEnum) )  //may throw
+			return false;
+	}
 
 	//cover html
 	StringUtilHelper::MakeString(strDestRoot, strFile);  //may throw

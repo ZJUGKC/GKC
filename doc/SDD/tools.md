@@ -49,13 +49,14 @@ The project file uses WON format, and the whole file is an object containing the
 | "command"            | Specify the compiling commands for markdown file |
 | "cover"              | Specify the cover image file                     |
 | "cover-name"         | Specify the cover page name                      |
+| "topic"              | Specify the topic                                |
+| "identifier"         | Specify the identifier                           |
 | "tree"               | Specify the file tree                            |
 
 The optional key-value pairs are listed as follows:
 
 | Key           | Value                        |
 |:-------------:|:-----------------------------|
-| "topic"       | Specify the topic            |
 | "author"      | Specify the author           |
 | "description" | Specify the description      |
 | "date"        | Specify the date             |
@@ -63,7 +64,6 @@ The optional key-value pairs are listed as follows:
 | "publisher"   | Specify the publisher        |
 | "subject"     | Specify the subject          |
 | "rights"      | Specify the rights           |
-| "identifier"  | Specify the identifier       |
 
 The file tree is an array with the object elements. Each object contains the following key-value pairs:
 
@@ -141,7 +141,7 @@ The options are listed as follows:
 | Options | Description                  |
 |:-------:|:-----------------------------|
 | -m      | Generate the script for chm  |
-| -e      | Generate the script for epub |
+| -e [-l] | Generate the script for epub, -l means the latest epub version |
 
 ## Compilers
 

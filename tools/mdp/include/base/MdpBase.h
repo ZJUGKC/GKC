@@ -456,7 +456,7 @@ private:
 class FileTreeEnumerator
 {
 public:
-	FileTreeEnumerator(const MultiwayTree<Pair<StringA, StringA>>& tree) throw() : m_tree(tree), m_bHaveChild(false), m_uLevel(0), m_iDelta(0)
+	FileTreeEnumerator(const MultiwayTree<Pair<StringA, StringA>>& tree) throw() : m_tree(tree), m_bHaveChild(false), m_uLevel(0), m_uDelta(0), m_bNegative(false)
 	{
 	}
 	~FileTreeEnumerator() throw()
@@ -467,7 +467,8 @@ public:
 	{
 		m_bHaveChild = false;
 		m_uLevel = 1;
-		m_iDelta = 0;
+		m_uDelta = 0;
+		m_bNegative = false;
 		m_iter = m_tree.GetRoot();
 		if( m_iter.IsNull() )
 			return false;
@@ -480,13 +481,14 @@ public:
 	bool FindNext() throw()
 	{
 		auto iter(m_iter);
+		m_bNegative = false;
 		//child
 		iter.MoveChild();
 		if( !iter.IsNull() ) {
 			m_iter = iter;
 			check_child();
 			m_uLevel ++;
-			m_iDelta = 1;
+			m_uDelta = 1;
 			return true;
 		}
 		//next
@@ -495,18 +497,19 @@ public:
 		if( !iter.IsNull() ) {
 			m_iter = iter;
 			check_child();
-			m_iDelta = 0;
+			m_uDelta = 0;
 			return true;
 		}
 		//parent
 		iter = m_iter;
-		m_iDelta = 0;
+		m_uDelta = 0;
+		m_bNegative = true;
 		while( true ) {
 			iter.MoveParent();
 			m_uLevel --;
-			m_iDelta --;
+			m_uDelta ++;
 			if( iter.IsNull() || iter == m_tree.GetRoot() ) {
-				++ m_iDelta;
+				-- m_uDelta;
 				break;
 			}
 			iter.MoveNext();
@@ -516,6 +519,8 @@ public:
 				return true;
 			}
 		} //end while
+		if( m_uDelta == 0 )
+			m_bNegative = false;
 		return false;
 	}
 
@@ -539,9 +544,10 @@ public:
 	{
 		return m_uLevel;
 	}
-	intptr GetDelta() const throw()
+	uintptr GetDelta(bool& bNegative) const throw()
 	{
-		return m_iDelta;
+		bNegative = m_bNegative;
+		return m_uDelta;
 	}
 
 private:
@@ -557,7 +563,8 @@ private:
 	MultiwayTree<Pair<StringA, StringA>>::Iterator m_iter;
 	bool m_bHaveChild;
 	uintptr m_uLevel;
-	intptr m_iDelta;
+	uintptr m_uDelta;
+	bool m_bNegative;
 
 private:
 	//noncopyable

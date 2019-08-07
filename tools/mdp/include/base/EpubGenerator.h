@@ -100,6 +100,77 @@ inline ConstStringA _Generate_MimeType_String(const ConstStringA& str) throw()
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "text/javascript");
 	return strType;
 }
+//generate meta list
+inline void _Generate_MetaList_String(const ConstStringA& strCoverImageFile,
+									const ConstStringA& strAuthor,
+									const ConstStringA& strDescription,
+									const ConstStringA& strDate,
+									const ConstStringA& strContributor,
+									const ConstStringA& strPublisher,
+									const ConstStringA& strSubject,
+									const ConstStringA& strRights,
+									bool bLatest,
+									StringA& strList)
+{
+	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	//author
+	if( !strAuthor.IsEmpty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:creator>$$AUTHOR$$</dc:creator>\r\n"), strItem);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$AUTHOR$$"), strAuthor, strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
+	//description
+	if( !strDescription.IsEmpty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:description>$$DESCRIPTION$$</dc:description>\r\n"), strItem);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$DESCRIPTION$$"), strDescription, strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
+	//date
+	if( !strDate.IsEmpty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:date>$$DATE$$</dc:date>\r\n"), strItem);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$DATE$$"), strDate, strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
+	//contributor
+	if( !strContributor.IsEmpty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:contributor>$$CONTRIBUTOR$$</dc:contributor>\r\n"), strItem);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$CONTRIBUTOR$$"), strContributor, strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
+	//publisher
+	if( !strPublisher.IsEmpty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:publisher>$$PUBLISHER$$</dc:publisher>\r\n"), strItem);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PUBLISHER$$"), strPublisher, strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
+	//subject
+	if( !strSubject.IsEmpty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:subject>$$SUBJECT$$</dc:subject>\r\n"), strItem);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$SUBJECT$$"), strSubject, strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
+	//rights
+	if( !strRights.Empty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:rights>$$RIGHTS$$</dc:rights>\r\n"), strItem);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$RIGHTS$$"), strRights, strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
+	//meta
+	if( bLatest ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<meta property=\"dcterms:modified\">$$TIME$$</meta>\r\n"), strItem);  //may throw
+		//time
+		_Generate_Time_String(strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TIME$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
+	}
+	else {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<meta name=\"cover\" content=\"$$COVER$$\" />\r\n"), strItem);  //may throw
+		//cover
+		_Generate_FileId_String(strCoverImageFile, strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVER$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
+	}
+	StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+}
 //generate manifest list
 inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, bool bLatest, StringA& strList)
 {
@@ -182,37 +253,13 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROJECTNAME$$"), strProjectName, strContent);  //may throw
 	//topic
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TOPIC$$"), strTopic, strContent);  //may throw
-	//author
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$AUTHOR$$"), strAuthor, strContent);  //may throw
-	//description
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$DESCRIPTION$$"), strDescription, strContent);  //may throw
 	//language
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LCSS$$"), strShortString, strContent);  //may throw
-	//date
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$DATE$$"), strDate, strContent);  //may throw
-	//contributor
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$CONTRIBUTOR$$"), strContributor, strContent);  //may throw
-	//publisher
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PUBLISHER$$"), strPublisher, strContent);  //may throw
-	//subject
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$SUBJECT$$"), strSubject, strContent);  //may throw
-	//rights
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$RIGHTS$$"), strRights, strContent);  //may throw
 	//identifier
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$IDENTIFIER$$"), strIdentifier, strContent);  //may throw
 	//meta-list
-	if( bLatest ) {
-		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<meta property=\"dcterms:modified\">$$TIME$$</meta>\r\n"), strList);  //may throw
-		//time
-		_Generate_Time_String(strTemp);  //may throw
-		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TIME$$"), StringUtilHelper::To_ConstString(strTemp), strList);  //may throw
-	}
-	else {
-		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<meta name=\"cover\" content=\"$$COVER$$\" />\r\n"), strList);  //may throw
-		//cover
-		_Generate_FileId_String(strCoverImageFile, strTemp);  //may throw
-		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVER$$"), StringUtilHelper::To_ConstString(strTemp), strList);  //may throw
-	}
+	_Generate_MetaList_String(strCoverImageFile, strAuthor, strDescription, strDate, strContributor,
+							strPublisher, strSubject, strRights, bLatest, strList);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$METALIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 	//version
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$VERSION$$"),
@@ -221,7 +268,6 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 		: DECLARE_TEMP_CONST_STRING(ConstStringA, "2.0"),
 		strContent);  //may throw
 	//xml:lang
-	strTemp.Clear();
 	if( bLatest ) {
 		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "xml:lang=\"$$LCSS$$\""), strTemp);  //may throw
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LCSS$$"), strShortString, strTemp);  //may throw

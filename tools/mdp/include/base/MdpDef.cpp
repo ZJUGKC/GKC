@@ -267,6 +267,9 @@ BEGIN_STATIC_CONST_STRING(g_epub_css_body)
 "  font-size: 0.9em;" "\r\n"
 "  background-color: rgb(248, 248, 248);" "\r\n"
 "}" "\r\n"
+"img,video,svg {" "\r\n"
+"  max-width: 100%;" "\r\n"
+"}" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_css_body)
 
@@ -360,9 +363,7 @@ BEGIN_STATIC_CONST_STRING(g_epub_ncx_body)
 "<text>$$TOPIC$$</text>" "\r\n"
 "</docTitle>" "\r\n"
 "\r\n"
-"<docAuthor>" "\r\n"
-"<text>$$AUTHOR$$</text>" "\r\n"
-"</docAuthor>" "\r\n"
+"$$AUTHOR-LIST$$"
 "\r\n"
 "<navMap>" "\r\n"
 "<navPoint id=\"$$PROJECTNAME$$-cover\" playOrder=\"1\">" "\r\n"

@@ -223,18 +223,36 @@ MACRO(SET_PCH targetName targetType pchHeader pchSource SourceList)
 ENDMACRO(SET_PCH)
 
 #Set post-building copy command
-#Source : the source string
-#Dest : the dest string
-MACRO(SET_POSTBUILD_COPY targetName Source Dest)
+MACRO(SET_POSTBUILD_CMD targetName strCmd)
 	IF(WIN32)
 		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
-							COMMAND copy ARGS "/Y" "/L" "${Source}" "${Dest}"
+							COMMAND ${strCmd} ARGS ${ARGN}
 							VERBATIM)
 	ENDIF(WIN32)
 	IF(CMAKE_COMPILER_IS_GNUCXX)
 		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
-							COMMAND cp ARGS -pdf ${Source} ${Dest}
+							COMMAND ${strCmd} ARGS ${ARGN}
 							)
+	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+ENDMACRO(SET_POSTBUILD_CMD)
+
+#mkdir
+MACRO(SET_POSTBUILD_MKDIR targetName strDir)
+	SET(_source "${strDir}")
+	IF(WIN32)
+		STRING(REPLACE "/" "\\\\" _source ${_source})
+	ENDIF(WIN32)
+	SET_POSTBUILD_CMD(${targetName} mkdir ${_source})
+ENDMACRO(SET_POSTBUILD_MKDIR)
+
+#Source : the source string
+#Dest : the dest string
+MACRO(SET_POSTBUILD_COPY targetName Source Dest)
+	IF(WIN32)
+		SET_POSTBUILD_CMD(${targetName} copy "/Y" "/L" "${Source}" "${Dest}")
+	ENDIF(WIN32)
+	IF(CMAKE_COMPILER_IS_GNUCXX)
+		SET_POSTBUILD_CMD(${targetName} cp -pdf ${Source} ${Dest})
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_POSTBUILD_COPY)
 

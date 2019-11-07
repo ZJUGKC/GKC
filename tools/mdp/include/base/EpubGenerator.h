@@ -407,11 +407,16 @@ inline bool _Generate_Ncx_File(const ConstStringS& strFile,
 	//topic
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TOPIC$$"), strTopic, strContent);  //may throw
 	//author
-	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$AUTHOR$$"), strAuthor, strContent);  //may throw
+	if( !strAuthor.IsEmpty() ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<docAuthor><text>$$AUTHOR$$</text></docAuthor>\r\n"), strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$AUTHOR$$"), strAuthor, strTemp);  //may throw
+	}
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$AUTHOR-LIST$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	//identifier
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$IDENTIFIER$$"), strIdentifier, strContent);  //may throw
 	//tree
 	uintptr uMaxLevel;
+	strTemp.Clear();
 	_Generate_Nav_String(ftEnum, strTemp, uMaxLevel);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TREE$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	//depth

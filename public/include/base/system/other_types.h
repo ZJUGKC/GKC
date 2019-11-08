@@ -363,6 +363,11 @@ typedef exception_t<system_call_results::Overflow>  overflow_exception;
 template <typename T>
 class limits_base;
 
+/*
+signed : (((T)1)<<(bits-1)) --- ~(((T)1)<<(bits-1))
+unsigned : 0 --- ~((T)0)
+*/
+
 //special
 template <>
 class limits_base<char>
@@ -448,84 +453,6 @@ public:
 	static const double Min;
 	static const double Max;
 };
-
-// -----basic operators-----
-
-// safe_operators
-
-class safe_operators
-{
-public:
-	template <typename T>
-	static call_result Add(IN const T& left, IN const T& right, OUT T& result) throw()
-	{
-		if( limits_base<T>::Max - left < right ) {
-			return call_result(system_call_results::Overflow);
-		}
-		result = left + right;
-		return call_result(system_call_results::OK);
-	}
-
-	template <typename T>
-	static call_result Multiply(IN const T& left, IN const T& right, OUT T& result) throw()
-	{
-		//avoid divide 0
-		if( left == 0 ) {
-			result = 0;
-			return call_result(system_call_results::OK);
-		}
-		if( limits_base<T>::Max / left < right ) {
-			return call_result(system_call_results::Overflow);
-		}
-		result = left * right;
-		return call_result(system_call_results::OK);
-	}
-
-	//throw version
-	template <typename T>
-	static T AddThrow(IN const T& left, IN const T& right)
-	{
-		T result;
-		call_result cr = Add(left, right, result);
-		if( cr.IsFailed() ) {
-			throw exception_base(cr);
-		}
-		return result;
-	}
-	template <typename T>
-	static T MultiplyThrow(IN const T& left, IN const T& right)
-	{
-		T result;
-		call_result cr = Multiply(left, right, result);
-		if( cr.IsFailed() ) {
-			throw exception_base(cr);
-		}
-		return result;
-	}
-};
-
-//special versions
-template <>
-inline call_result safe_operators::Multiply<int>(IN const int& left, IN const int& right, OUT int& result) throw()
-{
-	int64 result64 = static_cast<int64>(left) * static_cast<int64>(right);
-	if( result64 > limits_base<int>::Max || result64 < limits_base<int>::Min ) {
-		return call_result(system_call_results::Overflow);
-	}
-	result = static_cast<int>(result64);
-	return call_result(system_call_results::OK);
-}
-
-template <>
-inline call_result safe_operators::Multiply<uint>(IN const uint& left, IN const uint& right, OUT uint& result) throw()
-{
-	uint64 result64 = static_cast<uint64>(left) * static_cast<uint64>(right);
-	if( result64 > limits_base<uint>::Max ) {
-		return call_result(system_call_results::Overflow);
-	}
-	result = static_cast<uint>(result64);
-	return call_result(system_call_results::OK);
-}
 
 // -----traits-----
 
@@ -1328,37 +1255,6 @@ private:
 
 #pragma pack(pop)
 
-// -----File-----
-
-// file_open_types
-
-BEGIN_ENUM(file_open_types)
-	ENUM_VALUE_ENTRY(Read,       0x00000000)
-	ENUM_VALUE_ENTRY(Write,      0x00000001)
-	ENUM_VALUE_ENTRY(ReadWrite,  0x00000002)
-END_ENUM()
-
-// file_creation_types
-//   they can combine with <or> operation
-BEGIN_ENUM(file_creation_types)
-	ENUM_VALUE_ENTRY(Create,     0x00001000)
-	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
-END_ENUM()
-
-#pragma pack(push, 1)
-
-// storage_status
-
-struct storage_status
-{
-	int64        iSize;     //storage size in bytes (such as file, memory)
-	system_time  tmAccess;  //time of last access
-	system_time  tmModify;  //time of last modification
-	system_time  tmCreate;  //time of creation
-};
-
-#pragma pack(pop)
-
 // -----collection-----
 
 // coll_replace_elements<TIterator, TCompareTrait>
@@ -1602,6 +1498,16 @@ public:
 	static T* GetInternalPointer(const unique_ptr<T>& sp) throw()
 	{
 		return const_cast<T*>(sp.m_p);
+	}
+
+	//type cast (derived -> base)
+	template <typename TSrc, typename TDest>
+	static ref_ptr<TDest> TypeCast(const unique_ptr<TSrc>& sp) throw()
+	{
+		TDest* pRet = NULL;
+		if( !sp.IsNull() )
+			pRet = static_cast<TDest*>(sp.m_p);
+		return ref_ptr<TDest>(pRet);
 	}
 };
 

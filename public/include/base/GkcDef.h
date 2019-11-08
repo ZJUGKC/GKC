@@ -185,12 +185,6 @@ template <typename T>
 using Limits = limits_base<T>;
 
 //------------------------------------------------------------------------------
-// basic operators
-
-// SafeOperators
-typedef safe_operators  SafeOperators;
-
-//------------------------------------------------------------------------------
 //Traits
 
 // DefaultCompareTrait<T>
@@ -1059,6 +1053,15 @@ inline void Swap<int>(int& t1, int& t2)
 	assert( &t1 != &t2 );
 	t1 ^= t2 ^= t1 ^= t2;
 }
+
+//------------------------------------------------------------------------------
+// basic operators
+
+// FloatHelper
+typedef float_helper  FloatHelper;
+
+// SafeOperators
+typedef safe_operators  SafeOperators;
 
 //------------------------------------------------------------------------------
 // Time

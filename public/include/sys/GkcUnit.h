@@ -76,8 +76,8 @@ The GKC_BEGIN_TEST_EXCEPTION and GKC_END_TEST_EXCEPTION macros can be used to ve
 #define __GKC_UNIT_H__
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __GKC_COLL_H__
-	#error GkcUnit.h requires GkcColl.h to be included first.
+#ifndef __GKC_COLLB_H__
+	#error GkcUnit.h requires GkcCollb.h to be included first.
 #endif
 
 #ifndef __GKC_CONSOLE_H__

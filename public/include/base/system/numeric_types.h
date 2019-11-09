@@ -15,6 +15,105 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------------
+//number
+
+// limits_base<T>
+
+template <typename T>
+class limits_base;
+
+/*
+signed : (((T)1)<<(bits-1)) --- ~(((T)1)<<(bits-1))
+unsigned : 0 --- ~((T)0)
+*/
+
+//special
+template <>
+class limits_base<char>
+{
+public:
+	static const char Lowest = SCHAR_MIN;
+	static const char Min = SCHAR_MIN;
+	static const char Max = SCHAR_MAX;
+};
+template <>
+class limits_base<byte>
+{
+public:
+	static const byte Lowest = 0;
+	static const byte Min = 0;
+	static const byte Max = UCHAR_MAX;
+};
+
+template <>
+class limits_base<short>
+{
+public:
+	static const short Lowest = SHRT_MIN;
+	static const short Min = SHRT_MIN;
+	static const short Max = SHRT_MAX;
+};
+template <>
+class limits_base<ushort>
+{
+public:
+	static const ushort Lowest = 0;
+	static const ushort Min = 0;
+	static const ushort Max = USHRT_MAX;
+};
+
+template <>
+class limits_base<int>
+{
+public:
+	static const int Lowest = INT_MIN;
+	static const int Min = INT_MIN;
+	static const int Max = INT_MAX;
+};
+template <>
+class limits_base<uint>
+{
+public:
+	static const uint Lowest = 0;
+	static const uint Min = 0;
+	static const uint Max = UINT_MAX;
+};
+
+template <>
+class limits_base<int64>
+{
+public:
+	static const int64 Lowest = LLONG_MIN;
+	static const int64 Min = LLONG_MIN;
+	static const int64 Max = LLONG_MAX;
+};
+template <>
+class limits_base<uint64>
+{
+public:
+	static const uint64 Lowest = 0;
+	static const uint64 Min = 0;
+	static const uint64 Max = ULLONG_MAX;
+};
+
+template <>
+class limits_base<float>
+{
+public:
+	static const float Lowest;
+	static const float Min;
+	static const float Max;
+};
+template <>
+class limits_base<double>
+{
+public:
+	static const double Lowest;
+	static const double Min;
+	static const double Max;
+};
+
+//------------------------------------------------------------------------------
 //float
 
 // float_helper

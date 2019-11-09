@@ -58,6 +58,9 @@ for cross-platform.
 //numeric types
 #include "system/numeric_types.h"
 
+//unique types
+#include "system/unique_types.h"
+
 //string APIs
 #include "system/str_api.h"
 

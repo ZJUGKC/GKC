@@ -68,7 +68,8 @@ inline bool make_local_time(int iYear, int iMonth, int iDay,
 inline bool time_to_gmt_detail(const time_value& tv, time_detail& td) throw()
 {
 	struct tm tms;
-	if( ::gmtime_r(&(tv.get_Seconds()), &tms) == NULL )
+	time_t sec = (time_t)tv.get_Seconds();
+	if( ::gmtime_r(&sec, &tms) == NULL )
 		return false;  //errno
 	_fill_time_detail_from_tm(tms, td);
 	td.iNanoseconds = tv.get_Nanoseconds();
@@ -78,7 +79,8 @@ inline bool time_to_gmt_detail(const time_value& tv, time_detail& td) throw()
 inline bool time_to_local_detail(const time_value& tv, time_detail& td) throw()
 {
 	struct tm tms;
-	if( ::localtime_r(&(tv.get_Seconds()), &tms) == NULL )
+	time_t sec = (time_t)tv.get_Seconds();
+	if( ::localtime_r(&sec, &tms) == NULL )
 		return false;  //errno
 	_fill_time_detail_from_tm(tms, td);
 	td.iNanoseconds = tv.get_Nanoseconds();

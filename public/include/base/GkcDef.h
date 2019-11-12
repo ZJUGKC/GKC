@@ -59,7 +59,7 @@ for cross-platform.
 #include "system/numeric_types.h"
 
 //unique types
-#include "system/unique_types.h"
+#include "system/heap_types.h"
 
 //string APIs
 #include "system/str_api.h"
@@ -178,14 +178,6 @@ typedef outofmemory_exception  OutOfMemoryException;
 
 // OverflowException
 typedef overflow_exception  OverflowException;
-
-//------------------------------------------------------------------------------
-// number
-
-// Limits<T>
-
-template <typename T>
-using Limits = limits_base<T>;
 
 //------------------------------------------------------------------------------
 //Traits
@@ -527,58 +519,6 @@ public:
 				return -1;
 		}
 		return 0;
-	}
-};
-
-//------------------------------------------------------------------------------
-// Memory
-
-// IMemoryManager
-
-typedef i_memory_manager  IMemoryManager;
-
-// IMemoryAllocatorRef32
-
-typedef i_memory_allocator_ref_32  IMemoryAllocatorRef32;
-
-// IMemoryAllocatorRef32Full
-
-typedef i_memory_allocator_ref_32_full  IMemoryAllocatorRef32Full;
-
-// IMemoryAllocatorRef64
-
-typedef i_memory_allocator_ref_64  IMemoryAllocatorRef64;
-
-// IMemoryAllocatorRef64Full
-
-typedef i_memory_allocator_ref_64_full  IMemoryAllocatorRef64Full;
-
-// AlignHelper
-
-class AlignHelper
-{
-public:
-	//T : Integer
-	//uAlign : it must be a value as 2^N.
-	template <typename T>
-	static T RoundUp(IN T n, IN uint uAlign) throw()
-	{
-		assert( uAlign > 0 );
-		//overflow is not checked
-		return T( (n + (uAlign - 1)) & ~(T(uAlign) - 1) );
-	}
-	template <typename T>
-	static T RoundUpThrow(IN T n, IN uint uAlign)
-	{
-		assert( uAlign > 0 );
-		T v = SafeOperators::AddThrow(n, T(uAlign - 1));
-		return T( (v) & ~(T(uAlign) - 1) );
-	}
-	template <typename T>
-	static T RoundDown(IN T n, IN uint uAlign) throw()
-	{
-		assert( uAlign > 0 );
-		return T( n & ~(T(uAlign) - 1) );
 	}
 };
 
@@ -1058,6 +998,14 @@ inline void Swap<int>(int& t1, int& t2)
 }
 
 //------------------------------------------------------------------------------
+// number
+
+// Limits<T>
+
+template <typename T>
+using Limits = limits_base<T>;
+
+//------------------------------------------------------------------------------
 // basic operators
 
 // FloatHelper
@@ -1065,6 +1013,58 @@ typedef float_helper  FloatHelper;
 
 // SafeOperators
 typedef safe_operators  SafeOperators;
+
+//------------------------------------------------------------------------------
+// Memory
+
+// IMemoryManager
+
+typedef i_memory_manager  IMemoryManager;
+
+// IMemoryAllocatorRef32
+
+typedef i_memory_allocator_ref_32  IMemoryAllocatorRef32;
+
+// IMemoryAllocatorRef32Full
+
+typedef i_memory_allocator_ref_32_full  IMemoryAllocatorRef32Full;
+
+// IMemoryAllocatorRef64
+
+typedef i_memory_allocator_ref_64  IMemoryAllocatorRef64;
+
+// IMemoryAllocatorRef64Full
+
+typedef i_memory_allocator_ref_64_full  IMemoryAllocatorRef64Full;
+
+// AlignHelper
+
+class AlignHelper
+{
+public:
+	//T : Integer
+	//uAlign : it must be a value as 2^N.
+	template <typename T>
+	static T RoundUp(IN T n, IN uint uAlign) throw()
+	{
+		assert( uAlign > 0 );
+		//overflow is not checked
+		return T( (n + (uAlign - 1)) & ~(T(uAlign) - 1) );
+	}
+	template <typename T>
+	static T RoundUpThrow(IN T n, IN uint uAlign)
+	{
+		assert( uAlign > 0 );
+		T v = SafeOperators::AddThrow(n, T(uAlign - 1));
+		return T( (v) & ~(T(uAlign) - 1) );
+	}
+	template <typename T>
+	static T RoundDown(IN T n, IN uint uAlign) throw()
+	{
+		assert( uAlign > 0 );
+		return T( n & ~(T(uAlign) - 1) );
+	}
+};
 
 //------------------------------------------------------------------------------
 // Time
@@ -1091,7 +1091,7 @@ public:
 	{
 		get_tick_count(tv);
 	}
-	static void GetCurrentTime(TimeValue& tv) throw()
+	static void FetchCurrentTime(TimeValue& tv) throw()
 	{
 		get_current_time(tv);
 	}

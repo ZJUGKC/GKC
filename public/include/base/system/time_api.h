@@ -81,7 +81,11 @@ public:
 	}
 
 //properties
-	int64 get_Seconds() const throw()
+	const int64& get_Seconds() const throw()
+	{
+		return m_iSeconds;
+	}
+	int64& get_Seconds() throw()
 	{
 		return m_iSeconds;
 	}
@@ -89,7 +93,11 @@ public:
 	{
 		m_iSeconds = v;
 	}
-	int64 get_Nanoseconds() const throw()
+	const int64& get_Nanoseconds() const throw()
+	{
+		return m_iNanoseconds;
+	}
+	int64& get_Nanoseconds() throw()
 	{
 		return m_iNanoseconds;
 	}

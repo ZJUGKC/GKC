@@ -16,7 +16,7 @@ This file contains global variables for header file.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "system/other_types.cpp"
+#include "system/numeric_types.cpp"
 
 #include "system/time_api.cpp"
 

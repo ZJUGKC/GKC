@@ -73,7 +73,7 @@ inline void _os_filetime_to_timevalue(const FILETIME& ft, time_value& tv) throw(
 inline bool _os_is_valid_filetime(const FILETIME& ft) throw()
 {
 	FILETIME ftLocal;
-	if( !::FileTimeToLocalTime(&ft, &ftLocal) )
+	if( !::FileTimeToLocalFileTime(&ft, &ftLocal) )
 		return false;  //FALSE, ::GetLastError()
 	SYSTEMTIME st;
 	if( !::FileTimeToSystemTime(&ftLocal, &st) )

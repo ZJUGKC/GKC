@@ -584,7 +584,7 @@ public:
 
 	bool IsEmpty() const throw()
 	{
-		return GetCount() == 0;
+		return baseClass::GetCount() == 0;
 	}
 };
 

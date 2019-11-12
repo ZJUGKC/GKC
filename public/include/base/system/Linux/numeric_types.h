@@ -17,10 +17,11 @@
 //Linux
 
 //------------------------------------------------------------------------------
-
-
-//------------------------------------------------------------------------------
 // Currency
+
+// A 64-bit signed integer number, scaled by 10000 to give a fixed-point number
+// with 15 digits to the left of the decimal point and 4 digits to the right.
+// This representation provides a range of -922 337 203 685 477.5808 to 922 337 203 685 477.5807.
 
 #pragma pack(push, 1)
 

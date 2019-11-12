@@ -53,13 +53,13 @@ inline bool _Generate_Css_File(const ConstStringS& strFile)
 inline void _Generate_Time_String(StringA& str)
 {
 	TimeValue tv;
-	TimeHelper::GetCurrentTime(tv);
-	TimeDetail td;
+	TimeHelper::FetchCurrentTime(tv);
+	TimeDetail td = { 0 };
 	bool bRet = TimeHelper::ToGmtDetail(tv, td);
 	(void)bRet;
 	assert( bRet );
-	FixedString<CharA, 32> buffer;
-	int ret = value_to_string(FixedArrayHelper::GetInternalPointer(buffer), FixedString<CharA, 32>::c_size,
+	FixedStringT<CharA, 32> buffer;
+	int ret = value_to_string(FixedArrayHelper::GetInternalPointer(buffer), FixedStringT<CharA, 32>::c_size,
 							"%04d-%02d-%02dT%02d:%02d:%02dZ",
 							td.iYear, td.iMonth, td.iDay,
 							td.iHour, td.iMinute, td.iSecond);
@@ -151,7 +151,7 @@ inline void _Generate_MetaList_String(const ConstStringA& strCoverImageFile,
 		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
 	}
 	//rights
-	if( !strRights.Empty() ) {
+	if( !strRights.IsEmpty() ) {
 		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<dc:rights>$$RIGHTS$$</dc:rights>\r\n"), strItem);  //may throw
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$RIGHTS$$"), strRights, strItem);  //may throw
 		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
@@ -585,7 +585,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 								StringUtilHelper::To_ConstString(info.GetCoverName()),
 								StringUtilHelper::To_ConstString(strShortString),
 								StringUtilHelper::To_ConstString(info.GetTopic()),
-								ftEnum)  //may throw
+								ftEnum) )  //may throw
 			return false;
 	}
 	else {

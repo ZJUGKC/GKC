@@ -119,7 +119,7 @@ public:
 	template <typename Tchar>
 	static bool GetHomeDirectory(StringT<Tchar>& str)
 	{
-		return EnvironmentVariableHelper::Query<Tchar>(DECLARE_TEMP_CONST_STRING(ConstStringT<Tchar>, ENVVAR_HOME_DIR), str) );  //may throw
+		return EnvironmentVariableHelper::Query<Tchar>(DECLARE_TEMP_CONST_STRING(ConstStringT<Tchar>, ENVVAR_HOME_DIR), str);  //may throw
 	}
 };
 

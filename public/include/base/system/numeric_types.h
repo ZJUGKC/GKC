@@ -17,6 +17,62 @@
 //------------------------------------------------------------------------------
 //number
 
+// type_base<T>
+
+template <typename T>
+struct type_base;
+
+template <>
+struct type_base<char>
+{
+	typedef byte  unsigned_type;
+};
+template <>
+struct type_base<byte>
+{
+	typedef byte  unsigned_type;
+};
+template <>
+struct type_base<short>
+{
+	typedef ushort  unsigned_type;
+};
+template <>
+struct type_base<ushort>
+{
+	typedef ushort  unsigned_type;
+};
+template <>
+struct type_base<int>
+{
+	typedef uint  unsigned_type;
+};
+template <>
+struct type_base<uint>
+{
+	typedef uint  unsigned_type;
+};
+template <>
+struct type_base<int64>
+{
+	typedef uint64  unsigned_type;
+};
+template <>
+struct type_base<uint64>
+{
+	typedef uint64  unsigned_type;
+};
+template <>
+struct type_base<float>
+{
+	typedef float  unsigned_type;
+};
+template <>
+struct type_base<double>
+{
+	typedef double  unsigned_type;
+};
+
 // limits_base<T>
 
 template <typename T>
@@ -278,6 +334,7 @@ inline call_result _numeric_cast_unsigned_minmax(T t, U& u) throw()
 	{ return _numeric_cast_unsigned_minmax<src_type, dest_type>(t, u); }
 
 //char
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(char, char)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(byte, char)
 _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(short, char)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(ushort, char)
@@ -289,6 +346,7 @@ _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(float, char)
 _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(double, char)
 //byte
 _DECLARE_FUNC_NUMERIC_CAST_LT_ZERO(char, byte)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(byte, byte)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(short, byte)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(ushort, byte)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(int, byte)
@@ -300,6 +358,7 @@ _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(double, byte)
 //short
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(char, short)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(byte, short)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(short, short)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(ushort, short)
 _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(int, short)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(uint, short)
@@ -311,6 +370,7 @@ _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(double, short)
 _DECLARE_FUNC_NUMERIC_CAST_LT_ZERO(char, ushort)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(byte, ushort)
 _DECLARE_FUNC_NUMERIC_CAST_LT_ZERO(short, ushort)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(ushort, ushort)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(int, ushort)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(uint, ushort)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(int64, ushort)
@@ -322,6 +382,7 @@ _DECLARE_FUNC_NUMERIC_CAST_DIRECT(char, int)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(byte, int)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(short, int)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(ushort, int)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(int, int)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(uint, int)
 _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(int64, int)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(uint64, int)
@@ -333,6 +394,7 @@ _DECLARE_FUNC_NUMERIC_CAST_DIRECT(byte, uint)
 _DECLARE_FUNC_NUMERIC_CAST_LT_ZERO(short, uint)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(ushort, uint)
 _DECLARE_FUNC_NUMERIC_CAST_LT_ZERO(int, uint)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint, uint)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(int64, uint)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(uint64, uint)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(float, uint)
@@ -344,6 +406,7 @@ _DECLARE_FUNC_NUMERIC_CAST_DIRECT(short, int64)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(ushort, int64)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(int, int64)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint, int64)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(int64, int64)
 _DECLARE_FUNC_NUMERIC_CAST_GT_MAX(uint64, int64)
 _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(float, int64)
 _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(double, int64)
@@ -355,6 +418,7 @@ _DECLARE_FUNC_NUMERIC_CAST_DIRECT(ushort, uint64)
 _DECLARE_FUNC_NUMERIC_CAST_LT_ZERO(int, uint64)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint, uint64)
 _DECLARE_FUNC_NUMERIC_CAST_LT_ZERO(int64, uint64)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint64, uint64)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(float, uint64)
 _DECLARE_FUNC_NUMERIC_CAST_UNSIGNED_MINMAX(double, uint64)
 //float
@@ -366,6 +430,7 @@ _DECLARE_FUNC_NUMERIC_CAST_DIRECT(int, float)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint, float)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(int64, float)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint64, float)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(float, float)
 _DECLARE_FUNC_NUMERIC_CAST_SIGNED_MINMAX(double, float)
 //double
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(char, double)
@@ -377,91 +442,92 @@ _DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint, double)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(int64, double)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(uint64, double)
 _DECLARE_FUNC_NUMERIC_CAST_DIRECT(float, double)
+_DECLARE_FUNC_NUMERIC_CAST_DIRECT(double, double)
 
 //------------------------------------------------------------------------------
 //arithmetic operators
 
 // absolute
 
-template <typename T, typename U>
-inline U numeric_absolute(T t) throw();
+template <typename T>
+inline typename type_base<T>::unsigned_type numeric_absolute(T t) throw();
 
-template <typename T, typename U>
-inline U _numeric_absolute_u(T t) throw()
+template <typename T>
+inline typename type_base<T>::unsigned_type _numeric_absolute_u(T t) throw()
 {
 	return t;
 }
-template <typename T, typename U>
-inline U _numeric_absolute_s(T t) throw()
+template <typename T>
+inline typename type_base<T>::unsigned_type _numeric_absolute_s(T t) throw()
 {
-	return t >= 0 ? (U)t : (U)(-t);
+	return t >= 0 ? (typename type_base<T>::unsigned_type)t : (typename type_base<T>::unsigned_type)(-t);
 }
-template <typename T, typename U>
-inline U _numeric_absolute_f(T t) throw()
+template <typename T>
+inline typename type_base<T>::unsigned_type _numeric_absolute_f(T t) throw()
 {
-	return (U)::fabsf(t);
+	return (typename type_base<T>::unsigned_type)::fabsf(t);
 }
-template <typename T, typename U>
-inline U _numeric_absolute_d(T t) throw()
+template <typename T>
+inline typename type_base<T>::unsigned_type _numeric_absolute_d(T t) throw()
 {
-	return (U)::fabs(t);
+	return (typename type_base<T>::unsigned_type)::fabs(t);
 }
 
-#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_U(type1, type2)  \
-	template <> inline type2 numeric_absolute<type1, type2>(type1 t) throw()  \
-	{ return _numeric_absolute_u<type1, type2>(t); }
-#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_S(type1, type2)  \
-	template <> inline type2 numeric_absolute<type1, type2>(type1 t) throw()  \
-	{ return _numeric_absolute_s<type1, type2>(t); }
-#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_F(type1, type2)  \
-	template <> inline type2 numeric_absolute<type1, type2>(type1 t) throw()  \
-	{ return _numeric_absolute_f<type1, type2>(t); }
-#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_D(type1, type2)  \
-	template <> inline type2 numeric_absolute<type1, type2>(type1 t) throw()  \
-	{ return _numeric_absolute_d<type1, type2>(t); }
+#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_U(type)  \
+	template <> inline typename type_base<type>::unsigned_type numeric_absolute<type>(type t) throw()  \
+	{ return _numeric_absolute_u<type>(t); }
+#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_S(type)  \
+	template <> inline typename type_base<type>::unsigned_type numeric_absolute<type>(type t) throw()  \
+	{ return _numeric_absolute_s<type>(t); }
+#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_F(type)  \
+	template <> inline typename type_base<type>::unsigned_type numeric_absolute<type>(type t) throw()  \
+	{ return _numeric_absolute_f<type>(t); }
+#define _DECLARE_FUNC_NUMERIC_ABSOLUTE_D(type)  \
+	template <> inline typename type_base<type>::unsigned_type numeric_absolute<type>(type t) throw()  \
+	{ return _numeric_absolute_d<type>(t); }
 
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(char, byte)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(byte, byte)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(short, ushort)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(ushort, ushort)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(int, uint)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(uint, uint)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(int64, uint64)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(uint64, uint64)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_F(float, float)
-_DECLARE_FUNC_NUMERIC_ABSOLUTE_D(double, double)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(char)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(byte)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(short)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(ushort)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(int)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(uint)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_S(int64)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_U(uint64)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_F(float)
+_DECLARE_FUNC_NUMERIC_ABSOLUTE_D(double)
 
 // negative to positive
 
-template <typename T, typename U>
-inline U numeric_n2p(T t) throw();
+template <typename T>
+inline typename type_base<T>::unsigned_type numeric_n2p(T t) throw();
 
-template <typename T, typename U>
-inline U _numeric_n2p_i(T t) throw()
+template <typename T>
+inline typename type_base<T>::unsigned_type _numeric_n2p_i(T t) throw()
 {
 	assert( t < 0 );
-	return (U)(-t);
+	return (typename type_base<T>::unsigned_type)(-t);
 }
-template <typename T, typename U>
-inline U _numeric_n2p_f_d(T t) throw()
+template <typename T>
+inline typename type_base<T>::unsigned_type _numeric_n2p_f_d(T t) throw()
 {
 	assert( default_compare_trait<T>::IsLT(t, (T)0) );
-	return (U)(-t);
+	return (typename type_base<T>::unsigned_type)(-t);
 }
 
-#define _DECLARE_FUNC_NUMERIC_N2P_I(type1, type2)  \
-	template <> inline type2 numeric_n2p<type1, type2>(type1 t) throw()  \
-	{ return _numeric_n2p_i<type1, type2>(t); }
-#define _DECLARE_FUNC_NUMERIC_N2P_F_D(type1, type2)  \
-	template <> inline type2 numeric_n2p<type1, type2>(type1 t) throw()  \
-	{ return _numeric_n2p_f_d<type1, type2>(t); }
+#define _DECLARE_FUNC_NUMERIC_N2P_I(type)  \
+	template <> inline typename type_base<type>::unsigned_type numeric_n2p<type>(type t) throw()  \
+	{ return _numeric_n2p_i<type>(t); }
+#define _DECLARE_FUNC_NUMERIC_N2P_F_D(type)  \
+	template <> inline typename type_base<type>::unsigned_type numeric_n2p<type>(type t) throw()  \
+	{ return _numeric_n2p_f_d<type>(t); }
 
-_DECLARE_FUNC_NUMERIC_N2P_I(char, byte)
-_DECLARE_FUNC_NUMERIC_N2P_I(short, ushort)
-_DECLARE_FUNC_NUMERIC_N2P_I(int, uint)
-_DECLARE_FUNC_NUMERIC_N2P_I(int64, uint64)
-_DECLARE_FUNC_NUMERIC_N2P_F_D(float, float)
-_DECLARE_FUNC_NUMERIC_N2P_F_D(double, double)
+_DECLARE_FUNC_NUMERIC_N2P_I(char)
+_DECLARE_FUNC_NUMERIC_N2P_I(short)
+_DECLARE_FUNC_NUMERIC_N2P_I(int)
+_DECLARE_FUNC_NUMERIC_N2P_I(int64)
+_DECLARE_FUNC_NUMERIC_N2P_F_D(float)
+_DECLARE_FUNC_NUMERIC_N2P_F_D(double)
 
 // negation
 
@@ -1141,7 +1207,7 @@ inline call_result _numeric_large_int_region_multiply(int a, int64 b, int& r) th
 		if( aNegative ^ bNegative ) {
 			// Result must be negative
 			if( tmp <= (uint)(limits_base<int>::Lowest) ) {
-				r = -tmp;
+				r = -(int)tmp;
 				return call_result();
 			}
 		}
@@ -1970,12 +2036,12 @@ inline call_result _numeric_subtract_s08s8_2(T t, U u, U& r) throw()
 {
 	int64 tmp = t - u;
 	if( t >= 0 ) {
-		if( sizeof(U) < 8 && tmp > limits_base<U>::Max )
+		if( (sizeof(U) < 8 && tmp > limits_base<U>::Max)
 			|| (u < 0 && tmp < t) )
 			return call_result(system_call_results::Overflow);
 	}
 	else {
-		if( sizeof(U) < 8 && tmp < (int64)(limits_base<U>::Lowest) )
+		if( (sizeof(U) < 8 && tmp < (int64)(limits_base<U>::Lowest))
 			|| (u >= 0 && tmp > t) )
 			return call_result(system_call_results::Overflow);
 	}
@@ -1986,8 +2052,8 @@ template <typename T, typename U>
 inline call_result _numeric_subtract_s4s08_2(T t, U u, U& r) throw()
 {
 	int64 tmp = (int64)t - u;
-	if( (t >= 0 && u < 0 && tmp < t )
-		 || (u >= 0 && tmp > t ) )
+	if( (t >= 0 && u < 0 && tmp < t)
+		 || (u >= 0 && tmp > t) )
 		return call_result(system_call_results::Overflow);
 	r = (U)tmp;
 	return call_result();

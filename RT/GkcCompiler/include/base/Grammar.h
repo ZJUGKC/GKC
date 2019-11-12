@@ -278,6 +278,7 @@ private:
 	{
 		CallResult cr;
 		bSkip = false;
+		uEvent = CPL_TK_ERROR;
 		//token
 		cr = m_lexer.Deref().Parse();  //may throw
 		if( cr.IsFailed() ) {

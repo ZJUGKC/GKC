@@ -66,19 +66,12 @@ for composing papers, books and slides.
 	sudo apt-get install uuid-dev
 	```
 
-1. Install X11:
+1. Install GTK+3:
 
 	```
-	sudo apt-get install libx11-dev
+	sudo apt-get install libgtk-3-dev
+	sudo apt-get install pkg-config
 	```
-
-1. Edit the following file:
-
-	```
-	sudo vi /etc/X11/Xsession.options
-	```
-
-	and change `use-ssh-agent` to `no-use-ssh-agent`.
 
 ##### Latex
 

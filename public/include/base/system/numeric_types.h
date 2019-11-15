@@ -550,6 +550,10 @@ inline call_result _numeric_negative_direct(T t, T& r) throw()
 template <typename T>
 inline call_result _numeric_negative_unsigned(T t, T& r) throw()
 {
+	if( t == 0 ) {
+		r = 0;
+		return call_result();
+	}
 	return call_result(system_call_results::Overflow);
 }
 

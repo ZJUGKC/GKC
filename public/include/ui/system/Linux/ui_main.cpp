@@ -54,6 +54,9 @@ int main(int argc, char *argv[], char *envp[])
 	//time
 	time_initialize();
 
+	//GTK+3
+	::gtk_init(&argc, &argv);  //may terminate the program
+
 	//main
 	return program_entry_point::UIMain(args);
 }

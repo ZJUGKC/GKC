@@ -11,11 +11,35 @@
 #
 -->
 
+# X11
+
+1. Install X11:
+
+	```
+	sudo apt-get install libx11-dev
+	```
+
+1. Edit the following file:
+
+	```
+	sudo vi /etc/X11/Xsession.options
+	```
+
+	and change `use-ssh-agent` to `no-use-ssh-agent`.
+
+1. Include the header files:
+
+	```
+	#include <X11/Xlib.h>
+	#include <X11/Xutil.h>
+	#include <X11/Xatom.h>
+	```
+
 # Server node for rendering
 
 ## Windows
 
-Install Windows server 2016.
+Install the latest version of Windows server.
 
 Change the port number of Terminal Server:
 
@@ -37,7 +61,7 @@ Change the port number of Terminal Server:
 
 ## Linux
 
-Install Ubuntu Server 16.04.
+Install the latest version of Ubuntu Server.
 
 Install packages:
 

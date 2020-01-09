@@ -284,9 +284,7 @@ public:
 
 		Position& operator=(const Position& src) throw()
 		{
-			if( this != &src ) {
-				m_uNode = src.m_uNode;
-			}
+			m_uNode = src.m_uNode;
 			return *this;
 		}
 
@@ -814,9 +812,7 @@ public:
 		}
 		Position& operator=(const Position& src) throw()
 		{
-			if( this != &src ) {
-				m_uNode = src.m_uNode;
-			}
+			m_uNode = src.m_uNode;
 			return *this;
 		}
 

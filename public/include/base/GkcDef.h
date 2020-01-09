@@ -269,18 +269,14 @@ public:
 
 	thisClass& operator=(const thisClass& src)
 	{
-		if( this != &src ) {
-			m_t1 = src.m_t1;
-			m_t2 = src.m_t2;
-		}
+		m_t1 = src.m_t1;
+		m_t2 = src.m_t2;
 		return *this;
 	}
 	thisClass& operator=(thisClass&& src)
 	{
-		if( this != &src ) {
-			m_t1 = rv_forward(src.m_t1);
-			m_t2 = rv_forward(src.m_t2);
-		}
+		m_t1 = rv_forward(src.m_t1);
+		m_t2 = rv_forward(src.m_t2);
 		return *this;
 	}
 

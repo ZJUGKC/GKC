@@ -46,10 +46,8 @@ public:
 //operators
 	_time_def& operator=(const _time_def& src) throw()
 	{
-		if( this != &src ) {
-			m_iSeconds     = src.m_iSeconds;
-			m_iNanoseconds = src.m_iNanoseconds;
-		}
+		m_iSeconds     = src.m_iSeconds;
+		m_iNanoseconds = src.m_iNanoseconds;
 		return *this;
 	}
 

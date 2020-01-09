@@ -638,9 +638,7 @@ public:
 
 	_CplMetaDataPosition& operator=(const _CplMetaDataPosition& src) throw()
 	{
-		if( this != &src ) {
-			m_uAddr = src.m_uAddr;
-		}
+		m_uAddr = src.m_uAddr;
 		return *this;
 	}
 

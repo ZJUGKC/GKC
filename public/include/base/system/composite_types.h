@@ -32,8 +32,8 @@
 	public: typedef E x; \
 		explicit E(int value = 0) throw() : m_value(value) { } \
 		E(const E& src) throw() : m_value(src.m_value) { } \
-		E& operator=(const E& src) throw() { \
-			if(this!=&src) { m_value = src.m_value; } return *this; } \
+		E& operator=(const E& src) throw() \
+			{ m_value = src.m_value; return *this; } \
 		E& operator=(int value) throw() \
 			{ m_value = value; return *this; } \
 		bool operator==(const E& right) const throw() \
@@ -121,9 +121,7 @@ public:
 	//operators
 	ref_ptr<T>& operator=(const ref_ptr<T>& src) throw()
 	{
-		if( this != &src ) {
-			m_p = src.m_p;
-		}
+		m_p = src.m_p;
 		return *this;
 	}
 	ref_ptr<T>& operator=(T* p) throw()
@@ -389,9 +387,7 @@ public:
 	//operators
 	array_position& operator=(const array_position& src) throw()
 	{
-		if( this != &src ) {
-			m_uIndex = src.m_uIndex;
-		}
+		m_uIndex = src.m_uIndex;
 		return *this;
 	}
 
@@ -620,10 +616,8 @@ public:
 	//operators
 	const_array<T>& operator=(const const_array<T>& src) throw()
 	{
-		if( this != &src ) {
-			baseClass::m_first = src.m_first;
-			baseClass::m_size  = src.m_size;
-		}
+		baseClass::m_first = src.m_first;
+		baseClass::m_size  = src.m_size;
 		return *this;
 	}
 

@@ -36,9 +36,7 @@ public:
 
 	_GraToken& operator=(const _GraToken& src) throw()
 	{
-		if( this != &src ) {
-			m_uID = src.m_uID;
-		}
+		m_uID = src.m_uID;
 		return *this;
 	}
 

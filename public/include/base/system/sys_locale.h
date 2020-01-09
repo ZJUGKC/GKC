@@ -28,7 +28,7 @@ public:
 
 public:
 	char_s szName[NAME_LEN];
-    uint   uLength;
+	uint   uLength;
 };
 
 // locale_info
@@ -40,9 +40,9 @@ public:
 
 public:
 	char_s szLanguageName[LANGUAGE_LEN];  //ISO 639
-    uint   uLanguageLength;
+	uint   uLanguageLength;
 	char_s szRegionName[REGION_LEN];      //ISO 3166
-    uint   uRegionLength;
+	uint   uRegionLength;
 };
 
 // constant strings for code page

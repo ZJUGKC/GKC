@@ -171,7 +171,9 @@ If Not fso.FolderExists(strDest) Then
 End If
 Set objTarget = objShell.NameSpace(strDest)
 objTarget.CopyHere objFolderItem, 4 + 512 + 1024
-WScript.Sleep 500
+Do
+	WScript.Sleep 500
+Loop Until objTarget.Items().Count >= objFolderItem.Count
 fso.GetFolder(strDest & "\" & strPackageName).Name = "SYSTEM"
 strDest = strDest & "\" & "SYSTEM"
 

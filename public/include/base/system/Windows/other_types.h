@@ -130,9 +130,7 @@ public:
 	//operators
 	call_result& operator=(const call_result& src) throw()
 	{
-		if( this != &src ) {
-			m_result = src.m_result;
-		}
+		m_result = src.m_result;
 		return *this;
 	}
 

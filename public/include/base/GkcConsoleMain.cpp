@@ -22,6 +22,7 @@ This file contains main function for console program.
 class ProgramEntryPoint
 {
 public:
+	//return: 0 --- succeeded, > 0 --- failed or user-defined
 	static int ConsoleMain(const ConstArray<ConstStringS>& args, const ConstArray<ConstStringS>& env);
 };
 */

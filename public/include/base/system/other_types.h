@@ -308,9 +308,7 @@ public:
 	//operators
 	exception_base& operator=(const exception_base& src) throw()
 	{
-		if( &src != this ) {
-			m_result = src.m_result;
-		}
+		m_result = src.m_result;
 		return *this;
 	}
 

@@ -20,7 +20,7 @@ strEnvUws="GKC_UNIFIED_WORKSPACE"
 
 #command parameters
 if [ $# -gt 1 ]; then
-	echo "Usage: sudo sh uninstall-gkc.sh [-a]"
+	echo "Usage: sudo bash uninstall-gkc.sh [-a]"
 	exit 1
 fi
 

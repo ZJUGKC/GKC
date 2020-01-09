@@ -877,10 +877,11 @@ inline call_result _numeric_divide_fx_dx(T t, U u, T& r) throw()
 {
 	if( default_compare_trait<U>::IsEQ(u, (U)0) )
 		return call_result(system_call_results::Invalid);
-	r = (T)(t / (T)u);
-	if( float_helper::IsFinite(r) )
-		return call_result();
-	return call_result(system_call_results::Overflow);
+	T tmp = (T)(t / (T)u);
+	if( !float_helper::IsFinite(tmp) )
+		return call_result(system_call_results::Overflow);
+	r = tmp;
+	return call_result();
 }
 
 #define _DECLARE_FUNC_NUMERIC_DIVIDE_UU_S4U2_S08U4(type1, type2)  \
@@ -1028,31 +1029,32 @@ inline call_result _numeric_large_int_region_multiply(uint64 a, uint64 b, uint64
 	uint bHigh = (uint)(b >> 32);
 	uint bLow  = (uint)b;
 
-	r = 0;
+	uint64 r_tmp = 0;
 
 	if( aHigh == 0 ) {
 		if( bHigh != 0 )
-			r = (uint64)aLow * (uint64)bHigh;
+			r_tmp = (uint64)aLow * (uint64)bHigh;
 	}
 	else if( bHigh == 0 ) {
 		if( aHigh != 0 )
-			r = (uint64)aHigh * (uint64)bLow;
+			r_tmp = (uint64)aHigh * (uint64)bLow;
 	}
 	else {
 		return call_result(system_call_results::Overflow);
 	}
 
-	if( r != 0 ) {
-		if( (uint)(r >> 32) != 0 )
+	if( r_tmp != 0 ) {
+		if( (uint)(r_tmp >> 32) != 0 )
 			return call_result(system_call_results::Overflow);
 
-		r <<= 32;
+		r_tmp <<= 32;
 		uint64 tmp = (uint64)aLow * (uint64)bLow;
-		r += tmp;
+		r_tmp += tmp;
 
-		if( r < tmp )
+		if( r_tmp < tmp )
 			return call_result(system_call_results::Overflow);
 
+		r = r_tmp;
 		return call_result();
 	}
 
@@ -1067,19 +1069,20 @@ inline call_result _numeric_large_int_region_multiply(uint64 a, uint b, uint64& 
 	uint aHigh = (uint)(a >> 32);
 	uint aLow  = (uint)a;
 
-	r = 0;
+	uint64 r_tmp = 0;
 	if( aHigh != 0 ) {
-		r = (uint64)aHigh * (uint64)b;
-		if( (uint)(r >> 32) != 0 )
+		r_tmp = (uint64)aHigh * (uint64)b;
+		if( (uint)(r_tmp >> 32) != 0 )
 			return call_result(system_call_results::Overflow);
 
-		r <<= 32;
+		r_tmp <<= 32;
 		uint64 tmp = (uint64)aLow * (uint64)b;
-		r += tmp;
+		r_tmp += tmp;
 
-		if( r < tmp )
+		if( r_tmp < tmp )
 			return call_result(system_call_results::Overflow);
 
+		r = r_tmp;
 		return call_result();
 	}
 
@@ -1359,7 +1362,7 @@ template <typename T, typename U>
 inline call_result _numeric_multiply_u4u08(T t, U u, T& r) throw()
 {
 	uint tmp;
-	if(_numeric_large_int_region_multiply((uint)t, u, tmp).IsSucceeded()
+	if( _numeric_large_int_region_multiply((uint)t, u, tmp).IsSucceeded()
 		&& numeric_cast<uint, T>(tmp, r).IsSucceeded() )
 		return call_result();
 	return call_result(system_call_results::Overflow);
@@ -1451,10 +1454,11 @@ inline call_result _numeric_multiply_xf_xd(T t, U u, T& r) throw()
 template <typename T, typename U>
 inline call_result _numeric_multiply_fx_dx(T t, U u, T& r) throw()
 {
-	r = (T)(t * (T)u);
-	if( float_helper::IsFinite(r) )
-		return call_result();
-	return call_result(system_call_results::Overflow);
+	T tmp = (T)(t * (T)u);
+	if( !float_helper::IsFinite(tmp) )
+		return call_result(system_call_results::Overflow);
+	r = tmp;
+	return call_result();
 }
 
 #define _DECLARE_FUNC_NUMERIC_MULTIPLY_U2U2(type1, type2)  \
@@ -1641,10 +1645,8 @@ template <typename T, typename U>
 inline call_result _numeric_subtract_u2s2_s2s2(T t, U u, T& r) throw()
 {
 	int tmp = t - u;
-	if( numeric_cast<int, T>(tmp, r).IsSucceeded() ) {
-		r = (T)tmp;
+	if( numeric_cast<int, T>(tmp, r).IsSucceeded() )
 		return call_result();
-	}
 	return call_result(system_call_results::Overflow);
 }
 template <typename T, typename U>
@@ -1807,10 +1809,11 @@ inline call_result _numeric_subtract_xf_xd(T t, U u, T& r) throw()
 template <typename T, typename U>
 inline call_result _numeric_subtract_fx_dx(T t, U u, T& r) throw()
 {
-	r = (T)(t - (T)u);
-	if( float_helper::IsFinite(r) )
-		return call_result();
-	return call_result(system_call_results::Overflow);
+	T tmp = (T)(t - (T)u);
+	if( !float_helper::IsFinite(tmp) )
+		return call_result(system_call_results::Overflow);
+	r = tmp;
+	return call_result();
 }
 
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_UU(type1, type2)  \
@@ -1970,7 +1973,7 @@ _DECLARE_FUNC_NUMERIC_SUBTRACT_FX_DX(double, double)
 // version 2
 
 template <typename T, typename U>
-inline call_result numeric_subtract(T t, U u, U& r) throw();
+inline call_result numeric_subtract2(T t, U u, U& r) throw();
 
 template <typename T, typename U>
 inline call_result _numeric_subtract_uu_2(T t, U u, U& r) throw()
@@ -2094,10 +2097,11 @@ inline call_result _numeric_subtract_s08u08_2(T t, U u, U& r) throw()
 template <typename T, typename U>
 inline call_result _numeric_subtract_xf_xd_2(T t, U u, U& r) throw()
 {
-	r = (U)t - u;
-	if( float_helper::IsFinite(r) )
-		return call_result();
-	return call_result(system_call_results::Overflow);
+	U tmp = (U)t - u;
+	if( !float_helper::IsFinite(tmp) )
+		return call_result(system_call_results::Overflow);
+	r = tmp;
+	return call_result();
 }
 template <typename T, typename U>
 inline call_result _numeric_subtract_fx_dx_2(T t, U u, U& r) throw()
@@ -2109,40 +2113,40 @@ inline call_result _numeric_subtract_fx_dx_2(T t, U u, U& r) throw()
 }
 
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_UU_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_uu_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_U2S2_S2S2_S2U2_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_u2s2_s2s2_s2u2_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_U04S4_U2S04_S04S4_S2S04_S04U2_S4U04_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_u04s4_u2s04_s04s4_s2s04_s04u2_s4u04_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_U08S8_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_u08s8_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_U4S08_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_u4s08_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_S08S8_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_s08s8_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_S4S08_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_s4s08_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_S08U4_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_s08u4_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_S4U08_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_s4u08_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_S08U08_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_s08u08_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_XF_XD_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_xf_xd_2<type1, type2>(t, u, r); }
 #define _DECLARE_FUNC_NUMERIC_SUBTRACT_FX_DX_2(type1, type2)  \
-	template <> inline call_result numeric_subtract<type1, type2>(type1 t, type2 u, type2& r) throw()  \
+	template <> inline call_result numeric_subtract2<type1, type2>(type1 t, type2 u, type2& r) throw()  \
 	{ return _numeric_subtract_fx_dx_2<type1, type2>(t, u, r); }
 
 //char
@@ -2439,10 +2443,11 @@ inline call_result _numeric_add_xf_xd(T t, U u, T& r) throw()
 template <typename T, typename U>
 inline call_result _numeric_add_fx_dx(T t, U u, T& r) throw()
 {
-	r = (T)(t + (T)u);
-	if( float_helper::IsFinite(r) )
-		return call_result();
-	return call_result(system_call_results::Overflow);
+	T tmp = (T)(t + (T)u);
+	if( !float_helper::IsFinite(tmp) )
+		return call_result(system_call_results::Overflow);
+	r = tmp;
+	return call_result();
 }
 
 #define _DECLARE_FUNC_NUMERIC_ADD_U2U2_S2U2(type1, type2)  \
@@ -2609,17 +2614,6 @@ _DECLARE_FUNC_NUMERIC_ADD_XF_XD(float, double)
 _DECLARE_FUNC_NUMERIC_ADD_FX_DX(double, double)
 
 //------------------------------------------------------------------------------
-//OS
-
-#if defined(GKC_OS_WINDOWS)
-	#include "Windows/numeric_types.h"
-#elif defined(GKC_OS_LINUX)
-	#include "Linux/numeric_types.h"
-#else
-	#error Error OS type!
-#endif
-
-//------------------------------------------------------------------------------
 // safe_operators
 
 class safe_operators
@@ -2717,15 +2711,15 @@ public:
 	}
 	//version 2
 	template <typename T, typename U>
-	static call_result Subtract(const T& t, const U& u, U& r) throw()
+	static call_result Subtract2(const T& t, const U& u, U& r) throw()
 	{
-		return numeric_subtract<T, U>(t, u, r);
+		return numeric_subtract2<T, U>(t, u, r);
 	}
 	template <typename T, typename U>
-	static U SubtractThrow(const T& t, const U& u)
+	static U Subtract2Throw(const T& t, const U& u)
 	{
 		U r;
-		call_result cr(Subtract<T, U>(t, u, r));
+		call_result cr(Subtract2<T, U>(t, u, r));
 		if( cr.IsFailed() )
 			throw exception_base(cr);
 		return r;
@@ -2746,6 +2740,33 @@ public:
 		return r;
 	}
 };
+
+//------------------------------------------------------------------------------
+// currency common
+
+// A 64-bit signed integer number, scaled by 10000 to give a fixed-point number
+// with 15 digits to the left of the decimal point and 4 digits to the right.
+// This representation provides a range of -922 337 203 685 477.5808 to 922 337 203 685 477.5807.
+
+#define _CY_MIN_INTEGER     (-922337203685477LL)
+#define _CY_MAX_INTEGER     (922337203685477LL)
+#define _CY_MIN_TAIL        (-5808)
+#define _CY_MAX_TAIL        (5807)
+#define _CY_MIN_FRACTION    (-9999)
+#define _CY_MAX_FRACTION    (9999)
+#define _CY_SCALE           (10000)
+#define _CY_DECIMAL_DIGITS  (4)
+
+//------------------------------------------------------------------------------
+//OS
+
+#if defined(GKC_OS_WINDOWS)
+	#include "Windows/numeric_types.h"
+#elif defined(GKC_OS_LINUX)
+	#include "Linux/numeric_types.h"
+#else
+	#error Error OS type!
+#endif
 
 //------------------------------------------------------------------------------
 

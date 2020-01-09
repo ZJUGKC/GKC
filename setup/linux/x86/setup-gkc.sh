@@ -20,7 +20,7 @@ strEnvUws="GKC_UNIFIED_WORKSPACE"
 
 #command parameters
 if [ $# -lt 1 -o $# -gt 7 ]; then
-	echo "Usage: sudo sh setup-gkc.sh <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]"
+	echo "Usage: sudo bash setup-gkc.sh <-c|-d|-s> [-i Installation-directory] [-l Local-workspace-directory] [-u Unified-workspace-directory]"
 	exit 1
 fi
 

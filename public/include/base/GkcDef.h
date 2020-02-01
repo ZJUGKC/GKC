@@ -78,6 +78,8 @@ for cross-platform.
 
 #include "system/sys_types.h"
 
+#include "system/sys_thread.h"
+
 #include "system/sys_locale.h"
 
 //------------------------------------------------------------------------------

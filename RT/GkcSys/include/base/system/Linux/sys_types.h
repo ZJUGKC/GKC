@@ -58,7 +58,14 @@ public:
 
 		//open
 		int res = 0;
-		int fd = ::open(szFile, flags, S_IRWXU | S_IRWXG | S_IRWXO);
+/*
+S_IRUSR S_IRGRP S_IROTH
+S_IWUSR S_IWGRP S_IWOTH
+S_IXUSR S_IXGRP S_IXOTH
+=======================
+S_IRWXU S_IRWXG S_IRWXO
+*/
+		int fd = ::open(szFile, flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 		if( fd == -1 )
 			res = _OS_CR_FROM_ERRORNO();
 		else

@@ -216,49 +216,6 @@ private:
 //------------------------------------------------------------------------------
 // Synchronization
 
-// helper
-
-class _sync_helper
-{
-public:
-	static char_h* gen_global_name(const char_h* pSrc) throw()
-	{
-		//global
-		DECLARE_LOCAL_CONST_STRING(char_h, c_szGlobal, c_uGlobalLength, L"Global\\")
-		//generate
-		uintptr uCount = calc_string_length(pSrc);
-		uintptr uNewCount;
-		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);
-		if( cr.IsFailed() )
-			return NULL;
-		char_h* pNew = (char_h*)crt_alloc((uNewCount + 1) * sizeof(char_h));
-		if( pNew == NULL )
-			return NULL;
-		//copy
-		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(char_h), pNew);
-		mem_copy(pSrc, uCount * sizeof(char_h), pNew + c_uGlobalLength);
-		pNew[uNewCount] = 0;
-		return pNew;
-	}
-	static void free_global_name(char_h* p) throw()
-	{
-		crt_free((void*)p);
-	}
-	//tools
-	static char_h* gen_sync_name(const char_h* pSrc, bool bGlobal) throw()
-	{
-		char_h* psz = (char_h*)pSrc;
-		if( bGlobal )
-			psz = gen_global_name(psz);
-		return psz;
-	}
-	static void free_sync_name(char_h* p, bool bGlobal) throw()
-	{
-		if( bGlobal )
-			free_global_name(p);
-	}
-};
-
 //Semaphore
 
 // inprocess_semaphore
@@ -668,13 +625,139 @@ private:
 };
 
 //------------------------------------------------------------------------------
-// Thread
+// File Mapping
 
-// thread_sleep
-//  uTimeout: ms
-inline void thread_sleep(uint uTimeout) throw()
+inline void _os_get_file_mapping_flags(int iMapType, DWORD& dwMappingProtection, DWORD& dwViewDesiredAccess) noexcept
 {
-	::Sleep(uTimeout);
+	bool bExec = (iMapType & file_mapping_types::Execute) != 0;
+	dwMappingProtection = bExec ? PAGE_EXECUTE_READ : PAGE_READONLY;
+	dwViewDesiredAccess = 0;
+	if( iMapType & file_mapping_types::Write ) {
+		dwMappingProtection = bExec ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
+		dwViewDesiredAccess |= FILE_MAP_WRITE;
+	}
+	if( iMapType & file_mapping_types::Read )
+		dwViewDesiredAccess |= FILE_MAP_READ;
+	if( bExec )
+		dwViewDesiredAccess |= FILE_MAP_EXECUTE;
 }
+
+// file_mapping
+
+class file_mapping
+{
+public:
+	file_mapping() noexcept
+	{
+	}
+	~file_mapping() noexcept
+	{
+	}
+
+	//iMapType : file_mapping_types::*
+	call_result Map(const io_handle& hd, int64 iOffset, uintptr uSize, int iMapType) noexcept
+	{
+		assert( iOffset >= 0 );
+
+		DWORD dwMappingProtection, dwViewDesiredAccess;
+		_os_get_file_mapping_flags(iMapType, dwMappingProtection, dwViewDesiredAccess);
+
+		return call_result((int)m_map.MapFile((HANDLE)hd.GetHandle(), uSize, iOffset,
+						dwMappingProtection, dwViewDesiredAccess));
+	}
+	void Unmap() noexcept
+	{
+		HRESULT hr = m_map.Unmap();
+		(void)hr;
+		assert( SUCCEEDED(hr) );
+	}
+
+	uintptr GetAddress() const noexcept
+	{
+		return (uintptr)m_map.GetData();
+	}
+	uintptr GetSize() const noexcept
+	{
+		return m_map.GetMappingSize();
+	}
+
+private:
+	_os_file_mapping m_map;
+
+private:
+	//noncopyable
+	file_mapping(const file_mapping&) noexcept;
+	file_mapping& operator=(const file_mapping&) noexcept;
+};
+
+// shared_memory
+
+class shared_memory
+{
+public:
+	shared_memory() noexcept
+	{
+	}
+	~shared_memory() noexcept
+	{
+	}
+
+	//iMapType : file_mapping_types::*
+	call_result Create(const const_string_s& strName, bool bGlobal, uintptr uSize, int iMapType, bool& bAlreadyExisted) noexcept
+	{
+		char_h* psz = _sync_helper::gen_sync_name(const_array_helper::GetInternalPointer(strName), bGlobal);
+		if( psz == NULL )
+			return call_result(CR_OUTOFMEMORY);
+
+		DWORD dwMappingProtection, dwViewDesiredAccess;
+		_os_get_file_mapping_flags(iMapType, dwMappingProtection, dwViewDesiredAccess);
+
+		BOOL bExisting = FALSE;
+		call_result cr((int)m_map.MapSharedMem(uSize, psz, &bExisting, NULL, dwMappingProtection, dwViewDesiredAccess));
+		bAlreadyExisted = bExisting ? true : false;
+
+		_sync_helper::free_sync_name(psz, bGlobal);
+		return cr;
+	}
+	call_result Open(const const_string_s& strName, bool bGlobal, int64 iOffset, uintptr uSize, int iMapType) noexcept
+	{
+		assert( iOffset >= 0 );
+
+		char_h* psz = _sync_helper::gen_sync_name(const_array_helper::GetInternalPointer(strName), bGlobal);
+		if( psz == NULL )
+			return call_result(CR_OUTOFMEMORY);
+
+		DWORD dwMappingProtection, dwViewDesiredAccess;
+		_os_get_file_mapping_flags(iMapType, dwMappingProtection, dwViewDesiredAccess);
+
+		call_result cr((int)m_map.OpenMapping(psz, uSize, iOffset, dwViewDesiredAccess));
+
+		_sync_helper::free_sync_name(psz, bGlobal);
+		return cr;
+	}
+	void Destroy() noexcept
+	{
+		HRESULT hr = m_map.Unmap();
+		(void)hr;
+		assert( SUCCEEDED(hr) );
+	}
+
+	uintptr GetAddress() const noexcept
+	{
+		return (uintptr)m_map.GetData();
+	}
+	uintptr GetSize() const noexcept
+	{
+		return m_map.GetMappingSize();
+	}
+
+private:
+	_os_file_mapping m_map;
+
+private:
+	//noncopyable
+	shared_memory(const shared_memory&) noexcept;
+	shared_memory& operator=(const shared_memory&) noexcept;
+};
 
 ////////////////////////////////////////////////////////////////////////////////

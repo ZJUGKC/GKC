@@ -40,6 +40,14 @@ BEGIN_ENUM(file_creation_types)
 	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
 END_ENUM()
 
+// file_mapping_types
+//   they can combine with <or> operation
+BEGIN_ENUM(file_mapping_types)
+	ENUM_VALUE_ENTRY(Read,    0x00000001)
+	ENUM_VALUE_ENTRY(Write,   0x00000002)
+	ENUM_VALUE_ENTRY(Execute, 0x00000004)
+END_ENUM()
+
 #pragma pack(push, 1)
 
 // storage_status

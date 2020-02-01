@@ -67,9 +67,7 @@ BEGIN_STATIC_CONST_STRING(g_script_body)
 "done" "\n"
 "fHtmlProcessing \"$$DIRPREFIX$$/$$PROJECTNAME$$-cover\" \"\"" "\n"
 "echo \"Generate eBook...\"" "\n"
-"cd doc" "\n"
 "$$EBOOKCMD$$"
-"cd .." "\n"
 "echo \"Done.\"" "\n"
 	)
 END_STATIC_CONST_STRING(g_script_body)
@@ -110,7 +108,12 @@ END_STATIC_CONST_STRING(g_script_chm_encoding)
 
 BEGIN_STATIC_CONST_STRING(g_script_chm_cmd)
 	STATIC_CONST_STRING_ENTRY(
-"chmcpl -c \"$$PROJECTNAME$$.conf\" -o \"$$PROJECTNAME$$.chm\" ." "\n"
+"cd doc" "\n"
+"strTemp=\"chmcpl -c \\\"$$PROJECTNAME$$.conf\\\" -o \\\"$$PROJECTNAME$$.chm\\\" .\"" "\n"
+"fRunCmd \"$strTemp\"" "\n"
+"cd .." "\n"
+"strTemp=\"mv \\\"doc/$$PROJECTNAME$$.chm\\\" .\"" "\n"
+"fRunCmd \"$strTemp\"" "\n"
 	)
 END_STATIC_CONST_STRING(g_script_chm_cmd)
 
@@ -118,8 +121,14 @@ END_STATIC_CONST_STRING(g_script_chm_cmd)
 
 BEGIN_STATIC_CONST_STRING(g_script_epub_cmd)
 	STATIC_CONST_STRING_ENTRY(
-"zip -0Xq \"$$PROJECTNAME$$.epub\" mimetype" "\n"
-"zip -Xr9Dq \"$$PROJECTNAME$$.epub\" META-INF OEBPS" "\n"
+"cd doc" "\n"
+"strTemp=\"zip -0Xq \\\"$$PROJECTNAME$$.epub\\\" mimetype\"" "\n"
+"fRunCmd \"$strTemp\"" "\n"
+"strTemp=\"zip -Xr9Dq \\\"$$PROJECTNAME$$.epub\\\" META-INF OEBPS\"" "\n"
+"fRunCmd \"$strTemp\"" "\n"
+"cd .." "\n"
+"strTemp=\"mv \\\"doc/$$PROJECTNAME$$.epub\\\" .\"" "\n"
+"fRunCmd \"$strTemp\"" "\n"
 	)
 END_STATIC_CONST_STRING(g_script_epub_cmd)
 

@@ -225,49 +225,6 @@ private:
 //------------------------------------------------------------------------------
 // Synchronization
 
-// helper
-
-class _sync_helper
-{
-public:
-	static char_a* gen_global_name(const char_a* pSrc) throw()
-	{
-		//global
-		DECLARE_LOCAL_CONST_STRING(char_a, c_szGlobal, c_uGlobalLength, "/")
-		//generate
-		uintptr uCount = calc_string_length(pSrc);
-		uintptr uNewCount;
-		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);
-		if( cr.IsFailed() )
-			return NULL;
-		char_a* pNew = (char_a*)crt_alloc((uNewCount + 1) * sizeof(char_a));
-		if( pNew == NULL )
-			return NULL;
-		//copy
-		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(char_a), pNew);
-		mem_copy(pSrc, uCount * sizeof(char_a), pNew + c_uGlobalLength);
-		pNew[uNewCount] = 0;
-		return pNew;
-	}
-	static void free_global_name(char_a* p) throw()
-	{
-		crt_free((void*)p);
-	}
-	//tools
-	static char_a* gen_sync_name(const char_a* pSrc, bool bGlobal) throw()
-	{
-		char_a* psz = (char_a*)pSrc;
-		if( bGlobal )
-			psz = gen_global_name(psz);
-		return psz;
-	}
-	static void free_sync_name(char_a* p, bool bGlobal) throw()
-	{
-		if( bGlobal )
-			free_global_name(p);
-	}
-};
-
 //Semaphore
 
 // inprocess_semaphore
@@ -385,7 +342,7 @@ public:
 			return call_result(CR_OUTOFMEMORY);
 		//create
 		int res = 0;
-		sem_t* psem = ::sem_open(psz, O_CREAT | O_EXCL | O_RDWR, S_IRWXU | S_IRWXG | (bGlobal ? S_IRWXO : 0), (unsigned int)iCount);
+		sem_t* psem = ::sem_open(psz, O_CREAT /*| O_EXCL*/ | O_RDWR, S_IRWXU | S_IRWXG | (bGlobal ? S_IRWXO : 0), (unsigned int)iCount);
 		if( psem == SEM_FAILED ) {
 			res = _OS_CR_FROM_ERRORNO();
 			_sync_helper::free_sync_name(psz, true);
@@ -710,18 +667,118 @@ private:
 };
 
 //------------------------------------------------------------------------------
-// Thread
+// File Mapping
 
-// thread_sleep
-//  uTimeout: ms
-inline void thread_sleep(uint uTimeout) throw()
+inline void _os_get_mmap_flags(int iMapType, int& prot) noexcept
 {
-	uint uSecond = uTimeout / 1000;
-	uint uRest = uTimeout % 1000;
-	//no check
-	if( uSecond != 0 )
-		::sleep(uSecond);
-	::usleep(uRest * 1000);
+	prot = PROT_NONE;
+	if( iMapType & file_mapping_types::Read )
+		prot |= PROT_READ;
+	if( iMapType & file_mapping_types::Write )
+		prot |= PROT_WRITE;
+	if( iMapType & file_mapping_types::Execute )
+		prot |= PROT_EXEC;
 }
+inline void _os_get_shm_flags(int iMapType, int& oflag) noexcept
+{
+	oflag = O_RDONLY;
+	if( iMapType & file_mapping_types::Write )
+		oflag = O_RDWR;
+}
+
+// file_mapping
+
+class file_mapping
+{
+public:
+	file_mapping() noexcept
+	{
+	}
+	~file_mapping() noexcept
+	{
+	}
+
+	//iMapType : file_mapping_types::*
+	call_result Map(const io_handle& hd, int64 iOffset, uintptr uSize, int iMapType) noexcept
+	{
+		int prot;
+		_os_get_mmap_flags(iMapType, prot);
+		return m_map.Map((int)hd.GetHandle(), uSize, iOffset, prot, MAP_SHARED, NULL);
+	}
+	void Unmap() noexcept
+	{
+		m_map.Unmap();
+	}
+
+	uintptr GetAddress() const noexcept
+	{
+		return (uintptr)m_map.GetAddress();
+	}
+	uintptr GetSize() const noexcept
+	{
+		return m_map.GetLength();
+	}
+
+private:
+	_os_mmap m_map;
+
+private:
+	//noncopyable
+	file_mapping(const file_mapping&) noexcept;
+	file_mapping& operator=(const file_mapping&) noexcept;
+};
+
+// shared_memory
+
+class shared_memory
+{
+public:
+	shared_memory() noexcept
+	{
+	}
+	~shared_memory() noexcept
+	{
+	}
+
+	//iMapType : file_mapping_types::*
+	call_result Create(const const_string_s& strName, bool bGlobal, uintptr uSize, int iMapType, bool& bAlreadyExisted) noexcept
+	{
+		int prot, oflag;
+		_os_get_mmap_flags(iMapType, prot);
+		_os_get_shm_flags(iMapType, oflag);
+		return m_shm.Open(const_array_helper::GetInternalPointer(strName),
+						oflag, uSize, true, bAlreadyExisted, 0, prot);
+	}
+	call_result Open(const const_string_s& strName, bool bGlobal, int64 iOffset, uintptr uSize, int iMapType) noexcept
+	{
+		int prot, oflag;
+		_os_get_mmap_flags(iMapType, prot);
+		_os_get_shm_flags(iMapType, oflag);
+		bool bAlreadyExisted;
+		return m_shm.Open(const_array_helper::GetInternalPointer(strName),
+						oflag, uSize, false, bAlreadyExisted, iOffset, prot);
+	}
+	void Destroy() noexcept
+	{
+		m_shm.Destroy();
+	}
+
+	uintptr GetAddress() const noexcept
+	{
+		return (uintptr)m_shm.GetAddress();
+	}
+	uintptr GetSize() const noexcept
+	{
+		return m_shm.GetLength();
+	}
+
+private:
+	_os_shm m_shm;
+
+private:
+	//noncopyable
+	shared_memory(const shared_memory&) noexcept;
+	shared_memory& operator=(const shared_memory&) noexcept;
+};
 
 ////////////////////////////////////////////////////////////////////////////////

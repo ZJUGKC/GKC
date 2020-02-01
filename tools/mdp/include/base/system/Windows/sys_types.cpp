@@ -124,6 +124,8 @@ BEGIN_STATIC_CONST_STRING(g_script_chm_cmd)
 "strTemp = strTemp & \"hhc \" & Chr(34) & \"$$PROJECTNAME$$.hhp\" & Chr(34)" "\r\n"
 "strTemp = strTemp & \" & cd ..\"" "\r\n"
 "fRunCmd objWsh, strTemp" "\r\n"
+"strTemp = \"%comspec% /C move \" & Chr(34) & \"doc\\$$PROJECTNAME$$.chm\" & Chr(34) & \" .\"" "\r\n"
+"fRunCmd objWsh, strTemp" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_script_chm_cmd)
 
@@ -136,6 +138,8 @@ BEGIN_STATIC_CONST_STRING(g_script_epub_cmd)
 "strTemp = strTemp & \" & \"" "\r\n"
 "strTemp = strTemp & \"7z a -mx9 -r -tzip \" & Chr(34) & \"$$PROJECTNAME$$.epub\" & Chr(34) & \" META-INF OEBPS\"" "\r\n"
 "strTemp = strTemp & \" & cd ..\"" "\r\n"
+"fRunCmd objWsh, strTemp" "\r\n"
+"strTemp = \"%comspec% /C move \" & Chr(34) & \"doc\\$$PROJECTNAME$$.epub\" & Chr(34) & \" .\"" "\r\n"
 "fRunCmd objWsh, strTemp" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_script_epub_cmd)

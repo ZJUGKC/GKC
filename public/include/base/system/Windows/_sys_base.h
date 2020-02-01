@@ -211,6 +211,49 @@ private:
 	_os_event& operator=(const _os_event&) throw();
 };
 
+// helper
+
+class _sync_helper
+{
+public:
+	static char_h* gen_global_name(const char_h* pSrc) throw()
+	{
+		//global
+		DECLARE_LOCAL_CONST_STRING(char_h, c_szGlobal, c_uGlobalLength, L"Global\\")
+		//generate
+		uintptr uCount = calc_string_length(pSrc);
+		uintptr uNewCount;
+		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);
+		if( cr.IsFailed() )
+			return NULL;
+		char_h* pNew = (char_h*)crt_alloc((uNewCount + 1) * sizeof(char_h));
+		if( pNew == NULL )
+			return NULL;
+		//copy
+		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(char_h), pNew);
+		mem_copy(pSrc, uCount * sizeof(char_h), pNew + c_uGlobalLength);
+		pNew[uNewCount] = 0;
+		return pNew;
+	}
+	static void free_global_name(char_h* p) throw()
+	{
+		crt_free((void*)p);
+	}
+	//tools
+	static char_h* gen_sync_name(const char_h* pSrc, bool bGlobal) throw()
+	{
+		char_h* psz = (char_h*)pSrc;
+		if( bGlobal )
+			psz = gen_global_name(psz);
+		return psz;
+	}
+	static void free_sync_name(char_h* p, bool bGlobal) throw()
+	{
+		if( bGlobal )
+			free_global_name(p);
+	}
+};
+
 //------------------------------------------------------------------------------
 // Memory
 
@@ -555,6 +598,8 @@ extern _os_module _os_g_module;
 //------------------------------------------------------------------------------
 // File System
 
+// _os_file_finder
+
 class _os_file_finder
 {
 public:
@@ -686,6 +731,223 @@ private:
 	//noncopyable
 	_os_file_finder(const _os_file_finder&) throw();
 	_os_file_finder& operator=(const _os_file_finder&) throw();
+};
+
+// _os_file_mapping
+
+class _os_file_mapping
+{
+public:
+	_os_file_mapping() throw() : m_pData(NULL), m_hMapping(NULL)
+	{
+	}
+	~_os_file_mapping() throw()
+	{
+		Unmap();
+	}
+
+	//nOffset : must be a multiple of the allocation granularity obtained by ::GetSystemInfo.
+	//dwMappingProtection : PAGE_EXECUTE_READ, PAGE_EXECUTE_READWRITE, PAGE_EXECUTE_WRITECOPY,
+	//                      PAGE_READONLY, PAGE_READWRITE, PAGE_WRITECOPY, ...
+	//dwViewDesiredAccess (or operator) : FILE_MAP_ALL_ACCESS, FILE_MAP_READ, FILE_MAP_WRITE, FILE_MAP_COPY, FILE_MAP_EXECUTE, ...
+	HRESULT MapFile(
+		_In_ HANDLE hFile,
+		_In_ SIZE_T nMappingSize = 0,
+		_In_ ULONGLONG nOffset = 0,
+		_In_ DWORD dwMappingProtection = PAGE_READONLY,
+		_In_ DWORD dwViewDesiredAccess = FILE_MAP_READ) throw()
+	{
+		assert( m_pData == NULL );
+		assert( m_hMapping == NULL );
+		assert( hFile != INVALID_HANDLE_VALUE && hFile != NULL );
+
+		ULARGE_INTEGER liFileSize;
+		liFileSize.LowPart = ::GetFileSize(hFile, &liFileSize.HighPart);
+		if( liFileSize.QuadPart < nMappingSize )
+			liFileSize.QuadPart = nMappingSize;
+
+		m_hMapping = ::CreateFileMappingW(hFile, NULL, dwMappingProtection, liFileSize.HighPart, liFileSize.LowPart, 0);
+		if( m_hMapping == NULL )
+			return HRESULT_FROM_WIN32(::GetLastError());
+
+		if( nMappingSize == 0 )
+			m_nMappingSize = (SIZE_T)(liFileSize.QuadPart - nOffset);
+		else
+			m_nMappingSize = nMappingSize;
+
+		m_dwViewDesiredAccess = dwViewDesiredAccess;
+		m_nOffset.QuadPart = nOffset;
+
+		m_pData = ::MapViewOfFileEx(m_hMapping, m_dwViewDesiredAccess, m_nOffset.HighPart, m_nOffset.LowPart, m_nMappingSize, NULL);
+		if( m_pData == NULL ) {
+			HRESULT hr;
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+			::CloseHandle(m_hMapping);
+			m_hMapping = NULL;
+			return hr;
+		}
+
+		return S_OK;
+	}
+	HRESULT MapSharedMem(
+		_In_ SIZE_T nMappingSize,
+		_In_z_ LPCWSTR szName,
+		_Out_opt_ BOOL* pbAlreadyExisted = NULL,
+		_In_opt_ LPSECURITY_ATTRIBUTES lpsa = NULL,
+		_In_ DWORD dwMappingProtection = PAGE_READWRITE,
+		_In_ DWORD dwViewDesiredAccess = FILE_MAP_ALL_ACCESS) throw()
+	{
+		assert( m_pData == NULL );
+		assert( m_hMapping == NULL );
+		assert( nMappingSize > 0 );
+		assert( szName != NULL ); // if you just want a regular chunk of memory, use a heap allocator
+
+		m_nMappingSize = nMappingSize;
+
+		ULARGE_INTEGER nSize;
+		nSize.QuadPart = nMappingSize;
+		m_hMapping = ::CreateFileMappingW(INVALID_HANDLE_VALUE, lpsa, dwMappingProtection, nSize.HighPart, nSize.LowPart, szName);
+		if( m_hMapping == NULL ) {
+			HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+			return hr;
+		}
+
+		if( pbAlreadyExisted != NULL )
+			*pbAlreadyExisted = (::GetLastError() == ERROR_ALREADY_EXISTS);
+
+		m_dwViewDesiredAccess = dwViewDesiredAccess;
+		m_nOffset.QuadPart = 0;
+
+		m_pData = ::MapViewOfFileEx(m_hMapping, m_dwViewDesiredAccess, m_nOffset.HighPart, m_nOffset.LowPart, m_nMappingSize, NULL);
+		if( m_pData == NULL ) {
+			HRESULT hr;
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+			::CloseHandle(m_hMapping);
+			m_hMapping = NULL;
+			return hr;
+		}
+
+		return S_OK;
+	}
+	HRESULT OpenMapping(
+		_In_z_ LPCWSTR szName,
+		_In_ SIZE_T nMappingSize,
+		_In_ ULONGLONG nOffset = 0,
+		_In_ DWORD dwViewDesiredAccess = FILE_MAP_ALL_ACCESS) throw()
+	{
+		assert( m_pData == NULL );
+		assert( m_hMapping == NULL );
+		assert( szName != NULL ); // if you just want a regular chunk of memory, use a heap allocator
+
+		m_nMappingSize = nMappingSize;
+		m_dwViewDesiredAccess = dwViewDesiredAccess;
+
+		m_hMapping = ::OpenFileMappingW(m_dwViewDesiredAccess, FALSE, szName);
+		if( m_hMapping == NULL )
+			return HRESULT_FROM_WIN32(::GetLastError());
+
+		m_nOffset.QuadPart = nOffset;
+
+		m_pData = ::MapViewOfFileEx(m_hMapping, m_dwViewDesiredAccess, m_nOffset.HighPart, m_nOffset.LowPart, m_nMappingSize, NULL);
+		if( m_pData == NULL ) {
+			HRESULT hr;
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+			::CloseHandle(m_hMapping);
+			m_hMapping = NULL;
+			return hr;
+		}
+
+		return S_OK;
+	}
+
+	HRESULT Unmap() throw()
+	{
+		HRESULT hr = S_OK;
+
+		if( m_pData != NULL ) {
+			if( !::UnmapViewOfFile(m_pData) )
+				hr = HRESULT_FROM_WIN32(::GetLastError());
+			m_pData = NULL;
+		}
+		if( m_hMapping != NULL ) {
+			if( !::CloseHandle(m_hMapping) && SUCCEEDED(hr) )
+				hr = HRESULT_FROM_WIN32(::GetLastError());
+			m_hMapping = NULL;
+		}
+		return hr;
+	}
+
+	const void* GetData() const throw()
+	{
+		return m_pData;
+	}
+	void* GetData() throw()
+	{
+		return m_pData;
+	}
+
+	HANDLE GetHandle() const throw()
+	{
+		return m_hMapping;
+	}
+	SIZE_T GetMappingSize() const throw()
+	{
+		return m_nMappingSize;
+	}
+
+	HRESULT CopyFrom(_In_ const _os_file_mapping& orig) throw()
+	{
+		if( this == &orig )
+			return S_OK;
+		assert( m_pData == NULL );
+		assert( m_hMapping == NULL );
+		assert( orig.m_pData != NULL );
+		assert( orig.m_hMapping != NULL );
+
+		m_dwViewDesiredAccess = orig.m_dwViewDesiredAccess;
+		m_nOffset.QuadPart = orig.m_nOffset.QuadPart;
+		m_nMappingSize = orig.m_nMappingSize;
+
+		if( !::DuplicateHandle(::GetCurrentProcess(), orig.m_hMapping, ::GetCurrentProcess(),
+				&m_hMapping, NULL, TRUE, DUPLICATE_SAME_ACCESS) )
+			return HRESULT_FROM_WIN32(::GetLastError());
+
+		m_pData = ::MapViewOfFileEx(m_hMapping, m_dwViewDesiredAccess, m_nOffset.HighPart, m_nOffset.LowPart, m_nMappingSize, NULL);
+		if( m_pData == NULL ) {
+			HRESULT hr;
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+			::CloseHandle(m_hMapping);
+			m_hMapping = NULL;
+			return hr;
+		}
+
+		return S_OK;
+	}
+
+	_os_file_mapping(_In_ const _os_file_mapping& orig)
+	{
+		m_pData = NULL;
+		m_hMapping = NULL;
+
+		HRESULT hr = CopyFrom(orig);
+		if( FAILED(hr) )
+			throw exception_base(call_result((int)hr));
+	}
+	_os_file_mapping& operator=(_In_ const _os_file_mapping& orig)
+	{
+		HRESULT hr = CopyFrom(orig);
+		if( FAILED(hr) )
+			throw exception_base(call_result((int)hr));
+
+		return *this;
+	}
+
+private:
+	void* m_pData;
+	SIZE_T m_nMappingSize;
+	HANDLE m_hMapping;
+	ULARGE_INTEGER m_nOffset;
+	DWORD m_dwViewDesiredAccess;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

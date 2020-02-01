@@ -474,7 +474,7 @@ public:
 		int fd = ::shm_open(pName, act_flag, S_IRWXU | S_IRWXG | S_IRWXO);
 		if( fd == -1 ) {
 			cr.SetResult(_OS_CR_FROM_ERRORNO());
-			if( bCreate && errno == EEXIST )
+			if( bCreate && errno == EEXIST ) {
 				fd = ::shm_open(pName, oflag, S_IRWXU | S_IRWXG | S_IRWXO);
 				if( fd == -1 ) {
 					cr.SetResult(_OS_CR_FROM_ERRORNO());

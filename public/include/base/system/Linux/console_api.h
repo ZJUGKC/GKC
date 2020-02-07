@@ -90,7 +90,7 @@ inline void print_string(const char_l* sz) throw()
 class stdout_attr
 {
 public:
-	stdout_attr() throw()
+	stdout_attr() throw() : m_bInit(false)
 	{
 	}
 	~stdout_attr() throw()
@@ -100,12 +100,16 @@ public:
 	//initialize
 	void Init() throw()
 	{
+		assert( !m_bInit );
 	}
 
 	//restore
 	void Restore() throw()
 	{
-		::printf("\033[0m");
+		if( m_bInit ) {
+			::printf("\033[0m");
+			m_bInit = false;
+		}
 	}
 
 	//set attribute (one or more STDOUT_ATTR_*)
@@ -123,7 +127,12 @@ public:
 		if( ret >= 0 )
 			szFormat[ret] = 0;
 		print_string(szFormat);
+		if( !m_bInit )
+			m_bInit = true;
 	}
+
+private:
+	bool m_bInit;
 
 private:
 	//noncopyable

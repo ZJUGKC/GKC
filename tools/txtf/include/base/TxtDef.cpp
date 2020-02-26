@@ -22,7 +22,7 @@ namespace GKC {
 BEGIN_STATIC_CONST_STRING(g_html_github_header)
 	STATIC_CONST_STRING_ENTRY(
 "<!DOCTYPE html>" "\r\n"
-"<html>" "\r\n"
+"<html $$DIR$$>" "\r\n"
 "<head>" "\r\n"
 "<meta charset=\'$$CHARSET$$\'>" "\r\n"
 "<meta name=\'viewport\' content=\'width=device-width initial-scale=1\'>" "\r\n"
@@ -237,7 +237,7 @@ BEGIN_STATIC_CONST_STRING(g_html_xhtml_header)
 	STATIC_CONST_STRING_ENTRY(
 "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>" "\r\n"
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">" "\r\n"
-"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"$$LANG$$\">" "\r\n"
+"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"$$LANG$$\" $$DIR$$>" "\r\n"
 "<head>" "\r\n"
 "<title>untitled</title>" "\r\n"
 "<link href=\"$$CSSFILE$$\" type=\"text/css\" rel=\"stylesheet\"/>" "\r\n"
@@ -256,7 +256,7 @@ BEGIN_STATIC_CONST_STRING(g_html_xhtml5_header)
 	STATIC_CONST_STRING_ENTRY(
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\r\n"
 "<!DOCTYPE html>" "\r\n"
-"<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xml:lang=\"$$LANG$$\">" "\r\n"
+"<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xml:lang=\"$$LANG$$\" $$DIR$$>" "\r\n"
 "<head>" "\r\n"
 "<title>untitled</title>" "\r\n"
 "<link href=\"$$CSSFILE$$\" type=\"text/css\" rel=\"stylesheet\"/>" "\r\n"

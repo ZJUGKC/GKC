@@ -90,7 +90,7 @@ inline int _Generate_Complete_Html(const ConstStringA& strHead, const ConstStrin
 
 // _Cmd_Generate_GitHub_Html
 
-inline int _Cmd_Generate_GitHub_Html(const ConstStringS& strCharset, const ConstStringS& strSrc, const ConstStringS& strDest)
+inline int _Cmd_Generate_GitHub_Html(bool bRTL, const ConstStringS& strCharset, const ConstStringS& strSrc, const ConstStringS& strDest)
 {
 	//charset
 	if( ConstStringCompareTrait<ConstStringS>::IsNE(strCharset, DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF-8"))) ) {
@@ -106,6 +106,11 @@ inline int _Cmd_Generate_GitHub_Html(const ConstStringS& strCharset, const Const
 	StringUtilHelper::MakeString(ConstStringA(g_html_github_header::GetAddress(), g_html_github_header::GetCount()), strHead);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$CHARSET$$"), CS_S2U(strCharset).GetC(), strHead);  //may throw
 
+	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	if( bRTL )
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "dir=\"rtl\""), strTemp);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$DIR$$"), StringUtilHelper::To_ConstString(strTemp), strHead);  //may throw
+
 	return _Generate_Complete_Html(StringUtilHelper::To_ConstString(strHead),
 								ConstStringA(g_html_tail::GetAddress(), g_html_tail::GetCount()),
 								strSrc, strDest);
@@ -113,7 +118,7 @@ inline int _Cmd_Generate_GitHub_Html(const ConstStringS& strCharset, const Const
 
 // _Cmd_Generate_XHtml_Html
 
-inline int _Cmd_Generate_XHtml_Html(bool bLatest, const ConstStringS& strLanguage, const ConstStringS& strCssFile, const ConstStringS& strSrc, const ConstStringS& strDest)
+inline int _Cmd_Generate_XHtml_Html(bool bRTL, bool bLatest, const ConstStringS& strLanguage, const ConstStringS& strCssFile, const ConstStringS& strSrc, const ConstStringS& strDest)
 {
 	//language
 	HelpLanguageInfo info;
@@ -130,6 +135,11 @@ inline int _Cmd_Generate_XHtml_Html(bool bLatest, const ConstStringS& strLanguag
 		StringUtilHelper::MakeString(ConstStringA(g_html_xhtml_header::GetAddress(), g_html_xhtml_header::GetCount()), strHead);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LANG$$"), CS_S2U(strLanguage).GetC(), strHead);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$CSSFILE$$"), CS_S2U(strCssFile).GetC(), strHead);  //may throw
+
+	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	if( bRTL )
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "dir=\"rtl\""), strTemp);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$DIR$$"), StringUtilHelper::To_ConstString(strTemp), strHead);  //may throw
 
 	return _Generate_Complete_Html(StringUtilHelper::To_ConstString(strHead),
 								ConstStringA(g_html_xhtml_tail::GetAddress(), g_html_xhtml_tail::GetCount()),

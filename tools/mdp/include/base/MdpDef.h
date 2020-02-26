@@ -63,6 +63,10 @@ DECLARE_STATIC_CONST_STRING(g_epub_container_body, CharA)
 
 DECLARE_STATIC_CONST_STRING(g_epub_css_body, CharA)
 
+// g_epub_css_layout
+
+DECLARE_STATIC_CONST_STRING(g_epub_css_layout, CharA)
+
 // g_epub_opf_body
 
 DECLARE_STATIC_CONST_STRING(g_epub_opf_body, CharA)
@@ -168,12 +172,12 @@ inline ConstStringA _Get_FileTree_Prefix(int iType) throw()
 }
 
 // get html options template
-inline ConstStringA _Get_Html_Options_Template(int iType, bool bLatest) throw()
+inline ConstStringA _Get_Html_Options_Template(int iType, bool bRTLorder, bool bVerticalLine, bool bLatest) throw()
 {
 	if( iType == MDP_TYPE_CHM )
 		return DECLARE_TEMP_CONST_STRING(ConstStringA, "-g $$CHARSET$$");
 	else if( iType == MDP_TYPE_EPUB )
-		return get_xhtml_options_template(bLatest);
+		return get_xhtml_options_template(bRTLorder, bVerticalLine, bLatest);
 	return ConstStringA();
 }
 

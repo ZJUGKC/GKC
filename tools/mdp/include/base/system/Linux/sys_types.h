@@ -97,8 +97,13 @@ inline const_string_a get_command_del() throw()
 	return DECLARE_TEMP_CONST_STRING(const_string_a, "rm");
 }
 
-inline const_string_a get_xhtml_options_template(bool bLatest) throw()
+inline const_string_a get_xhtml_options_template(bool bRTLorder, bool bVerticalLine, bool bLatest) throw()
 {
+	if( bRTLorder && !bVerticalLine )
+		return bLatest
+			? DECLARE_TEMP_CONST_STRING(const_string_a, "-x -rtl -l $$LANG$$ \\\"$2stylesheet.css\\\"")
+			: DECLARE_TEMP_CONST_STRING(const_string_a, "-x -rtl    $$LANG$$ \\\"$2stylesheet.css\\\"")
+			;
 	return bLatest
 		? DECLARE_TEMP_CONST_STRING(const_string_a, "-x -l $$LANG$$ \\\"$2stylesheet.css\\\"")
 		: DECLARE_TEMP_CONST_STRING(const_string_a, "-x    $$LANG$$ \\\"$2stylesheet.css\\\"")

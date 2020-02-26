@@ -117,6 +117,7 @@ BEGIN_STATIC_CONST_STRING(g_epub_css_body)
 "  font-size: 1.0em;" "\r\n"
 "  word-wrap: break-word;" "\r\n"
 "  text-align: justify;" "\r\n"
+"$$LAYOUT$$"
 "}" "\r\n"
 "h1 {" "\r\n"
 "  font-size: 1.6em;" "\r\n"
@@ -272,6 +273,17 @@ BEGIN_STATIC_CONST_STRING(g_epub_css_body)
 "}" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_css_body)
+
+// g_epub_css_layout
+
+BEGIN_STATIC_CONST_STRING(g_epub_css_layout)
+	STATIC_CONST_STRING_ENTRY(
+"-webkit-writing-mode: $$MODE$$;" "\r\n"
+"-epub-writing-mode: $$MODE$$;" "\r\n"
+"writing-mode: $$MODE$$;" "\r\n"
+"$$TEXT-LAYOUT$$"
+	)
+END_STATIC_CONST_STRING(g_epub_css_layout)
 
 // g_epub_opf_body
 

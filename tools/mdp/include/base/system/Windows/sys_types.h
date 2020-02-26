@@ -94,8 +94,13 @@ inline const_string_a get_command_del() throw()
 	return DECLARE_TEMP_CONST_STRING(const_string_a, "%comspec% /C del");
 }
 
-inline const_string_a get_xhtml_options_template(bool bLatest) throw()
+inline const_string_a get_xhtml_options_template(bool bRTLorder, bool bVerticalLine, bool bLatest) throw()
 {
+	if( bRTLorder && !bVerticalLine )
+		return bLatest
+			? DECLARE_TEMP_CONST_STRING(const_string_a, "-x -rtl -l $$LANG$$ \" & Chr(34) & strPrefix & \"stylesheet.css\" & Chr(34) & \"")
+			: DECLARE_TEMP_CONST_STRING(const_string_a, "-x -rtl    $$LANG$$ \" & Chr(34) & strPrefix & \"stylesheet.css\" & Chr(34) & \"")
+			;
 	return bLatest
 		? DECLARE_TEMP_CONST_STRING(const_string_a, "-x -l $$LANG$$ \" & Chr(34) & strPrefix & \"stylesheet.css\" & Chr(34) & \"")
 		: DECLARE_TEMP_CONST_STRING(const_string_a, "-x    $$LANG$$ \" & Chr(34) & strPrefix & \"stylesheet.css\" & Chr(34) & \"")

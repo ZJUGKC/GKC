@@ -40,11 +40,41 @@ inline bool _Generate_Container_File(const ConstStringS& strFile) throw()
 }
 
 //generate css file
-inline bool _Generate_Css_File(const ConstStringS& strFile)
+inline bool _Generate_Css_File(bool bRTLorder, bool bVerticalLine, bool bLatest,
+							const ConstStringS& strFile)
 {
+	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	//content
 	StringA strContent(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringUtilHelper::MakeString(ConstStringA(g_epub_css_body::GetAddress(), g_epub_css_body::GetCount()), strContent);  //may throw
+	//layout
+	if( bRTLorder || bVerticalLine ) {
+		StringUtilHelper::Append(ConstStringA(g_epub_css_layout::GetAddress(), g_epub_css_layout::GetCount()), strItem);  //may throw
+		// mode
+		if( bVerticalLine ) {
+			StringUtilHelper::Append(bLatest ? DECLARE_TEMP_CONST_STRING(ConstStringA, "vertical")
+											: DECLARE_TEMP_CONST_STRING(ConstStringA, "tb"),
+									strTemp);  //may throw
+			if( bRTLorder )
+				StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "-rl"), strTemp);  //may throw
+			else
+				StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "-lr"), strTemp);  //may throw
+		}
+		else {
+			StringUtilHelper::Append(bLatest ? DECLARE_TEMP_CONST_STRING(ConstStringA, "horizontal-tb")
+											: DECLARE_TEMP_CONST_STRING(ConstStringA, "lr-tb"),
+									strTemp);  //may throw
+		}
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$MODE$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
+		// text
+		strTemp.Clear();
+		if( bVerticalLine ) {
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "text-orientation: upright;\r\n"), strTemp);  //may throw
+		}
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TEXT-LAYOUT$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
+	}
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LAYOUT$$"), StringUtilHelper::To_ConstString(strItem), strContent);  //may throw
 	//save
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
@@ -109,6 +139,7 @@ inline void _Generate_MetaList_String(const ConstStringA& strCoverImageFile,
 									const ConstStringA& strPublisher,
 									const ConstStringA& strSubject,
 									const ConstStringA& strRights,
+									bool bRTLorder, bool bVerticalLine,
 									bool bLatest,
 									StringA& strList)
 {
@@ -170,9 +201,26 @@ inline void _Generate_MetaList_String(const ConstStringA& strCoverImageFile,
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVER$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
 	}
 	StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	//writing-mode
+	if( !bLatest && (bRTLorder || bVerticalLine) ) {
+		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "<meta name=\"primary-writing-mode\" content=\"$$MODE$$\" />\r\n"), strItem);  //may throw
+		strTemp.Clear();
+		if( bVerticalLine )
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "vertical"), strTemp);  //may throw
+		else
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "horizontal"), strTemp);  //may throw
+		if( bRTLorder )
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "-rl"), strTemp);  //may throw
+		else
+			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "-lr"), strTemp);  //may throw
+		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$MODE$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
+		StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+	}
 }
 //generate manifest list
-inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, bool bLatest, StringA& strList)
+inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, bool bLatest,
+									const ConstStringA& strCoverImageFile,
+									StringA& strList)
 {
 	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -188,8 +236,15 @@ inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, bool bLat
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILE$$"), StringUtilHelper::To_ConstString(strV), strItem);  //may throw
 		//prop
 		strTemp.Clear();
-		if( bMd && bLatest )
-			StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "properties=\"mathml\""), strTemp);  //may throw
+		if( bLatest ) {
+			if( bMd ) {
+				StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "properties=\"mathml\""), strTemp);  //may throw
+			}
+			else {
+				if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strV), strCoverImageFile) )
+					StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "properties=\"cover-image\""), strTemp);  //may throw
+			}
+		}
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROP$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
 		//type
 		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TYPE$$"), _Generate_MimeType_String(StringUtilHelper::To_ConstString(strV)), strItem);  //may throw
@@ -240,6 +295,7 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 							const ConstStringA& strSubject,
 							const ConstStringA& strRights,
 							const ConstStringA& strIdentifier,
+							bool bRTLorder, bool bVerticalLine,
 							const DirFileList& flMd, const DirFileList& flAux,
 							const FileListInfo& flInfo, const ProjectInfo& info,
 							bool bLatest)
@@ -259,7 +315,9 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$IDENTIFIER$$"), strIdentifier, strContent);  //may throw
 	//meta-list
 	_Generate_MetaList_String(strCoverImageFile, strAuthor, strDescription, strDate, strContributor,
-							strPublisher, strSubject, strRights, bLatest, strList);  //may throw
+							strPublisher, strSubject, strRights,
+							bRTLorder, bVerticalLine,
+							bLatest, strList);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$METALIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 	//version
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$VERSION$$"),
@@ -284,13 +342,15 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 			strContent);  //may throw
 	//manifest
 	strList.Clear();
-	_Generate_Manifest_String(flMd, true, bLatest, strList);  //may throw
-	_Generate_Manifest_String(flAux, false, bLatest, strList);  //may throw
+	_Generate_Manifest_String(flMd, true, bLatest, strCoverImageFile, strList);  //may throw
+	_Generate_Manifest_String(flAux, false, bLatest, strCoverImageFile, strList);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$ITEMLIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 	//spine
 	strTemp.Clear();
+	if( bRTLorder )
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "page-progression-direction=\"rtl\""), strTemp);  //may throw
 	if( !bLatest )
-		StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "toc=\"ncx\""), strTemp);  //may throw
+		StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, " toc=\"ncx\""), strTemp);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$SPINE-TOC$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	strList.Clear();
 	_Generate_Spine_String(flInfo, strList);  //may throw
@@ -541,7 +601,8 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	FsPathHelper::AppendSeparator(strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("stylesheet.css")), strFile);  //may throw
 	FsPathHelper::ConvertPathStringToPlatform(strFile);
-	if( !_Generate_Css_File(StringUtilHelper::To_ConstString(strFile)) )  //may throw
+	if( !_Generate_Css_File(info.IsRTLorder(), info.IsVerticalLine(), bLatest,
+							StringUtilHelper::To_ConstString(strFile)) )  //may throw
 		return false;
 
 	StringA strShortString(CS_S2U(hlInfo.strShortString).GetV());  //may throw
@@ -565,6 +626,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 							StringUtilHelper::To_ConstString(info.GetSubject()),
 							StringUtilHelper::To_ConstString(info.GetRights()),
 							StringUtilHelper::To_ConstString(info.GetIdentifier()),
+							info.IsRTLorder(), info.IsVerticalLine(),
 							flMd, flAux,
 							flInfo, info,
 							bLatest) )  //may throw

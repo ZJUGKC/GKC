@@ -34,13 +34,16 @@ private:
 		STATE_BASE,
 		STATE_LANG,
 		STATE_COMMANDS,
+		STATE_READING_ORDER,
+		STATE_LINE_LAYOUT,
 		STATE_TREE,
 		STATE_TREE_IN_NODE,
 		STATE_TREE_IN_GUIDE
 	};
 
 public:
-	ProjectInfo() throw() : m_uLCID(0), m_tree(MemoryHelper::GetCrtMemoryManager())
+	ProjectInfo() throw() : m_uLCID(0), m_bRTLorder(false), m_bVerticalLine(false),
+							m_tree(MemoryHelper::GetCrtMemoryManager())
 	{
 	}
 	~ProjectInfo() throw()
@@ -110,6 +113,14 @@ public:
 	const StringA& GetRights() const throw()
 	{
 		return m_strRights;
+	}
+	bool IsRTLorder() const throw()
+	{
+		return m_bRTLorder;
+	}
+	bool IsVerticalLine() const throw()
+	{
+		return m_bVerticalLine;
 	}
 
 	bool GetTitleFile(StringA& strName, StringA& strFile) const throw()
@@ -289,6 +300,12 @@ public:
 					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"rights\"")) ) {
 						refString = RefPtrHelper::MakeRefPtr<StringA>(m_strRights);
 					}
+					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"reading-order\"")) ) {
+						iState = STATE_READING_ORDER;
+					}
+					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"line-layout\"")) ) {
+						iState = STATE_LINE_LAYOUT;
+					}
 					else {
 						return false;
 					}
@@ -377,6 +394,34 @@ public:
 				else if( iState == STATE_COMMANDS ) {
 					m_arrCommand.Add(strToken);  //may throw
 				}
+				else if( iState == STATE_READING_ORDER ) {
+					if( !strToken.IsEmpty() ) {
+						if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "rtl")) ) {
+							m_bRTLorder = true;
+						}
+						else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "ltr")) ) {
+							m_bRTLorder = false;
+						}
+						else {
+							return false;
+						}
+					}
+					iState = STATE_BASE;
+				}
+				else if( iState == STATE_LINE_LAYOUT ) {
+					if( !strToken.IsEmpty() ) {
+						if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "v")) ) {
+							m_bVerticalLine = true;
+						}
+						else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "h")) ) {
+							m_bVerticalLine = false;
+						}
+						else {
+							return false;
+						}
+					}
+					iState = STATE_BASE;
+				}
 				else {
 					return false;
 				}
@@ -440,6 +485,8 @@ private:
 	StringA m_strPublisher;
 	StringA m_strSubject;
 	StringA m_strRights;
+	bool m_bRTLorder;
+	bool m_bVerticalLine;
 
 	MultiwayTree<Pair<StringA, StringA>>::Iterator m_iterTitle,
 		m_iterContent,

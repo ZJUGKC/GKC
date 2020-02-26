@@ -120,23 +120,44 @@ public:
 		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-html"))) ) {
 			//-g
 			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-g"))) ) {
-				if( uArgCount != 6 ) {
+				bool bRTL = false;
+				uintptr uStartIndex = 3;
+				//-rtl
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-rtl"))) ) {
+					bRTL = true;
+					uStartIndex ++;
+				}
+				if( uArgCount != uStartIndex + 3 ) {
 					_PrintVersion();
 					_PrintHelp();
 					return 1;
 				}
-				if( _Check_Same_File(args[4].get_Value(), args[5].get_Value()) ) {
+				if( _Check_Same_File(args[uStartIndex + 1].get_Value(), args[uStartIndex + 2].get_Value()) ) {
 					return 1;
 				}
-				ret = _Cmd_Generate_GitHub_Html(args[3].get_Value(), args[4].get_Value(), args[5].get_Value());  //may throw
+				ret = _Cmd_Generate_GitHub_Html(bRTL, args[uStartIndex].get_Value(), args[uStartIndex + 1].get_Value(), args[uStartIndex + 2].get_Value());  //may throw
 			}
 			//-x
 			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-x"))) ) {
+				bool bRTL = false;
 				uintptr uStartIndex = 3;
-				//-l
-				if( uArgCount == 8 && ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) )
+				//-rtl
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-rtl"))) ) {
+					bRTL = true;
 					uStartIndex ++;
-				if( (uArgCount != 7 && uArgCount != 8) || (uArgCount == 8 && uStartIndex == 3) ) {
+				}
+				if( uArgCount < uStartIndex + 4 ) {
+					_PrintVersion();
+					_PrintHelp();
+					return 1;
+				}
+				bool bLatest = false;
+				//-l
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[uStartIndex].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) ) {
+					bLatest = true;
+					uStartIndex ++;
+				}
+				if( uArgCount != uStartIndex + 4 ) {
 					_PrintVersion();
 					_PrintHelp();
 					return 1;
@@ -144,7 +165,7 @@ public:
 				if( _Check_Same_File(args[uStartIndex + 2].get_Value(), args[uStartIndex + 3].get_Value()) ) {
 					return 1;
 				}
-				ret = _Cmd_Generate_XHtml_Html(uStartIndex == 4, args[uStartIndex].get_Value(), args[uStartIndex + 1].get_Value(), args[uStartIndex + 2].get_Value(), args[uStartIndex + 3].get_Value());  //may throw
+				ret = _Cmd_Generate_XHtml_Html(bRTL, bLatest, args[uStartIndex].get_Value(), args[uStartIndex + 1].get_Value(), args[uStartIndex + 2].get_Value(), args[uStartIndex + 3].get_Value());  //may throw
 			}
 			else {
 				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid HTML parameters!")));

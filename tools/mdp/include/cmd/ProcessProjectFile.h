@@ -191,7 +191,7 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 							_Get_FileTree_Prefix(iType),
 							iType == MDP_TYPE_CHM,
 							_Get_Html_Ext_Name(iType),
-							_Get_Html_Options_Template(iType, bLatest),
+							_Get_Html_Options_Template(iType, info.IsRTLorder(), info.IsVerticalLine(), bLatest),
 							_Get_EBook_CMD_Template(iType),
 							info, hlInfo, flInfo) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The script file cannot be generated!")));

@@ -55,15 +55,17 @@ The project file uses WON format, and the whole file is an object containing the
 
 The optional key-value pairs are listed as follows:
 
-| Key           | Value                        |
-|:-------------:|:-----------------------------|
-| "author"      | Specify the author           |
-| "description" | Specify the description      |
-| "date"        | Specify the date             |
-| "contributor" | Specify the contributor      |
-| "publisher"   | Specify the publisher        |
-| "subject"     | Specify the subject          |
-| "rights"      | Specify the rights           |
+| Key             | Value                        |
+|:---------------:|:-----------------------------|
+| "author"        | Specify the author           |
+| "description"   | Specify the description      |
+| "date"          | Specify the date             |
+| "contributor"   | Specify the contributor      |
+| "publisher"     | Specify the publisher        |
+| "subject"       | Specify the subject          |
+| "rights"        | Specify the rights           |
+| "reading-order" | Specify the reading order ("ltr" or "rtl") |
+| "line-layout"   | Specify the line layout ("h" or "v")       |
 
 The file tree is an array with the object elements. Each object contains the following key-value pairs:
 

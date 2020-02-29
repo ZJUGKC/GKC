@@ -238,7 +238,7 @@ inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, bool bLat
 		strTemp.Clear();
 		if( bLatest ) {
 			if( bMd ) {
-				StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "properties=\"mathml\""), strTemp);  //may throw
+				StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringA, "properties=\"mathml svg\""), strTemp);  //may throw
 			}
 			else {
 				if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strV), strCoverImageFile) )
@@ -267,17 +267,56 @@ inline void _Generate_Spine_String(const FileListInfo& flInfo, StringA& strList)
 	}
 }
 //generate guide
-inline void _Generate_Guide_String(const ConstStringA& strName, const ConstStringA& strFile, const ConstStringA& strType,
-								StringA& strList)
+inline void _Generate_GuideItem_String(const ConstStringA& strTemplate,
+									const ConstStringA& strName, const ConstStringA& strFile, const ConstStringA& strType,
+									StringA& strList)
 {
 	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
-	StringUtilHelper::MakeString(ConstStringA(g_epub_opf_guide_item::GetAddress(), g_epub_opf_guide_item::GetCount()), strItem);  //may throw
+	StringUtilHelper::MakeString(strTemplate, strItem);  //may throw
 	_Generate_FileUrl_String(strFile, DECLARE_TEMP_CONST_STRING(ConstStringA, ".xhtml"), strTemp);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$FILE$$"), StringUtilHelper::To_ConstString(strTemp), strItem);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TYPE$$"), strType, strItem);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$NAME$$"), strName, strItem);  //may throw
 	StringUtilHelper::Append(StringUtilHelper::To_ConstString(strItem), strList);  //may throw
+}
+inline void _Generate_GuideList_String(const ConstStringA& strListTemplate, const ConstStringA& strItemTemplate,
+									const ConstStringA& strTitleType, const ConstStringA& strContentType, const ConstStringA& strCopyrightType,
+									const ConstStringA& strProjectName,
+									const ConstStringA& strCoverName,
+									const ProjectInfo& info,
+									StringA& strList)
+{
+	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+	StringUtilHelper::MakeString(strListTemplate, strList);  //may throw
+	//project name
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROJECTNAME$$"), strProjectName, strList);  //may throw
+	//cover name
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVERNAME$$"), strCoverName, strList);  //may throw
+	//list
+	StringA str1, str2;
+	if( info.GetTitleFile(str1, str2) )
+		_Generate_GuideItem_String(strItemTemplate, StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), strTitleType, strTemp);  //may throw
+	if( info.GetContentFile(str1, str2) )
+		_Generate_GuideItem_String(strItemTemplate, StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), strContentType, strTemp);  //may throw
+	if( info.GetCopyrightFile(str1, str2) )
+		_Generate_GuideItem_String(strItemTemplate, StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), strCopyrightType, strTemp);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LIST$$"), StringUtilHelper::To_ConstString(strTemp), strList);  //may throw
+}
+
+inline void _Generate_Opf_Guide_String(const ConstStringA& strProjectName,
+									const ConstStringA& strCoverName,
+									const ProjectInfo& info,
+									StringA& strList)
+{
+	_Generate_GuideList_String(
+			ConstStringA(g_epub_opf_guide_body::GetAddress(), g_epub_opf_guide_body::GetCount()),
+			ConstStringA(g_epub_opf_guide_item::GetAddress(), g_epub_opf_guide_item::GetCount()),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "title-page"),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "toc"),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "copyright-page"),
+			strProjectName, strCoverName, info, strList
+		);  //may throw
 }
 
 //generate opf file
@@ -357,23 +396,8 @@ inline bool _Generate_Opf_File(const ConstStringS& strFile,
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$ITEMREFLIST$$"), StringUtilHelper::To_ConstString(strList), strContent);  //may throw
 	//guide
 	strTemp.Clear();
-	if( !bLatest ) {
-		StringUtilHelper::MakeString(ConstStringA(g_epub_opf_guide_body::GetAddress(), g_epub_opf_guide_body::GetCount()), strTemp);  //may throw
-		//project name
-		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$PROJECTNAME$$"), strProjectName, strTemp);  //may throw
-		//cover name
-		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$COVERNAME$$"), strCoverName, strTemp);  //may throw
-		//list
-		strList.Clear();
-		StringA str1, str2;
-		if( info.GetTitleFile(str1, str2) )
-			_Generate_Guide_String(StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), DECLARE_TEMP_CONST_STRING(ConstStringA, "title-page"), strList);  //may throw
-		if( info.GetContentFile(str1, str2) )
-			_Generate_Guide_String(StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), DECLARE_TEMP_CONST_STRING(ConstStringA, "toc"), strList);  //may throw
-		if( info.GetCopyrightFile(str1, str2) )
-			_Generate_Guide_String(StringUtilHelper::To_ConstString(str1), StringUtilHelper::To_ConstString(str2), DECLARE_TEMP_CONST_STRING(ConstStringA, "copyright-page"), strList);  //may throw
-		StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$GUIDELIST$$"), StringUtilHelper::To_ConstString(strList), strTemp);  //may throw
-	}
+	if( !bLatest )
+		_Generate_Opf_Guide_String(strProjectName, strCoverName, info, strTemp);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$GUIDETAG$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	//save
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
@@ -534,6 +558,21 @@ inline void _Generate_Tree_String(FileTreeEnumerator& ftEnum, StringA& strTree)
 			StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "</ol></li>\r\n"), strTree);  //may throw
 	} //end if
 }
+//generate landmarks
+inline void _Generate_landmarks_String(const ConstStringA& strProjectName,
+									const ConstStringA& strCoverName,
+									const ProjectInfo& info,
+									StringA& strList)
+{
+	_Generate_GuideList_String(
+			ConstStringA(g_epub_END_landmarks_body::GetAddress(), g_epub_END_landmarks_body::GetCount()),
+			ConstStringA(g_epub_END_landmarks_item::GetAddress(), g_epub_END_landmarks_item::GetCount()),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "titlepage"),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "toc"),
+			DECLARE_TEMP_CONST_STRING(ConstStringA, "copyright-page"),
+			strProjectName, strCoverName, info, strList
+		);  //may throw
+}
 
 //generate END file
 inline bool _Generate_END_File(const ConstStringS& strFile,
@@ -541,6 +580,7 @@ inline bool _Generate_END_File(const ConstStringS& strFile,
 							const ConstStringA& strCoverName,
 							const ConstStringA& strShortString,
 							const ConstStringA& strTopic,
+							const ProjectInfo& info,
 							FileTreeEnumerator& ftEnum)
 {
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -558,6 +598,10 @@ inline bool _Generate_END_File(const ConstStringS& strFile,
 	//tree
 	_Generate_Tree_String(ftEnum, strTemp);  //may throw
 	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$TREE$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
+	//landmarks
+	strTemp.Clear();
+	_Generate_landmarks_String(strProjectName, strCoverName, info, strTemp);  //may throw
+	StringUtilHelper::Replace(DECLARE_TEMP_CONST_STRING(ConstStringA, "$$LANDMARKS$$"), StringUtilHelper::To_ConstString(strTemp), strContent);  //may throw
 	//save
 	return _Generate_Fix_Content_File(strFile, StringUtilHelper::To_ConstString(strContent));
 }
@@ -647,7 +691,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 								StringUtilHelper::To_ConstString(info.GetCoverName()),
 								StringUtilHelper::To_ConstString(strShortString),
 								StringUtilHelper::To_ConstString(info.GetTopic()),
-								ftEnum) )  //may throw
+								info, ftEnum) )  //may throw
 			return false;
 	}
 	else {

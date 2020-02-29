@@ -20,9 +20,9 @@ namespace GKC {
 
 BEGIN_STATIC_CONST_STRING(g_cover_htm_body)
 	STATIC_CONST_STRING_ENTRY(
-"<p style=\"text-align:center\">" "\r\n"
+"<div style=\"text-align:center\">" "\r\n"
 "<img src=\"$$COVER$$\" alt=\"cover\" />" "\r\n"
-"</p>" "\r\n"
+"</div>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_cover_htm_body)
 
@@ -340,7 +340,7 @@ BEGIN_STATIC_CONST_STRING(g_epub_opf_guide_body)
 	STATIC_CONST_STRING_ENTRY(
 "<guide>" "\r\n"
 "<reference href=\"$$PROJECTNAME$$-cover.xhtml\" type=\"cover\" title=\"$$COVERNAME$$\"/>" "\r\n"
-"$$GUIDELIST$$"
+"$$LIST$$"
 "</guide>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_opf_guide_body)
@@ -404,13 +404,15 @@ BEGIN_STATIC_CONST_STRING(g_epub_ncx_node)
 END_STATIC_CONST_STRING(g_epub_ncx_node)
 
 // g_epub_ncx_node_tail
+
 BEGIN_STATIC_CONST_STRING(g_epub_ncx_node_tail)
 	STATIC_CONST_STRING_ENTRY(
 "</navPoint>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_ncx_node_tail)
 
-//g_epub_END_body
+// g_epub_END_body
+
 BEGIN_STATIC_CONST_STRING(g_epub_END_body)
 	STATIC_CONST_STRING_ENTRY(
 "<?xml version=\'1.0\' encoding=\'utf-8\'?>" "\r\n"
@@ -430,19 +432,45 @@ BEGIN_STATIC_CONST_STRING(g_epub_END_body)
 "$$TREE$$"
 "</ol>" "\r\n"
 "</nav>" "\r\n"
+"\r\n"
+"$$LANDMARKS$$"
+"\r\n"
 "</body>" "\r\n"
 "\r\n"
 "</html>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_END_body)
 
-//g_epub_END_item
+// g_epub_END_item
+
 BEGIN_STATIC_CONST_STRING(g_epub_END_item)
 	STATIC_CONST_STRING_ENTRY(
 "<li id=\"$$FILEID$$\">" "\r\n"
 "<a href=\"$$FILE$$\">$$NAME$$</a>" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_epub_END_item)
+
+// g_epub_END_landmarks_body
+
+BEGIN_STATIC_CONST_STRING(g_epub_END_landmarks_body)
+	STATIC_CONST_STRING_ENTRY(
+"<nav epub:type=\"landmarks\">" "\r\n"
+"<h2>Guide</h2>" "\r\n"
+"<ol>" "\r\n"
+"<li><a epub:type=\"cover\" href=\"$$PROJECTNAME$$-cover.xhtml\">$$COVERNAME$$</a></li>" "\r\n"
+"$$LIST$$"
+"</ol>" "\r\n"
+"</nav>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_epub_END_landmarks_body)
+
+// g_epub_END_landmarks_item
+
+BEGIN_STATIC_CONST_STRING(g_epub_END_landmarks_item)
+	STATIC_CONST_STRING_ENTRY(
+"<li><a epub:type=\"$$TYPE$$\" href=\"$$FILE$$\">$$NAME$$</a></li>" "\r\n"
+	)
+END_STATIC_CONST_STRING(g_epub_END_landmarks_item)
 
 ////////////////////////////////////////////////////////////////////////////////
 }

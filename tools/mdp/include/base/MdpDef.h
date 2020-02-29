@@ -107,6 +107,14 @@ DECLARE_STATIC_CONST_STRING(g_epub_END_body, CharA)
 
 DECLARE_STATIC_CONST_STRING(g_epub_END_item, CharA)
 
+// g_epub_END_landmarks_body
+
+DECLARE_STATIC_CONST_STRING(g_epub_END_landmarks_body, CharA)
+
+// g_epub_END_landmarks_item
+
+DECLARE_STATIC_CONST_STRING(g_epub_END_landmarks_item, CharA)
+
 //------------------------------------------------------------------------------
 //functions
 

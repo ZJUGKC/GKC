@@ -317,6 +317,11 @@ public:
 	{
 		return get_environment_variable(ConstArrayHelper::GetInternalPointer(strName), strVar);  //may throw
 	}
+	template <typename Tchar>
+	static bool Set(const ConstStringT<Tchar>& strName, const ConstStringT<Tchar>& strValue) throw()
+	{
+		return set_environment_variable(ConstArrayHelper::GetInternalPointer(strName), ConstArrayHelper::GetInternalPointer(strValue));
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

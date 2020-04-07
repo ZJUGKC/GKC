@@ -42,8 +42,8 @@ private:
 	};
 
 public:
-	ProjectInfo() throw() : m_uLCID(0), m_bRTLorder(false), m_bVerticalLine(false),
-							m_tree(MemoryHelper::GetCrtMemoryManager())
+	ProjectInfo() throw() : m_uLCID(0), m_tree(MemoryHelper::GetCrtMemoryManager()),
+							m_bRTLorder(false), m_bVerticalLine(false)
 	{
 	}
 	~ProjectInfo() throw()

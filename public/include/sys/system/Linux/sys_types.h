@@ -17,6 +17,7 @@
 //Linux
 
 //Environment Variable
+
 template <class TstringS>
 inline bool get_environment_variable(const char_s* szName, TstringS& str)
 {
@@ -27,6 +28,18 @@ inline bool get_environment_variable(const char_s* szName, TstringS& str)
 	str.SetLength(uLen);  //may throw
 	mem_copy(p, uLen * sizeof(char_s), &(str.GetBegin().get_Value()));
 	return true;
+}
+
+// change, add, delete(szValue==NULL)
+inline bool set_environment_variable(const char_s* szName, const char_s* szValue) throw()
+{
+	int res = 0;
+	if( szValue == NULL ) {
+		res = ::unsetenv(szName);
+		return res == 0;  //-1, errno
+	}
+	res = ::setenv(szName, szValue, 1);
+	return res == 0;  //-1, errno
 }
 
 ////////////////////////////////////////////////////////////////////////////////

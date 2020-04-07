@@ -17,6 +17,7 @@
 //Windows
 
 //Environment Variable
+
 template <class TstringS>
 inline bool get_environment_variable(const char_s* szName, TstringS& str)
 {
@@ -33,6 +34,13 @@ inline bool get_environment_variable(const char_s* szName, TstringS& str)
 		str.SetLength(dwRet);
 	} //end if
 	return true;
+}
+
+// change, add, delete(szValue==NULL)
+inline bool set_environment_variable(const char_s* szName, const char_s* szValue) throw()
+{
+	BOOL bRet = ::SetEnvironmentVariableW(szName, szValue);
+	return bRet ? true : false;  //FALSE, ::GetLastError()
 }
 
 ////////////////////////////////////////////////////////////////////////////////

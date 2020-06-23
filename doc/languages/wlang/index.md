@@ -18,6 +18,13 @@ WLang focuses on the high-level conceptions of programming,
 and is suitable for cooperation. WLang keeps the high efficiency of executive
 comapred with C++.
 
+# Contents
+
+## Basic Topics
+
+1. [Setup](basic/setup.md "setup")
+
+
 ## Unified Programming Model
 
 The computer techniques have changed the world with the development in recent years.

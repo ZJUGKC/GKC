@@ -40,6 +40,8 @@ public:
 	}
 	_GraDotItem(_GraDotItem&& src) throw() : m_uRuleNo(src.m_uRuleNo), m_uDotPos(src.m_uDotPos), m_tsLookAhead(rv_forward(src.m_tsLookAhead)), m_arrPropagation(rv_forward(src.m_arrPropagation))
 	{
+		src.m_uRuleNo = 0;
+		src.m_uDotPos = 1;
 	}
 	~_GraDotItem() throw()
 	{
@@ -55,8 +57,12 @@ public:
 	}
 	_GraDotItem& operator=(_GraDotItem&& src) throw()
 	{
-		m_uRuleNo = src.m_uRuleNo;
-		m_uDotPos = src.m_uDotPos;
+		if( this != &src ) {
+			m_uRuleNo = src.m_uRuleNo;
+			src.m_uRuleNo = 0;
+			m_uDotPos = src.m_uDotPos;
+			src.m_uDotPos = 1;
+		}
 		m_tsLookAhead = rv_forward(src.m_tsLookAhead);
 		m_arrPropagation = rv_forward(src.m_arrPropagation);
 		return *this;

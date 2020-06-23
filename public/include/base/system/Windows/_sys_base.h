@@ -134,6 +134,7 @@ public:
 
 	void Attach(HANDLE h) throw()
 	{
+		//unique when m_h==h
 		if( m_h != h )
 			Close();
 		m_h = h;
@@ -268,9 +269,8 @@ public:
 	explicit _os_auto_local_mem(HLOCAL h) throw() : m_h(h)
 	{
 	}
-	_os_auto_local_mem(_os_auto_local_mem&& src) throw()
+	_os_auto_local_mem(_os_auto_local_mem&& src) throw() : m_h(src.m_h)
 	{
-		m_h = src.m_h;
 		src.m_h = NULL;
 	}
 	~_os_auto_local_mem() throw()
@@ -282,10 +282,14 @@ public:
 	_os_auto_local_mem& operator=(_os_auto_local_mem&& src) throw()
 	{
 		if( this != &src ) {
-			assert( m_h != src.m_h );  //unique
-			Free();
-			m_h = src.m_h;
-			src.m_h = NULL;
+			if( m_h != src.m_h ) {
+				Free();
+				m_h = src.m_h;
+				src.m_h = NULL;
+			}
+			else {
+				assert( m_h == NULL );  //unique
+			}
 		}
 		return *this;
 	}

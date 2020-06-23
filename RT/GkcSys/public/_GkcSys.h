@@ -181,6 +181,10 @@ public:
 	{
 		return m_pB == NULL;
 	}
+	bool IsNullObject() const throw()
+	{
+		return IsBlockNull();
+	}
 
 protected:
 	share_block_base* m_pB;
@@ -217,6 +221,10 @@ public:
 	bool IsBlockNull() const throw()
 	{
 		return m_pB == NULL;
+	}
+	bool IsNullObject() const throw()
+	{
+		return IsBlockNull();
 	}
 
 protected:
@@ -265,14 +273,12 @@ protected:
 	thisClass& operator=(thisClass&& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_pB != baseClass::m_pB ) {
-				//release
-				T* pT = static_cast<T*>(this);
-				pT->Release();
-				//move
-				_SObjHelper::MoveDirect((void*&)(baseClass::m_pB), (void*&)(src.m_pB));
-				pT->do_move(rv_forward(src));
-			}
+			//release
+			T* pT = static_cast<T*>(this);
+			pT->Release();
+			//move
+			_SObjHelper::MoveDirect((void*&)(baseClass::m_pB), (void*&)(src.m_pB));
+			pT->do_move(rv_forward(src));
 		}
 		return *this;
 	}
@@ -646,7 +652,7 @@ public:
 		uintptr uFind = INVALID_ARRAY_INDEX;
 		TSObj* p = m_p;
 		for( uintptr i = 0; i < m_uCount; i ++ ) {
-			if( (*p).IsBlockNull() ) {
+			if( (*p).IsNullObject() ) {
 				uFind = i;
 				break;
 			}
@@ -808,7 +814,7 @@ private:
 
 /*
 _SharePtr:
-User can define a proxy class named as Proxy_<event_class_name> derived from _SObjConnectionImpl<_SObjArray<_SharePtr<event_class_name>>> or _SObjConnectionImpl<_SObjArrayWithLock<_SharePtr<event_class_name>>>.
+User can define a proxy class named as Proxy_<event_class_name> derived from _SObjConnectionImpl<_SObjArray<_WeakPtr<event_class_name>>> or _SObjConnectionImpl<_SObjArrayWithLock<_WeakPtr<event_class_name>>>.
 This proxy class provides the fire functions with Fire_<event_method_name> format, and is used as the base class of main class.
 */
 
@@ -901,7 +907,7 @@ public:
 		pX->SetLock(mtx);
 	}
 	template <class T, class TEvent, class TProxy>
-	static uintptr Advise(const _SharePtr<T>& sp, const _SharePtr<TEvent>& spE) throw()
+	static uintptr Advise(const _SharePtr<T>& sp, const _WeakPtr<TEvent>& spE) throw()
 	{
 		assert( sp.m_pB != NULL );
 		TProxy* pX = static_cast<TProxy*>(sp.m_pT);
@@ -1112,7 +1118,7 @@ private:
 class NOVTABLE _IComConnection
 {
 public:
-	virtual uintptr Advise(const _ShareCom<void>& sp) throw() = 0;
+	virtual uintptr Advise(const _WeakCom<void>& sp) throw() = 0;
 	virtual void Unadvise(const uintptr& uCookie) throw() = 0;
 };
 
@@ -1335,7 +1341,7 @@ public:
 
 	//event
 	template <class T, class TEvent>
-	static uintptr Advise(const _ShareCom<T>& sp, const guid& iid, const _ShareCom<TEvent>& spE) throw()
+	static uintptr Advise(const _ShareCom<T>& sp, const guid& iid, const _WeakCom<TEvent>& spE) throw()
 	{
 		if( sp.IsBlockNull() )
 			return 0;
@@ -1414,7 +1420,7 @@ public:
 	}
 
 // _IComConnection methods
-	virtual uintptr Advise(const _ShareCom<void>& sp) throw()
+	virtual uintptr Advise(const _WeakCom<void>& sp) throw()
 	{
 		return baseClass::Add(_ShareComHelper::TypeCast<void, typename TSObjArray::ESObj::EType>(sp));
 	}
@@ -1431,7 +1437,7 @@ private:
 
 /*
 _ShareCom:
-User can define a proxy class named as Proxy_<event_interface_name> derived from _ComConnectionImpl<_SObjArray<_ShareCom<event_interface_name>>> or _ComConnectionImpl<_SObjArrayWithLock<_ShareCom<event_interface_name>>>.
+User can define a proxy class named as Proxy_<event_interface_name> derived from _ComConnectionImpl<_SObjArray<_WeakCom<event_interface_name>>> or _ComConnectionImpl<_SObjArrayWithLock<_WeakCom<event_interface_name>>>.
 This proxy class provides the fire functions with Fire_<event_method_name> format, and is used as the base class of main class.
 
 The class used as method parameter type of interface should not be upgraded in a SA.

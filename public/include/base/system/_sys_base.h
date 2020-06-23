@@ -22,12 +22,8 @@ public:
 	_auto_mem() throw() : m_p(NULL)
 	{
 	}
-	explicit _auto_mem(void* p) throw() : m_p(p)
+	_auto_mem(_auto_mem&& src) throw() : m_p(src.m_p)
 	{
-	}
-	_auto_mem(_auto_mem&& src) throw()
-	{
-		m_p = src.m_p;
 		src.m_p = NULL;
 	}
 	~_auto_mem() throw()
@@ -39,10 +35,14 @@ public:
 	_auto_mem& operator=(_auto_mem&& src) throw()
 	{
 		if( this != &src ) {
-			assert( m_p != src.m_p );  //unique
-			Free();
-			m_p = src.m_p;
-			src.m_p = NULL;
+			if( m_p != src.m_p ) {
+				Free();
+				m_p = src.m_p;
+				src.m_p = NULL;
+			}
+			else {
+				assert( m_p == NULL );  //unique
+			}
 		}
 		return *this;
 	}

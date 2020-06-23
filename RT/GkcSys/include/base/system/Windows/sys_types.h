@@ -27,9 +27,8 @@ public:
 	sa_handle() throw() : m_hd(NULL)
 	{
 	}
-	sa_handle(sa_handle&& src) throw()
+	sa_handle(sa_handle&& src) throw() : m_hd(src.m_hd)
 	{
-		m_hd = src.m_hd;
 		src.m_hd = NULL;
 	}
 	~sa_handle() throw()
@@ -40,11 +39,7 @@ public:
 	sa_handle& operator=(sa_handle&& src) throw()
 	{
 		if( &src != this ) {
-			if( m_hd != src.m_hd ) {
-				Free();
-				m_hd = src.m_hd;
-				src.m_hd = NULL;
-			}
+			Attach(src.Detach());
 		}
 		return *this;
 	}
@@ -60,8 +55,8 @@ public:
 	}
 	void Attach(uintptr hd) throw()
 	{
-		if( (uintptr)m_hd != hd )
-			Free();
+		//shared when m_hd==hd
+		Free();
 		m_hd = (HMODULE)hd;
 	}
 	uintptr Detach() throw()

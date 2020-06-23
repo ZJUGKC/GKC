@@ -70,9 +70,8 @@ public:
 	explicit _os_gdi_object(HGDIOBJ h = NULL) throw() : m_hObj(h)
 	{
 	}
-	_os_gdi_object(_os_gdi_object&& src) throw()
+	_os_gdi_object(_os_gdi_object&& src) throw() : m_hObj(src.m_hObj)
 	{
-		m_hObj = src.m_hObj;
 		src.m_hObj = NULL;
 	}
 	~_os_gdi_object() throw()
@@ -93,11 +92,7 @@ public:
 	_os_gdi_object& operator=(_os_gdi_object&& src) throw()
 	{
 		if( &src != this ) {
-			if( m_hObj != src.m_hObj ) {
-				Destroy();
-				m_hObj = src.m_hObj;
-				src.m_hObj = NULL;
-			}
+			Attach(src.Detach());
 		}
 		return *this;
 	}
@@ -114,6 +109,7 @@ public:
 
 	void Attach(HGDIOBJ h) throw()
 	{
+		//unique when m_hObj==h
 		if( h != m_hObj )
 			Destroy();
 		m_hObj = h;
@@ -1002,9 +998,8 @@ public:
 	explicit _os_dc(HDC hDC = NULL) throw() : m_hDC(hDC)
 	{
 	}
-	_os_dc(_os_dc&& src) throw()
+	_os_dc(_os_dc&& src) throw() : m_hDC(src.m_hDC)
 	{
-		m_hDC = src.m_hDC;
 		src.m_hDC = NULL;
 	}
 	~_os_dc() throw()
@@ -1024,17 +1019,14 @@ public:
 	_os_dc& operator=(_os_dc&& src) throw()
 	{
 		if( this != &src ) {
-			if( m_hDC != src.m_hDC ) {
-				Destroy();
-				m_hDC = src.m_hDC;
-				src.m_hDC = NULL;
-			}
+			Attach(src.Detach());
 		}
 		return *this;
 	}
 
 	void Attach(HDC hDC) throw()
 	{
+		//unique when m_hDC==hDC
 		if( m_hDC != hDC )
 			Destroy();
 		m_hDC = hDC;
@@ -2929,9 +2921,8 @@ public:
 	explicit _os_enh_meta_file(HENHMETAFILE hEMF = NULL) throw() : m_hEMF(hEMF)
 	{
 	}
-	_os_enh_meta_file(_os_enh_meta_file&& src) throw()
+	_os_enh_meta_file(_os_enh_meta_file&& src) throw() : m_hEMF(src.m_hEMF)
 	{
-		m_hEMF = src.m_hEMF;
 		src.m_hEMF = NULL;
 	}
 	~_os_enh_meta_file() throw()
@@ -2952,17 +2943,14 @@ public:
 	_os_enh_meta_file& operator=(_os_enh_meta_file&& src) throw()
 	{
 		if( this != &src ) {
-			if( m_hEMF != src.m_hEMF ) {
-				Destroy();
-				m_hEMF = src.m_hEMF;
-				src.m_hEMF = NULL;
-			}
+			Attach(src.Detach());
 		}
 		return *this;
 	}
 
 	void Attach(HENHMETAFILE hEMF) throw()
 	{
+		//unique when m_hEMF==hEMF
 		if( m_hEMF != hEMF )
 			Destroy();
 		m_hEMF = hEMF;

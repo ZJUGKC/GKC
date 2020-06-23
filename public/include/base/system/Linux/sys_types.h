@@ -31,9 +31,8 @@ public:
 	io_handle() throw() : m_fd(-1)
 	{
 	}
-	io_handle(io_handle&& src) throw()
+	io_handle(io_handle&& src) throw() : m_fd(src.m_fd)
 	{
-		m_fd = src.m_fd;
 		src.m_fd = -1;
 	}
 	~io_handle() throw()
@@ -44,11 +43,7 @@ public:
 	io_handle& operator=(io_handle&& src) throw()
 	{
 		if( &src != this ) {
-			if( src.m_fd != m_fd ) {
-				Close();
-				m_fd = src.m_fd;
-				src.m_fd = -1;
-			}
+			Attach(src.Detach());
 		}
 		return *this;
 	}
@@ -64,6 +59,7 @@ public:
 	}
 	void Attach(uintptr h) throw()
 	{
+		//unique when m_fd==h
 		if( (uintptr)m_fd != h )
 			Close();
 		m_fd = (int)h;

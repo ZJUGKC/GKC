@@ -35,11 +35,10 @@ public:
 	Com_SA_Item() throw() : m_pGetClassObject(NULL), m_pCanUnloadNow(NULL)
 	{
 	}
-	Com_SA_Item(Com_SA_Item&& src) throw()
+	Com_SA_Item(Com_SA_Item&& src) throw() : m_hd(rv_forward(src.m_hd)), m_pGetClassObject(src.m_pGetClassObject), m_pCanUnloadNow(src.m_pCanUnloadNow)
 	{
-		m_hd.Attach(src.m_hd.Detach());
-		m_pGetClassObject = src.m_pGetClassObject;
-		m_pCanUnloadNow   = src.m_pCanUnloadNow;
+		src.m_pGetClassObject = NULL;
+		src.m_pCanUnloadNow = NULL;
 	}
 	~Com_SA_Item() throw()
 	{
@@ -47,10 +46,12 @@ public:
 
 	Com_SA_Item& operator=(Com_SA_Item&& src) throw()
 	{
+		m_hd = rv_forward(src.m_hd);
 		if( this != &src ) {
-			m_hd.Attach(src.m_hd.Detach());
 			m_pGetClassObject = src.m_pGetClassObject;
+			src.m_pGetClassObject = NULL;
 			m_pCanUnloadNow   = src.m_pCanUnloadNow;
+			src.m_pCanUnloadNow = NULL;
 		}
 		return *this;
 	}

@@ -109,6 +109,10 @@ public:
 	ref_ptr(const ref_ptr<T>& src) throw() : m_p(src.m_p)
 	{
 	}
+	ref_ptr(ref_ptr<T>&& src) throw() : m_p(src.m_p)
+	{
+		src.m_p = NULL;
+	}
 	~ref_ptr() throw()
 	{
 	}
@@ -122,6 +126,14 @@ public:
 	ref_ptr<T>& operator=(const ref_ptr<T>& src) throw()
 	{
 		m_p = src.m_p;
+		return *this;
+	}
+	ref_ptr<T>& operator=(ref_ptr<T>&& src) throw()
+	{
+		if ( &src != this ) {
+			m_p = src.m_p;
+			src.m_p = NULL;
+		}
 		return *this;
 	}
 	ref_ptr<T>& operator=(T* p) throw()
@@ -160,6 +172,10 @@ public:
 	bool IsNull() const throw()
 	{
 		return m_p == NULL;
+	}
+	bool IsNullObject() const throw()
+	{
+		return IsNull();
 	}
 
 	const T& Deref() const throw()

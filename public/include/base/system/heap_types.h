@@ -659,9 +659,8 @@ public:
 	unique_ptr() throw() : m_p(NULL)
 	{
 	}
-	unique_ptr(unique_ptr<T>&& src) throw()
+	unique_ptr(unique_ptr<T>&& src) throw() : m_p(src.m_p)
 	{
-		m_p = src.m_p;
 		src.m_p = NULL;
 	}
 	~unique_ptr() throw()
@@ -773,11 +772,9 @@ public:
 	unique_array() throw() : m_p(NULL), m_uCount(0)
 	{
 	}
-	unique_array(unique_array<T>&& src) throw()
+	unique_array(unique_array<T>&& src) throw() : m_p(src.m_p), m_uCount(src.m_uCount)
 	{
-		m_p = src.m_p;
 		src.m_p = NULL;
-		m_uCount = src.m_uCount;
 		src.m_uCount = 0;
 	}
 	~unique_array() throw()

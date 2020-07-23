@@ -1035,6 +1035,15 @@ typedef i_memory_allocator_ref_64  IMemoryAllocatorRef64;
 
 typedef i_memory_allocator_ref_64_full  IMemoryAllocatorRef64Full;
 
+// UniquePtr<T>
+//   This class cannot cross assembly
+template <typename T>
+using UniquePtr = unique_ptr<T>;
+
+// UniquePtrHelper
+
+typedef unique_ptr_helper  UniquePtrHelper;
+
 // AlignHelper
 
 class AlignHelper

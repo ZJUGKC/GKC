@@ -14,3 +14,14 @@
 # Setup
 
 The compiling destination of GKC project is a ZIP package with setup/uninstall scripts.
+Use setup script with specified parameters to install the package,
+and some environment variables are established.
+Three environment variables indicate three directories which form a virtual file system.
+
+| Directory | Description       |
+|:----------|:------------------|
+| /system   | system files      |
+| /lws      | software packages |
+| /uws      | user data (may be shared directory) |
+
+Use `Wlang` compiling tools in command line or shell.

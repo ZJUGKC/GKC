@@ -19,6 +19,8 @@
 //------------------------------------------------------------------------------
 // Shared Assembly
 
+#pragma pack(push, 1)
+
 // sa_handle
 
 class sa_handle
@@ -100,6 +102,8 @@ private:
 	sa_handle(const sa_handle& src) throw();
 	sa_handle& operator=(const sa_handle& src) throw();
 };
+
+#pragma pack(pop)
 
 //------------------------------------------------------------------------------
 

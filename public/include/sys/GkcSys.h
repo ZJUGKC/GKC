@@ -81,9 +81,6 @@ using WeakArray = _WeakArray<T>;
 // ShareArrayHelper
 typedef _ShareArrayHelper  ShareArrayHelper;
 
-// ArrayUtilHelper
-typedef _ArrayUtilHelper  ArrayUtilHelper;
-
 // StringT<Tchar>
 template <typename Tchar>
 using StringT = _StringT<Tchar>;
@@ -113,6 +110,49 @@ using StringCaseIgnoreHashTrait = _StringCaseIgnoreHashTrait<T>;
 
 // StringHelper
 typedef _StringHelper  StringHelper;
+
+// UniqueArray<T>
+template <typename T>
+using UniqueArray = _UniqueArray<T>;
+
+// UniqueArrayHelper
+typedef _UniqueArrayHelper  UniqueArrayHelper;
+
+// UniqueStringT<Tchar>
+template <typename Tchar>
+using UniqueStringT = _UniqueStringT<Tchar>;
+
+// UniqueString*
+typedef _UniqueStringA  UniqueStringA;
+typedef _UniqueStringH  UniqueStringH;
+typedef _UniqueStringL  UniqueStringL;
+typedef _UniqueStringS  UniqueStringS;
+typedef _UniqueStringW  UniqueStringW;
+
+// UniqueStringCompareTrait<T>
+template <class T>
+using UniqueStringCompareTrait = _UniqueStringCompareTrait<T>;
+
+// UniqueStringCaseIgnoreCompareTrait<T>
+template <class T>
+using UniqueStringCaseIgnoreCompareTrait = _UniqueStringCaseIgnoreCompareTrait<T>;
+
+// UniqueStringHashTrait<T>
+template <class T>
+using UniqueStringHashTrait = _UniqueStringHashTrait<T>;
+
+// UniqueStringCaseIgnoreHashTrait<T>
+template <class T>
+using UniqueStringCaseIgnoreHashTrait = _UniqueStringCaseIgnoreHashTrait<T>;
+
+// UniqueStringHelper
+typedef _UniqueStringHelper  UniqueStringHelper;
+
+// StringOpHelper
+typedef _StringOpHelper  StringOpHelper;
+
+// ArrayUtilHelper
+typedef _ArrayUtilHelper  ArrayUtilHelper;
 
 // StringUtilHelper
 typedef _StringUtilHelper  StringUtilHelper;

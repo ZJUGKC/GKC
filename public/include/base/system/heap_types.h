@@ -412,9 +412,14 @@ private:
 	fixed_size_memory_pool& operator=(const fixed_size_memory_pool&) throw();
 };
 
-// for share object
-
 #pragma pack(push, 1)
+
+//object callbacks
+typedef void  (* object_destruction_func)(void* p);
+typedef void* (* object_typecast_func)(void* p, const guid& iid);
+typedef void* (* object_connection_func)(void* p, const guid& iid);
+
+//for share object
 
 // share_block_base
 
@@ -501,8 +506,6 @@ private:
 	share_block_base& operator=(const share_block_base&) throw();
 };
 
-typedef void  (* share_object_destruction_func)(void* p);
-
 // share_ptr_block
 
 class share_ptr_block : public share_block_base
@@ -515,7 +518,7 @@ public:
 	{
 	}
 
-	void SetDestructionFunc(share_object_destruction_func pFunc) throw()
+	void SetDestructionFunc(object_destruction_func pFunc) throw()
 	{
 		m_pDestruction = pFunc;
 	}
@@ -535,7 +538,7 @@ public:
 	}
 
 protected:
-	share_object_destruction_func m_pDestruction;
+	object_destruction_func m_pDestruction;
 
 private:
 	//noncopyable
@@ -582,11 +585,7 @@ public:
 			return ;
 		}
 		//destruction
-		T* pt = (T*)m_p;
-		for( uintptr i = 0; i < m_uLength; i ++ ) {
-			pt->~T();
-			++ pt;
-		}
+		call_array_destructors((T*)m_p, m_uLength);
 		//free
 		m_pMgr->Free((uintptr)m_p);
 		m_p = NULL;
@@ -604,9 +603,6 @@ private:
 	share_array_block& operator=(const share_array_block&) throw();
 };
 
-typedef void* (* share_object_typecast_func)(void* p, const guid& iid);
-typedef void* (* share_object_connection_func)(void* p, const guid& iid);
-
 // share_com_block
 
 class share_com_block : public share_ptr_block
@@ -619,26 +615,26 @@ public:
 	{
 	}
 
-	share_object_typecast_func GetTypeCastFunc() const throw()
+	object_typecast_func GetTypeCastFunc() const throw()
 	{
 		return m_pTypeCast;
 	}
-	void SetTypeCastFunc(share_object_typecast_func pFunc) throw()
+	void SetTypeCastFunc(object_typecast_func pFunc) throw()
 	{
 		m_pTypeCast = pFunc;
 	}
-	share_object_connection_func GetConnectionFunc() const throw()
+	object_connection_func GetConnectionFunc() const throw()
 	{
 		return m_pConnection;
 	}
-	void SetConnectionFunc(share_object_connection_func pFunc) throw()
+	void SetConnectionFunc(object_connection_func pFunc) throw()
 	{
 		m_pConnection = pFunc;
 	}
 
 protected:
-	share_object_typecast_func m_pTypeCast;
-	share_object_connection_func m_pConnection;
+	object_typecast_func m_pTypeCast;
+	object_connection_func m_pConnection;
 
 private:
 	share_com_block(const share_com_block&) throw();
@@ -759,30 +755,30 @@ public:
 	}
 };
 
-// unique_array<T>
+// unique_fixed_array<T>
 
 template <typename T>
-class unique_array
+class unique_fixed_array
 {
 public:
 	typedef array_position  Position;
 	typedef array_iterator<T>  Iterator;
 
 public:
-	unique_array() throw() : m_p(NULL), m_uCount(0)
+	unique_fixed_array() throw() : m_p(NULL), m_uCount(0)
 	{
 	}
-	unique_array(unique_array<T>&& src) throw() : m_p(src.m_p), m_uCount(src.m_uCount)
+	unique_fixed_array(unique_fixed_array<T>&& src) throw() : m_p(src.m_p), m_uCount(src.m_uCount)
 	{
 		src.m_p = NULL;
 		src.m_uCount = 0;
 	}
-	~unique_array() throw()
+	~unique_fixed_array() throw()
 	{
 		Free();
 	}
 
-	unique_array<T>& operator=(unique_array<T>&& src) throw()
+	unique_fixed_array<T>& operator=(unique_fixed_array<T>&& src) throw()
 	{
 		if( this != &src ) {
 			if( m_p == src.m_p ) {
@@ -820,7 +816,7 @@ public:
 	void Free() throw()
 	{
 		if( m_p != NULL ) {
-			call_destructors(m_p, m_uCount);
+			call_array_destructors(m_p, m_uCount);
 			crt_free(m_p);
 			m_p = NULL;
 		}
@@ -888,65 +884,132 @@ public:
 	}
 
 protected:
-	static void call_destructors(T* p, uintptr uCount) throw()
-	{
-		T* pt = p;
-		for( uintptr i = 0; i < uCount; i ++ ) {
-			pt->~T();
-			++ pt;
-		}
-	}
-
-protected:
 	T*       m_p;
 	uintptr  m_uCount;
 
 private:
-	unique_array(const unique_array&) throw();
-	unique_array& operator=(const unique_array&) throw();
+	unique_fixed_array(const unique_fixed_array&) throw();
+	unique_fixed_array& operator=(const unique_fixed_array&) throw();
 
 private:
-	friend class unique_array_helper;
+	friend class unique_fixed_array_helper;
 };
 
-// unique_array_helper
+// unique_fixed_array_helper
 
-class unique_array_helper
+class unique_fixed_array_helper
 {
 public:
 	template <typename T, typename... Args>
-	static unique_array<T> MakeUniqueArray(uintptr uCount, Args&&... args)
+	static unique_fixed_array<T> MakeUniqueFixedArray(uintptr uCount, Args&&... args)
 	{
 		assert( uCount > 0 );
 		uintptr uBytes = safe_operators::MultiplyThrow(uCount, (uintptr)sizeof(T));
 		T* p = (T*)crt_alloc(uBytes);
 		if( p == NULL )
 			throw outofmemory_exception();
-		uintptr i;
 		try {
-			for( i = 0; i < uCount; i ++ ) {
-				call_constructor(*(p + i), rv_forward<Args>(args)...);
-			}
+			call_array_constructors(p, uCount, rv_forward<Args>(args)...);
 		}
 		catch(...) {
-			while( i > 0 ) {
-				i --;
-				p[i].~T();
-			}
 			crt_free(p);
 			throw;  //re-throw
 		}
-		unique_array<T> ret;
+		unique_fixed_array<T> ret;
 		ret.m_p = p;
 		ret.m_uCount = uCount;
 		return ret;
 	}
 
 	template <typename T>
-	static T* GetInternalPointer(const unique_array<T>& sp) throw()
+	static T* GetInternalPointer(const unique_fixed_array<T>& sp) throw()
 	{
 		return const_cast<T*>(sp.m_p);
 	}
 };
+
+#pragma pack(push, 1)
+
+// unique_block_base
+
+struct unique_block_base
+{
+public:
+	//methods
+	i_memory_manager* GetMemoryManager() const noexcept
+	{
+		return m_pMgr;
+	}
+	void SetMemoryManager(i_memory_manager* pMgr) noexcept
+	{
+		m_pMgr = pMgr;
+	}
+
+protected:
+	i_memory_manager* m_pMgr;
+};
+
+// unique_array_block
+
+struct unique_array_block : public unique_block_base
+{
+public:
+//methods
+	uintptr GetLength() const noexcept
+	{
+		return m_uLength;
+	}
+	void SetLength(uintptr uLength) noexcept
+	{
+		m_uLength = uLength;
+	}
+	uintptr GetAllocLength() const noexcept
+	{
+		return m_uAllocLength;
+	}
+	void SetAllocLength(uintptr uAllocLength) noexcept
+	{
+		m_uAllocLength = uAllocLength;
+	}
+
+protected:
+	uintptr m_uLength;
+	uintptr m_uAllocLength;
+};
+
+// unique_com_block
+
+struct unique_com_block : public unique_block_base
+{
+public:
+//methods
+	void SetDestructionFunc(object_destruction_func pFunc) noexcept
+	{
+		m_pDestruction = pFunc;
+	}
+
+	//destruct
+	void DestructObject() noexcept
+	{
+		assert( m_pDestruction != NULL );
+		//destruction
+		m_pDestruction((byte*)this + sizeof(unique_com_block));
+	}
+
+	object_typecast_func GetTypeCastFunc() const noexcept
+	{
+		return m_pTypeCast;
+	}
+	void SetTypeCastFunc(object_typecast_func pFunc) noexcept
+	{
+		m_pTypeCast = pFunc;
+	}
+
+protected:
+	object_destruction_func m_pDestruction;
+	object_typecast_func m_pTypeCast;
+};
+
+#pragma pack(pop)
 
 ////////////////////////////////////////////////////////////////////////////////

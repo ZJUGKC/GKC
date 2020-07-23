@@ -525,6 +525,13 @@ public:
 
 // -----collection-----
 
+//relocate
+template <typename T>
+inline void relocate_array_elements(const T* pSrc, T* pDest, uintptr size) throw()
+{
+	mem_move(pSrc, size * sizeof(T), pDest);
+}
+
 // coll_replace_elements<TIterator, TCompareTrait>
 
 template <class TIterator, class TCompareTrait = default_compare_trait<typename TIterator::EType>>

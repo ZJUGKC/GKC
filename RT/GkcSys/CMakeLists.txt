@@ -51,7 +51,10 @@ INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcSys/public/"
 	DESTINATION development/include/sys COMPONENT development)
 INSTALL(FILES "${PROJECT_SOURCE_DIR}/common.cmk"
 	DESTINATION development/cmake COMPONENT development)
+
 INSTALL(FILES "${PROJECT_SOURCE_DIR}/LICENSE"
 	DESTINATION core COMPONENT runtime)
+INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/licenses/"
+	DESTINATION core/licenses COMPONENT runtime)
 
 #end

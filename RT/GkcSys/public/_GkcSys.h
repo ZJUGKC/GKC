@@ -1139,7 +1139,7 @@ template <class T>
 class _Com_Connection_Func
 {
 public:
-	static share_object_connection_func GetFunc() throw()
+	static object_connection_func GetFunc() throw()
 	{
 		return NULL;
 	}
@@ -1170,7 +1170,7 @@ inline void* _Com_Get_Base_Object(void* p, const guid& iid,
 		{ return _Com_Get_Base_Object(p, iid, com_ca_##cls ::GetAddress(), com_ca_##cls ::GetCount()); }  \
 	};  \
 	template <> class _Com_TypeCast_Func<cls> { public:  \
-		static const share_object_typecast_func c_func;  \
+		static const object_typecast_func c_func;  \
 	};
 
 #define DECLARE_COM_CONNECTION(cls)  \
@@ -1183,7 +1183,7 @@ inline void* _Com_Get_Base_Object(void* p, const guid& iid,
 		{ return _Com_Get_Base_Object(p, iid, com_cc_##cls ::GetAddress(), com_cc_##cls ::GetCount()); }  \
 	};  \
 	template <> class _Com_Connection_Func<cls> { public:  \
-		static share_object_connection_func GetFunc() throw()  \
+		static object_connection_func GetFunc() throw()  \
 		{ return &(_Com_CN_##cls ::_Com_Connection); }  \
 	};
 
@@ -1210,7 +1210,7 @@ inline void* _Com_Get_Base_Object(void* p, const guid& iid,
 		STATIC_CONST_ARRAY_ENTRY_LAST(0)  \
 	END_STATIC_CONST_ARRAY_GROUP_LAST()  \
 	END_STATIC_CONST_ARRAY(com_ca_class)  \
-	const share_object_typecast_func _Com_TypeCast_Func<com_x_class>::c_func = &(com_tc_class::_Com_TypeCast);
+	const object_typecast_func _Com_TypeCast_Func<com_x_class>::c_func = &(com_tc_class::_Com_TypeCast);
 
 #define BEGIN_COM_CONNECTION(cls)  \
 	typedef cls com_y_class;  \
@@ -1803,7 +1803,7 @@ public:
 		uintptr uNewSize = GKC::SafeOperators::AddThrow(uOldSize, uSrcSize);
 		SetCount(uNewSize, 0);
 		if( uSrcSize != 0 )
-			copy_elements(src.get_array_address(), get_array_address() + uOldSize, uSrcSize);
+			copy_array_elements(src.get_array_address(), get_array_address() + uOldSize, uSrcSize);
 	}
 
 	void Copy(const _ShareArray<T>& src)  //may throw
@@ -1812,7 +1812,7 @@ public:
 		uintptr uSize = src.GetCount();
 		SetCount(uSize, 0);
 		if( uSize != 0 )
-			copy_elements(src.get_array_address(), get_array_address(), uSize);
+			copy_array_elements(src.get_array_address(), get_array_address(), uSize);
 	}
 
 	// count: the default value is 1.
@@ -1840,13 +1840,13 @@ public:
 			// destroy intial data before copying over it
 			call_array_destructors(get_array_address() + uOldSize, count);
 			// shift old data up to fill gap
-			relocate_elements(get_array_address() + index, get_array_address() + (index + count), uOldSize - index);
+			relocate_array_elements(get_array_address() + index, get_array_address() + (index + count), uOldSize - index);
 			try {
 				// re-init slots we copied from
 				call_array_constructors(get_array_address() + index, count, rv_forward<Args>(args)...);
 			}
 			catch(...) {
-				relocate_elements(get_array_address() + (index + count), get_array_address() + index, uOldSize - index);
+				relocate_array_elements(get_array_address() + (index + count), get_array_address() + index, uOldSize - index);
 				pB->SetLength(uOldSize);
 				throw ;  //re-throw
 			}
@@ -1884,7 +1884,7 @@ public:
 		//destructor
 		call_array_destructors(get_array_address() + index, count);
 		if( uMoveCount > 0 ) {
-			relocate_elements(get_array_address() + uCut, get_array_address() + index, uMoveCount);
+			relocate_array_elements(get_array_address() + uCut, get_array_address() + index, uMoveCount);
 		}
 		//size
 		pB->SetLength(uSize - count);
@@ -1944,45 +1944,6 @@ private:
 			set_array_address(pNew);
 		} //end if
 		pB->SetAllocLength(uAllocSize);
-	}
-
-	template <typename... Args>
-	static void call_array_constructors(T* p, uintptr size, Args&&... args)
-	{
-		uintptr i;
-		try {
-			for( i = 0; i < size; i ++ ) {
-				call_constructor(*(p + i), rv_forward<Args>(args)...);
-			}
-		}
-		catch(...) {
-			while( i > 0 ) {
-				i --;
-				p[i].~T();
-			}
-			throw;  //re-throw
-		}
-	}
-	static void call_array_destructors(T* p, uintptr size) throw()
-	{
-		T* pT = p;
-		for( uintptr i = 0; i < size; i ++ ) {
-			pT->~T();
-			++ pT;
-		}
-	}
-
-	//copy
-	static void copy_elements(const T* pSrc, T* pDest, uintptr size)
-	{
-		for( uintptr i = 0; i < size; i ++ ) {
-			pDest[i] = pSrc[i];  //may throw
-		}
-	}
-	//relocate
-	static void relocate_elements(const T* pSrc, T* pDest, uintptr size) throw()
-	{
-		mem_move(pSrc, size * sizeof(T), pDest);
 	}
 
 private:
@@ -2135,39 +2096,6 @@ public:
 	static int test_get_weak_count(const _WeakArray<T>& sp) throw()
 	{
 		return (sp.m_pB == NULL) ? 0 : (sp.m_pB)->GetWeakCount();
-	}
-};
-
-// _ArrayUtilHelper
-
-class _ArrayUtilHelper
-{
-public:
-	//find
-	//  TArray : GKC::ConstArray<T>, GKC::FixedArray<T, t_size>, _ShareArray<T>
-	template <typename T, class TArray, class TCompareTrait = GKC::DefaultCompareTrait<T>>
-	static GKC::ArrayPosition Find(const TArray& arr, const T& t) throw()
-	{
-		if( arr.GetCount() != 0 ) {
-			for( auto iter(arr.GetBegin()); iter != arr.GetEnd(); iter.MoveNext() ) {
-				if( TCompareTrait::IsEQ(iter.get_Value(), t) )
-					return arr.ToPosition(iter);
-			}
-		}
-		return GKC::ArrayPosition();  //invalid : INVALID_ARRAY_INDEX
-	}
-	template <typename T, class TArray, class TCompareTrait = GKC::DefaultCompareTrait<T>>
-	static GKC::ArrayPosition Find(const TArray& arr, uintptr uStart, uintptr uCount, const T& t) throw()
-	{
-		if( arr.GetCount() != 0 && uCount != 0 ) {
-			auto iterB(arr.GetAt(uStart));
-			auto iterE(arr.GetAt(uStart + uCount));  //no check : overflow
-			for( auto iter(iterB); iter != iterE; iter.MoveNext() ) {
-				if( TCompareTrait::IsEQ(iter.get_Value(), t) )
-					return arr.ToPosition(iter);
-			}
-		}
-		return GKC::ArrayPosition();  //invalid : INVALID_ARRAY_INDEX
 	}
 };
 
@@ -2446,6 +2374,1015 @@ public:
 		return ret;
 	}
 
+	//find (return value : check null)
+	template <typename Tchar>
+	static typename _StringT<Tchar>::Iterator Find(const _StringT<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		assert( !str.IsBlockNull() );
+		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_char(_ShareArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
+	//find last (return value : check null)
+	template <typename Tchar>
+	static typename _StringT<Tchar>::Iterator FindLast(const _StringT<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+	{
+		assert( uStart <= str.GetLength() );
+		assert( !str.IsBlockNull() );
+		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_last_char(_ShareArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
+};
+
+#pragma pack(pop)
+
+//------------------------------------------------------------------------------
+// Component
+
+#pragma pack(push, 1)
+
+// _IComFactory
+
+class NOVTABLE _IComFactory
+{
+public:
+	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IComFactory)
+
+// _IComSA
+
+class NOVTABLE _IComSA
+{
+public:
+	virtual void LockServer(const bool& bLock) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IComSA)
+
+#pragma pack(pop)
+
+// create component
+
+template <class T>
+inline GKC::CallResult _Create_Component_Instance(_ShareCom<T>& sp) throw()
+{
+	GKC::CallResult cr;
+	try {
+		sp = _ShareComHelper::MakeShareCom<T>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));
+	}
+	catch(GKC::Exception& e) {
+		cr = e.GetResult();
+	}
+	catch(...) {
+		cr.SetResult(GKC::SystemCallResults::Fail);
+	}
+	return cr;
+}
+
+template <class T>
+inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const guid& iid, _ShareCom<void>& sp) throw()
+{
+	_ShareCom<void> spI(_ShareComHelper::Query<T>(spC, iid));
+	if( spI.IsBlockNull() )
+		return GKC::CallResult(GKC::SystemCallResults::Fail);
+	sp = spI;
+	return GKC::CallResult();
+}
+template <class T, class TInterface>
+inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const guid& iid, _ShareCom<TInterface>& sp) throw()
+{
+	_ShareCom<TInterface> spI(_ShareComHelper::Query<T, TInterface>(spC, iid));
+	if( spI.IsBlockNull() )
+		return GKC::CallResult(GKC::SystemCallResults::Fail);
+	sp = spI;
+	return GKC::CallResult();
+}
+
+#define _COMPONENT_INSTANCE_INTERFACE(com_type, if_type, spC, sp, cr)  \
+	cr = _Component_Instance_Query<com_type, if_type>(spC, USE_GUID(GUID_##if_type), sp)
+
+#define _CREATE_COMPONENT_INSTANCE(com_type, if_type, sp, cr)  \
+	do { _ShareCom<com_type> __sp_C__;  \
+	cr = _Create_Component_Instance<com_type>(__sp_C__);  \
+	if( cr.IsSucceeded() ) {  \
+		_COMPONENT_INSTANCE_INTERFACE(com_type, if_type, __sp_C__, sp, cr);  \
+	} } while(0)
+
+typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp);
+
+// --only one component factory class can be defined in a pair of .h and .cpp files.--
+
+// --<header file>--
+
+#define DECLARE_COM_FACTORY_CLASS(com_class)  \
+	class _ComFactory_##com_class : public _IComFactory  \
+	{ public:  \
+	_ComFactory_##com_class() throw() {}  \
+	~_ComFactory_##com_class() throw() {}  \
+	/* _IComFactory methods */  \
+	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw()  \
+	{ CallResult cr;  \
+	_ShareCom<com_class> spC;  \
+	cr = _Create_Component_Instance<com_class>(spC);  \
+	if( cr.IsSucceeded() ) {  \
+		cr = _Component_Instance_Query<com_class>(spC, iid, sp);  \
+	} return cr; }  \
+	public:  \
+	static CallResult Create(_ShareCom<_IComFactory>& sp) throw()  \
+	{ CallResult cr;  \
+	_CREATE_COMPONENT_INSTANCE(_ComFactory_##com_class, _IComFactory, sp, cr);  \
+	return cr; }  \
+	private: /* noncopyable */  \
+	_ComFactory_##com_class(const _ComFactory_##com_class&) throw();  \
+	_ComFactory_##com_class& operator=(const _ComFactory_##com_class&) throw();  \
+	};  \
+	DECLARE_COM_TYPECAST(_ComFactory_##com_class)
+
+#define DECLARE_COM_SA_FACTORY_CLASS(com_class)  \
+	class _ComSAFactory_##com_class : public _ComFactory_##com_class, public _IComSA  \
+	{ public:  \
+	_ComSAFactory_##com_class() throw() {}  \
+	~_ComSAFactory_##com_class() throw() {}  \
+	/* _IComSA methods */  \
+	virtual void LockServer(const bool& bLock) throw()  \
+	{ bLock ? USE_COM_SA_MODULE().LockCount() : USE_COM_SA_MODULE().UnlockCount(); }  \
+	public:  \
+	static CallResult Create(_ShareCom<_IComFactory>& sp) throw()  \
+	{ CallResult cr;  \
+	_CREATE_COMPONENT_INSTANCE(_ComSAFactory_##com_class, _IComFactory, sp, cr);  \
+	return cr; }  \
+	private: /* noncopyable */  \
+	_ComSAFactory_##com_class(const _ComSAFactory_##com_class&) throw();  \
+	_ComSAFactory_##com_class& operator=(const _ComSAFactory_##com_class&) throw();  \
+	};  \
+	DECLARE_COM_TYPECAST(_ComSAFactory_##com_class)
+
+// --<.h end>
+
+// --<source file>--
+
+#define IMPLEMENT_COM_FACTORY_CLASS(com_class)  \
+	BEGIN_COM_TYPECAST(_ComFactory_##com_class)  \
+		COM_TYPECAST_ENTRY(_IComFactory, _IComFactory)  \
+	END_COM_TYPECAST()
+
+#define IMPLEMENT_COM_SA_FACTORY_CLASS(com_class)  \
+	BEGIN_COM_TYPECAST(_ComSAFactory_##com_class)  \
+		COM_TYPECAST_ENTRY(_IComFactory, _ComFactory_##com_class)  \
+		COM_TYPECAST_ENTRY(_IComSA, _IComSA)  \
+	END_COM_TYPECAST()
+
+// --<.cpp end>--
+
+#define USE_COM_FACTORY_CLASS_NAME(com_class)  _ComFactory_##com_class
+
+#define USE_COM_SA_FACTORY_CLASS_NAME(com_class)  _ComSAFactory_##com_class
+
+#define _SHARE_COM_FACTORY_SIZE  (sizeof(_ShareCom<_IComFactory>))
+
+// _Com_SA_Factory_Item
+
+struct _Com_SA_Factory_Item
+{
+	const guid* cid;
+	_Com_SA_Create_Factory_Func pFunc;
+	byte btFactory[_SHARE_COM_FACTORY_SIZE];
+};
+
+// _Com_SA_Module
+//   for global variable in SA of components
+class _Com_SA_Module
+{
+public:
+	_Com_SA_Module() throw() : m_iLockCount(0)
+	{
+		//map
+		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
+		if( pItem != NULL ) {
+			while( pItem->cid != NULL ) {
+				_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pItem->btFactory);
+				call_constructor(*pF);  //no throw
+				pItem ++;
+			}
+		}
+	}
+	~_Com_SA_Module() throw()
+	{
+		//map
+		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
+		if( pItem != NULL ) {
+			while( pItem->cid != NULL ) {
+				_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pItem->btFactory);
+				pF->~_ShareCom<_IComFactory>();
+				pItem ++;
+			}
+		}
+	}
+
+	//lock count
+	int LockCount() throw()
+	{
+		return atomic_increment((int&)m_iLockCount);
+	}
+	int UnlockCount() throw()
+	{
+		return atomic_decrement((int&)m_iLockCount);
+	}
+	int GetLockCount() const throw()
+	{
+		return m_iLockCount;
+	}
+
+	//mutex
+	GKC::CallResult InitMutex() throw()
+	{
+		return m_mtx.Init();
+	}
+	void TermMutex() throw()
+	{
+		m_mtx.Term();
+	}
+	void LockMutex() throw()
+	{
+		m_mtx.Lock();
+	}
+	void UnlockMutex() throw()
+	{
+		m_mtx.Unlock();
+	}
+
+	//for SA export functions
+	void SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()
+	{
+		cr.SetResult(GKC::SystemCallResults::OK);
+		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
+		if( pItem == NULL ) {
+			cr.SetResult(GKC::SystemCallResults::NotImpl);
+			return ;
+		}
+		_Com_SA_Factory_Item* pFound = NULL;
+		while( pItem->cid != NULL ) {
+			if( guid_equal(*(pItem->cid), cid) ) {
+				pFound = pItem;
+				break;
+			}
+			pItem ++;
+		}
+		if( pFound == NULL ) {
+			cr.SetResult(GKC::SystemCallResults::NotImpl);
+			return ;
+		}
+		_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pFound->btFactory);
+		if( pF->IsBlockNull() ) {
+			GKC::CallResult crCreate;
+			//lock
+			LockMutex();
+			//double check
+			if( pF->IsBlockNull() )
+				crCreate = pFound->pFunc(*pF);
+			UnlockMutex();
+			if( crCreate.IsFailed() ) {
+				cr = crCreate;
+				return ;
+			}
+		}
+		sp = *pF;
+	}
+	bool SA_Com_CanUnloadNow() const throw()
+	{
+		return GetLockCount() == 0;
+	}
+
+private:
+	volatile int m_iLockCount;
+	GKC::Mutex m_mtx;
+
+	static _Com_SA_Factory_Item* get_com_sa_factory_map() throw();
+
+private:
+	//noncopyable
+	_Com_SA_Module(const _Com_SA_Module&) throw();
+	_Com_SA_Module& operator=(const _Com_SA_Module&) throw();
+};
+
+// --<header file>--
+
+#define DECLARE_COM_SA_MODULE  DECLARE_SA_GLOBAL_VARIABLE(_Com_SA_Module, _g_com_sa_module)
+
+#define USE_COM_SA_MODULE()  GET_SA_GLOBAL_VARIABLE(_g_com_sa_module)
+
+#define DECLARE_COM_SA_EXPORT_FUNCTIONS  \
+SA_FUNCTION void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();  \
+SA_FUNCTION bool _SA_Com_CanUnloadNow() throw();
+
+// use _ComSABase as a base class of component class in SA
+#define DECLARE_COM_SA_BASE_CLASS  \
+class _ComSABase { public:  \
+_ComSABase() throw() { USE_COM_SA_MODULE().LockCount(); }  \
+~_ComSABase() throw() { USE_COM_SA_MODULE().UnlockCount(); }  \
+private:  /*noncopyable*/  \
+_ComSABase(const _ComSABase&) throw();  \
+_ComSABase& operator=(const _ComSABase&) throw();  \
+};
+
+// --<.h end>---
+
+// --<source file>--
+
+#define IMPLEMENT_COM_SA_MODULE  \
+	BEGIN_SA_GLOBAL_VARIABLE(_Com_SA_Module, _g_com_sa_module)  \
+	END_SA_GLOBAL_VARIABLE(_g_com_sa_module)
+
+#define BEGIN_COM_SA_FACTORY_MAP()  \
+	_Com_SA_Factory_Item l_com_sa_factory_map[] = {
+
+#define COM_SA_FACTORY_ENTRY(com_class)  \
+	{ &(USE_GUID(GUID_##com_class)), &(USE_COM_SA_FACTORY_CLASS_NAME(com_class)::Create), { 0 } },
+
+#define END_COM_SA_FACTORY_MAP()  \
+	{ NULL, NULL, { 0 } } };  \
+	_Com_SA_Factory_Item* _Com_SA_Module::get_com_sa_factory_map() throw()  \
+	{ return l_com_sa_factory_map; }
+
+#define IMPLEMENT_COM_SA_EXPORT_FUNCTIONS  \
+void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()  \
+{ USE_COM_SA_MODULE().SA_Com_GetClassObject(cid, sp, cr); }  \
+bool _SA_Com_CanUnloadNow() throw()  \
+{ return USE_COM_SA_MODULE().SA_Com_CanUnloadNow(); }
+
+// --<.cpp end>---
+
+// component client functions
+SA_FUNCTION void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _Com_SA_FreeUnusedLibraries() throw();
+
+//------------------------------------------------------------------------------
+// Unique
+
+#pragma pack(push, 1)
+
+// _UniqueArray<T>
+
+template <typename T>
+class _UniqueArray
+{
+public:
+	typedef T  EType;
+	typedef GKC::ArrayPosition  Position;
+	typedef GKC::ArrayIterator<T>  Iterator;
+
+public:
+	_UniqueArray() noexcept : m_p(NULL)
+	{
+	}
+	_UniqueArray(const _UniqueArray&) = delete;
+	_UniqueArray& operator=(const _UniqueArray&) = delete;
+	_UniqueArray(_UniqueArray&& src) noexcept : m_p(src.m_p)
+	{
+		src.m_p = NULL;
+	}
+	~_UniqueArray() noexcept
+	{
+		RemoveAll();
+	}
+
+	_UniqueArray& operator=(_UniqueArray&& src) noexcept
+	{
+		if ( this != &src ) {
+			if ( m_p != src.m_p ) {
+				RemoveAll();
+				m_p = src.m_p;
+				src.m_p = NULL;
+			}
+			else {
+				assert( m_p == NULL );  // unique
+			}
+		}
+		return *this;
+	}
+
+	bool operator==(const _UniqueArray<T>& right) const noexcept
+	{
+		return m_p == right.m_p;
+	}
+	bool operator!=(const _UniqueArray<T>& right) const noexcept
+	{
+		return m_p != right.m_p;
+	}
+
+//methods
+	void RemoveAll() noexcept
+	{
+		if ( m_p != NULL ) {
+			unique_array_block* pB = (unique_array_block*)m_p;
+			call_array_destructors(get_array_address(), pB->GetLength());
+			pB->GetMemoryManager()->Free((uintptr)m_p);
+			m_p = NULL;
+		}
+	}
+
+	uintptr GetCount() const noexcept
+	{
+		return m_p == NULL ? 0 : ((unique_array_block*)m_p)->GetLength();
+	}
+	bool IsEmpty() const noexcept
+	{
+		return GetCount() == 0;
+	}
+	bool IsNull() const noexcept
+	{
+		return m_p == NULL;
+	}
+
+	const Iterator operator[](uintptr index) const noexcept
+	{
+		return GetAt(index);
+	}
+	Iterator operator[](uintptr index) noexcept
+	{
+		return GetAt(index);
+	}
+
+	//position
+	Position GetStartPosition() const noexcept
+	{
+		return Position(0);
+	}
+	Position GetTailPosition() const noexcept
+	{
+		return Position(GetCount() - 1);
+	}
+	const Iterator GetAtPosition(const Position& pos) const noexcept
+	{
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
+	}
+	Iterator GetAtPosition(const Position& pos) noexcept
+	{
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
+	}
+	Position ToPosition(const Iterator& iter) const noexcept
+	{
+		assert( m_p != NULL );
+		return Position(GKC::RefPtrHelper::GetInternalPointer(iter.get_Ref()) - get_array_address());
+	}
+
+	//iterator
+	const Iterator GetBegin() const noexcept
+	{
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address()));
+	}
+	Iterator GetBegin() noexcept
+	{
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address()));
+	}
+	const Iterator GetEnd() const noexcept
+	{
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address() + GetCount()));
+	}
+	Iterator GetEnd() noexcept
+	{
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address() + GetCount()));
+	}
+	const Iterator GetReverseBegin() const noexcept
+	{
+		return GKC::ReverseIterator<Iterator>(GetEnd());
+	}
+	Iterator GetReverseBegin() noexcept
+	{
+		return GKC::ReverseIterator<Iterator>(GetEnd());
+	}
+	const Iterator GetReverseEnd() const noexcept
+	{
+		return GKC::ReverseIterator<Iterator>(GetBegin());
+	}
+	Iterator GetReverseEnd() noexcept
+	{
+		return GKC::ReverseIterator<Iterator>(GetBegin());
+	}
+
+	const Iterator GetAt(uintptr index) const noexcept
+	{
+		assert( index < GetCount() );
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
+	}
+	Iterator GetAt(uintptr index) noexcept
+	{
+		assert( index < GetCount() );
+		assert( m_p != NULL );
+		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
+	}
+	void SetAt(uintptr index, const T& t)
+	{
+		assert( index < GetCount() );
+		assert( m_p != NULL );
+		get_array_address()[index] = t;  //may throw
+	}
+	void SetAt(uintptr index, T&& t)
+	{
+		assert( index < GetCount() );
+		assert( m_p != NULL );
+		get_array_address()[index] = rv_forward(t);  //may throw
+	}
+
+	template <typename... Args>
+	void SetCount(uintptr uCount, Args&&... args)
+	{
+		//clear
+		if ( uCount == 0 ) {
+			RemoveAll();
+			return ;
+		}
+		uintptr uOldSize = GetCount();
+		uintptr uAllocLength = (m_p == NULL) ? 0 : ((unique_array_block*)m_p)->GetAllocLength();
+		//enough
+		if ( uCount <= uAllocLength ) {
+			if ( uCount > uOldSize ) {
+				call_array_constructors(get_array_address() + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);  //may throw
+			}
+			else if ( uOldSize > uCount ) {
+				call_array_destructors(get_array_address() + uCount, uOldSize - uCount);
+			}
+			((unique_array_block*)m_p)->SetLength(uCount);
+			return ;
+		}
+		//new size
+		uintptr uGrowBy = uOldSize / 8;
+		uGrowBy = (uGrowBy < 4) ? 4 : ((uGrowBy > 1024) ? 1024 : uGrowBy);
+		uAllocLength = GKC::SafeOperators::AddThrow(uAllocLength, uGrowBy);  //may throw
+		if ( uCount > uAllocLength )
+			uAllocLength = uCount;
+		uintptr uBytes = GKC::SafeOperators::MultiplyThrow(uAllocLength, (uintptr)sizeof(T));  //may throw
+		uBytes = GKC::SafeOperators::AddThrow(uBytes, (uintptr)sizeof(unique_array_block));  //may throw
+		//grow
+		if ( m_p == NULL ) {
+			GKC::IMemoryManager* pMgr = _CrtMemoryManager_Get();
+			m_p = (void*)(pMgr->Alloate(uBytes));
+			if ( m_p == NULL )
+				throw GKC::OutOfMemoryException();
+			((unique_array_block*)m_p)->SetMemoryManager(pMgr);
+			((unique_array_block*)m_p)->SetLength(0);
+		}
+		else {
+			GKC::IMemoryManager* pMgr = ((unique_array_block*)m_p)->GetMemoryManager();
+			void* pNew = (void*)(pMgr->Reallocate((uintptr)m_p, uBytes));
+			if ( pNew == NULL )
+				throw GKC::OutOfMemoryException();
+			m_p = pNew;
+		}
+		((unique_array_block*)m_p)->SetAllocLength(uAllocLength);
+		//construct new elements
+		call_array_constructors(get_array_address() + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);  //may throw
+		((unique_array_block*)m_p)->SetLength(uCount);
+	}
+
+	void FreeExtra() noexcept
+	{
+		if ( m_ p == NULL )
+			return ;
+		unique_array_block* pB = (unique_array_block*)m_p;
+		uintptr uSize = pB->GetLength();
+		if ( uSize == pB->GetAllocLength() )
+			return ;
+		// shrink to desired size
+		if ( uSize == 0 ) {
+			//free
+			RemoveAll();
+			return ;
+		}
+		uintptr uBytes;
+		GKC::SafeOperators::Multiply(uSize, (uintptr)(sizeof(T)), uBytes);  //no check
+		GKC::SafeOperators::Add(uBytes, (uintptr)(sizeof(unique_array_block)), uBytes);  //no check
+		void* pNew = (void*)(pB->GetMemoryManager()->Reallocate((uintptr)m_p, uBytes));
+		if ( pNew == NULL )
+			return ;
+		m_p = pNew;
+		((unique_array_block*)m_p)->SetAllocLength(uSize);
+	}
+
+	//add
+	template <typename... Args>
+	Iterator Add(Args&&... args)
+	{
+		uintptr uElement = GetCount();
+		uintptr uNew = GKC::SafeOperators::AddThrow(uElement, (uintptr)1);  //may throw
+		SetCount(uNew, rv_forward<Args>(args)...);  //may throw
+		return GetAt(uElement);
+	}
+	void Append(const _UniqueArray<T>& src)
+	{
+		assert( this != &src );
+		uintptr uOldSize = GetCount();
+		uintptr uSrcSize = src.GetCount();
+		uintptr uNewSize = GKC::SafeOperators::AddThrow(uOldSize, uSrcSize);  //may throw
+		SetCount(uNewSize);  //may throw
+		if ( uSrcSize != 0 )
+			copy_array_elements(src.get_array_address(), get_array_address() + uOldSize, uSrcSize);  //may throw
+	}
+
+	void Copy(const _UniqueArray<T>& src)
+	{
+		assert( this != &src );
+		uintptr uSize = src.GetCount();
+		SetCount(uSize);  //may throw
+		if( uSize != 0 )
+			copy_array_elements(src.get_array_address(), get_array_address(), uSize);  //may throw
+	}
+
+	template <typename... Args>
+	void InsertAt(uintptr index, uintptr count, Args&&... args)
+	{
+		assert( count > 0 );  // zero size not allowed
+		uintptr uSize = GetCount();
+		if ( index >= uSize ) {
+			// adding after the end of the array
+			uintptr uNewSize = GKC::SafeOperators::AddThrow(index, count);  //may throw
+			SetCount(uNewSize, rv_forward<Args>(args)...);  //may throw
+		}
+		else {
+			// inserting in the middle of the array
+			uintptr uOldSize = uSize;
+			uintptr uNewSize = GKC::SafeOperators::AddThrow(uSize, count);  //may throw
+			SetCount(uNewSize);  //may throw
+			// destroy intial data before copying over it
+			call_array_destructors(get_array_address() + uOldSize, count);
+			// shift old data up to fill gap
+			relocate_array_elements(get_array_address() + index, get_array_address() + (index + count), uOldSize - index);
+			try {
+				// re-init slots we copied from
+				call_array_constructors(get_array_address() + index, count, rv_forward<Args>(args)...);  //may throw
+			}
+			catch(...) {
+				relocate_array_elements(get_array_address() + (index + count), get_array_address() + index, uOldSize - index);
+				((unique_array_block*)m_p)->SetLength(uOldSize);
+				throw ;  //re-throw
+			}
+		} //end if
+		assert( (index + count) <= GetCount() );
+	}
+	void InsertArrayAt(uintptr index, const _UniqueArray<T>& src)
+	{
+		uintptr uSize = src.GetCount();
+		if ( uSize > 0 ) {
+			InsertAt(index, uSize);  //may throw
+			try {
+				for ( uintptr i = 0; i < uSize; i ++ ) {
+					SetAt(index + i, src[i].get_Value());  //may throw
+				}
+			}
+			catch(...) {
+				RemoveAt(index, uSize);
+				throw ;  //re-throw
+			}
+		} //end if
+	}
+
+	//remove
+	void RemoveAt(uintptr index, uintptr count = 1) noexcept
+	{
+		assert( count > 0 );  // zero size not allowed
+		uintptr uSize = GetCount();
+		uintptr uCut = index + count;
+		assert( uCut >= index && uCut >= count && uCut <= uSize );  //no overflow
+		// just remove a range
+		uintptr uMoveCount = uSize - uCut;
+		//destructor
+		call_array_destructors(get_array_address() + index, count);
+		if ( uMoveCount > 0 ) {
+			relocate_array_elements(get_array_address() + uCut, get_array_address() + index, uMoveCount);
+		}
+		//size
+		((unique_array_block*)m_p)->SetLength(uSize - count);
+	}
+
+protected:
+	T* get_array_address() const noexcept
+	{
+		return (T*)((unique_array_block*)m_p + 1);
+	}
+
+protected:
+	void* m_p;
+
+private:
+	friend class _UniqueArrayHelper;
+};
+
+#pragma pack(pop)
+
+// _UniqueArrayHelper
+
+class _UniqueArrayHelper
+{
+public:
+	//clone
+	template <typename T>
+	static _UniqueArray<T> Clone(const _UniqueArray<T>& sp)
+	{
+		_UniqueArray<T> ret;
+		if ( sp.m_p != NULL )
+			ret.Copy(sp);  //may throw
+		return ret;
+	}
+	//internal pointer
+	template <typename T>
+	static T* GetInternalPointer(const _UniqueArray<T>& sp) noexcept
+	{
+		return (sp.m_p == NULL) ? NULL : sp.get_array_address();
+	}
+};
+
+#pragma pack(push, 1)
+
+// _UniqueStringT<Tchar>
+//   Tchar: CharA CharH CharL, CharS CharW
+
+template <typename Tchar>
+class _UniqueStringT : public _UniqueArray<Tchar>
+{
+private:
+	typedef _UniqueArray<Tchar>  baseClass;
+	typedef _UniqueStringT<Tchar>  thisClass;
+
+public:
+	_UniqueStringT() noexcept
+	{
+	}
+	_UniqueStringT(const _UniqueStringT&) = delete;
+	_UniqueStringT& operator=(const _UniqueStringT&) = delete;
+	_UniqueStringT(thisClass&& src) noexcept : baseClass(rv_forward(static_cast<baseClass&>(src)))
+	{
+	}
+	~_UniqueStringT() noexcept
+	{
+	}
+
+	thisClass& operator=(thisClass&& src) noexcept
+	{
+		return static_cast<thisClass&>(baseClass::operator=(rv_forward(static_cast<baseClass&>(src))));
+	}
+
+//methods
+	uintptr GetLength() const noexcept
+	{
+		uintptr uCount;
+		return (baseClass::IsNull()) ? 0 :
+				( (uCount = (static_cast<unique_array_block*>(m_p))->GetLength(), uCount == 0) ? 0 : uCount - 1 )
+				;
+	}
+	bool IsEmpty() const noexcept
+	{
+		return GetLength() == 0;
+	}
+
+	//position
+	typename thisClass::Position GetTailPosition() const noexcept
+	{
+		return typename thisClass::Position(GetLength() - 1);
+	}
+
+	//iterators
+	const typename thisClass::Iterator GetEnd() const noexcept
+	{
+		assert( !(baseClass::IsNull()) );
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
+	}
+	typename thisClass::Iterator GetEnd() noexcept
+	{
+		assert( !(baseClass::IsNull()) );
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
+	}
+	const typename thisClass::Iterator GetReverseBegin() const noexcept
+	{
+		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
+	}
+	typename thisClass::Iterator GetReverseBegin() noexcept
+	{
+		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
+	}
+
+	const typename thisClass::Iterator GetAt(uintptr index) const noexcept
+	{
+		assert( index < GetLength() );
+		assert( !(baseClass::IsNull()) );
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+	}
+	typename thisClass::Iterator GetAt(uintptr index) noexcept
+	{
+		assert( index < GetLength() );
+		assert( !(baseClass::IsNull()) );
+		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+	}
+	void SetAt(uintptr index, const Tchar& t)
+	{
+		assert( index < GetLength() );
+		assert( !(baseClass::IsNull()) );
+		baseClass::get_array_address()[index] = t;  //may throw
+	}
+	void SetAt(uintptr index, Tchar&& t)
+	{
+		assert( index < GetLength() );
+		assert( !(baseClass::IsNull()) );
+		baseClass::get_array_address()[index] = rv_forward(t);  //may throw
+	}
+
+	void SetLength(uintptr uLength)
+	{
+		uintptr uSize = GKC::SafeOperators::AddThrow(uLength, (uintptr)1);  //may throw
+		baseClass::SetCount(uSize);  //may throw
+		baseClass::get_array_address()[uLength] = 0;
+	}
+	void RecalcLength() noexcept
+	{
+		assert( !(baseClass::IsNull()) );
+		((unique_array_block*)m_p)->SetLength(calc_string_length(baseClass::get_array_address()) + 1);
+	}
+
+	//clear content and free array
+	void Clear() noexcept
+	{
+		baseClass::RemoveAll();
+	}
+
+private:
+	friend class _UniqueStringHelper;
+};
+
+#pragma pack(pop)
+
+// _UniqueString*
+typedef _UniqueStringT<GKC::CharA>  _UniqueStringA;
+typedef _UniqueStringT<GKC::CharH>  _UniqueStringH;
+typedef _UniqueStringT<GKC::CharL>  _UniqueStringL;
+typedef _UniqueStringT<GKC::CharS>  _UniqueStringS;
+typedef _UniqueStringT<GKC::CharW>  _UniqueStringW;
+
+// _UniqueStringCompareTrait<T>
+
+template <class T>
+class _UniqueStringCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// _UniqueStringCaseIgnoreCompareTrait<T>
+
+template <class T>
+class _UniqueStringCaseIgnoreCompareTrait
+{
+public:
+	static bool IsEQ(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) == 0;
+	}
+	static bool IsNE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) != 0;
+	}
+	static bool IsGT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) > 0;
+	}
+	static bool IsLT(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) < 0;
+	}
+	static bool IsGE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) >= 0;
+	}
+	static bool IsLE(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) <= 0;
+	}
+	static int Compare(const T& t1, const T& t2) throw()
+	{
+		return compare_string_case_insensitive(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2));
+	}
+};
+
+// _UniqueStringHashTrait<T>
+
+template <class T>
+class _UniqueStringHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = _UniqueArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// _UniqueStringCaseIgnoreHashTrait<T>
+
+template <class T>
+class _UniqueStringCaseIgnoreHashTrait
+{
+public:
+	static uintptr CalcHash(const T& t) throw()
+	{
+		uintptr uHash = 0;
+		const typename T::EType* pch = _UniqueArrayHelper::GetInternalPointer(t);
+		assert( pch != NULL );
+		while( *pch != 0 ) {
+			uHash = (uHash << 5) + uHash + (uintptr)char_upper(*pch);
+			pch ++;
+		}
+		return uHash;
+	}
+};
+
+// _UniqueStringHelper
+
+class _UniqueStringHelper
+{
+public:
+	//To C-style string
+	template <typename Tchar>
+	static GKC::RefPtr<Tchar> To_C_Style(const _UniqueStringT<Tchar>& str, uintptr uStart = 0) noexcept
+	{
+		assert( uStart <= str.GetLength() );
+		return GKC::RefPtr<Tchar>(_UniqueArrayHelper::GetInternalPointer(str) + uStart);
+	}
+
+	//clone
+	template <typename Tchar>
+	static _UniqueStringT<Tchar> Clone(const _UniqueStringT<Tchar>& str)
+	{
+		_UniqueStringT<Tchar> ret;
+		if ( !str.IsNull() ) {
+			uintptr uCount = str.GetLength();
+			ret.SetLength(uCount);  //may throw
+			if ( uCount != 0 )
+				mem_copy(_UniqueArrayHelper::GetInternalPointer(str), uCount * sizeof(Tchar), _UniqueArrayHelper::GetInternalPointer(ret));
+		}
+		return ret;
+	}
+
+	//find (return value : check null)
+	template <typename Tchar>
+	static typename _UniqueStringT<Tchar>::Iterator Find(const _UniqueStringT<Tchar>& str, const Tchar& ch, uintptr uStart) noexcept
+	{
+		assert( uStart <= str.GetLength() );
+		assert( !str.IsNull() );
+		return typename _UniqueStringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_char(_UniqueArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
+	//find last (return value : check null)
+	template <typename Tchar>
+	static typename _UniqueStringT<Tchar>::Iterator FindLast(const _UniqueStringT<Tchar>& str, const Tchar& ch, uintptr uStart) noexcept
+	{
+		assert( uStart <= str.GetLength() );
+		assert( !str.IsNull() );
+		return typename _UniqueStringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_last_char(_UniqueArrayHelper::GetInternalPointer(str) + uStart, ch)));
+	}
+};
+
+// _StringOpHelper
+
+class _StringOpHelper
+{
+public:
 	//append character
 	template <typename Tchar>
 	static void Append(const Tchar& ch, INOUT _StringT<Tchar>& strDest)
@@ -2486,22 +3423,38 @@ public:
 			return 0;
 		return coll_replace_elements<typename _StringT<Tchar>::Iterator, TCompareTrait>(chOld, chNew, str.GetBegin(), str.GetEnd());
 	}
+};
 
-	//find (return value : check null)
-	template <typename Tchar>
-	static typename _StringT<Tchar>::Iterator Find(const _StringT<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+// _ArrayUtilHelper
+
+class _ArrayUtilHelper
+{
+public:
+	//find
+	//  TArray : GKC::ConstArray<T>, GKC::FixedArray<T, t_size>, _ShareArray<T>, _UniqueArray<T>
+	template <typename T, class TArray, class TCompareTrait = GKC::DefaultCompareTrait<T>>
+	static GKC::ArrayPosition Find(const TArray& arr, const T& t) throw()
 	{
-		assert( uStart <= str.GetLength() );
-		assert( !str.IsBlockNull() );
-		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_char(_ShareArrayHelper::GetInternalPointer(str) + uStart, ch)));
+		if( arr.GetCount() != 0 ) {
+			for( auto iter(arr.GetBegin()); iter != arr.GetEnd(); iter.MoveNext() ) {
+				if( TCompareTrait::IsEQ(iter.get_Value(), t) )
+					return arr.ToPosition(iter);
+			}
+		}
+		return GKC::ArrayPosition();  //invalid : INVALID_ARRAY_INDEX
 	}
-	//find last (return value : check null)
-	template <typename Tchar>
-	static typename _StringT<Tchar>::Iterator FindLast(const _StringT<Tchar>& str, const Tchar& ch, uintptr uStart) throw()
+	template <typename T, class TArray, class TCompareTrait = GKC::DefaultCompareTrait<T>>
+	static GKC::ArrayPosition Find(const TArray& arr, uintptr uStart, uintptr uCount, const T& t) throw()
 	{
-		assert( uStart <= str.GetLength() );
-		assert( !str.IsBlockNull() );
-		return typename _StringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_last_char(_ShareArrayHelper::GetInternalPointer(str) + uStart, ch)));
+		if( arr.GetCount() != 0 && uCount != 0 ) {
+			auto iterB(arr.GetAt(uStart));
+			auto iterE(arr.GetAt(uStart + uCount));  //no check : overflow
+			for( auto iter(iterB); iter != iterE; iter.MoveNext() ) {
+				if( TCompareTrait::IsEQ(iter.get_Value(), t) )
+					return arr.ToPosition(iter);
+			}
+		}
+		return GKC::ArrayPosition();  //invalid : INVALID_ARRAY_INDEX
 	}
 };
 
@@ -2897,6 +3850,8 @@ public:
 	}
 };
 
+#pragma pack(push, 1)
+
 // _VariantString
 
 class _VariantString
@@ -3154,328 +4109,6 @@ private:
 };
 
 #pragma pack(pop)
-
-//------------------------------------------------------------------------------
-// Component
-
-#pragma pack(push, 1)
-
-// _IComFactory
-
-class NOVTABLE _IComFactory
-{
-public:
-	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw() = 0;
-};
-
-DECLARE_GUID(GUID__IComFactory)
-
-// _IComSA
-
-class NOVTABLE _IComSA
-{
-public:
-	virtual void LockServer(const bool& bLock) throw() = 0;
-};
-
-DECLARE_GUID(GUID__IComSA)
-
-#pragma pack(pop)
-
-// create component
-
-template <class T>
-inline GKC::CallResult _Create_Component_Instance(_ShareCom<T>& sp) throw()
-{
-	GKC::CallResult cr;
-	try {
-		sp = _ShareComHelper::MakeShareCom<T>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));
-	}
-	catch(GKC::Exception& e) {
-		cr = e.GetResult();
-	}
-	catch(...) {
-		cr.SetResult(GKC::SystemCallResults::Fail);
-	}
-	return cr;
-}
-
-template <class T>
-inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const guid& iid, _ShareCom<void>& sp) throw()
-{
-	_ShareCom<void> spI(_ShareComHelper::Query<T>(spC, iid));
-	if( spI.IsBlockNull() )
-		return GKC::CallResult(GKC::SystemCallResults::Fail);
-	sp = spI;
-	return GKC::CallResult();
-}
-template <class T, class TInterface>
-inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const guid& iid, _ShareCom<TInterface>& sp) throw()
-{
-	_ShareCom<TInterface> spI(_ShareComHelper::Query<T, TInterface>(spC, iid));
-	if( spI.IsBlockNull() )
-		return GKC::CallResult(GKC::SystemCallResults::Fail);
-	sp = spI;
-	return GKC::CallResult();
-}
-
-#define _COMPONENT_INSTANCE_INTERFACE(com_type, if_type, spC, sp, cr)  \
-	cr = _Component_Instance_Query<com_type, if_type>(spC, USE_GUID(GUID_##if_type), sp)
-
-#define _CREATE_COMPONENT_INSTANCE(com_type, if_type, sp, cr)  \
-	do { _ShareCom<com_type> __sp_C__;  \
-	cr = _Create_Component_Instance<com_type>(__sp_C__);  \
-	if( cr.IsSucceeded() ) {  \
-		_COMPONENT_INSTANCE_INTERFACE(com_type, if_type, __sp_C__, sp, cr);  \
-	} } while(0)
-
-typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp);
-
-// --only one component factory class can be defined in a pair of .h and .cpp files.--
-
-// --<header file>--
-
-#define DECLARE_COM_FACTORY_CLASS(com_class)  \
-	class _ComFactory_##com_class : public _IComFactory  \
-	{ public:  \
-	_ComFactory_##com_class() throw() {}  \
-	~_ComFactory_##com_class() throw() {}  \
-	/* _IComFactory methods */  \
-	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw()  \
-	{ CallResult cr;  \
-	_ShareCom<com_class> spC;  \
-	cr = _Create_Component_Instance<com_class>(spC);  \
-	if( cr.IsSucceeded() ) {  \
-		cr = _Component_Instance_Query<com_class>(spC, iid, sp);  \
-	} return cr; }  \
-	public:  \
-	static CallResult Create(_ShareCom<_IComFactory>& sp) throw()  \
-	{ CallResult cr;  \
-	_CREATE_COMPONENT_INSTANCE(_ComFactory_##com_class, _IComFactory, sp, cr);  \
-	return cr; }  \
-	private: /* noncopyable */  \
-	_ComFactory_##com_class(const _ComFactory_##com_class&) throw();  \
-	_ComFactory_##com_class& operator=(const _ComFactory_##com_class&) throw();  \
-	};  \
-	DECLARE_COM_TYPECAST(_ComFactory_##com_class)
-
-#define DECLARE_COM_SA_FACTORY_CLASS(com_class)  \
-	class _ComSAFactory_##com_class : public _ComFactory_##com_class, public _IComSA  \
-	{ public:  \
-	_ComSAFactory_##com_class() throw() {}  \
-	~_ComSAFactory_##com_class() throw() {}  \
-	/* _IComSA methods */  \
-	virtual void LockServer(const bool& bLock) throw()  \
-	{ bLock ? USE_COM_SA_MODULE().LockCount() : USE_COM_SA_MODULE().UnlockCount(); }  \
-	public:  \
-	static CallResult Create(_ShareCom<_IComFactory>& sp) throw()  \
-	{ CallResult cr;  \
-	_CREATE_COMPONENT_INSTANCE(_ComSAFactory_##com_class, _IComFactory, sp, cr);  \
-	return cr; }  \
-	private: /* noncopyable */  \
-	_ComSAFactory_##com_class(const _ComSAFactory_##com_class&) throw();  \
-	_ComSAFactory_##com_class& operator=(const _ComSAFactory_##com_class&) throw();  \
-	};  \
-	DECLARE_COM_TYPECAST(_ComSAFactory_##com_class)
-
-// --<.h end>
-
-// --<source file>--
-
-#define IMPLEMENT_COM_FACTORY_CLASS(com_class)  \
-	BEGIN_COM_TYPECAST(_ComFactory_##com_class)  \
-		COM_TYPECAST_ENTRY(_IComFactory, _IComFactory)  \
-	END_COM_TYPECAST()
-
-#define IMPLEMENT_COM_SA_FACTORY_CLASS(com_class)  \
-	BEGIN_COM_TYPECAST(_ComSAFactory_##com_class)  \
-		COM_TYPECAST_ENTRY(_IComFactory, _ComFactory_##com_class)  \
-		COM_TYPECAST_ENTRY(_IComSA, _IComSA)  \
-	END_COM_TYPECAST()
-
-// --<.cpp end>--
-
-#define USE_COM_FACTORY_CLASS_NAME(com_class)  _ComFactory_##com_class
-
-#define USE_COM_SA_FACTORY_CLASS_NAME(com_class)  _ComSAFactory_##com_class
-
-#define _SHARE_COM_FACTORY_SIZE  (sizeof(_ShareCom<_IComFactory>))
-
-// _Com_SA_Factory_Item
-
-struct _Com_SA_Factory_Item
-{
-	const guid* cid;
-	_Com_SA_Create_Factory_Func pFunc;
-	byte btFactory[_SHARE_COM_FACTORY_SIZE];
-};
-
-// _Com_SA_Module
-//   for global variable in SA of components
-class _Com_SA_Module
-{
-public:
-	_Com_SA_Module() throw() : m_iLockCount(0)
-	{
-		//map
-		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
-		if( pItem != NULL ) {
-			while( pItem->cid != NULL ) {
-				_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pItem->btFactory);
-				call_constructor(*pF);  //no throw
-				pItem ++;
-			}
-		}
-	}
-	~_Com_SA_Module() throw()
-	{
-		//map
-		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
-		if( pItem != NULL ) {
-			while( pItem->cid != NULL ) {
-				_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pItem->btFactory);
-				pF->~_ShareCom<_IComFactory>();
-				pItem ++;
-			}
-		}
-	}
-
-	//lock count
-	int LockCount() throw()
-	{
-		return atomic_increment((int&)m_iLockCount);
-	}
-	int UnlockCount() throw()
-	{
-		return atomic_decrement((int&)m_iLockCount);
-	}
-	int GetLockCount() const throw()
-	{
-		return m_iLockCount;
-	}
-
-	//mutex
-	GKC::CallResult InitMutex() throw()
-	{
-		return m_mtx.Init();
-	}
-	void TermMutex() throw()
-	{
-		m_mtx.Term();
-	}
-	void LockMutex() throw()
-	{
-		m_mtx.Lock();
-	}
-	void UnlockMutex() throw()
-	{
-		m_mtx.Unlock();
-	}
-
-	//for SA export functions
-	void SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()
-	{
-		cr.SetResult(GKC::SystemCallResults::OK);
-		_Com_SA_Factory_Item* pItem = get_com_sa_factory_map();
-		if( pItem == NULL ) {
-			cr.SetResult(GKC::SystemCallResults::NotImpl);
-			return ;
-		}
-		_Com_SA_Factory_Item* pFound = NULL;
-		while( pItem->cid != NULL ) {
-			if( guid_equal(*(pItem->cid), cid) ) {
-				pFound = pItem;
-				break;
-			}
-			pItem ++;
-		}
-		if( pFound == NULL ) {
-			cr.SetResult(GKC::SystemCallResults::NotImpl);
-			return ;
-		}
-		_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pFound->btFactory);
-		if( pF->IsBlockNull() ) {
-			GKC::CallResult crCreate;
-			//lock
-			LockMutex();
-			//double check
-			if( pF->IsBlockNull() )
-				crCreate = pFound->pFunc(*pF);
-			UnlockMutex();
-			if( crCreate.IsFailed() ) {
-				cr = crCreate;
-				return ;
-			}
-		}
-		sp = *pF;
-	}
-	bool SA_Com_CanUnloadNow() const throw()
-	{
-		return GetLockCount() == 0;
-	}
-
-private:
-	volatile int m_iLockCount;
-	GKC::Mutex m_mtx;
-
-	static _Com_SA_Factory_Item* get_com_sa_factory_map() throw();
-
-private:
-	//noncopyable
-	_Com_SA_Module(const _Com_SA_Module&) throw();
-	_Com_SA_Module& operator=(const _Com_SA_Module&) throw();
-};
-
-// --<header file>--
-
-#define DECLARE_COM_SA_MODULE  DECLARE_SA_GLOBAL_VARIABLE(_Com_SA_Module, _g_com_sa_module)
-
-#define USE_COM_SA_MODULE()  GET_SA_GLOBAL_VARIABLE(_g_com_sa_module)
-
-#define DECLARE_COM_SA_EXPORT_FUNCTIONS  \
-SA_FUNCTION void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();  \
-SA_FUNCTION bool _SA_Com_CanUnloadNow() throw();
-
-// use _ComSABase as a base class of component class in SA
-#define DECLARE_COM_SA_BASE_CLASS  \
-class _ComSABase { public:  \
-_ComSABase() throw() { USE_COM_SA_MODULE().LockCount(); }  \
-~_ComSABase() throw() { USE_COM_SA_MODULE().UnlockCount(); }  \
-private:  /*noncopyable*/  \
-_ComSABase(const _ComSABase&) throw();  \
-_ComSABase& operator=(const _ComSABase&) throw();  \
-};
-
-// --<.h end>---
-
-// --<source file>--
-
-#define IMPLEMENT_COM_SA_MODULE  \
-	BEGIN_SA_GLOBAL_VARIABLE(_Com_SA_Module, _g_com_sa_module)  \
-	END_SA_GLOBAL_VARIABLE(_g_com_sa_module)
-
-#define BEGIN_COM_SA_FACTORY_MAP()  \
-	_Com_SA_Factory_Item l_com_sa_factory_map[] = {
-
-#define COM_SA_FACTORY_ENTRY(com_class)  \
-	{ &(USE_GUID(GUID_##com_class)), &(USE_COM_SA_FACTORY_CLASS_NAME(com_class)::Create), { 0 } },
-
-#define END_COM_SA_FACTORY_MAP()  \
-	{ NULL, NULL, { 0 } } };  \
-	_Com_SA_Factory_Item* _Com_SA_Module::get_com_sa_factory_map() throw()  \
-	{ return l_com_sa_factory_map; }
-
-#define IMPLEMENT_COM_SA_EXPORT_FUNCTIONS  \
-void _SA_Com_GetClassObject(const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw()  \
-{ USE_COM_SA_MODULE().SA_Com_GetClassObject(cid, sp, cr); }  \
-bool _SA_Com_CanUnloadNow() throw()  \
-{ return USE_COM_SA_MODULE().SA_Com_CanUnloadNow(); }
-
-// --<.cpp end>---
-
-// component client functions
-SA_FUNCTION void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();
-SA_FUNCTION void _Com_SA_FreeUnusedLibraries() throw();
 
 //------------------------------------------------------------------------------
 // Stream

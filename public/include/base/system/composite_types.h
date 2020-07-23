@@ -783,6 +783,42 @@ public:
 	}
 };
 
+//array tools
+template <typename T, typename... Args>
+inline void call_array_constructors(T* p, uintptr size, Args&&... args)
+{
+	uintptr i;
+	try {
+		for( i = 0; i < size; i ++ ) {
+			call_constructor(*(p + i), rv_forward<Args>(args)...);
+		}
+	}
+	catch(...) {
+		while( i > 0 ) {
+			i --;
+			p[i].~T();
+		}
+		throw;  //re-throw
+	}
+}
+template <typename T>
+inline void call_array_destructors(T* p, uintptr size) throw()
+{
+	T* pT = p;
+	for( uintptr i = 0; i < size; i ++ ) {
+		pT->~T();
+		++ pT;
+	}
+}
+//copy
+template <typename T>
+inline void copy_array_elements(const T* pSrc, T* pDest, uintptr size)
+{
+	for( uintptr i = 0; i < size; i ++ ) {
+		pDest[i] = pSrc[i];  //may throw
+	}
+}
+
 #pragma pack(push, 1)
 
 // fixed_array<T, t_size>
@@ -810,7 +846,7 @@ public:
 	fixed_array(const thisClass& src)  //may throw
 	{
 		assert( t_size > 0 );
-		copy_elements(src.m_data, m_data, t_size);
+		copy_array_elements(src.m_data, m_data, t_size);
 	}
 	~fixed_array() throw()
 	{
@@ -820,7 +856,7 @@ public:
 	thisClass& operator=(const thisClass& src)  //may throw
 	{
 		if( this != &src ) {
-			copy_elements(src.m_data, m_data, t_size);
+			copy_array_elements(src.m_data, m_data, t_size);
 		}
 		return *this;
 	}
@@ -909,14 +945,6 @@ public:
 	{
 		assert( index < t_size );
 		m_data[index] = rv_forward(t);
-	}
-
-private:
-	static void copy_elements(const T* pSrc, T* pDest, uintptr size)
-	{
-		for( uintptr i = 0; i < size; i ++ ) {
-			pDest[i] = pSrc[i];  //may throw
-		}
 	}
 
 protected:

@@ -1199,7 +1199,7 @@ private:
 							if( !check_separator_set<typename TString::EType>(iter.get_Value(), arrSeparatorSet) )
 								break;
 						}
-						_StringHelper::Delete(uStart, uNow, str);
+						_StringOpHelper::Delete(uStart, uNow, str);
 						uLength = str.GetLength();
 						uNow = uStart;
 					}

@@ -463,8 +463,8 @@ private:
 	void delete_quotes(StringA& str) throw()
 	{
 		assert( str.GetLength() >= 2 );
-		StringHelper::Delete(str.GetLength() - 1, 1, str);
-		StringHelper::Delete(0, 1, str);
+		StringOpHelper::Delete(str.GetLength() - 1, 1, str);
+		StringOpHelper::Delete(0, 1, str);
 	}
 
 private:
@@ -694,7 +694,7 @@ inline void _Generate_Project_FileList(const ProjectInfo& info, FileListInfo& fl
 		if( !iter.IsNull() ) {
 			StringA strTemp(StringHelper::Clone(strV));  //may throw
 			uintptr uPos = iter.CalcDelta(strFile.GetBegin());
-			StringHelper::Delete(uPos, strFile.GetCount() - uPos, strTemp);
+			StringOpHelper::Delete(uPos, strFile.GetCount() - uPos, strTemp);
 			strV = strTemp;
 		}
 		flInfo.AddFile(strV);  //may throw

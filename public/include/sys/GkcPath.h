@@ -56,7 +56,7 @@ public:
 		if( !check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) ) {
 			Tchar ch;
 			get_path_separator(ch);
-			StringHelper::Append(ch, str);  //may throw
+			StringOpHelper::Append(ch, str);  //may throw
 		}
 	}
 
@@ -76,7 +76,7 @@ public:
 	template <typename Tchar>
 	static void RemoveExtension(uintptr uPos, StringT<Tchar>& str) throw()
 	{
-		StringHelper::Delete(uPos, str.GetLength() - uPos, str);
+		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
 	}
 	template <typename Tchar, uintptr t_size>
 	static void RemoveExtension(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
@@ -98,7 +98,7 @@ public:
 	template <typename Tchar>
 	static void ToPathPart(uintptr uPos, StringT<Tchar>& str) throw()
 	{
-		StringHelper::Delete(uPos, str.GetLength() - uPos, str);
+		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
 	}
 	template <typename Tchar, uintptr t_size>
 	static void ToPathPart(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
@@ -111,7 +111,7 @@ public:
 	{
 		uintptr uLength = str.GetLength();
 		if( check_path_deletable_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
-			StringHelper::Delete(uLength - 1, 1, str);
+			StringOpHelper::Delete(uLength - 1, 1, str);
 	}
 	template <typename Tchar, uintptr t_size>
 	static void RemovePathTrailingSeparator(FixedStringT<Tchar, t_size>& str) throw()
@@ -157,7 +157,7 @@ public:
 		const Tchar* sz;
 		get_current_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
-		StringHelper::Insert(0, c_strPrefix, str);  //may throw
+		StringOpHelper::Insert(0, c_strPrefix, str);  //may throw
 	}
 	//Called after ConvertPathStringToPlatform with absolute path
 	//  Now this method can be ignored under the latest OS.
@@ -171,7 +171,7 @@ public:
 		const Tchar* sz;
 		get_absolute_path_prefix(sz, uLength);
 		ConstStringT<Tchar> c_strPrefix(sz, uLength);
-		StringHelper::Insert(0, c_strPrefix, str);  //may throw
+		StringOpHelper::Insert(0, c_strPrefix, str);  //may throw
 	}
 
 private:
@@ -180,7 +180,7 @@ private:
 	{
 		uintptr uLength = str.GetLength();
 		if( check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
-			StringHelper::Delete(uLength - 1, 1, str);
+			StringOpHelper::Delete(uLength - 1, 1, str);
 	}
 	template <typename Tchar, uintptr t_size>
 	static void remove_separator(FixedStringT<Tchar, t_size>& str) throw()

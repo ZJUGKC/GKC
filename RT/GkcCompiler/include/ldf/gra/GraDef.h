@@ -125,7 +125,7 @@ public:
 
 	uintptr Find(const _GraToken& tk) const throw()
 	{
-		return GKC::ArrayUtilHelper::Find<_GraToken, GKC::ShareArray<_GraToken>>(m_arr, tk).GetIndex();
+		return GKC::ArrayUtilHelper::Find<GKC::ShareArray<_GraToken>>(m_arr, tk).GetIndex();
 	}
 
 	void Add(const _GraToken& tk)

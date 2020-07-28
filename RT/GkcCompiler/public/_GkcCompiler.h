@@ -598,7 +598,7 @@ public:
 			tmp.SetLength(ret);
 		GKC::StringUtilHelper::MakeString(tmp, str);  //may throw
 		if( strAdd.GetCount() != 0 ) {
-			GKC::StringHelper::Append(_S(' '), str);  //may throw
+			GKC::StringOpHelper::Append(_S(' '), str);  //may throw
 			GKC::StringUtilHelper::Append(strAdd, str);  //may throw
 		}
 	}

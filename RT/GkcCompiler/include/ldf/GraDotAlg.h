@@ -149,7 +149,7 @@ public:
 	}
 	uintptr FindPropagation(uintptr uState, uintptr uSeed) const throw()
 	{
-		return ArrayUtilHelper::Find<pairClass, ShareArray<pairClass>>(m_arrPropagation, pairClass(uState, uSeed)).GetIndex();
+		return ArrayUtilHelper::Find<ShareArray<pairClass>>(m_arrPropagation, pairClass(uState, uSeed)).GetIndex();
 	}
 	void AddPropagation(uintptr uState, uintptr uSeed)
 	{
@@ -239,7 +239,7 @@ public:
 	//find
 	uintptr Find(const _GraDotItem& item) const throw()
 	{
-		return ArrayUtilHelper::Find<_GraDotItem, ShareArray<_GraDotItem>>(m_arr, item).GetIndex();
+		return ArrayUtilHelper::Find<ShareArray<_GraDotItem>>(m_arr, item).GetIndex();
 	}
 	uintptr Find2(const _GraDotItem& item) const throw()
 	{
@@ -304,7 +304,7 @@ private:
 	//find
 	uintptr find_item_array(const _GraDotItem& item) const throw()
 	{
-		return ArrayUtilHelper::Find<_GraDotItem, ShareArray<_GraDotItem>, _dot_item_trait>(m_arr, item).GetIndex();
+		return ArrayUtilHelper::Find<ShareArray<_GraDotItem>, _dot_item_trait>(m_arr, item).GetIndex();
 	}
 
 private:
@@ -379,7 +379,7 @@ private:
 					}
 					else {
 						if( tsDone.Find(tka) == INVALID_ARRAY_INDEX ) {
-							if( !(ArrayUtilHelper::Find<_GraToken, ShareArray<_GraToken>>(arrToDo, tka).IsValid()) )
+							if( !(ArrayUtilHelper::Find<ShareArray<_GraToken>>(arrToDo, tka).IsValid()) )
 								arrToDo.Add(tka);  //may throw
 						}
 					}
@@ -844,7 +844,7 @@ private:
 				_GraDotItem& itemN = m_arrState[uState].get_Value().get_Value().GetSeedSet().GetItem(uSeed);
 				if( itemN.CombineLookAhead(itemC) != 0 && itemN.GetPropagationCount() != 0 ) {  //may throw
 					RefPtr<_GraDotItem> rItem(itemN);
-					if( !(ArrayUtilHelper::Find<RefPtr<_GraDotItem>, ShareArray<RefPtr<_GraDotItem>>>(arrPG, rItem).IsValid()) )
+					if( !(ArrayUtilHelper::Find<ShareArray<RefPtr<_GraDotItem>>>(arrPG, rItem).IsValid()) )
 						arrPG.Add(rItem);  //may throw
 				}
 			} //end for

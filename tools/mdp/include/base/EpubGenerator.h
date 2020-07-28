@@ -102,9 +102,9 @@ inline void _Generate_Time_String(StringA& str)
 inline void _Generate_FileId_String(const ConstStringA& strFile, StringA& strId)
 {
 	StringUtilHelper::MakeString(strFile, strId);  //may throw
-	StringHelper::Replace('/', '-', strId);
-	StringHelper::Replace('.', '-', strId);
-	StringHelper::Replace('#', '-', strId);
+	StringOpHelper::Replace('/', '-', strId);
+	StringOpHelper::Replace('.', '-', strId);
+	StringOpHelper::Replace('#', '-', strId);
 }
 //generate type string
 inline ConstStringA _Generate_MimeType_String(const ConstStringA& str) throw()

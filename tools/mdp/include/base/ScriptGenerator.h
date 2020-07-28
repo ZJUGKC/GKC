@@ -36,8 +36,8 @@ inline void _Generate_Script_FILES_String(const ConstStringA& strDirPrefix,
 		StringUtilHelper::Append(flInfo.GetAt(i), strTemp);  //may throw
 		FsPathHelper::RemoveExtension(strTemp.GetLength() - 3, strTemp);
 		FsPathHelper::ConvertPathStringToPlatform(strTemp);
-		StringHelper::Insert(0, '\"', strTemp);  //may throw
-		StringHelper::Append('\"', strTemp);  //may throw
+		StringOpHelper::Insert(0, '\"', strTemp);  //may throw
+		StringOpHelper::Append('\"', strTemp);  //may throw
 		i ++;
 		if( i < uCount )
 			StringUtilHelper::Append(get_array_delimiter(), strTemp);  //may throw
@@ -57,8 +57,8 @@ inline void _Generate_Script_CSSPREFIX_String(const FileListInfo& flInfo,
 			if( iter.get_Value() == '/' )
 				StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringA, "../"), strTemp);  //may throw
 		}
-		StringHelper::Insert(0, '\"', strTemp);  //may throw
-		StringHelper::Append('\"', strTemp);  //may throw
+		StringOpHelper::Insert(0, '\"', strTemp);  //may throw
+		StringOpHelper::Append('\"', strTemp);  //may throw
 		i ++;
 		if( i < uCount )
 			StringUtilHelper::Append(get_array_delimiter(), strTemp);  //may throw

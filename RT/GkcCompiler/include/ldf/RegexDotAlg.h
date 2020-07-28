@@ -128,7 +128,7 @@ public:
 
 	bool Find(const _RegexDotItem& item) const throw()
 	{
-		return ArrayUtilHelper::Find<_RegexDotItem, ShareArray<_RegexDotItem>>(m_arr, item).IsValid();
+		return ArrayUtilHelper::Find<ShareArray<_RegexDotItem>>(m_arr, item).IsValid();
 	}
 
 private:
@@ -468,7 +468,7 @@ private:
 	//find
 	static uintptr find_index_array(const ShareArray<uintptr>& arr, uintptr index) throw()
 	{
-		return ArrayUtilHelper::Find<uintptr, ShareArray<uintptr>>(arr, index).GetIndex();
+		return ArrayUtilHelper::Find<ShareArray<uintptr>>(arr, index).GetIndex();
 	}
 
 private:

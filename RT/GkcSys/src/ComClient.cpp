@@ -39,4 +39,31 @@ void _Com_SA_FreeUnusedLibraries() throw()
 	GKC::GET_SA_GLOBAL_VARIABLE(g_com_sa_cache).FreeUnusedLibraries();
 }
 
+//for unique components
+
+void _UniqueCom_SA_GetClassObject(const GKC::ConstStringS& strAssembly, const guid& cid, _UniqueCom& sp, GKC::CallResult& cr) noexcept
+{
+	cr.SetResult(GKC::SystemCallResults::OK);
+
+	//SA
+	sa_handle hd;
+	if ( !hd.Load(GKC::ConstArrayHelper::GetInternalPointer(strAssembly)) ) {
+		cr.SetResult(GKC::SystemCallResults::Fail);
+		return ;
+	}
+
+	typedef void (* _SA_UniqueCom_GetClassObject_Func)(const guid& cid, _UniqueCom& sp, GKC::CallResult& cr);
+	_SA_UniqueCom_GetClassObject_Func pGetClassObject;
+	pGetClassObject = (_SA_UniqueCom_GetClassObject_Func)hd.GetFunctionAddress("_SA_UniqueCom_GetClassObject");
+	if ( pGetClassObject == NULL ) {
+		cr.SetResult(GKC::SystemCallResults::Fail);
+		return ;
+	}
+
+	//call
+	pGetClassObject(cid, sp, cr);
+	if ( cr.IsSucceeded() )
+		_UniqueComHelper::set_sa_handle(rv_forward(hd), sp);
+}
+
 ////////////////////////////////////////////////////////////////////////////////

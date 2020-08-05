@@ -1233,6 +1233,28 @@ inline void* _Com_Get_Base_Object(void* p, const guid& iid,
 
 // --<.cpp end>--
 
+// _ScopeShareComObject<T>
+
+template <class T>
+class _ScopeShareComObject : public share_com_block, public T
+{
+public:
+	_ScopeShareComObject()
+	{
+		share_com_block::m_p = static_cast<T*>(this);
+		share_com_block::SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+		share_com_block::SetConnectionFunc(GKC::_Com_Connection_Func<T>::GetFunc());
+	}
+	_ScopeShareComObject(const _ScopeShareComObject&) = delete;
+	_ScopeShareComObject& operator=(const _ScopeShareComObject&) = delete;
+	~_ScopeShareComObject() noexcept
+	{
+	}
+
+private:
+	friend class _ShareComHelper;
+};
+
 // _ShareComHelper
 
 class _ShareComHelper
@@ -1359,6 +1381,17 @@ public:
 		if( pC == NULL )
 			return ;
 		pC->Unadvise(uCookie);
+	}
+
+	//scope
+	template <class T>
+	static _ShareCom<T> ToShareCom(const _ScopeShareComObject<T>& sp) throw()
+	{
+		_ShareCom<T> ret;
+		ret.m_pT = sp.m_p;
+		ret.m_pB = static_cast<share_com_block*>(&sp);
+		ret.m_pB->AddRefCopy();
+		return ret;
 	}
 
 	//get internal pointer
@@ -3056,6 +3089,9 @@ public:
 	}
 };
 
+//------------------------------------------------------------------------------
+// String tools
+
 // _StringOpHelper
 
 class _StringOpHelper
@@ -4111,33 +4147,219 @@ private:
 #pragma pack(pop)
 
 //------------------------------------------------------------------------------
-// Component
+// unique component
 
 #pragma pack(push, 1)
 
-// _IComFactory
+// _UniqueCom
 
-class NOVTABLE _IComFactory
+class _UniqueCom
 {
 public:
-	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw() = 0;
+	_UniqueCom() noexcept : m_p(NULL)
+	{
+	}
+	_UniqueCom(const _UniqueCom&) = delete;
+	_UniqueCom(_UniqueCom&& src) noexcept : m_p(src.m_p)
+	{
+		src.m_p = NULL;
+	}
+	~_UniqueCom() noexcept
+	{
+		Release();
+	}
+
+	_UniqueCom& operator=(const _UniqueCom&) = delete;
+	_UniqueCom& operator=(_UniqueCom&& src) noexcept
+	{
+		if ( this != &src ) {
+			if ( m_p == src.m_p ) {
+				assert( m_p == NULL );
+			}
+			else {
+				Release();
+				m_p = src.m_p;
+				src.m_p = NULL;
+			}
+		}
+		return *this;
+	}
+
+	bool operator==(const _UniqueCom& right) const noexcept
+	{
+		return m_p == right.m_p;
+	}
+	bool operator!=(const _UniqueCom& right) const noexcept
+	{
+		return m_p != right.m_p;
+	}
+
+	void Release() noexcept
+	{
+		if ( m_p != NULL ) {
+			GKC::IMemoryManager* pMgr = get_block()->GetMemoryManager();
+			if ( pMgr != NULL ) {
+				get_sa_handle()->~sa_handle();
+				get_block()->DestructObject();
+				pMgr->Free((uintptr)m_p);
+			}
+			m_p = NULL;
+		}
+	}
+
+	bool IsNull() const noexcept
+	{
+		return m_p == NULL;
+	}
+
+protected:
+	sa_handle* get_sa_handle() const noexcept
+	{
+		return (sa_handle*)m_p;
+	}
+	unique_com_block* get_block() const noexcept
+	{
+		return (unique_com_block*)((byte*)m_p + sizeof(sa_handle));
+	}
+	void* get_object() const noexcept
+	{
+		return (byte*)m_p + sizeof(sa_handle) + sizeof(unique_com_block);
+	}
+
+protected:
+	void* m_p;
+
+private:
+	friend class _UniqueComHelper;
 };
-
-DECLARE_GUID(GUID__IComFactory)
-
-// _IComSA
-
-class NOVTABLE _IComSA
-{
-public:
-	virtual void LockServer(const bool& bLock) throw() = 0;
-};
-
-DECLARE_GUID(GUID__IComSA)
 
 #pragma pack(pop)
 
-// create component
+/*
+DECLARE_COM_TYPECAST(cls)
+
+BEGIN_COM_TYPECAST(cls)
+COM_TYPECAST_ENTRY(ifname, ibname)
+END_COM_TYPECAST()
+*/
+
+#pragma pack(push, 1)
+
+// _ScopeUniqueComObject<T>
+
+template <class T>
+class _ScopeUniqueComObject
+{
+public:
+	_ScopeUniqueComObject()
+	{
+		m_block.SetMemoryManager(NULL);
+		m_block.SetDestructionFunc(NULL);
+		m_block.SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+	}
+	_ScopeUniqueComObject(const _ScopeUniqueComObject&) = delete;
+	_ScopeUniqueComObject& operator=(const _ScopeUniqueComObject&) = delete;
+	~_ScopeUniqueComObject() noexcept
+	{
+	}
+
+private:
+	sa_handle m_hd;
+	unique_com_block m_block;
+	T m_t;
+};
+
+#pragma pack(pop)
+
+// _UniqueComHelper
+
+class _UniqueComHelper
+{
+public:
+	//make unique component object
+	template <class T, typename... Args>
+	static _UniqueCom MakeUniqueCom(const GKC::RefPtr<GKC::IMemoryManager>& mgr, Args&&... args)
+	{
+		assert( !mgr.IsNull() );
+
+		//allocate
+		uintptr uBytes = GKC::SafeOperators::AddThrow(sizeof(sa_handle) + sizeof(unique_com_block), sizeof(T));
+		void* p = (void*)((const_cast<GKC::RefPtr<GKC::IMemoryManager>&>(mgr)).Deref().Allocate(uBytes));
+		if ( p == NULL )
+			throw GKC::OutOfMemoryException();
+
+		unique_com_block* pB = (unique_com_block*)((byte*)p + sizeof(sa_handle));
+		T* pT = (T*)(pB + 1);
+		//constructor
+		try {
+			//may throw
+			call_constructor(*pT, rv_forward<Args>(args)...);
+		}
+		catch(...) {
+			(const_cast<GKC::RefPtr<GKC::IMemoryManager>&>(mgr)).Deref().Free((uintptr)p);
+			throw;  //re-throw
+		}
+
+		call_constructor(*((sa_handle*)p));
+
+		//initialize
+		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
+		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
+		pB->SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+
+		_UniqueCom ret;
+		//return value
+		ret.m_p = p;
+
+		return ret;
+	}
+
+	//query type
+	// T : interface
+	template <class T>
+	static GKC::RefPtr<T> Query(const _UniqueCom& sp, const guid& iid) noexcept
+	{
+		GKC::RefPtr<T> ret;
+		if( !sp.IsNull() )
+			ret = (T*)((sp.get_block()->GetTypeCastFunc())(sp.get_object(), iid));
+		return ret;
+	}
+
+	//clone
+	// T : the component class
+	template <class T>
+	static _UniqueCom Clone(const _UniqueCom& sp)
+	{
+		return ( !sp.IsNull() )
+				? MakeUniqueCom(GKC::RefPtr<GKC::IMemoryManager>(sp.get_block()->GetMemoryManager()), *((T*)(sp.get_object())))
+				: _UniqueCom();
+	}
+
+	//scope
+	template <class T>
+	static _UniqueCom ToUniqueCom(const _ScopeUniqueComObject<T>& sp) noexcept
+	{
+		_UniqueCom ret;
+		ret.m_p = &sp;
+		return ret;
+	}
+
+	//only for creation from SA
+	static void set_sa_handle(sa_handle&& hd, _UniqueCom& sp) noexcept
+	{
+		assert( !sp.IsNull() );
+		*(sp.get_sa_handle()) = rv_forward(hd);
+	}
+};
+
+#define CALL_UNIQUECOM_TYPECAST(src, ifname)  _UniqueComHelper::Query<ifname>(src, USE_GUID(GUID_##ifname))
+
+//------------------------------------------------------------------------------
+// Component
+
+//functions for creating components directly
+
+// share com
 
 template <class T>
 inline GKC::CallResult _Create_Component_Instance(_ShareCom<T>& sp) throw()
@@ -4183,6 +4405,81 @@ inline GKC::CallResult _Component_Instance_Query(const _ShareCom<T>& spC, const 
 	if( cr.IsSucceeded() ) {  \
 		_COMPONENT_INSTANCE_INTERFACE(com_type, if_type, __sp_C__, sp, cr);  \
 	} } while(0)
+
+#define _CREATE_SCOPE_COMPONENT_INSTANCE(com_type, if_type, spS, sp, cr)  \
+	do { _ShareCom<com_type> __sp_C__(_ShareComHelper::ToShareCom(spS));  \
+	if( !__sp_C__.IsBlockNull() ) _COMPONENT_INSTANCE_INTERFACE(com_type, if_type, __sp_C__, sp, cr);  \
+	else cr.SetResult(GKC::SystemCallResults::Fail);  \
+	} while(0)
+
+// unique com
+
+template <class T>
+inline GKC::CallResult _Create_UniqueCom_Instance(_UniqueCom& sp) throw()
+{
+	GKC::CallResult cr;
+	try {
+		sp = _UniqueComHelper::MakeUniqueCom<T>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));
+	}
+	catch(GKC::Exception& e) {
+		cr = e.GetResult();
+	}
+	catch(...) {
+		cr.SetResult(GKC::SystemCallResults::Fail);
+	}
+	return cr;
+}
+
+template <class T>
+inline GKC::CallResult _UniqueCom_Instance_Query(const _UniqueCom& spC, const guid& iid, GKC::RefPtr<T>& sp) throw()
+{
+	GKC::RefPtr<T> spI(_UniqueComHelper::Query<T>(spC, iid));
+	if( spI.IsNull() )
+		return GKC::CallResult(GKC::SystemCallResults::Fail);
+	sp = spI;
+	return GKC::CallResult();
+}
+
+#define _UNIQUECOM_INSTANCE_INTERFACE(if_type, spC, sp, cr)  \
+	cr = _UniqueCom_Instance_Query<if_type>(spC, USE_GUID(GUID_##if_type), sp)
+
+#define _CREATE_UNIQUECOM_INSTANCE(com_type, sp, cr)  \
+	cr = _Create_UniqueCom_Instance<com_type>(sp);
+
+#define _CREATE_SCOPE_UNIQUECOM_INSTANCE(com_type, spS, sp, cr)  \
+	do { _UniqueCom __sp_C__(_UniqueComHelper::ToUniqueCom<com_type>(spS));  \
+	cr.SetResult(GKC::SystemCallResults::OK);  \
+	if( !__sp_C__.IsNull() ) sp = rv_forward(__sp_C__);  \
+	else cr.SetResult(GKC::SystemCallResults::Fail);  \
+	} while(0)
+
+//functions for creating components from SA
+
+// share com
+
+#pragma pack(push, 1)
+
+// _IComFactory
+
+class NOVTABLE _IComFactory
+{
+public:
+	virtual GKC::CallResult CreateInstance(const guid& iid, _ShareCom<void>& sp) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IComFactory)
+
+// _IComSA
+
+class NOVTABLE _IComSA
+{
+public:
+	virtual void LockServer(const bool& bLock) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IComSA)
+
+#pragma pack(pop)
 
 typedef GKC::CallResult (* _Com_SA_Create_Factory_Func)(_ShareCom<_IComFactory>& sp);
 
@@ -4431,6 +4728,109 @@ bool _SA_Com_CanUnloadNow() throw()  \
 // component client functions
 SA_FUNCTION void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _Com_SA_FreeUnusedLibraries() throw();
+
+// unique com
+
+typedef GKC::CallResult (* _UniqueCom_SA_Create_Func)(_UniqueCom& sp);
+
+// _UniqueCom_SA_Item
+
+struct _UniqueCom_SA_Item
+{
+	const guid* cid;
+	_UniqueCom_SA_Create_Func pFunc;
+};
+
+// _UniqueCom_Factory<T>
+
+template <class T>
+class _UniqueCom_Factory
+{
+public:
+	static GKC::CallResult Create(_UniqueCom& sp) noexcept
+	{
+		GKC::CallResult cr;
+		_CREATE_UNIQUECOM_INSTANCE(T, sp, cr);
+		return cr;
+	}
+};
+
+// _UniqueCom_SA_Module
+//   for global variable in SA of components
+class _UniqueCom_SA_Module
+{
+public:
+	_UniqueCom_SA_Module() noexcept
+	{
+	}
+	_UniqueCom_SA_Module(const _UniqueCom_SA_Module&) = delete;
+	_UniqueCom_SA_Module& operator=(const _UniqueCom_SA_Module&) = delete;
+	~_UniqueCom_SA_Module() noexcept
+	{
+	}
+
+	void GetClassObject(const guid& cid, _UniqueCom& sp, GKC::CallResult& cr) noexcept
+	{
+		cr.SetResult(GKC::SystemCallResults::OK);
+		_UniqueCom_SA_Item* pItem = get_unique_com_sa_map();
+		if ( pItem == NULL ) {
+			cr.SetResult(GKC::SystemCallResults::NotImpl);
+			return ;
+		}
+		_UniqueCom_SA_Item* pFound = NULL;
+		while ( pItem->cid != NULL ) {
+			if ( guid_equal(*(pItem->cid), cid) ) {
+				pFound = pItem;
+				break;
+			}
+			pItem ++;
+		}
+		if( pFound == NULL ) {
+			cr.SetResult(GKC::SystemCallResults::NotImpl);
+			return ;
+		}
+		cr = pFound->pFunc(sp);
+	}
+
+private:
+	static _UniqueCom_SA_Item* get_unique_com_sa_map() noexcept;
+};
+
+// --<header file>--
+
+#define DECLARE_UNIQUECOM_SA_MODULE  DECLARE_SA_GLOBAL_VARIABLE(_UniqueCom_SA_Module, _g_unique_com_sa_module)
+#define USE_UNIQUECOM_SA_MODULE()  GET_SA_GLOBAL_VARIABLE(_g_unique_com_sa_module)
+
+#define DECLARE_UNIQUECOM_SA_EXPORT_FUNCTIONS  \
+SA_FUNCTION void _SA_UniqueCom_GetClassObject(const guid& cid, _UniqueCom& sp, GKC::CallResult& cr) noexcept;
+
+// --<.h end>---
+
+// --<source file>--
+
+#define IMPLEMENT_UNIQUECOM_SA_MODULE  \
+	BEGIN_SA_GLOBAL_VARIABLE(_UniqueCom_SA_Module, _g_unique_com_sa_module)  \
+	END_SA_GLOBAL_VARIABLE(_g_unique_com_sa_module)
+
+#define BEGIN_UNIQUECOM_SA_MAP()  \
+	_UniqueCom_SA_Item l_unique_com_sa_map[] = {
+
+#define UNIQUECOM_SA_ENTRY(com_class)  \
+	{ &(USE_GUID(GUID_##com_class)), &(_UniqueCom_Factory<com_class>::Create) },
+
+#define END_UNIQUECOM_SA_MAP()  \
+	{ NULL, NULL };  \
+	_UniqueCom_SA_Item* _UniqueCom_SA_Module::get_unique_com_sa_map() noexcept  \
+	{ return l_unique_com_sa_map; }
+
+#define IMPLEMENT_UNIQUECOM_SA_EXPORT_FUNCTIONS  \
+void _SA_UniqueCom_GetClassObject(const guid& cid, _UniqueCom& sp, GKC::CallResult& cr) noexcept  \
+{ USE_UNIQUECOM_SA_MODULE().GetClassObject(cid, sp, cr); }
+
+// --<.cpp end>---
+
+// client functions
+SA_FUNCTION void _UniqueCom_SA_GetClassObject(const GKC::ConstStringS& strAssembly, const guid& cid, _UniqueCom& sp, GKC::CallResult& cr) noexcept;
 
 //------------------------------------------------------------------------------
 // Stream

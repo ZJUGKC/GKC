@@ -720,6 +720,7 @@ private:
 class unique_ptr_helper
 {
 public:
+	//make
 	template <typename T, typename... Args>
 	static unique_ptr<T> MakeUniquePtr(Args&&... args)
 	{
@@ -736,6 +737,15 @@ public:
 		unique_ptr<T> ret;
 		ret.m_p = p;
 		return ret;
+	}
+
+	//clone
+	template <typename T>
+	static unique_ptr<T> Clone(const unique_ptr<T>& sp)
+	{
+		return ( !sp.IsNull() )
+				? MakeUniquePtr(sp.Deref())
+				: unique_ptr<T>();
 	}
 
 	template <typename T>

@@ -160,6 +160,12 @@ typedef _StringUtilHelper  StringUtilHelper;
 // VariantString
 typedef _VariantString  VariantString;
 
+// UniqueCom
+typedef _UniqueCom  UniqueCom;
+
+// UniqueComHelper
+typedef _UniqueComHelper  UniqueComHelper;
+
 // IComFactory
 typedef _IComFactory  IComFactory;
 
@@ -214,6 +220,13 @@ public:
 		if( cr.IsFailed() )
 			return cr;
 		sp = spI;
+		return cr;
+	}
+
+	static CallResult GetClassObject(const ConstStringS& strAssembly, const guid& cid, UniqueCom& sp) noexcept
+	{
+		CallResult cr;
+		::_UniqueCom_SA_GetClassObject(strAssembly, cid, sp, cr);
 		return cr;
 	}
 };

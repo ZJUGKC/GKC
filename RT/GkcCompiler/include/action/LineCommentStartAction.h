@@ -36,7 +36,7 @@ public:
 	}
 
 // _ILexerAction methods
-	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
+	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStreamRoot>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
 	{
 		CallResult cr;
 
@@ -95,7 +95,7 @@ public:
 	}
 
 private:
-	static CallResult _get_next_char(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, CharF& ch) throw()
+	static CallResult _get_next_char(GKC::ShareCom<GKC::ITextStreamRoot>& stream, _LexerTokenInfo& info, CharF& ch) throw()
 	{
 		CallResult cr;
 		cr = stream.Deref().GetChar(ch);

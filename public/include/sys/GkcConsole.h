@@ -55,6 +55,10 @@ public:
 	{
 		print_string(ShareArrayHelper::GetInternalPointer(str));
 	}
+	static void Write(const UniqueStringS& str) throw()
+	{
+		print_string(UniqueArrayHelper::GetInternalPointer(str));
+	}
 
 	//write with LF
 	static void WriteLine(const ConstStringS& str) throw()
@@ -69,6 +73,11 @@ public:
 		WriteLN();
 	}
 	static void WriteLine(const StringS& str) throw()
+	{
+		Write(str);
+		WriteLN();
+	}
+	static void WriteLine(const UniqueStringS& str) throw()
 	{
 		Write(str);
 		WriteLN();

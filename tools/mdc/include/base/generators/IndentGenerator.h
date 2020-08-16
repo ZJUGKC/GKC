@@ -29,7 +29,7 @@ class _IndentGenerator : public _IHtmlGenerator
 {
 public:
 // _IHtmlGenerator methods
-	virtual CallResult Generate(bool bOpen, ShareCom<ICplMetaData>& spMeta, const CplMetaDataPosition& posData, ShareCom<ITextStream>& spText)
+	virtual CallResult Generate(bool bOpen, ShareCom<ICplMetaData>& spMeta, const CplMetaDataPosition& posData, ShareCom<ITextStreamRoot>& spText)
 	{
 		CallResult cr;
 		cr = spText.Deref().PutLineA(DECLARE_TEMP_CONST_STRING(ConstStringA, "<p>o</p>"));

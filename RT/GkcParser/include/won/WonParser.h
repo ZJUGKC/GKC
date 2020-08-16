@@ -66,7 +66,7 @@ public:
 
 		return cr;
 	}
-	virtual void SetInput(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
+	virtual void SetInput(const GKC::ShareCom<GKC::ITextStreamRoot>& sp) throw()
 	{
 		assert( !m_spLexerAnalyzer.IsBlockNull() );
 		int iCharType;
@@ -128,7 +128,7 @@ private:
 	{
 		CallResult cr;
 		try {
-			str = CS_S2U(strError).GetV();  //may throw
+			str = CS_S2U(StringUtilHelper::To_ConstString(strError)).GetV();  //may throw
 		}
 		catch(Exception& e) {
 			cr = e.GetResult();

@@ -37,7 +37,7 @@ public:
 	}
 
 // _ILexerTables methods
-	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
+	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStreamRoot>& sp) throw()
 	{
 		CallResult cr;
 		clear_all();

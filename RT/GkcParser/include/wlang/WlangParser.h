@@ -77,7 +77,7 @@ public:
 
 		return cr;
 	}
-	virtual void SetInput(const GKC::ShareCom<GKC::ITextStream>& sp) throw()
+	virtual void SetInput(const GKC::ShareCom<GKC::ITextStreamRoot>& sp) throw()
 	{
 		assert( !m_spLexerAnalyzer.IsBlockNull() );
 		int iCharType;

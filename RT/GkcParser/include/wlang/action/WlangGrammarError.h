@@ -36,7 +36,7 @@ public:
 	}
 
 // IGrammarError methods
-	virtual GKC::CallResult DoModifyEvent(INOUT GKC::ConstStringA& strEvent, INOUT GKC::ShareCom<GKC::ITextStream>& spText, INOUT bool& bChanged) throw()
+	virtual GKC::CallResult DoModifyEvent(INOUT GKC::ConstStringA& strEvent, INOUT GKC::ShareCom<GKC::ITextStreamRoot>& spText, INOUT bool& bChanged) throw()
 	{
 		CallResult cr;
 

@@ -86,7 +86,7 @@ public:
 	{
 		m_lexer.SetAction(strToken, spAction);  //may throw
 	}
-	void SetStream(const ShareCom<ITextStream>& stream, int& iCharType) throw()
+	void SetStream(const ShareCom<ITextStreamRoot>& stream, int& iCharType) throw()
 	{
 		m_lexer.SetStream(stream, iCharType);
 	}

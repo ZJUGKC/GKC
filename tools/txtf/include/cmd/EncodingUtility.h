@@ -158,8 +158,27 @@ inline int _Cmd_Convert_Encoding(const ConstStringS& strSrcEncoding, const Const
 	}
 
 	ShareCom<IByteStream> spStream;
-	ShareCom<ITextStream> spText;
+	ShareCom<ITextStreamRoot> spText;
 	VariantString strContent;
+
+	//text
+	cr = StreamHelper::CreateTextStream(spText);
+	if( cr.IsFailed() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot process the text file!")));
+		return 1;
+	}
+	ShareCom<ITextUtility> spTU;
+	_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+	if( cr.IsFailed() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot process the text file!")));
+		return 1;
+	}
+	ShareCom<ITextStreamString> spTS;
+	_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextStreamString, spText, spTS, cr);
+	if( cr.IsFailed() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot process the text file!")));
+		return 1;
+	}
 
 	//src
 	cr = StreamHelper::CreateFileStream(strSrc, FileOpenTypes::Read, 0, spStream);
@@ -167,12 +186,7 @@ inline int _Cmd_Convert_Encoding(const ConstStringS& strSrcEncoding, const Const
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Source File cannot be opened!")));
 		return 1;
 	}
-	cr = StreamHelper::CreateTextStream(spText);
-	if( cr.IsFailed() ) {
-		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Source File cannot be opened as a text file!")));
-		return 1;
-	}
-	spText.Deref().SetStream(spStream);
+	spTU.Deref().SetStream(spStream);
 	{
 		// BOM
 		int iType;
@@ -195,7 +209,7 @@ inline int _Cmd_Convert_Encoding(const ConstStringS& strSrcEncoding, const Const
 		}
 		//get string
 		StreamHelper::InitializeVariantString(iSrcType, strContent);  //may throw
-		cr = spText.Deref().GetAllString(strContent);
+		cr = spTS.Deref().GetAllString(strContent);
 		if( cr.IsFailed() ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Source File cannot be read!")));
 			return 1;
@@ -216,10 +230,10 @@ inline int _Cmd_Convert_Encoding(const ConstStringS& strSrcEncoding, const Const
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Destination File cannot be opened!")));
 		return 1;
 	}
-	spText.Deref().SetStream(spDest);
+	spTU.Deref().SetStream(spDest);
 	spText.Deref().Reset();
 	spText.Deref().SetBOM(iDestType);
-	cr = spText.Deref().PutString(strConv);
+	cr = spTS.Deref().PutString(strConv);
 	if( cr.IsFailed() ) {
 		_Delete_Output_File(strDest, spDest, spText);
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Writing failed!")));

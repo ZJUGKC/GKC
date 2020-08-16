@@ -43,7 +43,7 @@ inline CplMetaDataPosition _gh_get_root(ShareCom<ICplMetaData>& spMeta) throw()
 
 // _Generate_Html
 
-inline CallResult _Generate_Html(ShareCom<ICplMetaData>& spMeta, ShareCom<ITextStream>& spText) throw()
+inline CallResult _Generate_Html(ShareCom<ICplMetaData>& spMeta, ShareCom<ITextStreamRoot>& spText) throw()
 {
 	CallResult cr;
 	try {

@@ -251,6 +251,11 @@ typedef _IMemoryUtility  IMemoryUtility;
 
 #define GUID_IMemoryUtility  GUID__IMemoryUtility
 
+// IMemoryUtilityU
+typedef _IMemoryUtilityU  IMemoryUtilityU;
+
+#define GUID_IMemoryUtilityU  GUID__IMemoryUtilityU
+
 // IBufferUtility
 typedef _IBufferUtility  IBufferUtility;
 
@@ -262,10 +267,30 @@ typedef _BOMTypes  BOMTypes;
 // CRLFStyles
 typedef _CRLFStyles  CRLFStyles;
 
-// ITextStream
-typedef _ITextStream  ITextStream;
+// ITextStreamRoot
+typedef _ITextStreamRoot  ITextStreamRoot;
 
-#define GUID_ITextStream  GUID__ITextStream
+#define GUID_ITextStreamRoot  GUID__ITextStreamRoot
+
+// ITextStreamString
+typedef _ITextStreamString  ITextStreamString;
+
+#define GUID_ITextStreamString  GUID__ITextStreamString
+
+// ITextUtility
+typedef _ITextUtility  ITextUtility;
+
+#define GUID_ITextUtility  GUID__ITextUtility
+
+// ITextStreamStringU
+typedef _ITextStreamStringU  ITextStreamStringU;
+
+#define GUID_ITextStreamStringU  GUID__ITextStreamStringU
+
+// ITextUtilityU
+typedef _ITextUtilityU  ITextUtilityU;
+
+#define GUID_ITextUtilityU  GUID__ITextUtilityU
 
 // StreamHelper
 
@@ -296,10 +321,36 @@ public:
 	}
 	// text stream
 	//   this object is not thread-safe
-	static CallResult CreateTextStream(ShareCom<ITextStream>& sp) throw()
+	static CallResult CreateTextStream(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		CallResult cr;
 		::_TextStream_Create(sp, cr);
+		return cr;
+	}
+
+	//unique
+	static CallResult CreateFileStream(const ConstStringS& strFile, int iOpenType, int iCreateType, UniqueCom& sp) noexcept
+	{
+		CallResult cr;
+		::_FileStream_CreateU(ConstArrayHelper::GetInternalPointer(strFile), iOpenType, iCreateType, sp, cr);
+		return cr;
+	}
+	static CallResult CreateMemoryStream(UniqueCom& sp) noexcept
+	{
+		CallResult cr;
+		::_MemoryStreamU_CreateU(sp, cr);
+		return cr;
+	}
+	static CallResult CreateBufferStream(const uintptr pv, uintptr uBytes, UniqueCom& sp) noexcept
+	{
+		CallResult cr;
+		::_BufferStream_CreateU((const void*)pv, uBytes, sp, cr);
+		return cr;
+	}
+	static CallResult CreateTextStream(UniqueCom& sp) noexcept
+	{
+		CallResult cr;
+		::_TextStreamU_CreateU(sp, cr);
 		return cr;
 	}
 
@@ -310,7 +361,7 @@ public:
 	}
 
 	//copy
-	static CallResult Copy(ShareCom<IByteStream>& spSrc, ShareCom<IByteStream>& spDest) throw()
+	static CallResult Copy(RefPtr<IByteStream>&& spSrc, RefPtr<IByteStream>&& spDest) throw()
 	{
 		CallResult cr;
 		const uint c_buffer_size = 4096;
@@ -333,6 +384,10 @@ public:
 			}
 		} //end while
 		return cr;
+	}
+	static CallResult Copy(ShareCom<IByteStream>& spSrc, ShareCom<IByteStream>& spDest) throw()
+	{
+		return Copy(RefPtr<IByteStream>(ShareComHelper::GetInternalPointer(spSrc)), RefPtr<IByteStream>(ShareComHelper::GetInternalPointer(spDest)));
 	}
 };
 
@@ -365,8 +420,9 @@ public:
 class EnvironmentVariableHelper
 {
 public:
-	template <typename Tchar>
-	static bool Query(const ConstStringT<Tchar>& strName, StringT<Tchar>& strVar)
+	// Tstring : StringT<Tchar> or UniqueStringT<Tchar>
+	template <class Tstring>
+	static bool Query(const ConstStringT<typename Tstring::EType>& strName, Tstring& strVar)
 	{
 		return get_environment_variable(ConstArrayHelper::GetInternalPointer(strName), strVar);  //may throw
 	}

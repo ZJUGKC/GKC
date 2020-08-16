@@ -225,7 +225,7 @@ inline void _Generate_Manifest_String(const DirFileList& fl, bool bMd, bool bLat
 	StringA strItem(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringA strTemp(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	for( uintptr i = 0; i < fl.GetCount(); i ++ ) {
-		StringA strV(CS_S2U(fl.GetAt(i)).GetV());  //may throw
+		StringA strV(CS_S2U(StringUtilHelper::To_ConstString(fl.GetAt(i))).GetV());  //may throw
 		StringUtilHelper::MakeString(ConstStringA(g_epub_opf_item::GetAddress(), g_epub_opf_item::GetCount()), strItem);  //may throw
 		//file id
 		_Generate_FileId_String(StringUtilHelper::To_ConstString(strV), strTemp);  //may throw
@@ -710,7 +710,7 @@ inline bool _Epub_Generate_Description_Files(const ConstStringS& strDest, const 
 	//cover html
 	StringUtilHelper::MakeString(strDestRoot, strFile);  //may throw
 	FsPathHelper::AppendSeparator(strFile);  //may throw
-	StringUtilHelper::Append(CS_U2S(info.GetProjectName()).GetC(), strFile);  //may throw
+	StringUtilHelper::Append(CS_U2S(StringA(info.GetProjectName())).GetC(), strFile);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-cover.html")), strFile);  //may throw
 	FsPathHelper::ConvertPathStringToPlatform(strFile);
 	if( !_Generate_Cover_Html_File(StringUtilHelper::To_ConstString(strFile),

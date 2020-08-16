@@ -58,7 +58,7 @@ namespace GKC {
 //------------------------------------------------------------------------------
 //for gra file
 
-CallResult _Generate_Grammar_Tables(const ShareCom<ITextStream>& sp, const TokenTable& terminalTable,
+CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const TokenTable& terminalTable,
 									TokenTable& nonterminalTable, TokenTable& reductionTable, PdaTable& table)
 {
 	CallResult cr;

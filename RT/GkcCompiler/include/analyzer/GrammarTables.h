@@ -37,7 +37,7 @@ public:
 	}
 
 // _IGrammarTables methods
-	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp, const GKC::ShareCom<_ILexerTables>& spTables) throw()
+	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStreamRoot>& sp, const GKC::ShareCom<_ILexerTables>& spTables) throw()
 	{
 		CallResult cr;
 		//terminal table

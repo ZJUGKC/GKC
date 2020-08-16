@@ -44,10 +44,28 @@ public:
 		return bRet;
 	}
 	template <typename Tchar>
+	static bool GetExePathName(UniqueStringT<Tchar>& str)
+	{
+		str.SetLength(MAX_FULL_PATH);  //may throw
+		uintptr uChars;
+		bool bRet = get_exe_path_name(UniqueArrayHelper::GetInternalPointer(str), MAX_FULL_PATH, uChars);
+		str.SetLength(uChars);
+		return bRet;
+	}
+
+	template <typename Tchar>
 	static bool GetFullPathName(const ConstStringT<Tchar>& str, StringT<Tchar>& strFull)
 	{
 		strFull.SetLength(MAX_FULL_PATH);  //may throw
 		bool bRet = get_full_path_name(ConstArrayHelper::GetInternalPointer(str), ShareArrayHelper::GetInternalPointer(strFull));
+		strFull.RecalcLength();
+		return bRet;
+	}
+	template <typename Tchar>
+	static bool GetFullPathName(const ConstStringT<Tchar>& str, UniqueStringT<Tchar>& strFull)
+	{
+		strFull.SetLength(MAX_FULL_PATH);  //may throw
+		bool bRet = get_full_path_name(ConstArrayHelper::GetInternalPointer(str), UniqueArrayHelper::GetInternalPointer(strFull));
 		strFull.RecalcLength();
 		return bRet;
 	}
@@ -58,6 +76,14 @@ public:
 	{
 		str.SetLength(MAX_FULL_PATH);  //may throw
 		bool bRet = get_current_directory(ShareArrayHelper::GetInternalPointer(str), MAX_FULL_PATH);
+		str.RecalcLength();
+		return bRet;
+	}
+	template <typename Tchar>
+	static bool GetCurrentDirectory(UniqueStringT<Tchar>& str)
+	{
+		str.SetLength(MAX_FULL_PATH);  //may throw
+		bool bRet = get_current_directory(UniqueArrayHelper::GetInternalPointer(str), MAX_FULL_PATH);
 		str.RecalcLength();
 		return bRet;
 	}
@@ -91,6 +117,11 @@ public:
 		return delete_directory(ConstArrayHelper::GetInternalPointer(str));
 	}
 	//Create directory regardless of the missing of intermediate directories.
+	template <typename Tchar>
+	static bool ForceDirectory(const ConstStringT<Tchar>& str) throw()
+	{
+		return force_directory(ConstArrayHelper::GetInternalPointer(str));
+	}
 	template <typename Tchar, uintptr t_size>
 	static bool ForceDirectory(FixedStringT<Tchar, t_size>& str) throw()
 	{
@@ -101,6 +132,12 @@ public:
 	{
 		assert( !str.IsBlockNull() );
 		return force_directory(ShareArrayHelper::GetInternalPointer(str));
+	}
+	template <typename Tchar>
+	static bool ForceDirectory(UniqueStringT<Tchar>& str) throw()
+	{
+		assert( !str.IsNull() );
+		return force_directory(UniqueArrayHelper::GetInternalPointer(str));
 	}
 
 	template <typename Tchar>
@@ -116,10 +153,10 @@ public:
 	}
 
 	//Home directory
-	template <typename Tchar>
-	static bool GetHomeDirectory(StringT<Tchar>& str)
+	template <class Tstring>
+	static bool GetHomeDirectory(Tstring& str)
 	{
-		return EnvironmentVariableHelper::Query<Tchar>(DECLARE_TEMP_CONST_STRING(ConstStringT<Tchar>, ENVVAR_HOME_DIR), str);  //may throw
+		return EnvironmentVariableHelper::Query<typename Tstring::EType>(DECLARE_TEMP_CONST_STRING(ConstStringT<typename Tstring::EType>, ENVVAR_HOME_DIR), str);  //may throw
 	}
 };
 

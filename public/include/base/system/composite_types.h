@@ -968,6 +968,13 @@ public:
 	{
 		return const_cast<typename T::EType*>(arr.m_data);
 	}
+
+	//to const array
+	template <typename T, uintptr t_size>
+	static const_array<T> To_ConstArray(const fixed_array<T, t_size>& arr) noexcept
+	{
+		return const_array<T>(GetInternalPointer(arr), t_size);
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

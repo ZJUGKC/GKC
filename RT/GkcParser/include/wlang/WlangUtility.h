@@ -46,7 +46,7 @@ public:
 			cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
 			if( cr.IsFailed() )
 				return cr;
-			ShareCom<ITextStream> spText;
+			ShareCom<ITextStreamRoot> spText;
 			cr = load_text_wlang_lex(spText);
 			if( cr.IsFailed() )
 				return cr;
@@ -61,7 +61,7 @@ public:
 			cr = CplAnalyzerHelper::CreateGrammarTables(spGrammarTables);
 			if( cr.IsFailed() )
 				return cr;
-			ShareCom<ITextStream> spText;
+			ShareCom<ITextStreamRoot> spText;
 			cr = load_text_wlang_gra(spText);
 			if( cr.IsFailed() )
 				return cr;
@@ -132,27 +132,27 @@ public:
 
 private:
 	//load text
-	static CallResult load_text_wlang_lex_file(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wlang_lex_file(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromFile(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.lex")), true, sp);
 	}
-	static CallResult load_text_wlang_gra_file(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wlang_gra_file(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromFile(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("wlang.gra")), true, sp);
 	}
-	static CallResult load_text_wlang_lex_buffer(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wlang_lex_buffer(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_wlang_lex::GetAddress(), g_wlang_lex::GetCount()), true, sp);
 	}
-	static CallResult load_text_wlang_gra_buffer(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wlang_gra_buffer(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_wlang_gra::GetAddress(), g_wlang_gra::GetCount()), true, sp);
 	}
-	static CallResult load_text_wlang_lex(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wlang_lex(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return load_text_wlang_lex_buffer(sp);
 	}
-	static CallResult load_text_wlang_gra(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wlang_gra(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return load_text_wlang_gra_buffer(sp);
 	}

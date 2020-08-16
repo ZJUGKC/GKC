@@ -1,5 +1,5 @@
 ﻿/*
-** Copyright (c) 2018, Xin YUAN, courses of Zhejiang University
+** Copyright (c) 2020, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
 ** This program is free software; you can redistribute it and/or
@@ -11,32 +11,28 @@
 */
 
 /*
-Internal Header
+This file contains global variables for unique memory stream component.
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __TXT_BASE_H__
-#define __TXT_BASE_H__
-////////////////////////////////////////////////////////////////////////////////
+
+#include "PreComp.h"
+
+#include "_GkcSys.h"
+
+#include "stream/MemoryStreamU.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
-// _Delete_Output_File
+// unique memory stream
 
-inline void _Delete_Output_File(const ConstStringS& strFile, ShareCom<IByteStream> spStream, ShareCom<ITextStreamRoot> spText = ShareCom<ITextStreamRoot>()) throw()
-{
-	spStream.Release();
-	spText.Release();
-	thread_sleep(10);
-	bool bRet = FileManagementHelper::DeleteFile(strFile);
-	(void)bRet;
-	assert( bRet );
-}
+BEGIN_COM_TYPECAST(MemoryStreamU)
+	COM_TYPECAST_ENTRY(_IByteStream, _IByteStream)
+	COM_TYPECAST_ENTRY(_IMemoryUtilityU, _IMemoryUtilityU)
+END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////
 }
-////////////////////////////////////////////////////////////////////////////////
-#endif
 ////////////////////////////////////////////////////////////////////////////////

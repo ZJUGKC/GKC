@@ -19,6 +19,8 @@ This file contains component class of memory stream.
 #define __MEMORY_STREAM_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "_MemStream.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +31,7 @@ class MemoryStream : public _IByteStream,
 					public _IMemoryUtility
 {
 public:
-	MemoryStream() throw() : m_iPos(0)
+	MemoryStream() throw()
 	{
 	}
 	~MemoryStream() throw()
@@ -41,27 +43,15 @@ public:
 	{
 		assert( is_valid() );
 
+		CallResult cr;
 		{
 			//read lock
 			RWLockShared lock(m_rwlock.Deref());
 
-			int64 iCount = (int64)m_array.GetCount();  //safe
-			byte* pArray = _ShareArrayHelper::GetInternalPointer(m_array);
-
-			uRead = uBytes;
-			if( m_iPos > iCount )
-				uRead = 0;
-			else if( (int64)uBytes > iCount - m_iPos )
-				uRead = (uint)(iCount - m_iPos);
-
-			//read
-			if( uRead != 0 ) {
-				mem_copy(pArray + m_iPos, uRead, (void*)pv);
-				m_iPos += ((int64)uRead);
-			}
+			cr = m_stm.Read(pv, uBytes, uRead);
 		} //end block
 
-		return CallResult();
+		return cr;
 	}
 	virtual GKC::CallResult Write(const uintptr& pv, const uint& uBytes, uint& uWritten) throw()
 	{
@@ -72,35 +62,7 @@ public:
 			//write lock
 			RWLockExclusive lock(m_rwlock.Deref());
 
-			int64 iCount = (int64)m_array.GetCount();  //safe
-			int64 iNewPos = 0;
-			cr = SafeOperators::Add(m_iPos, (int64)uBytes, iNewPos);
-			if( cr.IsFailed() )
-				return cr;
-			if( (uint64)iNewPos > (uint64)(Limits<uintptr>::Max) ) {  //check 32 bits
-				cr.SetResult(SystemCallResults::Overflow);
-				return cr;
-			}
-			//resize
-			if( iNewPos > iCount ) {
-				try {
-					m_array.SetCount((uintptr)iNewPos, 0);
-				}
-				catch(Exception& e) {
-					cr = e.GetResult();
-				}
-				catch(...) {
-					cr.SetResult(SystemCallResults::Fail);
-				}
-				if( cr.IsFailed() )
-					return cr;
-			}
-
-			//write
-			byte* pArray = _ShareArrayHelper::GetInternalPointer(m_array);
-			mem_copy((void*)pv, uBytes, pArray + m_iPos);
-			m_iPos = iNewPos;
-			uWritten = uBytes;
+			cr = m_stm.Write(pv, uBytes, uWritten);
 		} //end block
 
 		return cr;
@@ -120,61 +82,7 @@ public:
 			//read lock
 			RWLockShared lock(m_rwlock.Deref());
 
-			int64 iNow = m_iPos;
-			if( uMethod == IO_SEEK_BEGIN ) {
-				if( iOffset < 0 || (uint64)iOffset > (uint64)(Limits<uintptr>::Max) ) {  //check 32 bits
-					cr.SetResult(SystemCallResults::Invalid);
-					return cr;
-				}
-				iNow = iOffset;
-			}
-			else if( uMethod == IO_SEEK_CURRENT ) {
-				if( iOffset > 0 ) {
-					cr = SafeOperators::Add(m_iPos, iOffset, iNow);
-					if( cr.IsFailed() )
-						return cr;
-					if( (uint64)iNow > (uint64)(Limits<uintptr>::Max) ) {  //check 32 bits
-						cr.SetResult(SystemCallResults::Invalid);
-						return cr;
-					}
-				}
-				else if( iOffset < 0 ) {
-					if( -iOffset > m_iPos ) {
-						cr.SetResult(SystemCallResults::Invalid);
-						return cr;
-					}
-					iNow = m_iPos + iOffset;
-				}
-			}
-			else if( uMethod == IO_SEEK_END ) {
-				int64 iCount = (int64)m_array.GetCount();  //safe
-				if( iOffset > 0 ) {
-					cr = SafeOperators::Add(iCount, iOffset, iNow);
-					if( cr.IsFailed() )
-						return cr;
-					if( (uint64)iNow > (uint64)(Limits<uintptr>::Max) ) {  //check 32 bits
-						cr.SetResult(SystemCallResults::Invalid);
-						return cr;
-					}
-				}
-				else if( iOffset < 0 ) {
-					if( -iOffset > iCount ) {
-						cr.SetResult(SystemCallResults::Invalid);
-						return cr;
-					}
-					iNow = iCount + iOffset;
-				}
-				else {
-					iNow = iCount;
-				}
-			}
-			else {
-				cr.SetResult(SystemCallResults::Invalid);
-				return cr;
-			}
-
-			m_iPos  = iNow;
-			iNewPos = iNow;
+			cr = m_stm.Seek(uMethod, iOffset, iNewPos);
 		} //end block
 
 		return cr;
@@ -183,24 +91,12 @@ public:
 	{
 		assert( is_valid() );
 
-		if( iSize < 0 || (uint64)iSize > (uint64)(Limits<uintptr>::Max) )  //check 32 bits
-			return CallResult(SystemCallResults::Invalid);
-
 		CallResult cr;
 		{
 			//write lock
 			RWLockExclusive lock(m_rwlock.Deref());
 
-			//resize
-			try {
-				m_array.SetCount((uintptr)iSize, 0);
-			}
-			catch(Exception& e) {
-				cr = e.GetResult();
-			}
-			catch(...) {
-				cr.SetResult(SystemCallResults::Fail);
-			}
+			cr = m_stm.SetSize(iSize);
 		} //end block
 
 		return cr;
@@ -209,14 +105,15 @@ public:
 	{
 		assert( is_valid() );
 
+		CallResult cr;
 		{
 			//read lock
 			RWLockShared lock(m_rwlock.Deref());
 
-			status.iSize = (int64)m_array.GetCount();  //safe
+			cr = m_stm.GetStatus(status);
 		} //end block
 
-		return CallResult();
+		return cr;
 	}
 
 // _IMemoryUtility methods
@@ -224,8 +121,8 @@ public:
 	{
 		CallResult cr;
 		try {
-			if( m_array.IsBlockNull() )
-				m_array = _ShareArrayHelper::MakeShareArray<byte>(RefPtr<IMemoryManager>(_CrtMemoryManager_Get()));
+			if( m_stm.GetArray().IsBlockNull() )
+				m_stm.GetArray() = _ShareArrayHelper::MakeShareArray<byte>(RefPtr<IMemoryManager>(_CrtMemoryManager_Get()));
 			if( m_rwlock.IsBlockNull() ) {
 				m_rwlock = _SharePtrHelper::MakeSharePtr<RWLock>(RefPtr<IMemoryManager>(_CrtMemoryManager_Get()));
 				m_rwlock.Deref().Init();
@@ -238,24 +135,24 @@ public:
 			cr.SetResult(SystemCallResults::Fail);
 		}
 		if( cr.IsFailed() ) {
-			m_array.Release();
+			m_stm.GetArray().Release();
 			m_rwlock.Release();
 			return cr;
 		}
-		m_iPos = 0;
+		m_stm.GetPos() = 0;
 		return cr;
 	}
 	virtual void SetArray(const _ShareArray<byte>& sp) throw()
 	{
 		assert( is_valid() );
 		assert( !sp.IsBlockNull() );
-		m_array = sp;
-		m_iPos = 0;
+		m_stm.GetArray() = sp;
+		m_stm.GetPos() = 0;
 	}
 	virtual _ShareArray<byte> GetArray() throw()
 	{
 		assert( is_valid() );
-		return m_array;
+		return m_stm.GetArray();
 	}
 	virtual GKC::CallResult CloneTo(_ShareCom<_IByteStream>& sp) throw()
 	{
@@ -268,22 +165,21 @@ public:
 		_COMPONENT_INSTANCE_INTERFACE(MemoryStream, _IByteStream, spC, sp, cr);
 		if( cr.IsFailed() )
 			return cr;
-		spC.Deref().m_array  = m_array;
+		spC.Deref().m_stm.GetArray() = m_stm.GetArray();
 		spC.Deref().m_rwlock = m_rwlock;
-		spC.Deref().m_iPos   = 0;
+		spC.Deref().m_stm.GetPos()   = 0;
 		return cr;
 	}
 
 private:
 	bool is_valid() const throw()
 	{
-		return !m_array.IsBlockNull() && !m_rwlock.IsBlockNull();
+		return !m_stm.GetArray().IsBlockNull() && !m_rwlock.IsBlockNull();
 	}
 
 private:
-	_ShareArray<byte>  m_array;
+	_MemStream<_ShareArray<byte>, _ShareArrayHelper>  m_stm;
 	_SharePtr<RWLock>  m_rwlock;  //lock
-	int64  m_iPos;
 
 private:
 	//noncopyable

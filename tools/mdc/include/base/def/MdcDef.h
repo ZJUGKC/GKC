@@ -28,7 +28,7 @@ namespace GKC {
 class NOVTABLE _IHtmlGenerator
 {
 public:
-	virtual CallResult Generate(bool bOpen, ShareCom<ICplMetaData>& spMeta, const CplMetaDataPosition& posData, ShareCom<ITextStream>& spText) = 0;
+	virtual CallResult Generate(bool bOpen, ShareCom<ICplMetaData>& spMeta, const CplMetaDataPosition& posData, ShareCom<ITextStreamRoot>& spText) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

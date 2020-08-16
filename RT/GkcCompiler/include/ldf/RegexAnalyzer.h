@@ -143,7 +143,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 	} //end block
 	//stream
 	ShareCom<IBufferUtility> spBU;
-	ShareCom<ITextStream> spText;
+	ShareCom<ITextStreamRoot> spText;
 	cr = StreamHelper::CreateTextStream(spText);
 	if( cr.IsFailed() )
 		return cr;
@@ -155,7 +155,11 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		_COMPONENT_INSTANCE_INTERFACE(IByteStream, IBufferUtility, spStream, spBU, cr);
 		if( cr.IsFailed() )
 			return cr;
-		spText.Deref().SetStream(spStream);
+		ShareCom<ITextUtility> spTU;
+		_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		spTU.Deref().SetStream(spStream);
 		spText.Deref().SetBOM(_LexerTokenCharTypeToBOMType(iCharType));
 		int iCharType2;
 		lexer.SetStream(spText, iCharType2);

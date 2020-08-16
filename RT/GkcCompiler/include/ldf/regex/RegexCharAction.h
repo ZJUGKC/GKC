@@ -36,7 +36,7 @@ public:
 	}
 
 // _ILexerAction methods
-	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
+	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStreamRoot>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw()
 	{
 		//fetch the actual character
 		_LexerTokenString& str = info.get_Buffer();

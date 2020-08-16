@@ -46,7 +46,7 @@ public:
 			cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
 			if( cr.IsFailed() )
 				return cr;
-			ShareCom<ITextStream> spText;
+			ShareCom<ITextStreamRoot> spText;
 			cr = load_text_wmark_lex(spText);
 			if( cr.IsFailed() )
 				return cr;
@@ -61,7 +61,7 @@ public:
 			cr = CplAnalyzerHelper::CreateGrammarTables(spGrammarTables);
 			if( cr.IsFailed() )
 				return cr;
-			ShareCom<ITextStream> spText;
+			ShareCom<ITextStreamRoot> spText;
 			cr = load_text_wmark_gra(spText);
 			if( cr.IsFailed() )
 				return cr;
@@ -112,19 +112,19 @@ public:
 
 private:
 	//load text
-	static CallResult load_text_wmark_lex_buffer(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wmark_lex_buffer(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_wmark_lex::GetAddress(), g_wmark_lex::GetCount()), true, sp);
 	}
-	static CallResult load_text_wmark_gra_buffer(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wmark_gra_buffer(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_wmark_gra::GetAddress(), g_wmark_gra::GetCount()), true, sp);
 	}
-	static CallResult load_text_wmark_lex(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wmark_lex(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return load_text_wmark_lex_buffer(sp);
 	}
-	static CallResult load_text_wmark_gra(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_wmark_gra(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return load_text_wmark_gra_buffer(sp);
 	}

@@ -35,11 +35,15 @@ inline bool _Generate_Def_File(const ConstStringS& strFile,
 	cr = StreamHelper::CreateFileStream(strFile, FileOpenTypes::Write, FileCreationTypes::Create, spDest);
 	if( cr.IsFailed() )
 		return false;
-	ShareCom<ITextStream> spText;
+	ShareCom<ITextStreamRoot> spText;
 	cr = StreamHelper::CreateTextStream(spText);
 	if( cr.IsFailed() )
 		return false;
-	spText.Deref().SetStream(spDest);
+	ShareCom<ITextUtility> spTU;
+	_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+	if( cr.IsFailed() )
+		return false;
+	spTU.Deref().SetStream(spDest);
 	//content
 	StringA strContent(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	StringA strFileList(StringHelper::MakeEmptyString<CharA>(MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -198,7 +202,7 @@ inline bool _Chm_Generate_Description_Files(const ConstStringS& strDestRoot,
 
 	StringUtilHelper::MakeString(strDestRoot, strRoot);  //may throw
 	FsPathHelper::AppendSeparator(strRoot);  //may throw
-	StringUtilHelper::Append(CS_U2S(info.GetProjectName()).GetC(), strRoot);  //may throw
+	StringUtilHelper::Append(CS_U2S(StringA(info.GetProjectName())).GetC(), strRoot);  //may throw
 
 	//project file
 	StringUtilHelper::MakeString(StringUtilHelper::To_ConstString(strRoot), strFile);  //may throw

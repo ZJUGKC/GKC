@@ -36,13 +36,19 @@ inline int _Cmd_Bom_Process(int iBomType, const ConstStringS& strSrc, const Cons
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Source File cannot be opened!")));
 		return 1;
 	}
-	ShareCom<ITextStream> spText;
+	ShareCom<ITextStreamRoot> spText;
 	cr = StreamHelper::CreateTextStream(spText);
 	if( cr.IsFailed() ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The Source File cannot be opened as a text file!")));
 		return 1;
 	}
-	spText.Deref().SetStream(spStream);
+	ShareCom<ITextUtility> spTU;
+	_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+	if( cr.IsFailed() ) {
+		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot process the Source File!")));
+		return 1;
+	}
+	spTU.Deref().SetStream(spStream);
 	{
 		// BOM
 		int iType;
@@ -67,7 +73,7 @@ inline int _Cmd_Bom_Process(int iBomType, const ConstStringS& strSrc, const Cons
 	}
 	if( iBomType != BOMTypes::None ) {
 		//BOM Add
-		spText.Deref().SetStream(spDest);
+		spTU.Deref().SetStream(spDest);
 		spText.Deref().Reset();
 		spText.Deref().SetBOM(iBomType);
 		cr = spText.Deref().WriteBOM();

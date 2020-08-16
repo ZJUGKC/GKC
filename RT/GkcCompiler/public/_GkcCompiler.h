@@ -151,11 +151,11 @@ public:
 		GKC::StringS str;
 		int iType = GetType();
 		if( iType == GKC::VariantString::Char8 )
-			str = GKC::CS_U2S(m_str.GetString<GKC::StringA>()).GetV();  //may throw
+			str = GKC::CS_U2S(GKC::StringUtilHelper::To_ConstString(m_str.GetString<GKC::StringA>())).GetV();  //may throw
 		else if( iType == GKC::VariantString::Char16 )
-			str = GKC::CS_H2S(m_str.GetString<GKC::StringH>()).GetV();  //may throw
+			str = GKC::CS_H2S(GKC::StringUtilHelper::To_ConstString(m_str.GetString<GKC::StringH>())).GetV();  //may throw
 		else if( iType == GKC::VariantString::Char32 )
-			str = GKC::CS_L2S(m_str.GetString<GKC::StringL>()).GetV();  //may throw
+			str = GKC::CS_L2S(GKC::StringUtilHelper::To_ConstString(m_str.GetString<GKC::StringL>())).GetV();  //may throw
 		return str;
 	}
 	GKC::StringA ToUTF8() const
@@ -367,7 +367,7 @@ class NOVTABLE _ILexerAction
 {
 public:
 	// info : all fields can be revised
-	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStream>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw() = 0;
+	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStreamRoot>& stream, _LexerTokenInfo& info, GKC::ConstStringA& strToken, bool& bTokenChanged) throw() = 0;
 };
 
 DECLARE_GUID(GUID__ILexerAction)
@@ -390,7 +390,7 @@ SA_FUNCTION void _ReturnAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::Cal
 class NOVTABLE _ILexerTables
 {
 public:
-	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp) throw() = 0;
+	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStreamRoot>& sp) throw() = 0;
 };
 
 DECLARE_GUID(GUID__ILexerTables)
@@ -402,7 +402,7 @@ class NOVTABLE _ILexerAnalyzer
 public:
 	virtual GKC::ShareCom<_ILexerTables> GetTables() throw() = 0;
 	virtual GKC::CallResult SetTables(const GKC::ShareCom<_ILexerTables>& sp) throw() = 0;
-	virtual void SetStream(const GKC::ShareCom<GKC::ITextStream>& sp, int& iCharType) throw() = 0;
+	virtual void SetStream(const GKC::ShareCom<GKC::ITextStreamRoot>& sp, int& iCharType) throw() = 0;
 	virtual GKC::CallResult SetAction(const GKC::ConstStringA& strToken, const GKC::ShareCom<_ILexerAction>& spAction) throw() = 0;
 	virtual void Start() throw() = 0;
 	// return value : SystemCallResults::OK, the call is successful. The token id may be CPL_TK_ERROR.
@@ -497,7 +497,7 @@ private:
 class NOVTABLE _IGrammarError
 {
 public:
-	virtual GKC::CallResult DoModifyEvent(INOUT GKC::ConstStringA& strEvent, INOUT GKC::ShareCom<GKC::ITextStream>& spText, INOUT bool& bChanged) throw() = 0;
+	virtual GKC::CallResult DoModifyEvent(INOUT GKC::ConstStringA& strEvent, INOUT GKC::ShareCom<GKC::ITextStreamRoot>& spText, INOUT bool& bChanged) throw() = 0;
 };
 
 DECLARE_GUID(GUID__IGrammarError)
@@ -529,7 +529,7 @@ DECLARE_GUID(GUID__IGrammarAction)
 class NOVTABLE _IGrammarTables
 {
 public:
-	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStream>& sp, const GKC::ShareCom<_ILexerTables>& spTables) throw() = 0;
+	virtual GKC::CallResult GenerateTables(const GKC::ShareCom<GKC::ITextStreamRoot>& sp, const GKC::ShareCom<_ILexerTables>& spTables) throw() = 0;
 };
 
 DECLARE_GUID(GUID__IGrammarTables)

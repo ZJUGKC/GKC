@@ -33,4 +33,6 @@ This file contains main function.
 #include "base/GkcDef.cpp"
 #include "base/GkcConsoleMain.cpp"
 
+#include "sys/GkcSys.cpp"
+
 ///////////////////////////////////////////////////////////////////////////////

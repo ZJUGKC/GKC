@@ -82,7 +82,7 @@ inline bool _Check_Project_FileList(const FileListInfo& flInfo, const DirFileLis
 	//check project files
 	uintptr uCount = flInfo.GetCount();
 	for( uintptr i = 0; i < uCount; i ++ ) {
-		StringS strV(CS_U2S(flInfo.GetAt(i)).GetV());  //may throw
+		StringS strV(CS_U2S(StringA(flInfo.GetAt(i))).GetV());  //may throw
 		if( !flMd.Find(strV) ) {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: [")));
 			ConsoleHelper::WriteLine(strV);
@@ -125,7 +125,7 @@ inline bool _Process_Project_File(StringS& strSrc, StringS& strSrcDir,
 
 	//source root
 	FsPathHelper::AppendSeparator(strSrcDir);
-	StringUtilHelper::Append(CS_U2S(info.GetDocumentDirectory()).GetC(), strSrcDir);
+	StringUtilHelper::Append(CS_U2S(StringA(info.GetDocumentDirectory())).GetC(), strSrcDir);
 
 	//scan
 	ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Scan the source file tree...")));

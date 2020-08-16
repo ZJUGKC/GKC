@@ -154,7 +154,7 @@ public:
 						(uEvent == PDA_END_OF_EVENT) ? DECLARE_TEMP_CONST_STRING(ConstStringA, "CPL_TK_EOF")
 							: tt.get_Token(uEvent)
 						);
-					ShareCom<ITextStream> spText(m_lexer.Deref().GetStream());
+					ShareCom<ITextStreamRoot> spText(m_lexer.Deref().GetStream());
 					cr = spErrorAction.Deref().DoModifyEvent(strEvent, spText, bChanged);
 					if( cr.IsFailed() )
 						break;

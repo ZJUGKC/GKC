@@ -29,15 +29,19 @@ class _ParserInputHelper
 {
 public:
 	//load text
-	static CallResult LoadTextFromStream(const ShareCom<IByteStream>& spStream, bool bCheckUTF8, ShareCom<ITextStream>& sp) throw()
+	static CallResult LoadTextFromStream(const ShareCom<IByteStream>& spStream, bool bCheckUTF8, ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		CallResult cr;
 		//text
-		ShareCom<ITextStream> spText;
+		ShareCom<ITextStreamRoot> spText;
 		cr = StreamHelper::CreateTextStream(spText);
 		if( cr.IsFailed() )
 			return cr;
-		spText.Deref().SetStream(spStream);
+		ShareCom<ITextUtility> spTU;
+		_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+		if( cr.IsFailed() )
+			return cr;
+		spTU.Deref().SetStream(spStream);
 		//BOM
 		if( bCheckUTF8 ) {
 			//UTF8
@@ -53,7 +57,7 @@ public:
 		sp = spText;
 		return cr;
 	}
-	static CallResult LoadTextFromFile(const ConstStringS& str, bool bCheckUTF8, ShareCom<ITextStream>& sp) throw()
+	static CallResult LoadTextFromFile(const ConstStringS& str, bool bCheckUTF8, ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		CallResult cr;
 		//stream
@@ -65,7 +69,7 @@ public:
 		cr = LoadTextFromStream(spStream, bCheckUTF8, sp);
 		return cr;
 	}
-	static CallResult LoadTextFromBuffer(const ConstStringA& str, bool bCheckUTF8, ShareCom<ITextStream>& sp) throw()
+	static CallResult LoadTextFromBuffer(const ConstStringA& str, bool bCheckUTF8, ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		CallResult cr;
 		//stream

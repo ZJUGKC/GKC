@@ -1784,6 +1784,10 @@ public:
 			pB->SetLength(uCount);
 		} //end if
 	}
+	void SetCountD(uintptr uCount)
+	{
+		SetCount(uCount, 0);  //may throw
+	}
 
 	//clear
 	void RemoveAll() throw()
@@ -2109,6 +2113,13 @@ public:
 		return (sp.m_pB == NULL) ? NULL : (T*)((sp.m_pB)->GetAddress());
 	}
 
+	//to const array
+	template <typename T>
+	static GKC::ConstArray<T> To_ConstArray(const _ShareArray<T>& sp) noexcept
+	{
+		return GKC::ConstArray<T>(GetInternalPointer(sp), sp.GetCount());
+	}
+
 	//only for test
 	template <typename T>
 	static int test_get_share_count(const _ShareArray<T>& sp) throw()
@@ -2141,6 +2152,10 @@ class _StringT : public _ShareArray<Tchar>
 private:
 	typedef _ShareArray<Tchar>  baseClass;
 	typedef _StringT<Tchar>  thisClass;
+
+public:
+	template <typename T2>
+	using StringType = _StringT<T2>;
 
 public:
 	_StringT() throw()
@@ -2652,6 +2667,10 @@ public:
 		call_array_constructors(get_array_address() + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);  //may throw
 		((unique_array_block*)m_p)->SetLength(uCount);
 	}
+	void SetCountD(uintptr uCount)
+	{
+		SetCount(uCount);  //may throw
+	}
 
 	void FreeExtra() noexcept
 	{
@@ -2807,6 +2826,13 @@ public:
 	{
 		return (sp.m_p == NULL) ? NULL : sp.get_array_address();
 	}
+
+	//to const array
+	template <typename T>
+	static GKC::ConstArray<T> To_ConstArray(const _UniqueArray<T>& sp) noexcept
+	{
+		return GKC::ConstArray<T>(GetInternalPointer(sp), sp.GetCount());
+	}
 };
 
 #pragma pack(push, 1)
@@ -2820,6 +2846,10 @@ class _UniqueStringT : public _UniqueArray<Tchar>
 private:
 	typedef _UniqueArray<Tchar>  baseClass;
 	typedef _UniqueStringT<Tchar>  thisClass;
+
+public:
+	template <typename T2>
+	using StringType = _UniqueStringT<T2>;
 
 public:
 	_UniqueStringT() noexcept
@@ -3100,7 +3130,7 @@ public:
 	//Tstring : _StringT<Tchar> or _UniqueStringT<Tchar>
 
 	//append character
-	template <typename Tstring>
+	template <class Tstring>
 	static void Append(const typename Tstring::EType& ch, INOUT Tstring& strDest)
 	{
 		uintptr uCount = strDest.GetLength();
@@ -3109,7 +3139,7 @@ public:
 		strDest.SetAt(uCount, ch);
 	}
 	//insert character
-	template <typename Tstring>
+	template <class Tstring>
 	static void Insert(uintptr uPos, const typename Tstring::EType& ch, Tstring& str)
 	{
 		uintptr uLength = str.GetLength();
@@ -3120,7 +3150,7 @@ public:
 		str.InsertAt(uPos, 1, ch);
 	}
 	//delete
-	template <typename Tstring>
+	template <class Tstring>
 	static void Delete(uintptr uPos, uintptr uLength, Tstring& str) throw()
 	{
 		uintptr uCount = str.GetLength();
@@ -3131,7 +3161,7 @@ public:
 	}
 
 	//replace
-	template <typename Tstring, class TCompareTrait = GKC::DefaultCompareTrait<typename Tstring::EType>>
+	template <class Tstring, class TCompareTrait = GKC::DefaultCompareTrait<typename Tstring::EType>>
 	static uintptr Replace(const typename Tstring::EType& chOld, const typename Tstring::EType& chNew, INOUT Tstring& str) throw()
 	{
 		assert( chOld != 0 && chNew != 0 && TCompareTrait::IsNE(chOld, chNew) );
@@ -4283,7 +4313,7 @@ public:
 		assert( !mgr.IsNull() );
 
 		//allocate
-		uintptr uBytes = GKC::SafeOperators::AddThrow(sizeof(sa_handle) + sizeof(unique_com_block), sizeof(T));
+		uintptr uBytes = GKC::SafeOperators::AddThrow((uintptr)(sizeof(sa_handle) + sizeof(unique_com_block)), (uintptr)sizeof(T));
 		void* p = (void*)((const_cast<GKC::RefPtr<GKC::IMemoryManager>&>(mgr)).Deref().Allocate(uBytes));
 		if ( p == NULL )
 			throw GKC::OutOfMemoryException();
@@ -4342,6 +4372,13 @@ public:
 		_UniqueCom ret;
 		ret.m_p = &sp;
 		return ret;
+	}
+
+	//for test
+	template <class T>
+	static T& to_object(const _UniqueCom& sp) noexcept
+	{
+		return *((T*)(sp.get_object()));
 	}
 
 	//only for creation from SA
@@ -4887,6 +4924,17 @@ public:
 
 DECLARE_GUID(GUID__IMemoryUtility)
 
+// _IMemoryUtilityU
+
+class NOVTABLE _IMemoryUtilityU
+{
+public:
+	virtual void Attach(_UniqueArray<byte>&& sp) noexcept = 0;
+	virtual _UniqueArray<byte> Detach() noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IMemoryUtilityU)
+
 // _IBufferUtility
 
 class NOVTABLE _IBufferUtility
@@ -4896,6 +4944,8 @@ public:
 };
 
 DECLARE_GUID(GUID__IBufferUtility)
+
+//for text stream
 
 // _BOMTypes
 
@@ -4918,21 +4968,17 @@ BEGIN_ENUM(_CRLFStyles)
 	ENUM_VALUE_ENTRY(Max, 3)
 END_ENUM()
 
-// _ITextStream
+// _ITextStreamRoot
 
-class NOVTABLE _ITextStream
+class NOVTABLE _ITextStreamRoot
 {
 public:
-	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw() = 0;
 	virtual void Reset() throw() = 0;
 	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
 	virtual void SetBOM(const int& iType) throw() = 0;
 	virtual int GetBOM() throw() = 0;
 	virtual void SetCRLFStyle(const int& iStyle) throw() = 0;
 	virtual int GetCRLFStyle() throw() = 0;
-	virtual void SetSeparatorSetA(const _ShareArray<GKC::CharA>& arr) throw() = 0;
-	virtual void SetSeparatorSetH(const _ShareArray<GKC::CharH>& arr) throw() = 0;
-	virtual void SetSeparatorSetL(const _ShareArray<GKC::CharL>& arr) throw() = 0;
 	// The return value SystemCallResults::S_EOF means the end of file is reached.
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
@@ -4948,6 +4994,25 @@ public:
 	virtual GKC::CallResult PutCharH(const GKC::CharH& ch) throw() = 0;
 	virtual GKC::CallResult PutCharL(const GKC::CharL& ch) throw() = 0;
 	virtual GKC::CallResult PutChar(const GKC::CharF& ch) throw() = 0;
+	virtual GKC::CallResult PutStringA(const GKC::ConstStringA& str) throw() = 0;
+	virtual GKC::CallResult PutStringH(const GKC::ConstStringH& str) throw() = 0;
+	virtual GKC::CallResult PutStringL(const GKC::ConstStringL& str) throw() = 0;
+	virtual GKC::CallResult PutNewLineA() throw() = 0;
+	virtual GKC::CallResult PutNewLineH() throw() = 0;
+	virtual GKC::CallResult PutNewLineL() throw() = 0;
+	virtual GKC::CallResult PutNewLine() throw() = 0;
+	virtual GKC::CallResult PutLineA(const GKC::ConstStringA& str) throw() = 0;
+	virtual GKC::CallResult PutLineH(const GKC::ConstStringH& str) throw() = 0;
+	virtual GKC::CallResult PutLineL(const GKC::ConstStringL& str) throw() = 0;
+};
+
+DECLARE_GUID(GUID__ITextStreamRoot)
+
+// _ITextStreamString
+
+class NOVTABLE _ITextStreamString
+{
+public:
 	virtual GKC::CallResult GetAllStringA(_StringA& str) throw() = 0;
 	virtual GKC::CallResult GetAllStringH(_StringH& str) throw() = 0;
 	virtual GKC::CallResult GetAllStringL(_StringL& str) throw() = 0;
@@ -4961,21 +5026,57 @@ public:
 	virtual GKC::CallResult GetLineH(_StringH& str) throw() = 0;
 	virtual GKC::CallResult GetLineL(_StringL& str) throw() = 0;
 	virtual GKC::CallResult GetLine(_VariantString& str) throw() = 0;
-	virtual GKC::CallResult PutStringA(const GKC::ConstStringA& str) throw() = 0;
-	virtual GKC::CallResult PutStringH(const GKC::ConstStringH& str) throw() = 0;
-	virtual GKC::CallResult PutStringL(const GKC::ConstStringL& str) throw() = 0;
+	//put string
 	virtual GKC::CallResult PutString(const _VariantString& str) throw() = 0;
-	virtual GKC::CallResult PutNewLineA() throw() = 0;
-	virtual GKC::CallResult PutNewLineH() throw() = 0;
-	virtual GKC::CallResult PutNewLineL() throw() = 0;
-	virtual GKC::CallResult PutNewLine() throw() = 0;
-	virtual GKC::CallResult PutLineA(const GKC::ConstStringA& str) throw() = 0;
-	virtual GKC::CallResult PutLineH(const GKC::ConstStringH& str) throw() = 0;
-	virtual GKC::CallResult PutLineL(const GKC::ConstStringL& str) throw() = 0;
 	virtual GKC::CallResult PutLine(const _VariantString& str) throw() = 0;
 };
 
-DECLARE_GUID(GUID__ITextStream)
+DECLARE_GUID(GUID__ITextStreamString)
+
+// _ITextUtility
+
+class NOVTABLE _ITextUtility
+{
+public:
+	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw() = 0;
+	virtual void SetSeparatorSetA(const _ShareArray<GKC::CharA>& arr) throw() = 0;
+	virtual void SetSeparatorSetH(const _ShareArray<GKC::CharH>& arr) throw() = 0;
+	virtual void SetSeparatorSetL(const _ShareArray<GKC::CharL>& arr) throw() = 0;
+};
+
+DECLARE_GUID(GUID__ITextUtility)
+
+// _ITextStreamStringU
+
+class NOVTABLE _ITextStreamStringU
+{
+public:
+	virtual GKC::CallResult GetAllStringA(_UniqueStringA& str) noexcept = 0;
+	virtual GKC::CallResult GetAllStringH(_UniqueStringH& str) noexcept = 0;
+	virtual GKC::CallResult GetAllStringL(_UniqueStringL& str) noexcept = 0;
+	// The return value SystemCallResults::S_EOF means the end of file is reached.
+	virtual GKC::CallResult GetStringA(_UniqueStringA& str) noexcept = 0;
+	virtual GKC::CallResult GetStringH(_UniqueStringH& str) noexcept = 0;
+	virtual GKC::CallResult GetStringL(_UniqueStringL& str) noexcept = 0;
+	virtual GKC::CallResult GetLineA(_UniqueStringA& str) noexcept = 0;
+	virtual GKC::CallResult GetLineH(_UniqueStringH& str) noexcept = 0;
+	virtual GKC::CallResult GetLineL(_UniqueStringL& str) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__ITextStreamStringU)
+
+// _ITextUtilityU
+
+class NOVTABLE _ITextUtilityU
+{
+public:
+	virtual void SetStream(const GKC::RefPtr<_IByteStream>& rp) noexcept = 0;
+	virtual void SetSeparatorSetA(_UniqueArray<GKC::CharA>&& arr) noexcept = 0;
+	virtual void SetSeparatorSetH(_UniqueArray<GKC::CharH>&& arr) noexcept = 0;
+	virtual void SetSeparatorSetL(_UniqueArray<GKC::CharL>&& arr) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__ITextUtilityU)
 
 #pragma pack(pop)
 
@@ -5000,7 +5101,12 @@ inline void _Initialize_VariantString(int iBomType, _VariantString& str)
 SA_FUNCTION void _FileStream_Create(const GKC::CharS* szFile, int iOpenType, int iCreateType, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _MemoryStream_Create(_ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _BufferStream_Create(const void* p, uintptr uBytes, _ShareCom<_IByteStream>& sp, GKC::CallResult& cr) throw();
-SA_FUNCTION void _TextStream_Create(_ShareCom<_ITextStream>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _TextStream_Create(_ShareCom<_ITextStreamRoot>& sp, GKC::CallResult& cr) throw();
+
+SA_FUNCTION void _FileStream_CreateU(const GKC::CharS* szFile, int iOpenType, int iCreateType, _UniqueCom& sp, GKC::CallResult& cr) noexcept;
+SA_FUNCTION void _MemoryStreamU_CreateU(_UniqueCom& sp, GKC::CallResult& cr) noexcept;
+SA_FUNCTION void _BufferStream_CreateU(const void* p, uintptr uBytes, _UniqueCom& sp, GKC::CallResult& cr) noexcept;
+SA_FUNCTION void _TextStreamU_CreateU(_UniqueCom& sp, GKC::CallResult& cr) noexcept;
 
 //------------------------------------------------------------------------------
 // Help Authoring

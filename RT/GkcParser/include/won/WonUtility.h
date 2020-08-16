@@ -46,7 +46,7 @@ public:
 			cr = CplAnalyzerHelper::CreateLexerTables(spLexerTables);
 			if( cr.IsFailed() )
 				return cr;
-			ShareCom<ITextStream> spText;
+			ShareCom<ITextStreamRoot> spText;
 			cr = load_text_won_lex(spText);
 			if( cr.IsFailed() )
 				return cr;
@@ -61,7 +61,7 @@ public:
 			cr = CplAnalyzerHelper::CreateGrammarTables(spGrammarTables);
 			if( cr.IsFailed() )
 				return cr;
-			ShareCom<ITextStream> spText;
+			ShareCom<ITextStreamRoot> spText;
 			cr = load_text_won_gra(spText);
 			if( cr.IsFailed() )
 				return cr;
@@ -111,11 +111,11 @@ public:
 	}
 
 private:
-	static CallResult load_text_won_lex(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_won_lex(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_won_lex::GetAddress(), g_won_lex::GetCount()), true, sp);
 	}
-	static CallResult load_text_won_gra(ShareCom<ITextStream>& sp) throw()
+	static CallResult load_text_won_gra(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		return _ParserInputHelper::LoadTextFromBuffer(ConstStringA(g_won_gra::GetAddress(), g_won_gra::GetCount()), true, sp);
 	}

@@ -178,14 +178,14 @@ public:
 			m_arrAction.SetCount((uintptr)uLeastCount, 0);  //may throw
 		m_arrAction.SetAt(uID, spAction);
 	}
-	void SetStream(IN const ShareCom<ITextStream>& stream, OUT int& iCharType) throw()
+	void SetStream(IN const ShareCom<ITextStreamRoot>& stream, OUT int& iCharType) throw()
 	{
 		m_stream = stream;
 		//character type of token
 		iCharType = _BOMTypeToLexerTokenCharType(m_stream.Deref().GetBOM());
 		m_token_info.SetCharType(iCharType);
 	}
-	ShareCom<ITextStream> GetStream() const throw()
+	ShareCom<ITextStreamRoot> GetStream() const throw()
 	{
 		return m_stream;
 	}
@@ -313,7 +313,7 @@ private:
 	RefPtr<TokenTable>   m_token_table;
 	FiniteStateAutomata  m_fsa;
 	ShareArray<ShareCom<_ILexerAction>>  m_arrAction;
-	ShareCom<ITextStream>  m_stream;
+	ShareCom<ITextStreamRoot>  m_stream;
 
 	//token info
 	_LexerTokenInfo  m_token_info;

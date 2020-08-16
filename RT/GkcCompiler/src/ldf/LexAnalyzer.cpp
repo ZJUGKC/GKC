@@ -238,7 +238,7 @@ private:
 	_Lex_Data& operator=(const _Lex_Data&) throw();
 };
 
-CallResult _Generate_Lexer_Tables(const ShareCom<ITextStream>& sp, TokenTable& tokenTable, FsaTable& fsaTable)
+CallResult _Generate_Lexer_Tables(const ShareCom<ITextStreamRoot>& sp, TokenTable& tokenTable, FsaTable& fsaTable)
 {
 	CallResult cr;
 

@@ -141,7 +141,7 @@ public:
 	{
 		CallResult cr;
 
-		ShareCom<ITextStream> spText;
+		ShareCom<ITextStreamRoot> spText;
 		{
 			ShareCom<IByteStream> spStream;
 			cr = StreamHelper::CreateFileStream(strFile, FileOpenTypes::Read, 0, spStream);
@@ -150,7 +150,11 @@ public:
 			cr = StreamHelper::CreateTextStream(spText);
 			if( cr.IsFailed() )
 				return false;
-			spText.Deref().SetStream(spStream);
+			ShareCom<ITextUtility> spTU;
+			_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+			if( cr.IsFailed() )
+				return false;
+			spTU.Deref().SetStream(spStream);
 			// BOM
 			int iType;
 			cr = spText.Deref().CheckBOM(iType);
@@ -736,8 +740,16 @@ inline bool _Copy_MD(const FileListInfo& flInfo, const ConstStringA& strExt,
 {
 	CallResult cr;
 
-	ShareCom<ITextStream> spText;
+	ShareCom<ITextStreamRoot> spText;
 	cr = StreamHelper::CreateTextStream(spText);
+	if( cr.IsFailed() )
+		return false;
+	ShareCom<ITextUtility> spTU;
+	_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+	if( cr.IsFailed() )
+		return false;
+	ShareCom<ITextStreamString> spTS;
+	_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextStreamString, spText, spTS, cr);
 	if( cr.IsFailed() )
 		return false;
 
@@ -749,7 +761,7 @@ inline bool _Copy_MD(const FileListInfo& flInfo, const ConstStringA& strExt,
 		cr = StreamHelper::CreateFileStream(strSrc, FileOpenTypes::Read, 0, spSrc);
 		if( cr.IsFailed() )
 			return false;
-		spText.Deref().SetStream(spSrc);
+		spTU.Deref().SetStream(spSrc);
 		// BOM
 		int iType;
 		cr = spText.Deref().CheckBOM(iType);
@@ -757,7 +769,7 @@ inline bool _Copy_MD(const FileListInfo& flInfo, const ConstStringA& strExt,
 			return false;
 		if( iType != BOMTypes::UTF8 )
 			return false;
-		cr = spText.Deref().GetAllStringA(strContent);
+		cr = spTS.Deref().GetAllStringA(strContent);
 		if( cr.IsFailed() )
 			return false;
 	} //end block
@@ -787,7 +799,7 @@ inline bool _Copy_MD(const FileListInfo& flInfo, const ConstStringA& strExt,
 		cr = StreamHelper::CreateFileStream(strDest, FileOpenTypes::Write, FileCreationTypes::Create, spDest);
 		if( cr.IsFailed() )
 			return false;
-		spText.Deref().SetStream(spDest);
+		spTU.Deref().SetStream(spDest);
 		spText.Deref().Reset();
 	} //end block
 	spText.Deref().SetBOM(BOMTypes::UTF8);
@@ -932,11 +944,15 @@ inline bool _Generate_Fix_Content_File(const ConstStringS& strFile, const ConstS
 	cr = StreamHelper::CreateFileStream(strFile, FileOpenTypes::Write, FileCreationTypes::Create, spDest);
 	if( cr.IsFailed() )
 		return false;
-	ShareCom<ITextStream> spText;
+	ShareCom<ITextStreamRoot> spText;
 	cr = StreamHelper::CreateTextStream(spText);
 	if( cr.IsFailed() )
 		return false;
-	spText.Deref().SetStream(spDest);
+	ShareCom<ITextUtility> spTU;
+	_COMPONENT_INSTANCE_INTERFACE(ITextStreamRoot, ITextUtility, spText, spTU, cr);
+	if( cr.IsFailed() )
+		return false;
+	spTU.Deref().SetStream(spDest);
 	//save
 	cr = spText.Deref().PutStringA(strContent);
 	if( cr.IsFailed() )

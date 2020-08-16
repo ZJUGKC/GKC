@@ -46,15 +46,20 @@ public:
 		assert( !str.IsBlockNull() );
 		cvt_path_string_to_platform(ShareArrayHelper::GetInternalPointer(str));
 	}
+	template <typename Tchar>
+	static void ConvertPathStringToPlatform(INOUT UniqueStringT<Tchar>& str) throw()
+	{
+		assert( !str.IsNull() );
+		cvt_path_string_to_platform(UniqueArrayHelper::GetInternalPointer(str));
+	}
 
 	//separator
-	template <typename Tchar>
-	static void AppendSeparator(StringT<Tchar>& str)
+	template <class Tstring>
+	static void AppendSeparator(Tstring& str)
 	{
-		assert( !str.IsBlockNull() );
 		uintptr uLength = str.GetLength();
 		if( !check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) ) {
-			Tchar ch;
+			typename Tstring::EType ch;
 			get_path_separator(ch);
 			StringOpHelper::Append(ch, str);  //may throw
 		}
@@ -73,15 +78,20 @@ public:
 		return true;
 	}
 	//  uPos: this value is returned by FindExtensionStart().
+	template <typename Tchar, uintptr t_size>
+	static void RemoveExtension(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
+	{
+		str.SetLength(uPos);
+	}
 	template <typename Tchar>
 	static void RemoveExtension(uintptr uPos, StringT<Tchar>& str) throw()
 	{
 		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
 	}
-	template <typename Tchar, uintptr t_size>
-	static void RemoveExtension(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
+	template <typename Tchar>
+	static void RemoveExtension(uintptr uPos, UniqueStringT<Tchar>& str) throw()
 	{
-		str.SetLength(uPos);
+		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
 	}
 
 	//file part
@@ -95,24 +105,22 @@ public:
 	//path part
 	//  The result string may have the trailing path separator.
 	//  uPos: this value is returned by FindFilePartStart().
-	template <typename Tchar>
-	static void ToPathPart(uintptr uPos, StringT<Tchar>& str) throw()
-	{
-		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
-	}
 	template <typename Tchar, uintptr t_size>
 	static void ToPathPart(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
 	{
 		str.SetLength(uPos);
 	}
-
 	template <typename Tchar>
-	static void RemovePathTrailingSeparator(StringT<Tchar>& str) throw()
+	static void ToPathPart(uintptr uPos, StringT<Tchar>& str) throw()
 	{
-		uintptr uLength = str.GetLength();
-		if( check_path_deletable_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
-			StringOpHelper::Delete(uLength - 1, 1, str);
+		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
 	}
+	template <typename Tchar>
+	static void ToPathPart(uintptr uPos, UniqueStringT<Tchar>& str) throw()
+	{
+		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
+	}
+
 	template <typename Tchar, uintptr t_size>
 	static void RemovePathTrailingSeparator(FixedStringT<Tchar, t_size>& str) throw()
 	{
@@ -120,18 +128,24 @@ public:
 		if( check_path_deletable_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
 			str.SetLength(uLength - 1);
 	}
+	template <typename Tchar>
+	static void RemovePathTrailingSeparator(StringT<Tchar>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_deletable_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
+			StringOpHelper::Delete(uLength - 1, 1, str);
+	}
+	template <typename Tchar>
+	static void RemovePathTrailingSeparator(UniqueStringT<Tchar>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_deletable_last_separator(UniqueArrayHelper::GetInternalPointer(str), uLength) )
+			StringOpHelper::Delete(uLength - 1, 1, str);
+	}
 
 	//upper directory
 	//  The result string may have the trailing path separator.
 	//  The return value is the length of result string. It can be compared with the length of input string for determining whether the string is unchanged.
-	template <typename Tchar>
-	static uintptr ToUpperDirectory(StringT<Tchar>& str) throw()
-	{
-		remove_separator(str);
-		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
-		ToPathPart(uPos, str);
-		return uPos;
-	}
 	template <typename Tchar, uintptr t_size>
 	static uintptr ToUpperDirectory(FixedStringT<Tchar, t_size>& str) throw()
 	{
@@ -140,41 +154,62 @@ public:
 		ToPathPart(uPos, str);
 		return uPos;
 	}
+	template <typename Tchar>
+	static uintptr ToUpperDirectory(StringT<Tchar>& str) throw()
+	{
+		remove_separator(str);
+		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
+		ToPathPart(uPos, str);
+		return uPos;
+	}
+	template <typename Tchar>
+	static uintptr ToUpperDirectory(UniqueStringT<Tchar>& str) throw()
+	{
+		remove_separator(str);
+		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
+		ToPathPart(uPos, str);
+		return uPos;
+	}
 
 	//path prefix modification
-	template <typename Tchar>
-	static void AppendCurrentPathPrefix(StringT<Tchar>& str)
+	template <class Tstring>
+	static void AppendCurrentPathPrefix(Tstring& str)
 	{
-		assert( !str.IsBlockNull() );
 		uintptr uLength = str.GetLength();
 		if( uLength == 0 )
 			return ;
 		for( auto iter(str.GetBegin()); iter != str.GetEnd(); iter.MoveNext() ) {
-			const Tchar& ch = iter.get_Value();
+			const typename Tstring::EType& ch = iter.get_Value();
 			if( check_path_separator(ch) || check_drive_separator(ch) )
 				return ;
 		}
-		const Tchar* sz;
+		const typename Tstring::EType* sz;
 		get_current_path_prefix(sz, uLength);
-		ConstStringT<Tchar> c_strPrefix(sz, uLength);
+		ConstStringT<typename Tstring::EType> c_strPrefix(sz, uLength);
 		StringOpHelper::Insert(0, c_strPrefix, str);  //may throw
 	}
 	//Called after ConvertPathStringToPlatform with absolute path
 	//  Now this method can be ignored under the latest OS.
-	template <typename Tchar>
-	static void AppendAbsolutePathPrefix(StringT<Tchar>& str)
+	template <class Tstring>
+	static void AppendAbsolutePathPrefix(Tstring& str)
 	{
-		assert( !str.IsBlockNull() );
 		uintptr uLength = str.GetLength();
 		if( uLength == 0 )
 			return ;
-		const Tchar* sz;
+		const typename Tstring::EType* sz;
 		get_absolute_path_prefix(sz, uLength);
-		ConstStringT<Tchar> c_strPrefix(sz, uLength);
+		ConstStringT<typename Tstring::EType> c_strPrefix(sz, uLength);
 		StringOpHelper::Insert(0, c_strPrefix, str);  //may throw
 	}
 
 private:
+	template <typename Tchar, uintptr t_size>
+	static void remove_separator(FixedStringT<Tchar, t_size>& str) throw()
+	{
+		uintptr uLength = str.GetLength();
+		if( check_path_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
+			str.SetLength(uLength - 1);
+	}
 	template <typename Tchar>
 	static void remove_separator(StringT<Tchar>& str) throw()
 	{
@@ -182,12 +217,12 @@ private:
 		if( check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
 			StringOpHelper::Delete(uLength - 1, 1, str);
 	}
-	template <typename Tchar, uintptr t_size>
-	static void remove_separator(FixedStringT<Tchar, t_size>& str) throw()
+	template <typename Tchar>
+	static void remove_separator(UniqueStringT<Tchar>& str) throw()
 	{
 		uintptr uLength = str.GetLength();
-		if( check_path_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
-			str.SetLength(uLength - 1);
+		if( check_path_last_separator(UniqueArrayHelper::GetInternalPointer(str), uLength) )
+			StringOpHelper::Delete(uLength - 1, 1, str);
 	}
 };
 

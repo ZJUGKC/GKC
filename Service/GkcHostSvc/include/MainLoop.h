@@ -32,14 +32,11 @@ public:
 	{
 		//environment variables
 		try {
-			m_strSystemRoot = StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager());  //may throw
-			if( !EnvironmentVariableHelper::Query<CharS>(DECLARE_TEMP_CONST_STRING(ConstStringS, ENVVAR_GKC_SYSTEM_ROOT), m_strSystemRoot) )  //may throw
+			if( !EnvironmentVariableHelper::Query(DECLARE_TEMP_CONST_STRING(ConstStringS, ENVVAR_GKC_SYSTEM_ROOT), m_strSystemRoot) )  //may throw
 				return false;
-			m_strLws = StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager());  //may throw
-			if( !EnvironmentVariableHelper::Query<CharS>(DECLARE_TEMP_CONST_STRING(ConstStringS, ENVVAR_GKC_LOCAL_WORKSPACE), m_strLws) )  //may throw
+			if( !EnvironmentVariableHelper::Query(DECLARE_TEMP_CONST_STRING(ConstStringS, ENVVAR_GKC_LOCAL_WORKSPACE), m_strLws) )  //may throw
 				return false;
-			m_strUws = StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager());  //may throw
-			if( !EnvironmentVariableHelper::Query<CharS>(DECLARE_TEMP_CONST_STRING(ConstStringS, ENVVAR_GKC_UNIFIED_WORKSPACE), m_strUws) )  //may throw
+			if( !EnvironmentVariableHelper::Query(DECLARE_TEMP_CONST_STRING(ConstStringS, ENVVAR_GKC_UNIFIED_WORKSPACE), m_strUws) )  //may throw
 				return false;
 		}
 		catch(...) {
@@ -59,9 +56,9 @@ public:
 	}
 
 private:
-	StringS m_strSystemRoot;
-	StringS m_strLws;
-	StringS m_strUws;
+	UniqueStringS m_strSystemRoot;
+	UniqueStringS m_strLws;
+	UniqueStringS m_strUws;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -45,9 +45,14 @@ This file contains analyzer functions.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
-
 namespace GKC {
+
+//global variables
+
+_ScopeShareComObject<USE_COM_FACTORY_CLASS_NAME(BasicSymbolData)> g_factoryBasicSymbolData;
+_ScopeShareComObject<USE_COM_FACTORY_CLASS_NAME(CplMetaDataPositionSymbolData)> g_factoryCplMetaDataPositionSymbolData;
+
+//functions
 
 // LexerTables
 
@@ -81,7 +86,7 @@ inline void _Internal_GrammarAnalyzer_Create(GKC::ShareCom<_IGrammarAnalyzer>& s
 
 inline void _Internal_BasicSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw()
 {
-	cr = USE_COM_FACTORY_CLASS_NAME(BasicSymbolData)::Create(sp);
+	_CREATE_SCOPE_COMPONENT_INSTANCE(USE_COM_FACTORY_CLASS_NAME(BasicSymbolData), IComFactory, g_factoryBasicSymbolData, sp, cr);
 }
 
 // CplMetaData
@@ -95,7 +100,7 @@ inline void _Internal_CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::
 
 inline void _Internal_CplMetaDataPositionSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw()
 {
-	cr = USE_COM_FACTORY_CLASS_NAME(CplMetaDataPositionSymbolData)::Create(sp);
+	_CREATE_SCOPE_COMPONENT_INSTANCE(USE_COM_FACTORY_CLASS_NAME(CplMetaDataPositionSymbolData), IComFactory, g_factoryCplMetaDataPositionSymbolData, sp, cr);
 }
 
 } //namespace

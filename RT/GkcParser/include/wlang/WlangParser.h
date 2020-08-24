@@ -60,7 +60,7 @@ public:
 		//grammar analyzer
 		if( m_spGrammarAnalyzer.IsBlockNull() ) {
 			try {
-				cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, m_spGrammarAnalyzer, m_arrU);  //may throw
+				cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, m_action_set, m_spGrammarAnalyzer, m_arrU);  //may throw
 			}
 			catch(Exception& e) {
 				cr = e.GetResult();
@@ -160,6 +160,7 @@ private:
 	}
 	//create grammar analyzer
 	static CallResult create_grammar_analyzer(const _WlangUtility_Objects& objs, const ShareCom<ILexerAnalyzer>& spLexerAnalyzer,
+											const _Wlang_ActionSet& was,
 											ShareCom<IGrammarAnalyzer>& sp, ShareArray<ShareCom<_ICplMetaDataActionUtility>>& arrU)
 	{
 		//array
@@ -213,7 +214,7 @@ private:
 			ShareCom<_ICplMetaDataActionUtility> spU;
 			//grammar accepted
 			ShareCom<IGrammarAccepted> spAccepted;
-			cr = _Create_WlangGrammarAccepted(spAccepted);
+			cr = _Create_WlangGrammarAccepted(was, spAccepted);
 			if( cr.IsFailed() )
 				return cr;
 			_COMPONENT_INSTANCE_INTERFACE(IGrammarAccepted, _ICplMetaDataActionUtility, spAccepted, spU, cr);
@@ -223,7 +224,7 @@ private:
 			spGrammarAnalyzer.Deref().SetAcceptedAction(spAccepted);
 			ShareCom<IGrammarAction> spAction;
 			//Do-Ns-Body
-			cr = _Create_WlangDoNsBodyAction(spAction);
+			cr = _Create_WlangDoNsBodyAction(was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
@@ -237,7 +238,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Body-Semi
-			cr = _Create_WlangDoBodySemiAction(spAction);
+			cr = _Create_WlangDoBodySemiAction(was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_body_semi"), spAction);
@@ -257,8 +258,10 @@ private:
 	ShareCom<IGrammarAnalyzer> m_spGrammarAnalyzer;
 
 	ShareCom<ICplMetaData> m_spMeta;
+
 	//for actions
 	ShareArray<ShareCom<_ICplMetaDataActionUtility>> m_arrU;
+	_Wlang_ActionSet m_action_set;
 
 private:
 	//noncopyable

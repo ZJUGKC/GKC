@@ -22,13 +22,13 @@ SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Parser.cpp"
 	"src/wlang/action/WlangGrammarError.cpp" "src/wlang/action/WlangGrammarAccepted.cpp"
 	"src/wlang/action/WlangDoNsBodyAction.cpp" "src/wlang/action/WlangDoBodySemiAction.cpp"
-	"src/wlang/WlangUtility.cpp" "src/wlang/WlangParser.cpp"
+	"src/wlang/WlangAction.cpp" "src/wlang/WlangUtility.cpp" "src/wlang/WlangParser.cpp"
 	"src/won/action/WonDoCommonAction.cpp"
 	"src/won/WonUtility.cpp" "src/won/WonParser.cpp"
 	"src/wmark/action/WmarkGrammarAccepted.cpp"
 	"src/wmark/action/WmarkReturnAction.cpp" "src/wmark/action/WmarkCommentStartAction.cpp"
 	"src/wmark/action/WmarkDoDocRsBlockListAction.cpp" "src/wmark/action/WmarkDoBlockListListBlockAction.cpp" "src/wmark/action/WmarkDoBlockBlockBodyAction.cpp" "src/wmark/action/WmarkDoBlockBodyCommentAction.cpp" "src/wmark/action/WmarkDoBlockBodyIndentAction.cpp"
-	"src/wmark/WmarkUtility.cpp" "src/wmark/WmarkParser.cpp")
+	"src/wmark/WmarkAction.cpp" "src/wmark/WmarkUtility.cpp" "src/wmark/WmarkParser.cpp")
 ADD_LIBRARY(GkcParser SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcParser "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")

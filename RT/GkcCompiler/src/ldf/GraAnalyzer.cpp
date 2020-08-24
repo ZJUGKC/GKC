@@ -137,12 +137,13 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const T
 	//data
 	_Gra_Data data(terminalTable, nonterminalTable, reductionTable);
 	data.Init();  //may throw
+	_Gra_ActionSet gra_action_set;  //action set
 	//actions
 	{
 		ShareCom<_IGrammarAction> spAction;
 		ShareCom<_I_GraDataAction_Utility> spU;
 		//DoRuleRightBlock
-		cr = _Create_GraDoRuleRightBlockAction(spAction);
+		cr = _Create_GraDoRuleRightBlockAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_GraDataAction_Utility, spAction, spU, cr);
@@ -150,12 +151,12 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const T
 		spU.Deref().SetOutput(RefPtr<_Gra_Data>(data));
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_rule_right_block"), spAction);  //may throw
 		//DoRightBlock
-		cr = _Create_GraDoRightBlockAction(spAction);
+		cr = _Create_GraDoRightBlockAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_right_block"), spAction);  //may throw
 		//DoRight
-		cr = _Create_GraDoRightAction(spAction);
+		cr = _Create_GraDoRightAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_GraDataAction_Utility, spAction, spU, cr);
@@ -163,7 +164,7 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const T
 		spU.Deref().SetOutput(RefPtr<_Gra_Data>(data));
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_right"), spAction);  //may throw
 		//DoRightIdBlock
-		cr = _Create_GraDoRightIdBlockAction(spAction);
+		cr = _Create_GraDoRightIdBlockAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_GraDataAction_Utility, spAction, spU, cr);
@@ -171,7 +172,7 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const T
 		spU.Deref().SetOutput(RefPtr<_Gra_Data>(data));
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_right_id_block"), spAction);  //may throw
 		//DoIdBlock
-		cr = _Create_GraDoIdBlockAction(spAction);
+		cr = _Create_GraDoIdBlockAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_GraDataAction_Utility, spAction, spU, cr);
@@ -179,7 +180,7 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const T
 		spU.Deref().SetOutput(RefPtr<_Gra_Data>(data));
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_block"), spAction);  //may throw
 		//DoId
-		cr = _Create_GraDoIdAction(spAction);
+		cr = _Create_GraDoIdAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_GraDataAction_Utility, spAction, spU, cr);
@@ -187,7 +188,7 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const T
 		spU.Deref().SetOutput(RefPtr<_Gra_Data>(data));
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id"), spAction);  //may throw
 		//DoIdToken
-		cr = _Create_GraDoIdTokenAction(spAction);
+		cr = _Create_GraDoIdTokenAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_GraDataAction_Utility, spAction, spU, cr);
@@ -195,7 +196,7 @@ CallResult _Generate_Grammar_Tables(const ShareCom<ITextStreamRoot>& sp, const T
 		spU.Deref().SetOutput(RefPtr<_Gra_Data>(data));
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"), spAction);  //may throw
 		//DoIdMacro
-		cr = _Create_GraDoIdMacroAction(spAction);
+		cr = _Create_GraDoIdMacroAction(gra_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_GraDataAction_Utility, spAction, spU, cr);

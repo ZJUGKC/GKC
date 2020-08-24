@@ -1389,7 +1389,7 @@ public:
 	{
 		_ShareCom<T> ret;
 		ret.m_pT = sp.m_p;
-		ret.m_pB = static_cast<share_com_block*>(&sp);
+		ret.m_pB = const_cast<share_com_block*>(static_cast<const share_com_block*>(&sp));
 		ret.m_pB->AddRefCopy();
 		return ret;
 	}
@@ -4370,7 +4370,7 @@ public:
 	static _UniqueCom ToUniqueCom(const _ScopeUniqueComObject<T>& sp) noexcept
 	{
 		_UniqueCom ret;
-		ret.m_p = &sp;
+		ret.m_p = (void*)(&sp);
 		return ret;
 	}
 
@@ -4597,6 +4597,7 @@ struct _Com_SA_Factory_Item
 	const guid* cid;
 	_Com_SA_Create_Factory_Func pFunc;
 	byte btFactory[_SHARE_COM_FACTORY_SIZE];
+	uint flag;
 };
 
 // _Com_SA_Module
@@ -4683,13 +4684,19 @@ public:
 			return ;
 		}
 		_ShareCom<_IComFactory>* pF = (_ShareCom<_IComFactory>*)(pFound->btFactory);
-		if( pF->IsBlockNull() ) {
+		if( pFound->flag == 0 ) {
 			GKC::CallResult crCreate;
 			//lock
 			LockMutex();
 			//double check
-			if( pF->IsBlockNull() )
+			if( pFound->flag == 0 ) {
 				crCreate = pFound->pFunc(*pF);
+				// If double checking pF->IsBlockNull(),
+				// since the memory allocation and object initialization of *pF is not atomic operation,
+				// other thread may obtain the uninitialized object when pF->IsBlockNull() is not true.
+				if( crCreate.IsSucceeded() )
+					pFound->flag = 1;
+			}
 			UnlockMutex();
 			if( crCreate.IsFailed() ) {
 				cr = crCreate;
@@ -4747,10 +4754,10 @@ _ComSABase& operator=(const _ComSABase&) throw();  \
 	_Com_SA_Factory_Item l_com_sa_factory_map[] = {
 
 #define COM_SA_FACTORY_ENTRY(com_class)  \
-	{ &(USE_GUID(GUID_##com_class)), &(USE_COM_SA_FACTORY_CLASS_NAME(com_class)::Create), { 0 } },
+	{ &(USE_GUID(GUID_##com_class)), &(USE_COM_SA_FACTORY_CLASS_NAME(com_class)::Create), { 0 }, 0 },
 
 #define END_COM_SA_FACTORY_MAP()  \
-	{ NULL, NULL, { 0 } } };  \
+	{ NULL, NULL, { 0 }, 0 } };  \
 	_Com_SA_Factory_Item* _Com_SA_Module::get_com_sa_factory_map() throw()  \
 	{ return l_com_sa_factory_map; }
 
@@ -4761,6 +4768,10 @@ bool _SA_Com_CanUnloadNow() throw()  \
 { return USE_COM_SA_MODULE().SA_Com_CanUnloadNow(); }
 
 // --<.cpp end>---
+
+/*
+USE_COM_SA_MODULE().InitMutex should be called in ProgramEntryPoint::SAMain function.
+*/
 
 // component client functions
 SA_FUNCTION void _Com_SA_GetClassObject(const _StringS& strAssembly, const guid& cid, _ShareCom<_IComFactory>& sp, GKC::CallResult& cr) throw();
@@ -4822,7 +4833,7 @@ public:
 			}
 			pItem ++;
 		}
-		if( pFound == NULL ) {
+		if ( pFound == NULL ) {
 			cr.SetResult(GKC::SystemCallResults::NotImpl);
 			return ;
 		}
@@ -4835,8 +4846,8 @@ private:
 
 // --<header file>--
 
-#define DECLARE_UNIQUECOM_SA_MODULE  DECLARE_SA_GLOBAL_VARIABLE(_UniqueCom_SA_Module, _g_unique_com_sa_module)
-#define USE_UNIQUECOM_SA_MODULE()  GET_SA_GLOBAL_VARIABLE(_g_unique_com_sa_module)
+#define DECLARE_UNIQUECOM_SA_MODULE  extern _UniqueCom_SA_Module _g_unique_com_sa_module;
+#define USE_UNIQUECOM_SA_MODULE()    (_g_unique_com_sa_module)
 
 #define DECLARE_UNIQUECOM_SA_EXPORT_FUNCTIONS  \
 SA_FUNCTION void _SA_UniqueCom_GetClassObject(const guid& cid, _UniqueCom& sp, GKC::CallResult& cr) noexcept;
@@ -4846,8 +4857,7 @@ SA_FUNCTION void _SA_UniqueCom_GetClassObject(const guid& cid, _UniqueCom& sp, G
 // --<source file>--
 
 #define IMPLEMENT_UNIQUECOM_SA_MODULE  \
-	BEGIN_SA_GLOBAL_VARIABLE(_UniqueCom_SA_Module, _g_unique_com_sa_module)  \
-	END_SA_GLOBAL_VARIABLE(_g_unique_com_sa_module)
+	_UniqueCom_SA_Module _g_unique_com_sa_module;
 
 #define BEGIN_UNIQUECOM_SA_MAP()  \
 	_UniqueCom_SA_Item l_unique_com_sa_map[] = {

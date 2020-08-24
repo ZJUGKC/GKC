@@ -51,9 +51,12 @@
 //global variables in shared library
 /*
 Because the global variables are initialized after calling __attribute__((constructor)) function,
-they must be defined as static variables in helper functions.
+they must be defined as static variables in helper functions
+if their methods should be called in __attribute__((constructor)) function.
 Be careful to use static variables of classes in __attribute__((constructor)) function.
 __attribute__((destructor)) function is called before destroying the global variables.
+
+Other global variables can be defined normally.
 */
 
 //in header file

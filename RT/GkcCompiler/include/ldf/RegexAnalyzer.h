@@ -249,13 +249,14 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		grammar.SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "regex_term"), spCF);  //may throw
 	} //end block
 	//actions
+	_Regex_ActionSet regex_action_set;  //action set
 	ShareArray<ShareCom<_I_RegexAstAction_Utility>> arrAstU(ShareArrayHelper::MakeShareArray<ShareCom<_I_RegexAstAction_Utility>>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	{
 		ShareCom<_IGrammarAction> spAction;
 		ShareCom<_I_RegexAstAction_Utility> spAU;
 		ShareCom<_IGrammarAccepted> spAccepted;
 		//GrammarAccepted
-		cr = _Create_RegexGrammarAccepted(spAccepted);
+		cr = _Create_RegexGrammarAccepted(regex_action_set, spAccepted);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAccepted, _I_RegexAstAction_Utility, spAccepted, spAU, cr);
@@ -264,7 +265,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAcceptedAction(spAccepted);
 		//DoExpExpTerm
-		cr = _Create_RegexDoExpExpTermAction(spAction);
+		cr = _Create_RegexDoExpExpTermAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -273,7 +274,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_exp_exp_term"), spAction);  //may throw
 		//DoTermTermFactor1
-		cr = _Create_RegexDoTermTermFactor1Action(spAction);
+		cr = _Create_RegexDoTermTermFactor1Action(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -282,7 +283,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_term_term_factor_1"), spAction);  //may throw
 		//DoFactor1Plus
-		cr = _Create_RegexDoFactor1PlusAction(spAction);
+		cr = _Create_RegexDoFactor1PlusAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -291,7 +292,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_plus"), spAction);  //may throw
 		//DoFactor1Star
-		cr = _Create_RegexDoFactor1StarAction(spAction);
+		cr = _Create_RegexDoFactor1StarAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -300,7 +301,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_star"), spAction);  //may throw
 		//DoFactor1Question
-		cr = _Create_RegexDoFactor1QuestionAction(spAction);
+		cr = _Create_RegexDoFactor1QuestionAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -309,7 +310,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_question"), spAction);  //may throw
 		//DoFactorParenExp
-		cr = _Create_RegexDoFactorParenExpAction(spAction);
+		cr = _Create_RegexDoFactorParenExpAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -318,7 +319,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_paren_exp"), spAction);  //may throw
 		//DoFactorChar
-		cr = _Create_RegexDoFactorCharAction(spAction);
+		cr = _Create_RegexDoFactorCharAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -327,7 +328,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_char"), spAction);  //may throw
 		//DoFactorCharSet
-		cr = _Create_RegexDoFactorCharSetAction(spAction);
+		cr = _Create_RegexDoFactorCharSetAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -339,7 +340,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_1_factor"), spAction);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_factor_char_set"), spAction);  //may throw
 		//DoCharSet
-		cr = _Create_RegexDoCharSetAction(spAction);
+		cr = _Create_RegexDoCharSetAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -348,7 +349,7 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_set"), spAction);  //may throw
 		//DoCharSetUp
-		cr = _Create_RegexDoCharSetUpAction(spAction);
+		cr = _Create_RegexDoCharSetUpAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_RegexAstAction_Utility, spAction, spAU, cr);
@@ -357,29 +358,29 @@ inline CallResult _Regex_Generate_AST(const ShareArray<_LexerTokenString>& arr, 
 		arrAstU.Add(spAU);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_set_up"), spAction);  //may throw
 		//DoCharItemItemCharE
-		cr = _Create_RegexDoCharItemItemCharEAction(spAction);
+		cr = _Create_RegexDoCharItemItemCharEAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_item_item_char_e"), spAction);  //may throw
 		//DoCharItemCharE
-		cr = _Create_RegexDoCharItemCharEAction(spAction);
+		cr = _Create_RegexDoCharItemCharEAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_item_char_e"), spAction);  //may throw
 		//DoCharRange
-		cr = _Create_RegexDoCharRangeAction(spAction);
+		cr = _Create_RegexDoCharRangeAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_range"), spAction);  //may throw
 		//DoCharS
-		cr = _Create_RegexDoCharSAction(spAction);
+		cr = _Create_RegexDoCharSAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_e_range"), spAction);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_e_char"), spAction);  //may throw
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char_s"), spAction);  //may throw
 		//DoChar
-		cr = _Create_RegexDoCharAction(spAction);
+		cr = _Create_RegexDoCharAction(regex_action_set, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_char"), spAction);  //may throw

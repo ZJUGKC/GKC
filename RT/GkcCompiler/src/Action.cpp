@@ -27,36 +27,43 @@ This file contains action functions.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//functions
-
 namespace GKC {
+
+//global variables
+
+_ScopeShareComObject<CommentStartAction>      g_actionCommentStart;
+_ScopeShareComObject<LineCommentStartAction>  g_actionLineCommentStart;
+_ScopeShareComObject<SpaceAction>             g_actionSpace;
+_ScopeShareComObject<ReturnAction>            g_actionReturn;
+
+//functions
 
 // CommentStartAction
 
 inline void _Internal_CommentStartAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	_CREATE_COMPONENT_INSTANCE(CommentStartAction, _ILexerAction, sp, cr);
+	_CREATE_SCOPE_COMPONENT_INSTANCE(CommentStartAction, _ILexerAction, g_actionCommentStart, sp, cr);
 }
 
 // LineCommentStartAction
 
 inline void _Internal_LineCommentStartAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	_CREATE_COMPONENT_INSTANCE(LineCommentStartAction, _ILexerAction, sp, cr);
+	_CREATE_SCOPE_COMPONENT_INSTANCE(LineCommentStartAction, _ILexerAction, g_actionLineCommentStart, sp, cr);
 }
 
 // SpaceAction
 
 inline void _Internal_SpaceAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	_CREATE_COMPONENT_INSTANCE(SpaceAction, _ILexerAction, sp, cr);
+	_CREATE_SCOPE_COMPONENT_INSTANCE(SpaceAction, _ILexerAction, g_actionSpace, sp, cr);
 }
 
 // ReturnAction
 
 inline void _Internal_ReturnAction_Create(GKC::ShareCom<_ILexerAction>& sp, GKC::CallResult& cr) throw()
 {
-	_CREATE_COMPONENT_INSTANCE(ReturnAction, _ILexerAction, sp, cr);
+	_CREATE_SCOPE_COMPONENT_INSTANCE(ReturnAction, _ILexerAction, g_actionReturn, sp, cr);
 }
 
 } //namespace

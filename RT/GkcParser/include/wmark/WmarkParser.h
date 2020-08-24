@@ -60,7 +60,7 @@ public:
 		//grammar analyzer
 		if( m_spGrammarAnalyzer.IsBlockNull() ) {
 			try {
-				cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, m_spGrammarAnalyzer, m_arrU);  //may throw
+				cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, m_action_set, m_spGrammarAnalyzer, m_arrU);  //may throw
 			}
 			catch(Exception& e) {
 				cr = e.GetResult();
@@ -154,6 +154,7 @@ private:
 	}
 	//create grammar analyzer
 	static CallResult create_grammar_analyzer(const _WmarkUtility_Objects& objs, const ShareCom<ILexerAnalyzer>& spLexerAnalyzer,
+											const _Wmark_ActionSet& was,
 											ShareCom<IGrammarAnalyzer>& sp, ShareArray<ShareCom<_ICplMetaDataActionUtility>>& arrU)
 	{
 		//array
@@ -202,7 +203,7 @@ private:
 			ShareCom<_ICplMetaDataActionUtility> spU;
 			//grammar accepted
 			ShareCom<IGrammarAccepted> spAccepted;
-			cr = _Create_WmarkGrammarAccepted(spAccepted);
+			cr = _Create_WmarkGrammarAccepted(was, spAccepted);
 			if( cr.IsFailed() )
 				return cr;
 			_COMPONENT_INSTANCE_INTERFACE(IGrammarAccepted, _ICplMetaDataActionUtility, spAccepted, spU, cr);
@@ -212,7 +213,7 @@ private:
 			spGrammarAnalyzer.Deref().SetAcceptedAction(spAccepted);
 			ShareCom<IGrammarAction> spAction;
 			//Do-Doc-Rs-Block-List
-			cr = _Create_WmarkDoDocRsBlockListAction(spAction);
+			cr = _Create_WmarkDoDocRsBlockListAction(was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_doc_rs_block_list"), spAction);
@@ -222,7 +223,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Block-List-List-Block
-			cr = _Create_WmarkDoBlockListListBlockAction(spAction);
+			cr = _Create_WmarkDoBlockListListBlockAction(was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
@@ -233,7 +234,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Block-Block-Body
-			cr = _Create_WmarkDoBlockBlockBodyAction(spAction);
+			cr = _Create_WmarkDoBlockBlockBodyAction(was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_block_body"), spAction);
@@ -252,7 +253,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Block-Body-Comment
-			cr = _Create_WmarkDoBlockBodyCommentAction(spAction);
+			cr = _Create_WmarkDoBlockBodyCommentAction(was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
@@ -263,7 +264,7 @@ private:
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Block-Body-Indent
-			cr = _Create_WmarkDoBlockBodyIndentAction(spAction);
+			cr = _Create_WmarkDoBlockBodyIndentAction(was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
@@ -287,8 +288,10 @@ private:
 	ShareCom<IGrammarAnalyzer> m_spGrammarAnalyzer;
 
 	ShareCom<ICplMetaData> m_spMeta;
+
 	//for actions
 	ShareArray<ShareCom<_ICplMetaDataActionUtility>> m_arrU;
+	_Wmark_ActionSet m_action_set;  //action set
 
 private:
 	//noncopyable

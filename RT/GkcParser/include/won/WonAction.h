@@ -20,14 +20,21 @@ This file contains Won action functions.
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+// _Won_ActionSet
+
+struct _Won_ActionSet
+{
+	_ScopeShareComObject<WonDoCommonAction> actionWonDoCommon;
+};
+
 //functions
 
 // Do-Common action
 
-inline CallResult _Create_WonDoCommonAction(ShareCom<IGrammarAction>& sp) throw()
+inline CallResult _Create_WonDoCommonAction(const _Won_ActionSet& was, ShareCom<IGrammarAction>& sp) throw()
 {
 	CallResult cr;
-	_CREATE_COMPONENT_INSTANCE(WonDoCommonAction, IGrammarAction, sp, cr);
+	_CREATE_SCOPE_COMPONENT_INSTANCE(WonDoCommonAction, IGrammarAction, was.actionWonDoCommon, sp, cr);
 	return cr;
 }
 

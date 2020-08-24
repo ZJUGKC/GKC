@@ -59,7 +59,7 @@ public:
 
 		//grammar analyzer
 		if( m_spGrammarAnalyzer.IsBlockNull() ) {
-			cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, RefPtr<_WonActionData>(m_data), m_spGrammarAnalyzer);
+			cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, RefPtr<_WonActionData>(m_data), m_action_set, m_spGrammarAnalyzer);
 			if( cr.IsFailed() )
 				return cr;
 		}
@@ -171,7 +171,7 @@ private:
 	}
 	//create grammar analyzer
 	static CallResult create_grammar_analyzer(const _WonUtility_Objects& objs, const ShareCom<ILexerAnalyzer>& spLexerAnalyzer,
-											const RefPtr<_WonActionData>& data,
+											const RefPtr<_WonActionData>& data, const _Won_ActionSet& was,
 											ShareCom<IGrammarAnalyzer>& sp) throw()
 	{
 		//create
@@ -265,91 +265,91 @@ private:
 		{
 			ShareCom<IGrammarAction> spAction;
 			//Do-Value-String
-			cr = create_action(_WonTokenTypes::ValueString, data, spAction);
+			cr = create_action(_WonTokenTypes::ValueString, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_string"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Number-Integer
-			cr = create_action(_WonTokenTypes::ValueNumberInteger, data, spAction);
+			cr = create_action(_WonTokenTypes::ValueNumberInteger, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_number_integer"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Number-Float
-			cr = create_action(_WonTokenTypes::ValueNumberFloat, data, spAction);
+			cr = create_action(_WonTokenTypes::ValueNumberFloat, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_number_float"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Number-Hexadecimal
-			cr = create_action(_WonTokenTypes::ValueNumberHexadecimal, data, spAction);
+			cr = create_action(_WonTokenTypes::ValueNumberHexadecimal, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_number_hexadecimal"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Boolean-True
-			cr = create_action(_WonTokenTypes::ValueBooleanTrue, data, spAction);
+			cr = create_action(_WonTokenTypes::ValueBooleanTrue, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_boolean_true"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Boolean-False
-			cr = create_action(_WonTokenTypes::ValueBooleanFalse, data, spAction);
+			cr = create_action(_WonTokenTypes::ValueBooleanFalse, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_boolean_false"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Null
-			cr = create_action(_WonTokenTypes::ValueNull, data, spAction);
+			cr = create_action(_WonTokenTypes::ValueNull, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_null"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Begin-Object
-			cr = create_action(_WonTokenTypes::BeginObject, data, spAction);
+			cr = create_action(_WonTokenTypes::BeginObject, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_begin_object"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-End-Object
-			cr = create_action(_WonTokenTypes::EndObject, data, spAction);
+			cr = create_action(_WonTokenTypes::EndObject, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_end_object"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Pair-Key-Value
-			cr = create_action(_WonTokenTypes::EndPair, data, spAction);
+			cr = create_action(_WonTokenTypes::EndPair, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_pair_key_value"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Key-String
-			cr = create_action(_WonTokenTypes::Key, data, spAction);
+			cr = create_action(_WonTokenTypes::Key, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_key_string"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Begin-Array
-			cr = create_action(_WonTokenTypes::BeginArray, data, spAction);
+			cr = create_action(_WonTokenTypes::BeginArray, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_begin_array"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-End-Array
-			cr = create_action(_WonTokenTypes::EndArray, data, spAction);
+			cr = create_action(_WonTokenTypes::EndArray, data, was, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_end_array"), spAction);
@@ -361,12 +361,12 @@ private:
 		return cr;
 	}
 	//grammar action
-	static CallResult create_action(int iType, const RefPtr<_WonActionData>& data, ShareCom<IGrammarAction>& sp) throw()
+	static CallResult create_action(int iType, const RefPtr<_WonActionData>& data, const _Won_ActionSet& was, ShareCom<IGrammarAction>& sp) throw()
 	{
 		CallResult cr;
 		ShareCom<_IWonActionUtility> spU;
 		ShareCom<IGrammarAction> spAction;
-		cr = _Create_WonDoCommonAction(spAction);
+		cr = _Create_WonDoCommonAction(was, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _IWonActionUtility, spAction, spU, cr);
@@ -382,6 +382,9 @@ private:
 	ShareCom<IGrammarAnalyzer> m_spGrammarAnalyzer;
 
 	_WonActionData m_data;
+
+	//for actions
+	_Won_ActionSet m_action_set;  //action set
 
 private:
 	//noncopyable

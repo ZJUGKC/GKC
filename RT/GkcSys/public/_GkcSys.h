@@ -5138,6 +5138,70 @@ SA_FUNCTION bool _HelpAuthoring_FindLCID(uint uLCID, _HelpLanguageInfo& info) th
 SA_FUNCTION bool _HelpAuthoring_FindShortString(const GKC::ConstStringS& strShortString, _HelpLanguageInfo& info) throw();
 
 //------------------------------------------------------------------------------
+// compression
+
+#pragma pack(push, 1)
+
+// _PkInputBuffer
+
+struct _PkInputBuffer
+{
+	uintptr pBuffer;
+	ushort  uLength;
+};
+
+// _PkOutputBuffer
+
+struct _PkOutputBuffer
+{
+	uintptr pBuffer;
+	ushort  uLength;
+};
+
+// _IPkCompressor
+
+class NOVTABLE _IPkCompressor
+{
+public:
+	virtual void Initialize() noexcept = 0;
+	virtual void SetLongestSearch(bool b) noexcept = 0;
+	virtual void GetInputBuffer(_PkInputBuffer& buf) noexcept = 0;
+	virtual void SetInputSize(ushort uSize) noexcept = 0;
+	virtual void GetOutputBuffer(_PkOutputBuffer& buf) noexcept = 0;
+	virtual void ResetOutputBuffer() noexcept = 0;
+	//return : 1 -- need input, 2 -- output is full
+	virtual int Encode() noexcept = 0;
+	virtual void StartFinish() noexcept = 0;
+	//return : 0 -- end, 2 -- output is full
+	virtual int ProcessFinish() noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IPkCompressor)
+
+// _IPkDecompressor
+
+class NOVTABLE _IPkDecompressor
+{
+public:
+	virtual void Initialize() noexcept = 0;
+	virtual void GetInputBuffer(_PkInputBuffer& buf) noexcept = 0;
+	virtual void SetInputSize(ushort uSize) noexcept = 0;
+	virtual void GetOutputBuffer(_PkOutputBuffer& buf) noexcept = 0;
+	virtual void ResetOutputBuffer() noexcept = 0;
+	// return 0 -- end  1 -- need input  2 -- output is full
+	virtual int Decode() noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IPkDecompressor)
+
+#pragma pack(pop)
+
+//functions
+
+SA_FUNCTION void _PkzCompressor_Create(_UniqueCom& sp, GKC::CallResult& cr) noexcept;
+SA_FUNCTION void _PkzDecompressor_Create(_UniqueCom& sp, GKC::CallResult& cr) noexcept;
+
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_SYS_H__

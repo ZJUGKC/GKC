@@ -2758,6 +2758,23 @@ public:
 #define _CY_DECIMAL_DIGITS  (4)
 
 //------------------------------------------------------------------------------
+// rand
+
+class rand_helper
+{
+public:
+	static void Init(uint uSeed = (uint)::time(NULL)) noexcept
+	{
+		::srand(uSeed);
+	}
+	//[0, RAND_MAX]
+	static int Next() noexcept
+	{
+		return ::rand();
+	}
+};
+
+//------------------------------------------------------------------------------
 //OS
 
 #if defined(GKC_OS_WINDOWS)

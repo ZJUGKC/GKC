@@ -62,8 +62,13 @@ public:
 					break;
 				}
 				info.set_ID(CPL_TK_NULL);  //comment end
+				cr = info.AddCharEndCharIndex(1);
 				break;
 			}
+
+			cr = info.AddCharEndCharIndex(1);
+			if( cr.IsFailed() )
+				break;
 
 			//CR
 			if( ch == '\r' ) {
@@ -108,7 +113,6 @@ private:
 			info.set_ID(CPL_TK_NULL);  //comment end
 			return cr;
 		}
-		cr = info.AddCharEndCharIndex(1);
 		return cr;
 	}
 

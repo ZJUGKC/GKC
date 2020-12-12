@@ -247,16 +247,16 @@ public:
 
 	//error restore
 	//  return : true --- success, false --- should input a new event and call RevertAgain repeatedly until returning true
-	bool Revert() throw()
+	bool Revert(uintptr& uRemovedNum) throw()
 	{
-		return revert_with_current_event(false);
+		return revert_with_current_event(false, uRemovedNum);
 	}
 	//input the next event and try this method
 	//  do not input PDA_END_OF_EVENT
-	bool RevertAgain() throw()
+	bool RevertAgain(uintptr& uRemovedNum) throw()
 	{
 		assert( m_uCurrentEvent != PDA_END_OF_EVENT );
-		return revert_with_current_event(true);
+		return revert_with_current_event(true, uRemovedNum);
 	}
 
 private:
@@ -287,9 +287,10 @@ private:
 		return m_stack.GetTail().get_Value();
 	}
 	//revert
-	bool revert_with_current_event(bool bFromTop) throw()
+	bool revert_with_current_event(bool bFromTop, uintptr& uRemovedNum) throw()
 	{
 		assert( m_uCurrentEvent != PDA_NO_EVENT );
+		uRemovedNum = 0;
 		//from top to bottom
 		auto iter(m_stack.GetTail());
 		if( !bFromTop )
@@ -304,6 +305,7 @@ private:
 					auto iter1(iter);
 					iter.MoveNext();
 					m_stack.RemoveAt(iter1);
+					uRemovedNum ++;
 				}
 				return true;
 			}

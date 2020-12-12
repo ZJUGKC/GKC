@@ -415,6 +415,43 @@ public:
 	}
 };
 
+// Compression
+
+// PkInputBuffer
+typedef _PkInputBuffer  PkInputBuffer;
+
+// PkOutputBuffer
+typedef _PkOutputBuffer  PkOutputBuffer;
+
+// IPkCompressor
+typedef _IPkCompressor  IPkCompressor;
+
+#define GUID_IPkCompressor  GUID__IPkCompressor
+
+// IPkDecompressor
+typedef _IPkDecompressor  IPkDecompressor;
+
+#define GUID_IPkDecompressor  GUID__IPkDecompressor
+
+// CompressionHelper
+
+class CompressionHelper
+{
+public:
+	static CallResult CreatePkzCompressor(UniqueCom& sp) noexcept
+	{
+		CallResult cr;
+		::_PkzCompressor_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreatePkzDecompressor(UniqueCom& sp) noexcept
+	{
+		CallResult cr;
+		::_PkzDecompressor_Create(sp, cr);
+		return cr;
+	}
+};
+
 // EnvironmentVariableHelper
 
 class EnvironmentVariableHelper

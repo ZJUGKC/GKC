@@ -424,6 +424,29 @@ public:
 		ConsoleHelper::WriteLine(_gkc_utm_buffer); }  \
 	else { GKC_TEST_ASSERT_TRUE(false); } }
 
+// GKC_TEST_OUTPUT
+
+#define GKC_TEST_OUTPUT(format, ...)  \
+	_GKC_TEST_FORMAT_ERROR(format, ##__VA_ARGS__);  \
+	ConsoleHelper::WriteLine(_gkc_utm_buffer);
+
+// test time
+
+#define GKC_BEGIN_TEST_TIME  { TimeValue __tv1; TimeHelper::FetchCurrentTime(__tv1);
+
+#define GKC_END_TEST_TIME  \
+	TimeValue __tv2; TimeHelper::FetchCurrentTime(__tv2);  \
+	TimeSpan  __ts = __tv2 - __tv1;  \
+	_GKC_TEST_FORMAT_ERROR(_S("time : %I64u, %I64u"), __ts.get_Seconds(), __ts.get_Nanoseconds());  \
+	ConsoleHelper::WriteLine(_gkc_utm_buffer); }
+
+// test functor
+
+#define GKC_BEGIN_TEST_FUNCTOR(fn_name, ...)  \
+	auto fn_name = [&](__VA_ARGS__)->void
+
+#define GKC_END_TEST_FUNCTOR  ;
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

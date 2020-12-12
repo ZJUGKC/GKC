@@ -17,9 +17,10 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/public/include")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
-SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Globals.cpp" "src/SobPool.cpp" "src/MemMgr.cpp" "src/Stream.cpp" "src/ComClient.cpp" "src/HelpAuthoring.cpp"
+SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Globals.cpp" "src/SobPool.cpp" "src/MemMgr.cpp" "src/Stream.cpp" "src/ComClient.cpp" "src/HelpAuthoring.cpp" "src/Compression.cpp"
 	"src/stream/FileStream.cpp" "src/stream/MemoryStream.cpp" "src/stream/MemoryStreamU.cpp" "src/stream/BufferStream.cpp"
-	"src/stream/_TxtStream.cpp" "src/stream/TextStream.cpp" "src/stream/TextStreamU.cpp")
+	"src/stream/_TxtStream.cpp" "src/stream/TextStream.cpp" "src/stream/TextStreamU.cpp"
+	"src/compress/_PkCompress.cpp" "src/compress/PkzCompressor.cpp" "src/compress/PkzDecompressor.cpp")
 ADD_LIBRARY(GkcSys SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcSys "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")

@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/public/include")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
-SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Action.cpp" "src/Analyzer.cpp"
+SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Action.cpp" "src/Analyzer.cpp" "src/Rdp.cpp"
 	"src/action/CommentStartAction.cpp" "src/action/LineCommentStartAction.cpp" "src/action/SpaceAction.cpp" "src/action/ReturnAction.cpp"
 	"src/ldf/base/LdfFsa.cpp"
 	"src/ldf/lex/LdfLexPda.cpp" "src/ldf/lex/MacroTokenAction.cpp" "src/ldf/lex/DoIdTokenMacroAction.cpp"
@@ -34,7 +34,12 @@ SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Action.cpp" "src/Analyzer.cpp"
 	"src/analyzer/LexerTables.cpp" "src/analyzer/LexerAnalyzer.cpp" "src/analyzer/GrammarTables.cpp" "src/analyzer/GrammarAnalyzer.cpp"
 	"src/analyzer/BasicSymbolData.cpp" "src/analyzer/BasicSymbolData_Factory.cpp"
 	"src/meta/CplMetaData.cpp"
-	"src/meta/CplMetaDataPositionSymbolData.cpp" "src/meta/CplMetaDataPositionSymbolData_Factory.cpp")
+	"src/meta/CplMetaDataPositionSymbolData.cpp" "src/meta/CplMetaDataPositionSymbolData_Factory.cpp"
+	"src/rdp/ldf/token/TkAction.cpp" "src/rdp/ldf/token/NtAction.cpp" "src/rdp/ldf/token/TkidAction.cpp" "src/rdp/ldf/token/ActidAction.cpp"
+	"src/rdp/ldf/scanner/DoIdAction.cpp"
+	"src/rdp/ldf/parser/DoRuleItemEndAction.cpp" "src/rdp/ldf/parser/DoNtAction.cpp" "src/rdp/ldf/parser/DoVertAction.cpp" "src/rdp/ldf/parser/DoActAction.cpp" "src/rdp/ldf/parser/DoEpsAction.cpp" "src/rdp/ldf/parser/DoTkAction.cpp"
+	"src/rdp/ldf/TokenAction.cpp" "src/rdp/ldf/ScannerAction.cpp" "src/rdp/ldf/ParserAction.cpp"
+	"src/rdp/RdScannerTables.cpp" "src/rdp/RdScanner.cpp" "src/rdp/RdParserTables.cpp" "src/rdp/RdParser.cpp")
 ADD_LIBRARY(GkcCompiler SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcCompiler "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
 SET_TARGET_SUBSYSTEM("Background")

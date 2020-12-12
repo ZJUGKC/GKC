@@ -53,10 +53,9 @@ inline CallResult _Generate_Html(ShareCom<ICplMetaData>& spMeta, ShareCom<ITextS
 
 		//root
 		CplMetaDataPosition posRoot(_gh_get_root(spMeta));
-		if( posRoot.IsNull() ) {
-			cr.SetResult(SystemCallResults::Corrupt);
+		//empty
+		if( posRoot.IsNull() )
 			return cr;
-		}
 		CplAstNodeInfo astInfo;
 		spMeta.Deref().GetAstNodeInfo(posRoot, astInfo);
 		//empty

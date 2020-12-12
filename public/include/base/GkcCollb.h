@@ -2098,8 +2098,15 @@ private:
 	typedef _RBTree<TKey, TPair, TCompareTrait>  thisClass;
 
 	//special usage
-	class _Key : public TKey
+	struct _Key
 	{
+		TKey t;
+		_Key(const TKey& src) : t(src)
+		{
+		}
+		_Key(TKey&& src) : t(rv_forward(src))
+		{
+		}
 	};
 
 private:
@@ -2109,10 +2116,10 @@ private:
 		_Node()
 		{
 		}
-		explicit _Node(const _Key& key) : m_t(static_cast<const TKey&>(key))
+		explicit _Node(const _Key& key) : m_t(key.t)
 		{
 		}
-		explicit _Node(_Key&& key) : m_t(rv_forward(static_cast<TKey&>(key)))
+		explicit _Node(_Key&& key) : m_t(rv_forward(key.t))
 		{
 		}
 		template <typename V>
@@ -2476,14 +2483,14 @@ public:
 	{
 		_Node* pNode = find_node(key);
 		if( pNode == NULL )
-			pNode = create_node(static_cast<const _Key&>(key));
+			pNode = create_node(_Key(key));
 		return get_iterator(pNode);
 	}
 	Iterator Insert(TKey&& key)  //may throw
 	{
 		_Node* pNode = find_node(key);
 		if( pNode == NULL )
-			pNode = create_node(rv_forward(static_cast<_Key&>(key)));
+			pNode = create_node(_Key(rv_forward(key)));
 		return get_iterator(pNode);
 	}
 	template <typename TValue>
@@ -2687,6 +2694,8 @@ protected:
 	{
 		node_pair_helper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
 	}
+	//remove all
+	/*
 	void remove_by_post_order(_Node* pNode) throw()
 	{
 		if( is_node_nil(pNode) )
@@ -2696,6 +2705,39 @@ protected:
 		remove_by_post_order(pNode->m_pRight);
 		free_node(pNode);
 	}
+	*/
+	void remove_by_post_order(_Node* pNode) throw()
+	{
+		if( is_node_nil(pNode) )
+			return ;
+		_Node* pX = pNode;
+		do {
+			if( !is_node_nil(pX->m_pLeft) ) {
+				pX = pX->m_pLeft;
+				continue;
+			}
+			if( !is_node_nil(pX->m_pRight) ) {
+				pX = pX->m_pRight;
+				continue;
+			}
+			do {
+				_Node* pParent = pX->get_Parent();
+				_Node* pZ = pX;
+				free_node(pX);
+				if( is_node_nil(pParent) || pZ == pNode )
+					return ;
+				if( pParent->m_pLeft == pZ ) {
+					if( !is_node_nil(pParent->m_pRight) ) {
+						pX = pParent->m_pRight;
+						break;
+					}
+				}
+				pX = pParent;
+			} while( pNode != pX );
+		} while( pNode != pX );
+		free_node(pNode);
+	}
+	//delete
 	void delete_node_with_fixup(_Node* pNode) throw()
 	{
 		assert( pNode != NULL );

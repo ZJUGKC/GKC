@@ -208,6 +208,67 @@ public:
 	}
 };
 
+// IRdScannerTables
+typedef _IRdScannerTables  IRdScannerTables;
+
+#define GUID_IRdScannerTables  GUID__IRdScannerTables
+
+// IRdScannerAction
+typedef _IRdScannerAction  IRdScannerAction;
+
+#define GUID_IRdScannerAction  GUID__IRdScannerAction
+
+// IRdScanner
+typedef _IRdScanner  IRdScanner;
+
+#define GUID_IRdScanner  GUID__IRdScanner
+
+// IRdParserTables
+typedef _IRdParserTables  IRdParserTables;
+
+#define GUID_IRdParserTables  GUID__IRdParserTables
+
+// IRdParserAction
+typedef _IRdParserAction  IRdParserAction;
+
+#define GUID_IRdParserAction  GUID__IRdParserAction
+
+// IRdParser
+typedef _IRdParser  IRdParser;
+
+#define GUID_IRdParser  GUID__IRdParser
+
+// RdpHelper
+
+class RdpHelper
+{
+public:
+	static CallResult CreateRdScannerTables(ShareCom<IRdScannerTables>& sp) noexcept
+	{
+		CallResult cr;
+		::_RdScannerTables_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreateRdScanner(ShareCom<IRdScanner>& sp) noexcept
+	{
+		CallResult cr;
+		::_RdScanner_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreateRdParserTables(ShareCom<IRdParserTables>& sp) noexcept
+	{
+		CallResult cr;
+		::_RdParserTables_Create(sp, cr);
+		return cr;
+	}
+	static CallResult CreateRdParser(ShareCom<IRdParser>& sp) noexcept
+	{
+		CallResult cr;
+		::_RdParser_Create(sp, cr);
+		return cr;
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 ////////////////////////////////////////////////////////////////////////////////

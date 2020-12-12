@@ -57,6 +57,10 @@ typedef struct _tagLexerWordInfo
 
 // _LexerTokenString
 
+/*
+Only UTF-8 encoding stream is supported when the type of GKC::VariantString is Char8.
+*/
+
 class _LexerTokenString
 {
 public:
@@ -293,9 +297,17 @@ public:
 	}
 
 	//properties
+	const _LexerTokenString& get_Buffer() const throw()
+	{
+		return m_strBuffer;
+	}
 	_LexerTokenString& get_Buffer() throw()
 	{
 		return m_strBuffer;
+	}
+	const _LexerTokenString& get_Data() const throw()
+	{
+		return m_strData;
 	}
 	_LexerTokenString& get_Data() throw()
 	{
@@ -308,6 +320,10 @@ public:
 	void set_ErrorString(const GKC::ConstStringS& str) throw()
 	{
 		GKC::StringUtilHelper::MakeString(str, m_eBuffer);
+	}
+	const _LEXER_WORD_INFO& get_WordInfo() const throw()
+	{
+		return m_wordInfo;
 	}
 	_LEXER_WORD_INFO& get_WordInfo() throw()
 	{
@@ -832,6 +848,150 @@ private:
 
 SA_FUNCTION void _CplMetaData_Create(GKC::ShareCom<_ICplMetaData>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _CplMetaDataPositionSymbolDataFactory_Create(GKC::ShareCom<GKC::IComFactory>& sp, GKC::CallResult& cr) throw();
+
+//------------------------------------------------------------------------------
+// Recursive descent parser (LL1)
+
+/* right-linear grammar */
+
+#pragma pack(push, 1)
+
+// _IRdScannerTables
+
+class NOVTABLE _IRdScannerTables
+{
+public:
+	virtual GKC::CallResult Generate(const GKC::ShareCom<GKC::ITextStreamRoot>& spStream) noexcept = 0;
+	virtual bool GetTokenID(const GKC::ConstStringA& strName, uint& uID) noexcept = 0;
+	virtual bool GetActionID(const GKC::ConstStringA& strName, uint& uAct) noexcept = 0;
+	virtual uint GetMaxTokenID() noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdScannerTables)
+
+// _IRdScannerAction
+
+class NOVTABLE _IRdScannerAction
+{
+public:
+	virtual GKC::CallResult DoAction(GKC::ShareCom<GKC::ITextStreamRoot>& stream, GKC::ShareCom<_IRdScannerTables>& tables, uint& next, _LexerTokenInfo& info) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdScannerAction)
+
+// _IRdScanner
+
+class NOVTABLE _IRdScanner
+{
+public:
+	virtual void SetTables(const GKC::ShareCom<_IRdScannerTables>& spTables) noexcept = 0;
+	virtual void SetStream(const GKC::ShareCom<GKC::ITextStreamRoot>& spStream) noexcept = 0;
+	virtual void ClearActions() noexcept = 0;
+	virtual GKC::CallResult AddAction(const GKC::ConstStringA& strAction, const GKC::ShareCom<_IRdScannerAction>& spAction) noexcept = 0;
+	virtual GKC::CallResult SetStartAction(const GKC::ConstStringA& strStartAction) noexcept = 0;
+	virtual void Start(_LexerTokenInfo& info) noexcept = 0;
+	virtual GKC::CallResult GetToken(_LexerTokenInfo& info) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdScanner)
+
+// _IRdParserTables
+
+class NOVTABLE _IRdParserTables
+{
+public:
+	virtual GKC::CallResult Generate(const GKC::ShareCom<GKC::ITextStreamRoot>& spStream, const GKC::ShareCom<_IRdScannerTables>& spTables) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdParserTables)
+
+// _IRdParserAction
+
+class NOVTABLE _IRdParserAction
+{
+public:
+	virtual GKC::CallResult DoAction(const _LexerTokenInfo& info, GKC::ShareArray<GKC::StringS>& errorArray) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdParserAction)
+
+// _IRdParser
+
+class NOVTABLE _IRdParser
+{
+public:
+	virtual void SetTables(const GKC::ShareCom<_IRdParserTables>& spTables) noexcept = 0;
+	virtual void SetScanner(const GKC::ShareCom<_IRdScanner>& spScanner) noexcept = 0;
+	virtual void ClearActions() noexcept = 0;
+	virtual GKC::CallResult AddAction(const GKC::ConstStringA& strAction, const GKC::ShareCom<_IRdParserAction>& spAction) noexcept = 0;
+	virtual void SetAcceptedAction(const GKC::ShareCom<_IRdParserAction>& spAction) noexcept = 0;
+	virtual GKC::CallResult Start() noexcept = 0;
+	//return value: SystemCallResults::OK --- succeeded
+	//              SystemCallResults::S_EOF --- end
+	//              SystemCallResults::S_False --- error, but it can be reverted
+	//              otherwise --- failed
+	virtual GKC::CallResult Parse() noexcept = 0;
+	virtual GKC::CallResult Revert() noexcept = 0;
+	virtual bool IsEmpty() noexcept = 0;
+	virtual const GKC::ShareArray<GKC::StringS>& get_ErrorArray() noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdParser)
+
+// _RdActionCplMetaData
+
+struct _RdActionCplMetaData
+{
+	GKC::ShareCom<_ICplMetaData> spMeta;
+	_CplMetaDataPosition posParent;
+	_CplMetaDataPosition posCurrent;
+};
+
+// _IRdCplMetaDataActionUtility
+
+class NOVTABLE _IRdCplMetaDataActionUtility
+{
+public:
+	virtual void SetMetaData(const GKC::RefPtr<_RdActionCplMetaData>& refData) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdCplMetaDataActionUtility)
+
+// _RdCplMetaDataActionBase
+
+class NOVTABLE _RdCplMetaDataActionBase : public _IRdCplMetaDataActionUtility
+{
+public:
+	_RdCplMetaDataActionBase() noexcept
+	{
+	}
+	~_RdCplMetaDataActionBase() noexcept
+	{
+	}
+
+// _IRdCplMetaDataActionUtility methods
+	virtual void SetMetaData(const GKC::RefPtr<_RdActionCplMetaData>& refData) noexcept
+	{
+		m_refMeta = refData;
+	}
+
+protected:
+	GKC::RefPtr<_RdActionCplMetaData> m_refMeta;
+
+private:
+	//noncopyable
+	_RdCplMetaDataActionBase(const _RdCplMetaDataActionBase&) noexcept;
+	_RdCplMetaDataActionBase& operator=(const _RdCplMetaDataActionBase&) noexcept;
+};
+
+#pragma pack(pop)
+
+//functions
+
+SA_FUNCTION void _RdScannerTables_Create(GKC::ShareCom<_IRdScannerTables>& sp, GKC::CallResult& cr) noexcept;
+SA_FUNCTION void _RdScanner_Create(GKC::ShareCom<_IRdScanner>& sp, GKC::CallResult& cr) noexcept;
+SA_FUNCTION void _RdParserTables_Create(GKC::ShareCom<_IRdParserTables>& sp, GKC::CallResult& cr) noexcept;
+SA_FUNCTION void _RdParser_Create(GKC::ShareCom<_IRdParser>& sp, GKC::CallResult& cr) noexcept;
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_COMPILER_H__

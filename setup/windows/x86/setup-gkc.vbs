@@ -9,6 +9,21 @@
 '   yxxinyuan@zju.edu.cn
 '
 
+'function
+Sub DecompressZipFile(objFSO, objShell, strZipFile, strDestPath)
+	Dim objSource, objFolderItem, objTarget
+	Set objSource = objShell.NameSpace(objFSO.GetAbsolutePathName(strZipFile))
+	Set objFolderItem = objSource.Items()
+	Set objTarget = objShell.NameSpace(strDestPath)
+	objTarget.CopyHere objFolderItem, 4 + 512 + 1024
+	Do
+		WScript.Sleep 500
+	Loop Until objTarget.Items().Count >= objFolderItem.Count
+	Set objTarget = Nothing
+	Set objFolderItem = Nothing
+	Set objSource = Nothing
+End Sub
+
 'package name
 Dim strPackageName
 strPackageName = "GKC-1.0.1-win32"
@@ -131,13 +146,12 @@ Set fso = WScript.CreateObject("Scripting.FileSystemObject")
 Dim objShell
 Set objShell = WScript.CreateObject("Shell.Application")
 
-strTemp = strPackageName & ".zip"
-If Not fso.FileExists(strTemp) Then
+Dim strSrc
+strSrc = strPackageName & ".zip"
+If Not fso.FileExists(strSrc) Then
 	WScript.Echo "Error: The package file does not exist!"
 	WScript.Quit(1)
 End If
-Set objSource = objShell.NameSpace(fso.GetAbsolutePathName(strTemp))
-Set objFolderItem = objSource.Items()
 
 Dim strDest
 strDest = strTargetDir & "\" & ".GKC" & "\" & "SYSTEM"
@@ -169,11 +183,7 @@ End If
 If Not fso.FolderExists(strDest) Then
 	fso.CreateFolder(strDest)
 End If
-Set objTarget = objShell.NameSpace(strDest)
-objTarget.CopyHere objFolderItem, 4 + 512 + 1024
-Do
-	WScript.Sleep 500
-Loop Until objTarget.Items().Count >= objFolderItem.Count
+DecompressZipFile fso, objShell, strSrc, strDest
 fso.GetFolder(strDest & "\" & strPackageName).Name = "SYSTEM"
 strDest = strDest & "\" & "SYSTEM"
 
@@ -252,9 +262,6 @@ End If
 
 Set objEnv = Nothing
 Set objWsh = Nothing
-Set objTarget = Nothing
-Set objFolderItem = Nothing
-Set objSource = Nothing
 Set objShell = Nothing
 Set fso = Nothing
 

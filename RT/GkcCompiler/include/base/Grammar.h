@@ -252,7 +252,10 @@ public:
 	CallResult Revert()
 	{
 		CallResult cr;
-		bool bOK = m_pda.Revert();
+		uintptr uRemovedNum;
+		bool bOK = m_pda.Revert(uRemovedNum);
+		if( uRemovedNum != 0 )
+			remove_top_symbols(uRemovedNum, true);
 		while( !bOK ) {
 			bool bSkip;
 			uint uEvent;
@@ -267,7 +270,9 @@ public:
 				break;
 			}
 			m_pda.InputEvent(uEvent);
-			bOK = m_pda.RevertAgain();
+			bOK = m_pda.RevertAgain(uRemovedNum);
+			if( uRemovedNum != 0 )
+				remove_top_symbols(uRemovedNum, true);
 		}
 		return cr;
 	}
@@ -391,13 +396,18 @@ private:
 	}
 	void remove_rule_symbols(uint uRightSymbolNumber) throw()
 	{
+		remove_top_symbols(uRightSymbolNumber, false);
+	}
+	void remove_top_symbols(uintptr uNum, bool bFromTop) throw()
+	{
 		auto iter(m_symbolList.GetTail());
-		iter.MovePrev();
-		while( uRightSymbolNumber > 0 ) {
+		if( !bFromTop )
+			iter.MovePrev();
+		while( uNum > 0 ) {
 			auto iter1(iter);
 			iter.MovePrev();
 			m_symbolList.RemoveAt(iter1);
-			uRightSymbolNumber --;
+			uNum --;
 		}
 	}
 

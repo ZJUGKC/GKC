@@ -977,4 +977,76 @@ public:
 	}
 };
 
+// delegate
+
+template <typename T>
+class delegate_base;
+
+template <typename R, typename... Args>
+class delegate_base<R(Args&&...)>
+{
+private:
+	typedef delegate_base<R(Args&&...)>  thisClass;
+	using func_type = R(*)(thisClass*, Args&&...);
+
+public:
+	explicit delegate_base(func_type fn = nullptr) noexcept : m_func(fn)
+	{
+	}
+	R operator()(Args&&... args)
+	{
+		return m_func(this, rv_forward<Args>(args)...);
+	}
+
+private:
+	func_type m_func;  //function pointer
+};
+
+template <typename... Args>
+class delegate_base<void(Args&&...)>
+{
+private:
+	typedef delegate_base<void(Args&&...)>  thisClass;
+	using func_type = void(*)(thisClass*, Args&&...);
+
+public:
+	explicit delegate_base(func_type fn = nullptr) noexcept : m_func(fn)
+	{
+	}
+	void operator()(Args&&... args)
+	{
+		m_func(this, rv_forward<Args>(args)...);
+	}
+
+private:
+	func_type m_func;  //function pointer
+};
+
+// --<header file>--
+
+#define DECLARE_DELEGATE_CLASS(T, method)  \
+template <class T, typename R, typename... Args> class delegate_##method : public delegate_base<R, Args...>  \
+{ public: typedef delegate_base<R, Args...> baseClass;  \
+typedef delegate_##method <T, R, Args...> thisClass;  \
+delegate_##method () noexcept : baseClass(&_f) {}  \
+static R _f(baseClass* pThis, Args&&... args) {  \
+T* pT = static_cast<T*>(static_cast<thisClass*>(pThis));  \
+return pT-> method (rv_forward<Args>(args)...); } };  \
+\
+template <class T, typename... Args> class delegate_##method : public delegate_base<Args...>  \
+{ public: typedef delegate_base<Args...> baseClass;  \
+typedef delegate_##method <T, Args...> thisClass;  \
+delegate_##method () noexcept : baseClass(&_f) {}  \
+static void _f(baseClass* pThis, Args&&... args) {  \
+T* pT = static_cast<T*>(static_cast<thisClass*>(pThis));  \
+pT-> method (rv_forward<Args>(args)...); } };
+
+#define USE_DELEGATE_CLASS_NAME(T, method, R, ...)  \
+delegate##method <T, R(__VA_ARGS__)>
+
+#define GET_DELEGATE_BASE(pThis, T, method, R, ...)  \
+ref_ptr<delegate_base<R(__VA_ARGS__)>>(static_cast<delegate_base<R(__VA_ARGS__)>*>(static_cast<delegate##method <T, R(__VA_ARGS__)>*>(pThis)))
+
+// --<.h end>--
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -1012,6 +1012,9 @@ typedef float_helper  FloatHelper;
 // SafeOperators
 typedef safe_operators  SafeOperators;
 
+// RandHelper
+typedef rand_helper  RandHelper;
+
 //------------------------------------------------------------------------------
 // Memory
 

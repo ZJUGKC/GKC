@@ -299,12 +299,14 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStreamRoot>& sp, TokenTabl
 	//data
 	_Lex_Data lex_data(tokenTable);
 	lex_data.Init();  //may throw
-	_Lex_ActionSet lex_action_set;  //action set
+	//action set
+	_Lex_ActionSet lex_action_set_token;
+	_Lex_ActionSet lex_action_set_macro;
 	//actions
 	{
 		ShareCom<_IGrammarAction> spAction;
 		//DoIdToken
-		cr = _Create_DoIdTokenMacroAction(lex_action_set, spAction);
+		cr = _Create_DoIdTokenMacroAction(lex_action_set_token, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		ShareCom<_I_IdTokenMacroAction_Utility> spUtility;
@@ -313,7 +315,7 @@ CallResult _Generate_Lexer_Tables(const ShareCom<ITextStreamRoot>& sp, TokenTabl
 		spUtility.Deref().SetOutput(lex_data.GetTokenTable(), lex_data.GetTokenRegex(), lex_data.GetTokenId());
 		grammar.SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_id_token"), spAction);  //may throw
 		//DoIdMacro
-		cr = _Create_DoIdTokenMacroAction(lex_action_set, spAction);
+		cr = _Create_DoIdTokenMacroAction(lex_action_set_macro, spAction);
 		if( cr.IsFailed() )
 			return cr;
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarAction, _I_IdTokenMacroAction_Utility, spAction, spUtility, cr);

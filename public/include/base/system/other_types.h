@@ -33,6 +33,17 @@ typedef uint  char_f;  //full character type
 //------------------------------------------------------------------------------
 //functions
 
+// memory operators
+
+inline int mem_compare(const void* p1, const void* p2, uintptr count) noexcept
+{
+	return ::memcmp(p1, p2, count);
+}
+inline int mem_compare(const char_w* p1, const char_w* p2, uintptr count) noexcept
+{
+	return ::wmemcmp(p1, p2, count);
+}
+
 // memory
 
 inline void* crt_alloc(uintptr uBytes) throw()

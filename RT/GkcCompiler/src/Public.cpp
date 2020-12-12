@@ -25,4 +25,8 @@
 #include "ldf/regex/RegexDef.cpp"
 #include "ldf/gra/GraDef.cpp"
 
+#include "rdp/ldf/scanner/ScannerDef.cpp"
+#include "rdp/ldf/parser/ParserDef.cpp"
+#include "rdp/RdDef.cpp"
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -42,16 +42,16 @@ public:
 		CallResult cr;
 		//iterators
 		ShareCom<_I_RegexPositionSymbolData_Utility> spS;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[2].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[2], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
-		AstTree::Iterator iter2(m_tree.Deref().GetAtPosition(spS.Deref().GetPosition()));
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[1].get_Value(), spS, cr);
+		AstTree::Iterator iter2(m_tree.Deref().ToIterator(spS.Deref().GetPosition()));
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[1], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
-		AstTree::Iterator iter1(m_tree.Deref().GetAtPosition(spS.Deref().GetPosition()));
+		AstTree::Iterator iter1(m_tree.Deref().ToIterator(spS.Deref().GetPosition()));
 		//node
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
 		try {

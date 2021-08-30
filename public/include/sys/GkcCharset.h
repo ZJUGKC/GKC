@@ -123,42 +123,11 @@ public:
 //------------------------------------------------------------------------------
 //Conversion Classes
 
-// internal
-
-// cs_string_init<Tstring>
-template <class Tstring>
-class cs_string_init
-{
-public:
-	static void DoInit(Tstring& str)
-	{
-		if ( str.IsBlockNull() )
-			str = StringHelper::MakeEmptyString<typename Tstring::EType>(MemoryHelper::GetCrtMemoryManager());  //may throw
-	}
-	static void DoDump(Tstring& str) noexcept
-	{
-		str.Release();
-	}
-};
-// cs_unique_string_init<Tstring>
-template <class Tstring>
-class cs_unique_string_init
-{
-public:
-	static void DoInit(Tstring& str)
-	{
-	}
-	static void DoDump(Tstring& str) noexcept
-	{
-		str.Clear();
-	}
-};
-
-template <typename Tchar1, class Tstring2, class Thelper, class TStringInit>
+template <class TCCTrait>
 class _CS_CVT_BASE
 {
 private:
-	typedef _CS_CVT_BASE<Tchar1, Tstring2, Thelper, TStringInit>  thisClass;
+	typedef _CS_CVT_BASE<TCCTrait>  thisClass;
 
 protected:
 	_CS_CVT_BASE() throw()
@@ -178,42 +147,21 @@ protected:
 	}
 
 public:
-	Tstring2&& GetV() throw()
+	typename TCCTrait::Estring2&& GetV() throw()
 	{
 		return rv_forward(m_str);
 	}
 
 protected:
-	static void cvt_string(const ConstStringT<Tchar1>& str, charset_converter& cc, Tstring2& strDest)
+	template <typename... Args>
+	void cvt_string(const ConstStringT<typename TCCTrait::Echar1>& str, Args&&... args)
 	{
-		uintptr uSrcSize = str.GetCount();
-		uintptr uSrcTotalBytes = SafeOperators::MultiplyThrow(uSrcSize + 1, (uintptr)sizeof(Tchar1));  //may throw
-		if( uSrcTotalBytes > (uintptr)(Limits<int>::Max) )
+		uintptr uLen = str.GetCount();
+		if( uLen > (uintptr)(Limits<int>::Max) )
 			throw OverflowException();
-		uintptr uDestTotalBytes = SafeOperators::MultiplyThrow(uSrcSize + 1, (uintptr)sizeof(typename Tstring2::EType));  //may throw
-		if( uDestTotalBytes > (uintptr)(Limits<int>::Max) )
-			throw OverflowException();
-		//try
-		TStringInit::DoInit(strDest);  //may throw
-		strDest.SetLength(uDestTotalBytes / sizeof(typename Tstring2::EType) - 1);  //may throw
-		mem_zero(Thelper::GetInternalPointer(strDest), uDestTotalBytes);
-		while( true ) {
-			int ret = cc.Convert(ConstArrayHelper::GetInternalPointer(str), (int)(uSrcTotalBytes - sizeof(Tchar1)),
-								Thelper::GetInternalPointer(strDest), (int)(uDestTotalBytes - sizeof(typename Tstring2::EType)));
-			if( ret < 0 )
-				throw Exception(CallResult(SystemCallResults::Fail));
-			if( ret > 0 ) {
-				strDest.RecalcLength();
-				return ;
-			}
-			//realloc
-			uDestTotalBytes = SafeOperators::MultiplyThrow((uintptr)uDestTotalBytes - (uintptr)sizeof(typename Tstring2::EType), (uintptr)2);  //may throw
-			uDestTotalBytes = SafeOperators::AddThrow(uDestTotalBytes, (uintptr)sizeof(typename Tstring2::EType));  //may throw
-			if( uDestTotalBytes > (uintptr)(Limits<int>::Max) )
-				throw OverflowException();
-			strDest.SetLength(uDestTotalBytes / sizeof(typename Tstring2::EType) - 1);  //may throw
-			mem_zero(Thelper::GetInternalPointer(strDest), uDestTotalBytes);
-		} // end while
+		StringOpHelper::Initialize(m_str);  //may throw or not
+		if( !TCCTrait::Convert(ConstArrayHelper::GetInternalPointer(str), (int)uLen, m_str, rv_forward<Args>(args)...) ) //may throw
+			throw Exception(CallResult(SystemCallResults::Fail));
 	}
 
 private:
@@ -221,21 +169,21 @@ private:
 	thisClass& operator=(const thisClass& src) throw();
 
 protected:
-	Tstring2 m_str;
+	typename TCCTrait::Estring2 m_str;
 };
 
-template <typename Tchar1, class Tstring2, class Thelper, class TStringInit, class TCCInit>
-class _CS_CVT : public _CS_CVT_BASE<Tchar1, Tstring2, Thelper, TStringInit>
+template <class TCCTrait>
+class _CS_CVT : public _CS_CVT_BASE<TCCTrait>
 {
 private:
-	typedef _CS_CVT_BASE<Tchar1, Tstring2, Thelper, TStringInit>  baseClass;
+	typedef _CS_CVT_BASE<TCCTrait>  baseClass;
 
 public:
 	_CS_CVT() throw()
 	{
 	}
 	template <typename... Args>
-	explicit _CS_CVT(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
+	explicit _CS_CVT(const ConstStringT<typename TCCTrait::Echar1>& str, Args&&... args)  //may throw
 	{
 		Init(str, rv_forward<Args>(args)...);
 	}
@@ -253,12 +201,9 @@ public:
 	}
 
 	template <typename... Args>
-	void Init(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
+	void Init(const ConstStringT<typename TCCTrait::Echar1>& str, Args&&... args)  //may throw
 	{
-		charset_converter cc;
-		if( !TCCInit::DoInit(cc, rv_forward<Args>(args)...) )
-			throw Exception(CallResult(SystemCallResults::Fail));
-		baseClass::cvt_string(str, cc, baseClass::m_str);
+		baseClass::cvt_string(str, rv_forward<Args>(args)...);
 	}
 
 private:
@@ -266,193 +211,88 @@ private:
 	_CS_CVT& operator=(const _CS_CVT&) throw();
 };
 
-class _Init_A2A
-{
-public:
-	static bool DoInit(charset_converter& cc, const ConstStringS& strCP1, const ConstStringS& strCP2) throw()
-	{
-		return cc.InitializeAnsiToAnsi(ConstArrayHelper::GetInternalPointer(strCP1), ConstArrayHelper::GetInternalPointer(strCP2));
-	}
-};
-class _Init_A2U
-{
-public:
-	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeAnsiToUTF8(ConstArrayHelper::GetInternalPointer(strCP));
-	}
-};
-class _Init_A2H
-{
-public:
-	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeAnsiToUTF16(ConstArrayHelper::GetInternalPointer(strCP));
-	}
-};
-class _Init_A2L
-{
-public:
-	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeAnsiToUTF32(ConstArrayHelper::GetInternalPointer(strCP));
-	}
-};
-class _Init_U2A
-{
-public:
-	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeUTF8ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
-	}
-};
-class _Init_U2H
-{
-public:
-	static bool DoInit(charset_converter& cc) throw()
-	{
-		return cc.InitializeUTF8ToUTF16();
-	}
-};
-class _Init_U2L
-{
-public:
-	static bool DoInit(charset_converter& cc) throw()
-	{
-		return cc.InitializeUTF8ToUTF32();
-	}
-};
-class _Init_H2A
-{
-public:
-	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeUTF16ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
-	}
-};
-class _Init_H2U
-{
-public:
-	static bool DoInit(charset_converter& cc) throw()
-	{
-		return cc.InitializeUTF16ToUTF8();
-	}
-};
-class _Init_H2L
-{
-public:
-	static bool DoInit(charset_converter& cc) throw()
-	{
-		return cc.InitializeUTF16ToUTF32();
-	}
-};
-class _Init_L2A
-{
-public:
-	static bool DoInit(charset_converter& cc, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeUTF32ToAnsi(ConstArrayHelper::GetInternalPointer(strCP));
-	}
-};
-class _Init_L2U
-{
-public:
-	static bool DoInit(charset_converter& cc) throw()
-	{
-		return cc.InitializeUTF32ToUTF8();
-	}
-};
-class _Init_L2H
-{
-public:
-	static bool DoInit(charset_converter& cc) throw()
-	{
-		return cc.InitializeUTF32ToUTF16();
-	}
-};
-
 // CS_A2A
-typedef _CS_CVT<CharA, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_A2A>  CS_A2A;
+typedef _CS_CVT<charset_converter_trait_A2A<StringA>>  CS_A2A;
 // CS_A2U
-typedef _CS_CVT<CharA, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_A2U>  CS_A2U;
+typedef _CS_CVT<charset_converter_trait_A2U<StringA>>  CS_A2U;
 // CS_A2H
-typedef _CS_CVT<CharA, StringT<CharH>, ShareArrayHelper, cs_string_init<StringT<CharH>>, _Init_A2H>  CS_A2H;
+typedef _CS_CVT<charset_converter_trait_A2H<StringH>>  CS_A2H;
 // CS_A2L
-typedef _CS_CVT<CharA, StringT<CharL>, ShareArrayHelper, cs_string_init<StringT<CharL>>, _Init_A2L>  CS_A2L;
+typedef _CS_CVT<charset_converter_trait_A2L<StringL>>  CS_A2L;
 // CS_U2A
-typedef _CS_CVT<CharA, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_U2A>  CS_U2A;
+typedef _CS_CVT<charset_converter_trait_U2A<StringA>>  CS_U2A;
 // CS_U2H
-typedef _CS_CVT<CharA, StringT<CharH>, ShareArrayHelper, cs_string_init<StringT<CharH>>, _Init_U2H>  CS_U2H;
+typedef _CS_CVT<charset_converter_trait_U2H<StringH>>  CS_U2H;
 // CS_U2L
-typedef _CS_CVT<CharA, StringT<CharL>, ShareArrayHelper, cs_string_init<StringT<CharL>>, _Init_U2L>  CS_U2L;
+typedef _CS_CVT<charset_converter_trait_U2L<StringL>>  CS_U2L;
 // CS_H2A
-typedef _CS_CVT<CharH, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_H2A>  CS_H2A;
+typedef _CS_CVT<charset_converter_trait_H2A<StringA>>  CS_H2A;
 // CS_H2U
-typedef _CS_CVT<CharH, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_H2U>  CS_H2U;
+typedef _CS_CVT<charset_converter_trait_H2U<StringA>>  CS_H2U;
 // CS_H2L
-typedef _CS_CVT<CharH, StringT<CharL>, ShareArrayHelper, cs_string_init<StringT<CharL>>, _Init_H2L>  CS_H2L;
+typedef _CS_CVT<charset_converter_trait_H2L<StringL>>  CS_H2L;
 // CS_L2A
-typedef _CS_CVT<CharL, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_L2A>  CS_L2A;
+typedef _CS_CVT<charset_converter_trait_L2A<StringA>>  CS_L2A;
 // CS_L2U
-typedef _CS_CVT<CharL, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_L2U>  CS_L2U;
+typedef _CS_CVT<charset_converter_trait_L2U<StringA>>  CS_L2U;
 // CS_L2H
-typedef _CS_CVT<CharL, StringT<CharH>, ShareArrayHelper, cs_string_init<StringT<CharH>>, _Init_L2H>  CS_L2H;
+typedef _CS_CVT<charset_converter_trait_L2H<StringH>>  CS_L2H;
 
 // CSU_A2A
-typedef _CS_CVT<CharA, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_A2A>  CSU_A2A;
+typedef _CS_CVT<charset_converter_trait_A2A<UniqueStringA>>  CSU_A2A;
 // CSU_A2U
-typedef _CS_CVT<CharA, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_A2U>  CSU_A2U;
+typedef _CS_CVT<charset_converter_trait_A2U<UniqueStringA>>  CSU_A2U;
 // CSU_A2H
-typedef _CS_CVT<CharA, UniqueStringT<CharH>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharH>>, _Init_A2H>  CSU_A2H;
+typedef _CS_CVT<charset_converter_trait_A2H<UniqueStringH>>  CSU_A2H;
 // CSU_A2L
-typedef _CS_CVT<CharA, UniqueStringT<CharL>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharL>>, _Init_A2L>  CSU_A2L;
+typedef _CS_CVT<charset_converter_trait_A2L<UniqueStringL>>  CSU_A2L;
 // CSU_U2A
-typedef _CS_CVT<CharA, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_U2A>  CSU_U2A;
+typedef _CS_CVT<charset_converter_trait_U2A<UniqueStringA>>  CSU_U2A;
 // CSU_U2H
-typedef _CS_CVT<CharA, UniqueStringT<CharH>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharH>>, _Init_U2H>  CSU_U2H;
+typedef _CS_CVT<charset_converter_trait_U2H<UniqueStringH>>  CSU_U2H;
 // CSU_U2L
-typedef _CS_CVT<CharA, UniqueStringT<CharL>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharL>>, _Init_U2L>  CSU_U2L;
+typedef _CS_CVT<charset_converter_trait_U2L<UniqueStringL>>  CSU_U2L;
 // CSU_H2A
-typedef _CS_CVT<CharH, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_H2A>  CSU_H2A;
+typedef _CS_CVT<charset_converter_trait_H2A<UniqueStringA>>  CSU_H2A;
 // CSU_H2U
-typedef _CS_CVT<CharH, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_H2U>  CSU_H2U;
+typedef _CS_CVT<charset_converter_trait_H2U<UniqueStringA>>  CSU_H2U;
 // CSU_H2L
-typedef _CS_CVT<CharH, UniqueStringT<CharL>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharL>>, _Init_H2L>  CSU_H2L;
+typedef _CS_CVT<charset_converter_trait_H2L<UniqueStringL>>  CSU_H2L;
 // CSU_L2A
-typedef _CS_CVT<CharL, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_L2A>  CSU_L2A;
+typedef _CS_CVT<charset_converter_trait_L2A<UniqueStringA>>  CSU_L2A;
 // CSU_L2U
-typedef _CS_CVT<CharL, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_L2U>  CSU_L2U;
+typedef _CS_CVT<charset_converter_trait_L2U<UniqueStringA>>  CSU_L2U;
 // CSU_L2H
-typedef _CS_CVT<CharL, UniqueStringT<CharH>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharH>>, _Init_L2H>  CSU_L2H;
+typedef _CS_CVT<charset_converter_trait_L2H<UniqueStringH>>  CSU_L2H;
 
-//system
+//operating system (OS) related
 
-template <typename Tchar1, class Tstring2, class Thelper, class TStringInit, class TCCInit>
-class _CS_CVT_S : public _CS_CVT_BASE<Tchar1, Tstring2, Thelper, TStringInit>
+template <class TCCTrait>
+class _CS_CVT_O : public _CS_CVT_BASE<TCCTrait>
 {
 private:
-	typedef _CS_CVT_BASE<Tchar1, Tstring2, Thelper, TStringInit>  baseClass;
-	typedef _CS_CVT_S<Tchar1, Tstring2, Thelper, TStringInit, TCCInit>  thisClass;
+	typedef _CS_CVT_BASE<TCCTrait>  baseClass;
+	typedef _CS_CVT_O<TCCTrait>  thisClass;
 
 public:
-	_CS_CVT_S() throw()
+	_CS_CVT_O() throw()
 	{
 	}
 	template <typename... Args>
-	explicit _CS_CVT_S(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
+	explicit _CS_CVT_O(const ConstStringT<typename TCCTrait::Echar1>& str, Args&&... args)  //may throw
 	{
 		Init(str, rv_forward<Args>(args)...);
 	}
 	template <typename... Args>
-	explicit _CS_CVT_S(typename Tstring2::template StringType<Tchar1>&& str, Args&&... args)  //may throw
+	explicit _CS_CVT_O(typename TCCTrait::Estring2::template StringType<typename TCCTrait::Echar1>&& str, Args&&... args)  //may throw
 	{
 		Init(rv_forward(str), rv_forward<Args>(args)...);
 	}
-	_CS_CVT_S(thisClass&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src))),
+	_CS_CVT_O(thisClass&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src))),
 										m_strC(rv_forward(src.m_strC))
 	{
 	}
-	~_CS_CVT_S() throw()
+	~_CS_CVT_O() throw()
 	{
 	}
 
@@ -464,157 +304,83 @@ public:
 	}
 
 	//the return value may indicate the same object when initialized by StringT or UniqueStringT
-	Tstring2&& GetV()  //may throw
+	//  this method can be called only once.
+	typename TCCTrait::Estring2&& GetV()  //may throw
 	{
-		if( m_strC.IsNull() )
-			return baseClass::GetV();
-		TStringInit::DoInit(baseClass::m_str);  //may throw
-		if( (baseClass::m_str).IsEmpty() )
+		StringOpHelper::Initialize(baseClass::m_str);  //may throw or not
+		if( !m_strC.IsNull() && m_strC.GetCount() != 0 )
 			StringUtilHelper::MakeString(m_strC, baseClass::m_str);  //may throw
-		return rv_forward(baseClass::m_str);
+		return baseClass::GetV();
 	}
 	//DO NOT assign the return value to other variables
 	//  this method can be called many times when using class object.
-	ConstStringT<typename Tstring2::EType> GetC() const throw()
+	ConstStringT<typename TCCTrait::Estring2::EType> GetC() const throw()
 	{
 		return m_strC.IsNull() ? StringUtilHelper::To_ConstString(baseClass::m_str) : m_strC;
 	}
 
 	template <typename... Args>
-	void Init(const ConstStringT<Tchar1>& str, Args&&... args)  //may throw
+	void Init(const ConstStringT<typename TCCTrait::Echar1>& str, Args&&... args)  //may throw
 	{
-		charset_converter cc;
-		bool bSame;
-		if( !TCCInit::DoInit(cc, bSame, rv_forward<Args>(args)...) )
-			throw Exception(CallResult(SystemCallResults::Fail));
-		if( bSame ) {
-			TStringInit::DoDump(baseClass::m_str);
-			ConstArrayHelper::SetInternalPointer<typename Tstring2::EType>((const typename Tstring2::EType*)ConstArrayHelper::GetInternalPointer<Tchar1>(str), str.GetCount(), m_strC);
+		if( TCCTrait::c_bSame ) {
+			StringOpHelper::Uninitialize(baseClass::m_str);
+			ConstArrayHelper::SetInternalPointer<typename TCCTrait::Estring2::EType>((const typename TCCTrait::Estring2::EType*)ConstArrayHelper::GetInternalPointer<typename TCCTrait::Echar1>(str), str.GetCount(), m_strC);
 			return ;
 		}
-		baseClass::cvt_string(str, cc, baseClass::m_str);
-		ConstArrayHelper::SetInternalPointer<typename Tstring2::EType>(NULL, 0, m_strC);
+		baseClass::cvt_string(str, rv_forward<Args>(args)...);
+		ConstArrayHelper::SetInternalPointer<typename TCCTrait::Estring2::EType>(NULL, 0, m_strC);
 	}
 	template <typename... Args>
-	void Init(typename Tstring2::template StringType<Tchar1>&& str, Args&&... args)  //may throw
+	void Init(typename TCCTrait::Estring2::template StringType<typename TCCTrait::Echar1>&& str, Args&&... args)  //may throw
 	{
-		charset_converter cc;
-		bool bSame;
-		if( !TCCInit::DoInit(cc, bSame, rv_forward<Args>(args)...) )
-			throw Exception(CallResult(SystemCallResults::Fail));
-		if( bSame )
-			baseClass::m_str = rv_forward(*((Tstring2*)(&str)));
+		if( TCCTrait::c_bSame )
+			baseClass::m_str = rv_forward(*((typename TCCTrait::Estring2*)(&str)));
 		else
-			baseClass::cvt_string(StringUtilHelper::To_ConstString(str), cc, baseClass::m_str);
-		ConstArrayHelper::SetInternalPointer<typename Tstring2::EType>(NULL, 0, m_strC);
+			baseClass::cvt_string(StringUtilHelper::To_ConstString(str), rv_forward<Args>(args)...);
+		ConstArrayHelper::SetInternalPointer<typename TCCTrait::Estring2::EType>(NULL, 0, m_strC);
 	}
 
 private:
-	_CS_CVT_S(const thisClass&) throw();
+	_CS_CVT_O(const thisClass&) throw();
 	thisClass& operator=(const thisClass&) throw();
 
 private:
-	ConstStringT<typename Tstring2::EType> m_strC;
-};
-
-class _Init_A2S
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeAnsiToSystem(ConstArrayHelper::GetInternalPointer(strCP), bSame);
-	}
-};
-class _Init_U2S
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame) throw()
-	{
-		return cc.InitializeUTF8ToSystem(bSame);
-	}
-};
-class _Init_H2S
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame) throw()
-	{
-		return cc.InitializeUTF16ToSystem(bSame);
-	}
-};
-class _Init_L2S
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame) throw()
-	{
-		return cc.InitializeUTF32ToSystem(bSame);
-	}
-};
-class _Init_S2A
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame, const ConstStringS& strCP) throw()
-	{
-		return cc.InitializeSystemToAnsi(ConstArrayHelper::GetInternalPointer(strCP), bSame);
-	}
-};
-class _Init_S2U
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame) throw()
-	{
-		return cc.InitializeSystemToUTF8(bSame);
-	}
-};
-class _Init_S2H
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame) throw()
-	{
-		return cc.InitializeSystemToUTF16(bSame);
-	}
-};
-class _Init_S2L
-{
-public:
-	static bool DoInit(charset_converter& cc, bool& bSame) throw()
-	{
-		return cc.InitializeSystemToUTF32(bSame);
-	}
+	ConstStringT<typename TCCTrait::Estring2::EType> m_strC;
 };
 
 // CS_A2S
-typedef _CS_CVT_S<CharA, StringT<CharS>, ShareArrayHelper, cs_string_init<StringT<CharS>>, _Init_A2S>  CS_A2S;
+typedef _CS_CVT_O<charset_converter_trait_A2S<StringS>>  CS_A2S;
 // CS_U2S
-typedef _CS_CVT_S<CharA, StringT<CharS>, ShareArrayHelper, cs_string_init<StringT<CharS>>, _Init_U2S>  CS_U2S;
+typedef _CS_CVT_O<charset_converter_trait_U2S<StringS>>  CS_U2S;
 // CS_H2S
-typedef _CS_CVT_S<CharH, StringT<CharS>, ShareArrayHelper, cs_string_init<StringT<CharS>>, _Init_H2S>  CS_H2S;
+typedef _CS_CVT_O<charset_converter_trait_H2S<StringS>>  CS_H2S;
 // CS_L2S
-typedef _CS_CVT_S<CharL, StringT<CharS>, ShareArrayHelper, cs_string_init<StringT<CharS>>, _Init_L2S>  CS_L2S;
+typedef _CS_CVT_O<charset_converter_trait_L2S<StringS>>  CS_L2S;
 // CS_S2A
-typedef _CS_CVT_S<CharS, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_S2A>  CS_S2A;
+typedef _CS_CVT_O<charset_converter_trait_S2A<StringA>>  CS_S2A;
 // CS_S2U
-typedef _CS_CVT_S<CharS, StringT<CharA>, ShareArrayHelper, cs_string_init<StringT<CharA>>, _Init_S2U>  CS_S2U;
+typedef _CS_CVT_O<charset_converter_trait_S2U<StringA>>  CS_S2U;
 // CS_S2H
-typedef _CS_CVT_S<CharS, StringT<CharH>, ShareArrayHelper, cs_string_init<StringT<CharH>>, _Init_S2H>  CS_S2H;
+typedef _CS_CVT_O<charset_converter_trait_S2H<StringH>>  CS_S2H;
 // CS_S2L
-typedef _CS_CVT_S<CharS, StringT<CharL>, ShareArrayHelper, cs_string_init<StringT<CharL>>, _Init_S2L>  CS_S2L;
+typedef _CS_CVT_O<charset_converter_trait_S2L<StringL>>  CS_S2L;
 
 // CSU_A2S
-typedef _CS_CVT_S<CharA, UniqueStringT<CharS>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharS>>, _Init_A2S>  CSU_A2S;
+typedef _CS_CVT_O<charset_converter_trait_A2S<UniqueStringS>>  CSU_A2S;
 // CSU_U2S
-typedef _CS_CVT_S<CharA, UniqueStringT<CharS>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharS>>, _Init_U2S>  CSU_U2S;
+typedef _CS_CVT_O<charset_converter_trait_U2S<UniqueStringS>>  CSU_U2S;
 // CSU_H2S
-typedef _CS_CVT_S<CharH, UniqueStringT<CharS>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharS>>, _Init_H2S>  CSU_H2S;
+typedef _CS_CVT_O<charset_converter_trait_H2S<UniqueStringS>>  CSU_H2S;
 // CSU_L2S
-typedef _CS_CVT_S<CharL, UniqueStringT<CharS>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharS>>, _Init_L2S>  CSU_L2S;
+typedef _CS_CVT_O<charset_converter_trait_L2S<UniqueStringS>>  CSU_L2S;
 // CSU_S2A
-typedef _CS_CVT_S<CharS, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_S2A>  CSU_S2A;
+typedef _CS_CVT_O<charset_converter_trait_S2A<UniqueStringA>>  CSU_S2A;
 // CSU_S2U
-typedef _CS_CVT_S<CharS, UniqueStringT<CharA>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharA>>, _Init_S2U>  CSU_S2U;
+typedef _CS_CVT_O<charset_converter_trait_S2U<UniqueStringA>>  CSU_S2U;
 // CSU_S2H
-typedef _CS_CVT_S<CharS, UniqueStringT<CharH>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharH>>, _Init_S2H>  CSU_S2H;
+typedef _CS_CVT_O<charset_converter_trait_S2H<UniqueStringH>>  CSU_S2H;
 // CSU_S2L
-typedef _CS_CVT_S<CharS, UniqueStringT<CharL>, UniqueArrayHelper, cs_unique_string_init<UniqueStringT<CharL>>, _Init_S2L>  CSU_S2L;
+typedef _CS_CVT_O<charset_converter_trait_S2L<UniqueStringL>>  CSU_S2L;
 
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -41,18 +41,18 @@ public:
 		CallResult cr;
 		//get value
 		ShareCom<_I_RegexCharSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSymbolData_Utility, arrSymbol[2].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSymbolData_Utility, arrSymbol[2], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		_RegexCharRange rcr;
 		spU.Deref().GetCharRange(rcr);
 		//move
 		ShareCom<_I_RegexCharSetSymbolData_Utility> spS;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[1].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[1], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
 		RefPtr<_RegexCharRangeSet> rs1(spS.Deref().GetCharRangeSet());
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[0], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
 		RefPtr<_RegexCharRangeSet> rs(spS.Deref().GetCharRangeSet());

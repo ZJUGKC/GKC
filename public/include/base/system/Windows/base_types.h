@@ -21,7 +21,4 @@ typedef __int64           int64;
 //uint64
 typedef unsigned __int64  uint64;
 
-// Using UTF8 strings in assemblies
-#pragma execution_character_set("utf-8")
-
 ////////////////////////////////////////////////////////////////////////////////

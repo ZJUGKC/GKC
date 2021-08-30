@@ -56,6 +56,7 @@ struct _Wmark_ActionSet
 	_ScopeShareComObject<WmarkDoBlockBlockBodyAction> actionWmarkDoBlockBlockBody;
 	_ScopeShareComObject<WmarkDoBlockBodyCommentAction> actionWmarkDoBlockBodyComment;
 	_ScopeShareComObject<WmarkDoBlockBodyIndentAction> actionWmarkDoBlockBodyIndent;
+	_ScopeShareComObject<WmarkDoBlockBodyTextAction> actionWmarkDoBlockBodyText;
 	_ScopeShareComObject<WmarkGrammarAccepted> actionWmarkGrammarAccepted;
 };
 
@@ -101,6 +102,15 @@ inline CallResult _Create_WmarkDoBlockBodyIndentAction(const _Wmark_ActionSet& w
 {
 	CallResult cr;
 	_CREATE_SCOPE_COMPONENT_INSTANCE(WmarkDoBlockBodyIndentAction, IGrammarAction, was.actionWmarkDoBlockBodyIndent, sp, cr);
+	return cr;
+}
+
+// Do-Block-Body-Text action
+
+inline CallResult _Create_WmarkDoBlockBodyTextAction(const _Wmark_ActionSet& was, ShareCom<IGrammarAction>& sp) throw()
+{
+	CallResult cr;
+	_CREATE_SCOPE_COMPONENT_INSTANCE(WmarkDoBlockBodyTextAction, IGrammarAction, was.actionWmarkDoBlockBodyText, sp, cr);
 	return cr;
 }
 

@@ -23,6 +23,9 @@ Internal Header
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+// fileTreeClass
+typedef MultiwayTree<Pair<StringA, StringA>>  fileTreeClass;
+
 // ProjectInfo
 
 class ProjectInfo
@@ -82,7 +85,7 @@ public:
 	{
 		return m_strIdentifier;
 	}
-	const MultiwayTree<Pair<StringA, StringA>>& GetFileTree() const throw()
+	const fileTreeClass& GetFileTree() const throw()
 	{
 		return m_tree;
 	}
@@ -188,12 +191,12 @@ public:
 
 		StringA strToken;
 		RefPtr<StringA> refString;
-		MultiwayTree<Pair<StringA, StringA>>::Iterator iterParent;
-		MultiwayTree<Pair<StringA, StringA>>::Iterator iterAfter;
+		fileTreeClass::Iterator iterParent;
+		fileTreeClass::Iterator iterAfter;
 
-		m_iterTitle = MultiwayTree<Pair<StringA, StringA>>::Iterator();
-		m_iterContent = MultiwayTree<Pair<StringA, StringA>>::Iterator();
-		m_iterCopyright = MultiwayTree<Pair<StringA, StringA>>::Iterator();
+		m_iterTitle = fileTreeClass::Iterator();
+		m_iterContent = fileTreeClass::Iterator();
+		m_iterCopyright = fileTreeClass::Iterator();
 
 		int iState = STATE_START;
 		//loop
@@ -318,7 +321,7 @@ public:
 					if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"tree\"")) ) {
 						//enter the next level
 						iterParent = iterAfter;
-						iterAfter = MultiwayTree<Pair<StringA, StringA>>::Iterator();
+						iterAfter = fileTreeClass::Iterator();
 					}
 					else if( ConstStringCompareTrait<ConstStringA>::IsEQ(StringUtilHelper::To_ConstString(strToken), DECLARE_TEMP_CONST_STRING(ConstStringA, "\"name\"")) ) {
 						refString = RefPtrHelper::MakeRefPtr<StringA>(iterAfter.get_Value().get_First());
@@ -455,7 +458,7 @@ public:
 	}
 
 private:
-	static bool get_guide_file(const MultiwayTree<Pair<StringA, StringA>>::Iterator& iter, StringA& strName, StringA& strFile) throw()
+	static bool get_guide_file(const fileTreeClass::Iterator& iter, StringA& strName, StringA& strFile) throw()
 	{
 		if( iter.IsNull() )
 			return false;
@@ -480,7 +483,7 @@ private:
 	StringA m_strCoverName;
 	StringA m_strTopic;
 	StringA m_strIdentifier;
-	MultiwayTree<Pair<StringA, StringA>>  m_tree;
+	fileTreeClass  m_tree;
 //optional
 	StringA m_strAuthor;
 	StringA m_strDescription;
@@ -492,7 +495,7 @@ private:
 	bool m_bRTLorder;
 	bool m_bVerticalLine;
 
-	MultiwayTree<Pair<StringA, StringA>>::Iterator m_iterTitle,
+	fileTreeClass::Iterator m_iterTitle,
 		m_iterContent,
 		m_iterCopyright;
 
@@ -507,7 +510,7 @@ private:
 class FileTreeEnumerator
 {
 public:
-	FileTreeEnumerator(const MultiwayTree<Pair<StringA, StringA>>& tree) throw() : m_tree(tree), m_bHaveChild(false), m_uLevel(0), m_uDelta(0), m_bNegative(false)
+	FileTreeEnumerator(const fileTreeClass& tree) throw() : m_tree(tree), m_bHaveChild(false), m_uLevel(0), m_uDelta(0), m_bNegative(false)
 	{
 	}
 	~FileTreeEnumerator() throw()
@@ -610,8 +613,8 @@ private:
 	}
 
 private:
-	const MultiwayTree<Pair<StringA, StringA>>& m_tree;
-	MultiwayTree<Pair<StringA, StringA>>::Iterator m_iter;
+	const fileTreeClass& m_tree;
+	fileTreeClass::Iterator m_iter;
 	bool m_bHaveChild;
 	uintptr m_uLevel;
 	uintptr m_uDelta;
@@ -646,7 +649,7 @@ public:
 	const TString& GetAt(uintptr uIndex) const throw()
 	{
 		assert( uIndex < GetCount() );
-		return m_arrFile.GetAt(uIndex).get_Value().get_Value();
+		return m_arrFile.GetAt(uIndex).get_Value();
 	}
 	bool Find(const TString& str) const throw()
 	{
@@ -666,13 +669,13 @@ public:
 			return ;
 		auto iter(m_hashList.InsertWithoutFind(str));  //may throw
 		if( m_arrFile.IsBlockNull() )
-			m_arrFile = ShareArrayHelper::MakeShareArray<typename HashListClass::Iterator>(MemoryHelper::GetCrtMemoryManager());  //may throw
-		m_arrFile.Add(iter);  //may throw
+			m_arrFile = ShareArrayHelper::MakeShareArray<typename HashListClass::Position>(MemoryHelper::GetCrtMemoryManager());  //may throw
+		m_arrFile.Add(iter.GetPosition());  //may throw
 	}
 
 private:
 	HashListClass  m_hashList;
-	ShareArray<typename HashListClass::Iterator>  m_arrFile;
+	ShareArray<typename HashListClass::Position>  m_arrFile;
 
 private:
 	//noncopyable
@@ -779,6 +782,9 @@ inline bool _Copy_MD(const FileListInfo& flInfo, const ConstStringA& strExt,
 	for( uintptr i = 0; i < uCount; i ++ ) {
 		ConstStringA strFile(StringUtilHelper::To_ConstString(flInfo.GetAt(i)));
 		uintptr uStart = FsPathHelper::FindFilePartStart(strFile);
+		//check format. correct format: ([.../]xxx.md)
+		if( uStart == strFile.GetCount() )
+			return false;
 		ConstArrayHelper::SetInternalPointer(ConstArrayHelper::GetInternalPointer(strFile) + uStart, strFile.GetCount() - uStart, strFile);
 		uintptr uPos = 0;
 		while( true ) {

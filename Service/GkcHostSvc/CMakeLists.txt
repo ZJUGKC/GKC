@@ -27,13 +27,13 @@ SET_TARGET_PROPERTIES(GkcHostSvc PROPERTIES OUTPUT_NAME "GkcHostSvc"
 TARGET_LINK_LIBRARIES(GkcHostSvc GkcSys ${STRING_LINK_EXTRA_LIBS})
 
 #copy
-SET_POSTBUILD_PATH_COPY(GkcHostSvc "platform" "machine" "no-config" "config" "${PROJECT_SOURCE_DIR}/Service/GkcHostSvc/setup" "*" "${EXECUTABLE_OUTPUT_PATH}")
+SET_TARGET_PATH_COPY(GkcHostSvc TRUE "platform" "machine" "no-config" "config" "${PROJECT_SOURCE_DIR}/Service/GkcHostSvc/setup" "*" "${EXECUTABLE_OUTPUT_PATH}")
 
 INSTALL(TARGETS GkcHostSvc
 	RUNTIME DESTINATION core/services COMPONENT runtime)
 
-SET_POSTBUILD_SRC_PATH("platform" "machine" "no-config" "" "${PROJECT_SOURCE_DIR}/Service/GkcHostSvc/setup")
-INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
+SET_TARGET_SRC_PATH("platform" "machine" "no-config" "" "${PROJECT_SOURCE_DIR}/Service/GkcHostSvc/setup")
+INSTALL(DIRECTORY "${TARGET_SRC_PATH}/"
 	DESTINATION core/services COMPONENT runtime)
 
 #end

@@ -42,7 +42,7 @@ inline bool BinarySearch(const TIterator& iterBegin, const TIterator& iterEnd, c
 		return false;
 	uintptr left = 0;
 	while ( left < right ) {
-		uintptr mid = (left + right) / 2;
+		uintptr mid = left + (right - left) / 2;  // if we use (left + right) / 2, it may overflow
 		TIterator iter(iterBegin);
 		iter.MoveDelta(mid);
 		if ( TCompareTrait::IsEQ(iter.get_Value(), val) ) {

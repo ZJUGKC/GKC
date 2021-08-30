@@ -26,6 +26,13 @@ void __sig_int(int signo)
 	stdout_attr_helper::get_attr().Restore();
 	::exit(255);
 }
+static
+void _sig_term(int signo)
+{
+	//catched signal sent by kill(1) command
+	stdout_attr_helper::get_attr().Restore();
+	::exit(254);
+}
 
 //main
 
@@ -48,6 +55,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	//signal
 	::signal(SIGINT, __sig_int);  //no check
+	::signal(SIGTERM, _sig_term);  //no check
 
 	//time
 	time_initialize();

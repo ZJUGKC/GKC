@@ -24,6 +24,7 @@ This file contains main function.
 
 #include "base/generators/CommentGenerator.h"
 #include "base/generators/IndentGenerator.h"
+#include "base/generators/TextGenerator.h"
 
 #include "base/SourceAnalyzer.h"
 #include "base/HGUtility.h"

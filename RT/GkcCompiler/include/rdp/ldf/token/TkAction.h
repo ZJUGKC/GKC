@@ -69,12 +69,6 @@ private:
 		}
 
 		info.Append(ch);  //may throw
-		cr = info.AddCharEndCharIndex(1);
-		if ( cr.IsFailed() )
-			return cr;
-		cr = info.AddCharEndCol(1);
-		if ( cr.IsFailed() )
-			return cr;
 
 		if ( ch == '%' )
 			return do_sep(stream, tables, next, info);  //may throw
@@ -145,12 +139,6 @@ private:
 		}
 
 		if ( ch == '%' ) {
-			cr = info.AddCharEndCharIndex(1);
-			if ( cr.IsFailed() )
-				return cr;
-			cr = info.AddCharEndCol(1);
-			if ( cr.IsFailed() )
-				return cr;
 			info.Append(ch);  //may throw
 			info.set_ID(TK_SEP);
 			return cr;

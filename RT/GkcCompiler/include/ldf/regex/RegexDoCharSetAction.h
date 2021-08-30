@@ -42,13 +42,13 @@ public:
 		CallResult cr;
 		//range set
 		ShareCom<_I_RegexCharSetSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[2].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSetSymbolData_Utility, arrSymbol[2], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		RefPtr<_RegexCharRangeSet> rs(spU.Deref().GetCharRangeSet());
 		//node
 		ShareCom<_I_RegexPositionSymbolData_Utility> spS;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
 		try {

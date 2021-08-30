@@ -58,7 +58,7 @@ private:
 		CallResult cr;
 		//token
 		ShareCom<_I_GraTokenSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraTokenSymbolData_Utility, arrSymbol[2].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraTokenSymbolData_Utility, arrSymbol[2], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		_GraToken tk;

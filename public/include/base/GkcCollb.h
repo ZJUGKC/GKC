@@ -242,11 +242,12 @@ public:
 	{
 		return get_position(m_pHead);
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return get_iterator(pos);
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return get_iterator(pos);
 	}
@@ -294,21 +295,15 @@ public:
 	//Add
 	Iterator AddHead()  //may throw
 	{
-		_Node* pNode = new_node(m_pHead);
-		m_pHead = pNode;
-		return GetHead();
+		return add_head();
 	}
 	Iterator AddHead(const T& t)  //may throw
 	{
-		_Node* pNode = new_node(t, m_pHead);
-		m_pHead = pNode;
-		return GetHead();
+		return add_head(t);
 	}
 	Iterator AddHead(T&& t)  //may throw
 	{
-		_Node* pNode = new_node(rv_forward(t), m_pHead);
-		m_pHead = pNode;
-		return GetHead();
+		return add_head(rv_forward(t));
 	}
 	//Remove
 	void RemoveHead() throw()
@@ -370,28 +365,26 @@ private:
 	}
 
 	// nodes
-	_Node* new_node(_Node* pNext)  //may throw
+	template <typename... Args>
+	_Node* new_node(_Node* pNext, Args&&... args)  //may throw
 	{
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist);
-		fill_new_node(pNewNode, pNext);
-		return pNewNode;
-	}
-	_Node* new_node(const T& t, _Node* pNext)  //may throw
-	{
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, t);
-		fill_new_node(pNewNode, pNext);
-		return pNewNode;
-	}
-	_Node* new_node(T&& t, _Node* pNext)  //may throw
-	{
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
+		_Node* pNewNode = node_helper<_Node>::ConstructNode(m_freelist, rv_forward<Args>(args)...);
 		fill_new_node(pNewNode, pNext);
 		return pNewNode;
 	}
 	// free
 	void free_node(_Node* pNode) throw()
 	{
-		node_pair_helper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
+		node_helper<_Node>::DestructNode(m_freelist, pNode, m_uElements);
+	}
+
+	//add
+	template <typename... Args>
+	Iterator add_head(Args&&... args)  //may throw
+	{
+		_Node* pNode = new_node(m_pHead, rv_forward<Args>(args)...);
+		m_pHead = pNode;
+		return get_iterator(m_pHead);
 	}
 
 	//position
@@ -541,7 +534,7 @@ public:
 		Iterator() throw()
 		{
 		}
-		Iterator(const Iterator& src) throw() : m_refList(src.m_refList), m_pos(src.m_pos)
+		Iterator(const Iterator& src) throw() : m_pos(src.m_pos)
 		{
 		}
 		~Iterator() throw()
@@ -549,7 +542,6 @@ public:
 		}
 		Iterator& operator=(const Iterator& src) throw()
 		{
-			m_refList = src.m_refList;
 			m_pos = src.m_pos;
 			return *this;
 		}
@@ -591,11 +583,11 @@ public:
 		//compare
 		bool operator==(const Iterator& right) const throw()
 		{
-			return m_refList == right.m_refList && m_pos == right.m_pos;
+			return m_pos == right.m_pos;
 		}
 		bool operator!=(const Iterator& right) const throw()
 		{
-			return m_refList != right.m_refList || m_pos != right.m_pos;
+			return m_pos != right.m_pos;
 		}
 		//next
 		void MoveNext() throw()
@@ -605,16 +597,56 @@ public:
 		//prev
 		void MovePrev() throw()
 		{
+			m_pos.MovePrev();
+		}
+
+	protected:
+		Position  m_pos;
+
+	private:
+		friend thisClass;
+	};
+
+	class Iterator2 : public Iterator
+	{
+	private:
+		typedef Iterator  baseClass;
+
+	public:
+		Iterator2() throw()
+		{
+		}
+		Iterator2(const Iterator2& src) throw() : baseClass(static_cast<const baseClass&>(src)), m_refList(src.m_refList)
+		{
+		}
+		~Iterator2() throw()
+		{
+		}
+		Iterator2& operator=(const Iterator2& src) throw()
+		{
+			baseClass::operator=(static_cast<const baseClass&>(src));
+			m_refList = src.m_refList;
+			return *this;
+		}
+		bool operator==(const Iterator2& right) const throw()
+		{
+			return m_refList == right.m_refList && baseClass::operator==(static_cast<const baseClass&>(right));
+		}
+		bool operator!=(const Iterator2& right) const throw()
+		{
+			return m_refList != right.m_refList || baseClass::operator!=(static_cast<const baseClass&>(right));
+		}
+		void MovePrev() throw()
+		{
 			//NULL node -> Tail
-			if( m_pos.IsNull() )
-				m_pos = m_refList.Deref().GetTailPosition();
+			if( baseClass::m_pos.IsNull() )
+				baseClass::m_pos = m_refList.Deref().GetTailPosition();
 			else
-				m_pos.MovePrev();
+				baseClass::MovePrev();
 		}
 
 	private:
 		RefPtr<thisClass>  m_refList;
-		Position  m_pos;
 
 	private:
 		friend thisClass;
@@ -662,11 +694,12 @@ public:
 	{
 		return get_position(m_pTail);
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return get_iterator(pos);
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return get_iterator(pos);
 	}
@@ -706,19 +739,35 @@ public:
 	}
 	const ReverseIterator<Iterator> GetReverseBegin() const throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<Iterator>(ToIterator(GetTailPosition()));
 	}
 	ReverseIterator<Iterator> GetReverseBegin() throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<Iterator>(ToIterator(GetTailPosition()));
 	}
 	const ReverseIterator<Iterator> GetReverseEnd() const throw()
 	{
-		return ReverseIterator<Iterator>(GetBegin());
+		return ReverseIterator<Iterator>(GetEnd());
 	}
 	ReverseIterator<Iterator> GetReverseEnd() throw()
 	{
-		return ReverseIterator<Iterator>(GetBegin());
+		return ReverseIterator<Iterator>(GetEnd());
+	}
+	const ReverseIterator2<Iterator2> GetReverseBegin2() const throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(NULL));
+	}
+	ReverseIterator2<Iterator2> GetReverseBegin2() throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(NULL));
+	}
+	const ReverseIterator2<Iterator2> GetReverseEnd2() const throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(m_pHead));
+	}
+	ReverseIterator2<Iterator2> GetReverseEnd2() throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(m_pHead));
 	}
 
 	//methods
@@ -739,63 +788,27 @@ public:
 	//Add
 	Iterator AddHead()  //may throw
 	{
-		_Node* pNode = new_node(NULL, m_pHead);
-		if( m_pHead != NULL )
-			m_pHead->m_pPrev = pNode;
-		else
-			m_pTail = pNode;
-		m_pHead = pNode;
-		return GetHead();
+		return add_head();
 	}
 	Iterator AddHead(const T& t)  //may throw
 	{
-		_Node* pNode = new_node(t, NULL, m_pHead);
-		if( m_pHead != NULL )
-			m_pHead->m_pPrev = pNode;
-		else
-			m_pTail = pNode;
-		m_pHead = pNode;
-		return GetHead();
+		return add_head(t);
 	}
 	Iterator AddHead(T&& t)  //may throw
 	{
-		_Node* pNode = new_node(rv_forward(t), NULL, m_pHead);
-		if( m_pHead != NULL )
-			m_pHead->m_pPrev = pNode;
-		else
-			m_pTail = pNode;
-		m_pHead = pNode;
-		return GetHead();
+		return add_head(rv_forward(t));
 	}
 	Iterator AddTail()  //may throw
 	{
-		_Node* pNode = new_node(m_pTail, NULL);
-		if( m_pTail != NULL )
-			m_pTail->m_pNext = pNode;
-		else
-			m_pHead = pNode;
-		m_pTail = pNode;
-		return GetTail();
+		return add_tail();
 	}
 	Iterator AddTail(const T& t)  //may throw
 	{
-		_Node* pNode = new_node(t, m_pTail, NULL);
-		if( m_pTail != NULL )
-			m_pTail->m_pNext = pNode;
-		else
-			m_pHead = pNode;
-		m_pTail = pNode;
-		return GetTail();
+		return add_tail(t);
 	}
 	Iterator AddTail(T&& t)  //may throw
 	{
-		_Node* pNode = new_node(rv_forward(t), m_pTail, NULL);
-		if( m_pTail != NULL )
-			m_pTail->m_pNext = pNode;
-		else
-			m_pHead = pNode;
-		m_pTail = pNode;
-		return GetTail();
+		return add_tail(rv_forward(t));
 	}
 	void AddHeadList(const List<T>& listNew)
 	{
@@ -841,114 +854,27 @@ public:
 	//insert
 	Iterator InsertBefore(const Iterator& iter)
 	{
-		if( iter == GetEnd() )
-			return AddHead(); // insert before nothing -> head of the list
-
-		// Insert it before position
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(pOldNode->m_pPrev, pOldNode);
-		if( pOldNode->m_pPrev != NULL ) {
-			pOldNode->m_pPrev->m_pNext = pNewNode;
-		}
-		else {
-			assert( pOldNode == m_pHead );
-			m_pHead = pNewNode;
-		}
-		pOldNode->m_pPrev = pNewNode;
-
-		return get_iterator(pNewNode);
+		return insert_before(iter);  //may throw
 	}
 	Iterator InsertBefore(const Iterator& iter, const T& t)
 	{
-		if( iter == GetEnd() )
-			return AddHead(t);
-
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(t, pOldNode->m_pPrev, pOldNode);
-		if( pOldNode->m_pPrev != NULL ) {
-			pOldNode->m_pPrev->m_pNext = pNewNode;
-		}
-		else {
-			assert( pOldNode == m_pHead );
-			m_pHead = pNewNode;
-		}
-		pOldNode->m_pPrev = pNewNode;
-
-		return get_iterator(pNewNode);
+		return insert_before(iter, t);  //may throw
 	}
 	Iterator InsertBefore(const Iterator& iter, T&& t)
 	{
-		if( iter == GetEnd() )
-			return AddHead(rv_forward(t));
-
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(rv_forward(t), pOldNode->m_pPrev, pOldNode);
-		if( pOldNode->m_pPrev != NULL ) {
-			pOldNode->m_pPrev->m_pNext = pNewNode;
-		}
-		else {
-			assert( pOldNode == m_pHead );
-			m_pHead = pNewNode;
-		}
-		pOldNode->m_pPrev = pNewNode;
-
-		return get_iterator(pNewNode);
+		return insert_before(iter, rv_forward(t));  //may throw
 	}
-
 	Iterator InsertAfter(const Iterator& iter)
 	{
-		if( iter == GetEnd() )
-			return AddTail(); // insert after nothing -> tail of the list
-
-		// Insert it after position
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(pOldNode, pOldNode->m_pNext);
-		if( pOldNode->m_pNext != NULL ) {
-			pOldNode->m_pNext->m_pPrev = pNewNode;
-		}
-		else {
-			assert( pOldNode == m_pTail );
-			m_pTail = pNewNode;
-		}
-		pOldNode->m_pNext = pNewNode;
-
-		return get_iterator(pNewNode);
+		return insert_after(iter);  //may throw
 	}
 	Iterator InsertAfter(const Iterator& iter, const T& t)
 	{
-		if( iter == GetEnd() )
-			return AddTail(t);
-
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(t, pOldNode, pOldNode->m_pNext);
-		if( pOldNode->m_pNext != NULL ) {
-			pOldNode->m_pNext->m_pPrev = pNewNode;
-		}
-		else {
-			assert( pOldNode == m_pTail );
-			m_pTail = pNewNode;
-		}
-		pOldNode->m_pNext = pNewNode;
-
-		return get_iterator(pNewNode);
+		return insert_after(iter, t);  //may throw
 	}
 	Iterator InsertAfter(const Iterator& iter, T&& t)
 	{
-		if( iter == GetEnd() )
-			return AddTail(rv_forward(t));
-
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(rv_forward(t), pOldNode, pOldNode->m_pNext);
-		if( pOldNode->m_pNext != NULL ) {
-			pOldNode->m_pNext->m_pPrev = pNewNode;
-		}
-		else {
-			assert( pOldNode == m_pTail );
-			m_pTail = pNewNode;
-		}
-		pOldNode->m_pNext = pNewNode;
-
-		return get_iterator(pNewNode);
+		return insert_after(iter, rv_forward(t));  //may throw
 	}
 
 	//remove
@@ -1145,28 +1071,85 @@ private:
 	}
 
 	//nodes
-	_Node* new_node(_Node* pPrev, _Node* pNext)  //may throw
+	template <typename... Args>
+	_Node* new_node(_Node* pPrev, _Node* pNext, Args&&... args)  //may throw
 	{
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist);
-		fill_new_node(pNewNode, pPrev, pNext);
-		return pNewNode;
-	}
-	_Node* new_node(const T& t, _Node* pPrev, _Node* pNext)  //may throw
-	{
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, t);
-		fill_new_node(pNewNode, pPrev, pNext);
-		return pNewNode;
-	}
-	_Node* new_node(T&& t, _Node* pPrev, _Node* pNext)  //may throw
-	{
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));
+		_Node* pNewNode = node_helper<_Node>::ConstructNode(m_freelist, rv_forward<Args>(args)...);
 		fill_new_node(pNewNode, pPrev, pNext);
 		return pNewNode;
 	}
 	//free
 	void free_node(_Node* pNode) throw()
 	{
-		node_pair_helper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
+		node_helper<_Node>::DestructNode(m_freelist, pNode, m_uElements);
+	}
+
+	// add
+	template <typename... Args>
+	Iterator add_head(Args&&... args)  //may throw
+	{
+		_Node* pNode = new_node(NULL, m_pHead, rv_forward<Args>(args)...);
+		if( m_pHead != NULL )
+			m_pHead->m_pPrev = pNode;
+		else
+			m_pTail = pNode;
+		m_pHead = pNode;
+		return get_iterator(m_pHead);
+	}
+	template <typename... Args>
+	Iterator add_tail(Args&&... args)  //may throw
+	{
+		_Node* pNode = new_node(m_pTail, NULL, rv_forward<Args>(args)...);
+		if( m_pTail != NULL )
+			m_pTail->m_pNext = pNode;
+		else
+			m_pHead = pNode;
+		m_pTail = pNode;
+		return get_iterator(m_pTail);
+	}
+
+	// insert
+	template <typename... Args>
+	Iterator insert_before(const Iterator& iter, Args&&... args)
+	{
+		// insert before nothing -> head of the list
+		if( iter.IsNull() )
+			return add_head(rv_forward<Args>(args)...);  //may throw
+
+		// Insert it before position
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
+		_Node* pNewNode = new_node(pOldNode->m_pPrev, pOldNode, rv_forward<Args>(args)...);  //may throw
+		if( pOldNode->m_pPrev != NULL ) {
+			pOldNode->m_pPrev->m_pNext = pNewNode;
+		}
+		else {
+			assert( pOldNode == m_pHead );
+			m_pHead = pNewNode;
+		}
+		pOldNode->m_pPrev = pNewNode;
+
+		return get_iterator(pNewNode);
+	}
+	template <typename... Args>
+	Iterator insert_after(const Iterator& iter, Args&&... args)
+	{
+		// insert after nothing -> tail of the list
+		if( iter.IsNull() )
+			return add_tail(rv_forward<Args>(args)...);  //may throw
+
+		// Insert it after position
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
+		_Node* pNewNode = new_node(pOldNode, pOldNode->m_pNext, rv_forward<Args>(args)...);  //may throw
+		if( pOldNode->m_pNext != NULL ) {
+			pOldNode->m_pNext->m_pPrev = pNewNode;
+		}
+		else {
+			assert( pOldNode == m_pTail );
+			m_pTail = pNewNode;
+		}
+		pOldNode->m_pNext = pNewNode;
+
+		return get_iterator(pNewNode);
 	}
 
 	//position
@@ -1180,13 +1163,23 @@ private:
 	Iterator get_iterator(const Position& pos) const throw()
 	{
 		Iterator iter;
-		iter.m_refList = const_cast<thisClass*>(this);
 		iter.m_pos = pos;
 		return iter;
 	}
 	Iterator get_iterator(_Node* pNode) const throw()
 	{
 		return get_iterator(get_position(pNode));
+	}
+	Iterator2 get_iterator2(const Position& pos) const throw()
+	{
+		Iterator2 iter;
+		iter.m_refList = const_cast<thisClass*>(this);
+		iter.m_pos = pos;
+		return iter;
+	}
+	Iterator2 get_iterator2(_Node* pNode) const throw()
+	{
+		return get_iterator2(get_position(pNode));
 	}
 
 private:
@@ -1214,36 +1207,12 @@ class _HashTable
 private:
 	typedef _HashTable<TKey, TPair, THashTrait, TCompareTrait>  thisClass;
 
-	//special usage
-	class _Key : public TKey
-	{
-	};
-
 private:
 	//internal node
 	struct _Node
 	{
-		_Node()
-		{
-		}
-		explicit _Node(const _Key& key) : m_t(static_cast<const TKey&>(key))
-		{
-		}
-		explicit _Node(_Key&& key) : m_t(rv_forward(static_cast<TKey&>(key)))
-		{
-		}
-		template <typename V>
-		_Node(const TKey& key, const V& v) : m_t(key, v)
-		{
-		}
-		template <typename V>
-		_Node(TKey&& key, V&& v) : m_t(rv_forward(key), rv_forward(v))
-		{
-		}
-		explicit _Node(const TPair& t) : m_t(t)
-		{
-		}
-		explicit _Node(TPair&& t) : m_t(rv_forward(t))
+		template <typename... Args>
+		explicit _Node(Args&&... args) : m_t(rv_forward<Args>(args)...)
 		{
 		}
 		~_Node() throw()
@@ -1370,7 +1339,7 @@ public:
 		//next
 		void MoveNext() throw()
 		{
-			m_pos = get_position(m_refTable.Deref().to_next_node(thisClass::position_to_node(m_pos)));
+			m_refTable.Deref().GetNextPosition(m_pos);
 		}
 
 	private:
@@ -1429,11 +1398,16 @@ public:
 	{
 		return get_position(get_first_node());
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	void GetNextPosition(Position& pos) const throw()
+	{
+		pos = get_position(to_next_node(position_to_node(pos)));
+	}
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return get_iterator(pos);
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return get_iterator(pos);
 	}
@@ -1527,14 +1501,14 @@ public:
 	{
 		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(static_cast<const _Key&>(key), uBin, uHash);  //may throw
+		_Node* pNode = create_node(uBin, uHash, key);  //may throw
 		return get_iterator(pNode);
 	}
 	Iterator InsertWithoutFind(TKey&& key)  //may throw
 	{
 		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(rv_forward(static_cast<_Key&>(key)), uBin, uHash);  //may throw
+		_Node* pNode = create_node(uBin, uHash, rv_forward(key));  //may throw
 		return get_iterator(pNode);
 	}
 	template <typename TValue>
@@ -1542,7 +1516,7 @@ public:
 	{
 		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(key, val, uBin, uHash);  //may throw
+		_Node* pNode = create_node(uBin, uHash, key, val);  //may throw
 		return get_iterator(pNode);
 	}
 	template <typename TValue>
@@ -1550,7 +1524,7 @@ public:
 	{
 		uintptr uHash = THashTrait::CalcHash(key);
 		uintptr uBin  = uHash % m_uBins;
-		_Node* pNode = create_node(rv_forward(key), rv_forward(val), uBin, uHash);  //may throw
+		_Node* pNode = create_node(uBin, uHash, rv_forward(key), rv_forward(val));  //may throw
 		return get_iterator(pNode);
 	}
 
@@ -1561,7 +1535,7 @@ public:
 		_Node* pPrev;
 		_Node* pNode = find_node(key, uBin, uHash, pPrev);
 		if( pNode == NULL )
-			pNode = create_node(static_cast<const _Key&>(key), uBin, uHash);  //may throw
+			pNode = create_node(uBin, uHash, key);  //may throw
 		return get_iterator(pNode);
 	}
 	Iterator Insert(TKey&& key)  //may throw
@@ -1571,7 +1545,7 @@ public:
 		_Node* pPrev;
 		_Node* pNode = find_node(key, uBin, uHash, pPrev);
 		if( pNode == NULL )
-			pNode = create_node(rv_forward(static_cast<_Key&>(key)), uBin, uHash);  //may throw
+			pNode = create_node(uBin, uHash, rv_forward(key));  //may throw
 		return get_iterator(pNode);
 	}
 	template <typename TValue>
@@ -1582,7 +1556,7 @@ public:
 		_Node* pPrev;
 		_Node* pNode = find_node(key, uBin, uHash, pPrev);
 		if( pNode == NULL )
-			pNode = create_node(key, val, uBin, uHash);  //may throw
+			pNode = create_node(uBin, uHash, key, val);  //may throw
 		else
 			pNode->m_t.set_Second(val);  //may throw
 		return get_iterator(pNode);
@@ -1595,7 +1569,7 @@ public:
 		_Node* pPrev;
 		_Node* pNode = find_node(key, uBin, uHash, pPrev);
 		if( pNode == NULL )
-			pNode = create_node(rv_forward(key), rv_forward(val), uBin, uHash);  //may throw
+			pNode = create_node(uBin, uHash, rv_forward(key), rv_forward(val));  //may throw
 		else
 			pNode->m_t.set_Second(rv_forward(val));  //may throw
 		return get_iterator(pNode);
@@ -1747,55 +1721,19 @@ protected:
 	}
 
 	// create nodes
-	_Node* create_node(const _Key& key, uintptr uBin, uintptr uHash)
+	template <typename... Args>
+	_Node* create_node(uintptr uBin, uintptr uHash, Args&&... args)
 	{
-		bucket_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key);
-		fill_new_node(pNewNode, uBin, uHash);
-		return pNewNode;
-	}
-	_Node* create_node(_Key&& key, uintptr uBin, uintptr uHash)
-	{
-		bucket_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
-		fill_new_node(pNewNode, uBin, uHash);
-		return pNewNode;
-	}
-	template <typename V>
-	_Node* create_node(const TKey& key, const V& v, uintptr uBin, uintptr uHash)
-	{
-		bucket_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key, v);
-		fill_new_node(pNewNode, uBin, uHash);
-		return pNewNode;
-	}
-	template <typename V>
-	_Node* create_node(TKey&& key, V&& v, uintptr uBin, uintptr uHash)
-	{
-		bucket_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
-		fill_new_node(pNewNode, uBin, uHash);
-		return pNewNode;
-	}
-	_Node* create_node(const TPair& pair, uintptr uBin, uintptr uHash)
-	{
-		bucket_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, pair);
-		fill_new_node(pNewNode, uBin, uHash);
-		return pNewNode;
-	}
-	_Node* create_node(TPair&& pair, uintptr uBin, uintptr uHash)
-	{
-		bucket_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
-		fill_new_node(pNewNode, uBin, uHash);
+		bucket_allocate();  //may throw
+		_Node* pNewNode = node_helper<_Node>::ConstructNode(m_freelist, rv_forward<Args>(args)...);  //may throw
+		fill_new_node(pNewNode, uBin, uHash);  //may throw
 		return pNewNode;
 	}
 
 	// free
 	void free_node(_Node* pNode) throw()
 	{
-		node_pair_helper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
+		node_helper<_Node>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 	void remove_node(_Node* pNode, _Node* pPrev) throw()
 	{
@@ -1860,6 +1798,7 @@ protected:
 		assert(false);
 		return NULL;
 	}
+
 	//position
 	static Position get_position(_Node* pNode) throw()
 	{
@@ -2097,43 +2036,12 @@ class _RBTree
 private:
 	typedef _RBTree<TKey, TPair, TCompareTrait>  thisClass;
 
-	//special usage
-	struct _Key
-	{
-		TKey t;
-		_Key(const TKey& src) : t(src)
-		{
-		}
-		_Key(TKey&& src) : t(rv_forward(src))
-		{
-		}
-	};
-
 private:
 	//internal node
 	struct _Node
 	{
-		_Node()
-		{
-		}
-		explicit _Node(const _Key& key) : m_t(key.t)
-		{
-		}
-		explicit _Node(_Key&& key) : m_t(rv_forward(key.t))
-		{
-		}
-		template <typename V>
-		_Node(const TKey& key, const V& v) : m_t(key, v)
-		{
-		}
-		template <typename V>
-		_Node(TKey&& key, V&& v) : m_t(rv_forward(key), rv_forward(v))
-		{
-		}
-		explicit _Node(const TPair& t) : m_t(t)
-		{
-		}
-		explicit _Node(TPair&& t) : m_t(rv_forward(t))
+		template <typename... Args>
+		explicit _Node(Args&&... args) : m_t(rv_forward<Args>(args)...)
 		{
 		}
 		~_Node() throw()
@@ -2275,20 +2183,52 @@ public:
 		//next
 		void MoveNext() throw()
 		{
-			m_pos = get_position(m_refTree.Deref().to_successor_node(thisClass::position_to_node(m_pos)));
+			m_refTree.Deref().GetNextPosition(m_pos);
 		}
 		//prev
 		void MovePrev() throw()
 		{
-			//NULL node -> Tail
-			m_pos = ( m_pos.IsNull() ) ? m_refTree.Deref().GetTailPosition()
-						: get_position(m_refTree.Deref().to_predecessor_node(thisClass::position_to_node(m_pos)));
+			m_refTree.Deref().GetPrevPosition(m_pos);
 		}
 
-	private:
+	protected:
 		RefPtr<thisClass>  m_refTree;
 		Position  m_pos;
 
+	private:
+		friend thisClass;
+	};
+
+	class Iterator2 : public Iterator
+	{
+	private:
+		typedef Iterator  baseClass;
+
+	public:
+		Iterator2() throw()
+		{
+		}
+		Iterator2(const Iterator2& src) throw() : baseClass(static_cast<const baseClass&>(src))
+		{
+		}
+		~Iterator2() throw()
+		{
+		}
+		Iterator2& operator=(const Iterator2& src) throw()
+		{
+			baseClass::operator=(static_cast<const baseClass&>(src));
+			return *this;
+		}
+		void MovePrev() throw()
+		{
+			//NULL node -> Tail
+			if( baseClass::m_pos.IsNull() )
+				baseClass::m_pos = baseClass::m_refTree.Deref().GetTailPosition();
+			else
+				baseClass::MovePrev();
+		}
+
+	private:
 		friend thisClass;
 	};
 
@@ -2338,11 +2278,20 @@ public:
 	{
 		return get_position(to_maximum_node(m_pRoot));
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	void GetNextPosition(Position& pos) const throw()
+	{
+		pos = get_position(to_successor_node(position_to_node(pos)));
+	}
+	void GetPrevPosition(Position& pos) const throw()
+	{
+		pos = get_position(to_predecessor_node(position_to_node(pos)));
+	}
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return get_iterator(pos);
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return get_iterator(pos);
 	}
@@ -2382,19 +2331,35 @@ public:
 	}
 	const ReverseIterator<Iterator> GetReverseBegin() const throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<Iterator>(GetTail());
 	}
 	ReverseIterator<Iterator> GetReverseBegin() throw()
 	{
-		return ReverseIterator<Iterator>(GetEnd());
+		return ReverseIterator<Iterator>(GetTail());
 	}
 	const ReverseIterator<Iterator> GetReverseEnd() const throw()
 	{
-		return ReverseIterator<Iterator>(GetBegin());
+		return ReverseIterator<Iterator>(GetEnd());
 	}
 	ReverseIterator<Iterator> GetReverseEnd() throw()
 	{
-		return ReverseIterator<Iterator>(GetBegin());
+		return ReverseIterator<Iterator>(GetEnd());
+	}
+	const ReverseIterator2<Iterator2> GetReverseBegin2() const throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(NULL));
+	}
+	ReverseIterator2<Iterator2> GetReverseBegin2() throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(NULL));
+	}
+	const ReverseIterator2<Iterator2> GetReverseEnd2() const throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(to_minimum_node(m_pRoot)));
+	}
+	ReverseIterator2<Iterator2> GetReverseEnd2() throw()
+	{
+		return ReverseIterator2<Iterator2>(get_iterator2(to_minimum_node(m_pRoot)));
 	}
 
 	//methods
@@ -2458,12 +2423,12 @@ public:
 	//add
 	Iterator InsertWithoutFind(const TKey& key)  //may throw
 	{
-		_Node* pNewNode = create_node(static_cast<const _Key&>(key));
+		_Node* pNewNode = create_node(key);
 		return get_iterator(pNewNode);
 	}
 	Iterator InsertWithoutFind(TKey&& key)  //may throw
 	{
-		_Node* pNewNode = create_node(rv_forward(static_cast<_Key&>(key)));
+		_Node* pNewNode = create_node(rv_forward(key));
 		return get_iterator(pNewNode);
 	}
 	template <typename TValue>
@@ -2483,14 +2448,14 @@ public:
 	{
 		_Node* pNode = find_node(key);
 		if( pNode == NULL )
-			pNode = create_node(_Key(key));
+			pNode = create_node(key);
 		return get_iterator(pNode);
 	}
 	Iterator Insert(TKey&& key)  //may throw
 	{
 		_Node* pNode = find_node(key);
 		if( pNode == NULL )
-			pNode = create_node(_Key(rv_forward(key)));
+			pNode = create_node(rv_forward(key));
 		return get_iterator(pNode);
 	}
 	template <typename TValue>
@@ -2632,57 +2597,11 @@ protected:
 	}
 
 	//nodes
-	_Node* create_node(const _Key& key)  //may throw
+	template <typename... Args>
+	_Node* create_node(Args&&... args)  //may throw
 	{
 		nil_node_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key);
-		fill_new_node(pNewNode);
-		insert_impl(pNewNode);
-		insert_impl2(pNewNode);
-		return pNewNode;
-	}
-	_Node* create_node(_Key&& key)  //may throw
-	{
-		nil_node_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key));
-		fill_new_node(pNewNode);
-		insert_impl(pNewNode);
-		insert_impl2(pNewNode);
-		return pNewNode;
-	}
-	template <typename V>
-	_Node* create_node(const TKey& key, const V& v)
-	{
-		nil_node_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, key, v);
-		fill_new_node(pNewNode);
-		insert_impl(pNewNode);
-		insert_impl2(pNewNode);
-		return pNewNode;
-	}
-	template <typename V>
-	_Node* create_node(TKey&& key, V&& v)
-	{
-		nil_node_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(key), rv_forward(v));
-		fill_new_node(pNewNode);
-		insert_impl(pNewNode);
-		insert_impl2(pNewNode);
-		return pNewNode;
-	}
-	_Node* create_node(const TPair& pair)
-	{
-		nil_node_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, pair);
-		fill_new_node(pNewNode);
-		insert_impl(pNewNode);
-		insert_impl2(pNewNode);
-		return pNewNode;
-	}
-	_Node* create_node(TPair&& pair)
-	{
-		nil_node_allocate();
-		_Node* pNewNode = node_pair_helper<_Node, TPair>::ConstructNode(m_freelist, rv_forward(pair));
+		_Node* pNewNode = node_helper<_Node>::ConstructNode(m_freelist, rv_forward<Args>(args)...);
 		fill_new_node(pNewNode);
 		insert_impl(pNewNode);
 		insert_impl2(pNewNode);
@@ -2692,7 +2611,7 @@ protected:
 	//free
 	void free_node(_Node* pNode) throw()
 	{
-		node_pair_helper<_Node, TPair>::DestructNode(m_freelist, pNode, m_uElements);
+		node_helper<_Node>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 	//remove all
 	/*
@@ -2995,6 +2914,17 @@ protected:
 	Iterator get_iterator(_Node* pNode) const throw()
 	{
 		return get_iterator(get_position(pNode));
+	}
+	Iterator2 get_iterator2(const Position& pos) const throw()
+	{
+		Iterator2 iter;
+		iter.m_refTree = const_cast<thisClass*>(this);
+		iter.m_pos = pos;
+		return iter;
+	}
+	Iterator2 get_iterator2(_Node* pNode) const throw()
+	{
+		return get_iterator2(get_position(pNode));
 	}
 
 private:

@@ -60,11 +60,11 @@ public:
 
 	const uint& GetTop() const throw()
 	{
-		return m_arr[m_arr.GetCount() - 1].get_Value();
+		return m_arr[m_arr.GetCount() - 1];
 	}
 	uint& GetTop() throw()
 	{
-		return m_arr[m_arr.GetCount() - 1].get_Value();
+		return m_arr[m_arr.GetCount() - 1];
 	}
 	uint GetTopLevel() const throw()
 	{

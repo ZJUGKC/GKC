@@ -23,6 +23,9 @@ This file contains global variables for Won parser component.
 #include "won/base/WonDef.h"
 
 #include "won/action/WonDoCommonAction.h"
+#include "won/action/WonDoValueStringCatenationAction.h"
+#include "won/action/WonDoStringCatenationAction.h"
+#include "won/action/WonDoStringCatenationStringAction.h"
 
 #include "won/WonAction.h"
 #include "won/WonParser.h"

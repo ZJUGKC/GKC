@@ -57,11 +57,11 @@ private:
 	{
 		CallResult cr;
 		//left part
-		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
+		StringA str(arrSymbol[1].Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		uint uID = m_data.Deref().AddToNonterminalTable(StringUtilHelper::To_ConstString(str));  //may throw
 		//start index
 		ShareCom<_I_GraPositionSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraPositionSymbolData_Utility, arrSymbol[3].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraPositionSymbolData_Utility, arrSymbol[3], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		uintptr uPos = spU.Deref().GetPosition();

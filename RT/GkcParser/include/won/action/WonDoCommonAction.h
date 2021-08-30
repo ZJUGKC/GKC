@@ -56,7 +56,7 @@ private:
 	//do action
 	CallResult do_action(ShareArray<ShareCom<IGrammarSymbolData>>& arrSymbol, ShareArray<StringS>& errorArray)
 	{
-		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
+		StringA str(arrSymbol[1].Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		m_data.Deref().set_String(str);
 		m_data.Deref().set_Type(m_iTokenType);
 		return CallResult();

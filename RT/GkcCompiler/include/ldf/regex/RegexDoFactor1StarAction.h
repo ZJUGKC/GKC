@@ -42,12 +42,12 @@ public:
 		CallResult cr;
 		//iterator
 		ShareCom<_I_RegexPositionSymbolData_Utility> spS;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[1].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[1], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
-		AstTree::Iterator iter(m_tree.Deref().GetAtPosition(spS.Deref().GetPosition()));
+		AstTree::Iterator iter(m_tree.Deref().ToIterator(spS.Deref().GetPosition()));
 		//node
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
 		try {

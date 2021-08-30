@@ -50,7 +50,7 @@ public:
 	}
 	virtual _CplMetaDataPosition FindNext(const _CplMetaDataPosition& pos) throw()
 	{
-		auto iter(m_sym_pool.FindNext(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr()))));
+		auto iter(m_sym_pool.FindNext(m_sym_pool.ToIterator(SymbolPool::Position(pos.GetAddr()))));
 		return _CplMetaDataPosition(iter.GetPosition().GetAddr());
 	}
 	virtual _CplMetaDataPosition GetZeroLevelHead() throw()
@@ -59,13 +59,13 @@ public:
 	}
 	virtual _CplMetaDataPosition GetLevelNext(const _CplMetaDataPosition& pos) throw()
 	{
-		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
+		auto iter(m_sym_pool.ToIterator(SymbolPool::Position(pos.GetAddr())));
 		iter.MoveLevelNext();
 		return _CplMetaDataPosition(iter.GetPosition().GetAddr());
 	}
 	virtual void GetInfo(const _CplMetaDataPosition& pos, _CplMetaDataInfo& info, bool& bAnalysis) throw()
 	{
-		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
+		auto iter(m_sym_pool.ToIterator(SymbolPool::Position(pos.GetAddr())));
 		info.strKey = iter.GetKey();
 		info.uType = iter.GetType();
 		info.uLevel = iter.GetLevel();
@@ -74,22 +74,22 @@ public:
 	}
 	virtual void SetType(const _CplMetaDataPosition& pos, const uint& uType) throw()
 	{
-		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
+		auto iter(m_sym_pool.ToIterator(SymbolPool::Position(pos.GetAddr())));
 		iter.SetType(uType);
 	}
 	virtual void SetLevel(const _CplMetaDataPosition& pos, const uint& uLevel) throw()
 	{
-		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
+		auto iter(m_sym_pool.ToIterator(SymbolPool::Position(pos.GetAddr())));
 		iter.SetLevel(uLevel);
 	}
 	virtual void SetData(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posData) throw()
 	{
-		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
+		auto iter(m_sym_pool.ToIterator(SymbolPool::Position(pos.GetAddr())));
 		iter.GetData<_MetaDataAddr>().SetAddr(posData.GetAddr());
 	}
 	virtual void ClearAnalysisFlag(const _CplMetaDataPosition& pos) throw()
 	{
-		auto iter(m_sym_pool.GetAtPosition(SymbolPool::Position(pos.GetAddr())));
+		auto iter(m_sym_pool.ToIterator(SymbolPool::Position(pos.GetAddr())));
 		iter.ClearAnalysisFlag();
 	}
 	virtual GKC::CallResult InsertSymbol(const ConstStringA& str, const uint& uType, const bool& bLevelLink, _CplMetaDataPosition& pos) throw()
@@ -187,30 +187,30 @@ public:
 	}
 	virtual void SetAstParent(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posParent) throw()
 	{
-		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
-		auto iterP(m_tree.GetAtPosition(AstTree::Position(posParent.GetAddr())));
+		auto iter(m_tree.ToIterator(AstTree::Position(pos.GetAddr())));
+		auto iterP(m_tree.ToIterator(AstTree::Position(posParent.GetAddr())));
 		m_tree.SetParent(iter, iterP);
 	}
 	virtual void SetAstChild(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posChild) throw()
 	{
-		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
-		auto iterC(m_tree.GetAtPosition(AstTree::Position(posChild.GetAddr())));
+		auto iter(m_tree.ToIterator(AstTree::Position(pos.GetAddr())));
+		auto iterC(m_tree.ToIterator(AstTree::Position(posChild.GetAddr())));
 		m_tree.SetChild(iter, iterC);
 	}
 	virtual void SetAstNext(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posNext) throw()
 	{
-		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
-		auto iterN(m_tree.GetAtPosition(AstTree::Position(posNext.GetAddr())));
+		auto iter(m_tree.ToIterator(AstTree::Position(pos.GetAddr())));
+		auto iterN(m_tree.ToIterator(AstTree::Position(posNext.GetAddr())));
 		m_tree.SetNext(iter, iterN);
 	}
 	virtual void SetAstData(const _CplMetaDataPosition& pos, const _CplMetaDataPosition& posData) throw()
 	{
-		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
+		auto iter(m_tree.ToIterator(AstTree::Position(pos.GetAddr())));
 		iter.GetData<_MetaDataAddr>().SetAddr(posData.GetAddr());
 	}
 	virtual void GetAstNodeInfo(const _CplMetaDataPosition& pos, _CplAstNodeInfo& info) throw()
 	{
-		auto iter(m_tree.GetAtPosition(AstTree::Position(pos.GetAddr())));
+		auto iter(m_tree.ToIterator(AstTree::Position(pos.GetAddr())));
 		auto iterTemp(iter);
 		info.uType = iter.GetType();
 		iterTemp.MoveParent();
@@ -225,13 +225,13 @@ public:
 	}
 	virtual void SetAstLinkParent(const _CplMetaDataPosition& posHead, const _CplMetaDataPosition& posParent) throw()
 	{
-		auto iter(m_tree.GetAtPosition(AstTree::Position(posHead.GetAddr())));
-		auto iterP(m_tree.GetAtPosition(AstTree::Position(posParent.GetAddr())));
+		auto iter(m_tree.ToIterator(AstTree::Position(posHead.GetAddr())));
+		auto iterP(m_tree.ToIterator(AstTree::Position(posParent.GetAddr())));
 		m_tree.SetLinkParent(iter, iterP);
 	}
 	virtual _CplMetaDataPosition ReverseAstLink(const _CplMetaDataPosition& posHead) throw()
 	{
-		auto iter(m_tree.GetAtPosition(AstTree::Position(posHead.GetAddr())));
+		auto iter(m_tree.ToIterator(AstTree::Position(posHead.GetAddr())));
 		return _CplMetaDataPosition(m_tree.ReverseLink(iter).GetPosition().GetAddr());
 	}
 	virtual _CplMetaDataPosition GetAstStart() throw()

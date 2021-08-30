@@ -41,7 +41,7 @@ public:
 	{
 		CallResult cr;
 		ShareCom<_I_GraPositionSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraPositionSymbolData_Utility, arrSymbol[0].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraPositionSymbolData_Utility, arrSymbol[0], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		spU.Deref().SetPosition(m_data.Deref().GetRuleSet().GetCount() - 1);

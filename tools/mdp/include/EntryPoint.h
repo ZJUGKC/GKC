@@ -55,7 +55,7 @@ int _Cmd_ProcessProjectFile(const ConstStringS& cstrSrc, const ConstStringS& cst
 		}
 		//source directory
 		uPos = FsPathHelper::FindFilePartStart(StringUtilHelper::To_ConstString(strSrcDir));
-		FsPathHelper::ToPathPart(uPos, strSrcDir);
+		FsPathHelper::ToPathPart(uPos, strSrcDir);  //delete file part: xxx.mdp
 		if( strSrcDir.IsEmpty() )
 			StringUtilHelper::MakeString(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("./")), strSrcDir);
 		//destination
@@ -114,7 +114,7 @@ public:
 		int type = MDP_TYPE_CHM;
 		uintptr uStartIndex = 2;
 		//-m
-		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-m"))) ) {
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-m"))) ) {
 			if( uArgCount > 4 ) {
 				_PrintVersion();
 				_PrintHelp();
@@ -123,9 +123,9 @@ public:
 			type = MDP_TYPE_CHM;
 		}
 		//-e
-		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-e"))) ) {
+		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-e"))) ) {
 			//-l
-			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) )
+			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) )
 				uStartIndex ++;
 			if( (uStartIndex == 2 && uArgCount > 4) || (uStartIndex == 3 && (uArgCount == 3 || uArgCount > 5)) ) {
 				_PrintVersion();
@@ -139,8 +139,8 @@ public:
 			return 1;
 		}
 
-		return _Cmd_ProcessProjectFile(args[uStartIndex].get_Value(),
-									(uStartIndex + 1 >= uArgCount) ? ConstStringS() : args[uStartIndex + 1].get_Value(),
+		return _Cmd_ProcessProjectFile(args[uStartIndex],
+									(uStartIndex + 1 >= uArgCount) ? ConstStringS() : args[uStartIndex + 1],
 									type, uStartIndex == 3);
 	}
 };

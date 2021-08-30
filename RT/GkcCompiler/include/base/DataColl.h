@@ -484,11 +484,11 @@ public:
 	}
 
 // Node
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return Iterator(const_cast<thisClass*>(this), pos.GetAddr());
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return Iterator(this, pos.GetAddr());
 	}
@@ -1001,11 +1001,11 @@ public:
 		return Iterator(const_cast<thisClass*>(this), get_root());
 	}
 
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return Iterator(const_cast<thisClass*>(this), pos.GetAddr());
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return Iterator(this, pos.GetAddr());
 	}
@@ -1107,6 +1107,8 @@ private:
 			uRoot = m_allocator.Deref().Allocate(sizeof(_Node));
 			if( uRoot == 0 )
 				throw OutOfMemoryException();
+			_Node& node = *((_Node*)ToPointer(uRoot));
+			node.Init();
 			_RefAllocatorHelper::ToObject<BeType<uint>>(m_allocator, m_uStart + IDX_ROOT).set_Value(uRoot);
 		}
 		//allocate

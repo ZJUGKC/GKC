@@ -88,9 +88,44 @@ int main(int argc, char *argv[], char *envp[])
 	const int c_MAXFILE = 65535;
 	for( int i = 0; i < c_MAXFILE; i ++ )
 		::close(i);  //no check
-	//::open("/dev/null", O_RDONLY);
-	//::open("/dev/null", O_RDWR);
-	//::open("/dev/null", O_RDWR);
+	/*
+	//redirect IO
+	int fdi = ::open("/dev/null", O_RDONLY);
+	if( fdi == -1 ) {
+		::perror("cannot open /dev/null!\n");
+		return -1;
+	}
+	int fdo = ::open("/dev/null", O_RDWR);
+	if( fdo == -1 ) {
+		::perror("cannot open /dev/null!\n");
+		return -1;
+	}
+	int fde = ::open("/dev/null", O_RDWR);
+	if( fde == -1 ) {
+		::perror("cannot open /dev/null!\n");
+		return -1;
+	}
+	if( ::dup2(fdi, STDIN_FILENO) == -1 ) {
+		::perror("cannot dup /dev/null!\n");
+		return -1;
+	}
+	if( ::dup2(fdo, STDOUT_FILENO) == -1 ) {
+		::perror("cannot dup /dev/null!\n");
+		return -1;
+	}
+	if( ::dup2(fde, STDERR_FILENO) == -1 ) {
+		::perror("cannot dup /dev/null!\n");
+		return -1;
+	}
+	int ret_close;
+	ret_close = ::close(fdi);
+	assert( ret_close == 0 );
+	ret_close = ::close(fdo);
+	assert( ret_close == 0 );
+	ret_close = ::close(fde);
+	assert( ret_close == 0 );
+	(void)ret_close;
+	*/
 	//mask
 	::umask(0);
 	//signal
@@ -98,7 +133,10 @@ int main(int argc, char *argv[], char *envp[])
 
 /*
 	::signal(SIGINT, SIG_IGN);  //no check
+	::signal(SIGQUIT, SIG_IGN);  //no check
 	::signal(SIGWINCH, SIG_IGN);  //no check
+	::signal(SIGCONT, SIG_IGN);  //no check
+	::signal(SIGSTOP, SIG_IGN);  //no check
 */
 
 //command

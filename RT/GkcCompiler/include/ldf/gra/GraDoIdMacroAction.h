@@ -56,12 +56,12 @@ private:
 	CallResult do_action(ShareArray<ShareCom<_IGrammarSymbolData>>& arrSymbol)
 	{
 		CallResult cr;
-		StringA str(arrSymbol[1].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
+		StringA str(arrSymbol[1].Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		//nonterminal
 		uint uID = m_data.Deref().AddToNonterminalTable(StringUtilHelper::To_ConstString(str));  //may throw
 		//left part
 		ShareCom<_I_GraTokenSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraTokenSymbolData_Utility, arrSymbol[0].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_GraTokenSymbolData_Utility, arrSymbol[0], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		_GraToken tk;

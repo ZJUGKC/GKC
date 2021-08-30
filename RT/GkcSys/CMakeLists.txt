@@ -28,22 +28,22 @@ SET_TARGET_PROPERTIES(GkcSys PROPERTIES OUTPUT_NAME "GkcSys"
 	VERSION 1.0 SOVERSION 1
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
 
-SET_POSTBUILD_PATH_COPY(GkcSys "platform" "machine" "config" "config" "${PROJECT_SOURCE_DIR}/others/redist" "*" "${LIBRARY_OUTPUT_PATH}")
+SET_TARGET_PATH_COPY(GkcSys TRUE "platform" "machine" "config" "config" "${PROJECT_SOURCE_DIR}/others/redist" "*" "${LIBRARY_OUTPUT_PATH}")
 #setup scripts
 FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/_pack")
-SET_POSTBUILD_PATH_COPY(GkcSys "platform" "machine" "no-config" "no-config" "${PROJECT_SOURCE_DIR}/setup" "*" "${PROJECT_BINARY_DIR}/_pack")
+SET_TARGET_PATH_COPY(GkcSys TRUE "platform" "machine" "no-config" "no-config" "${PROJECT_SOURCE_DIR}/setup" "*" "${PROJECT_BINARY_DIR}/_pack")
 
 INSTALL(TARGETS GkcSys
 	RUNTIME DESTINATION core/assemblies COMPONENT runtime
 	LIBRARY DESTINATION core/assemblies COMPONENT runtime
 	ARCHIVE DESTINATION development/lib COMPONENT development)
 
-SET_POSTBUILD_SRC_PATH("platform" "machine" "user-config" "Debug" "${PROJECT_SOURCE_DIR}/others/redist")
-INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
+SET_TARGET_SRC_PATH("platform" "machine" "user-config" "Debug" "${PROJECT_SOURCE_DIR}/others/redist")
+INSTALL(DIRECTORY "${TARGET_SRC_PATH}/"
 	DESTINATION core/assemblies COMPONENT runtime
 	CONFIGURATIONS Debug)
-SET_POSTBUILD_SRC_PATH("platform" "machine" "user-config" "Release" "${PROJECT_SOURCE_DIR}/others/redist")
-INSTALL(DIRECTORY "${POSTBUILD_SRC_PATH}/"
+SET_TARGET_SRC_PATH("platform" "machine" "user-config" "Release" "${PROJECT_SOURCE_DIR}/others/redist")
+INSTALL(DIRECTORY "${TARGET_SRC_PATH}/"
 	DESTINATION core/assemblies COMPONENT runtime
 	CONFIGURATIONS Release)
 
@@ -52,6 +52,8 @@ INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/public/include/"
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/RT/GkcSys/public/"
 	DESTINATION development/include/sys COMPONENT development)
 INSTALL(FILES "${PROJECT_SOURCE_DIR}/common.cmk"
+	DESTINATION development/cmake COMPONENT development)
+INSTALL(FILES "${PROJECT_SOURCE_DIR}/ftsc.cmk"
 	DESTINATION development/cmake COMPONENT development)
 
 INSTALL(FILES "${PROJECT_SOURCE_DIR}/LICENSE"

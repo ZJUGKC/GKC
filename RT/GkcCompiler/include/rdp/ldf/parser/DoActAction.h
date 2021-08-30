@@ -60,7 +60,7 @@ private:
 		//set action
 		uintptr uCount = m_refData.Deref().arr.GetCount();
 		assert( uCount > 0 );
-		m_refData.Deref().arr[uCount - 1].get_Value().uAction = uActionID;
+		m_refData.Deref().arr[uCount - 1].uAction = uActionID;
 		return CallResult();
 	}
 };

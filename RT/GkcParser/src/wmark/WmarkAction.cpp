@@ -28,6 +28,7 @@ This file contains global variables for Wmark actions.
 #include "wmark/action/WmarkDoBlockBlockBodyAction.h"
 #include "wmark/action/WmarkDoBlockBodyCommentAction.h"
 #include "wmark/action/WmarkDoBlockBodyIndentAction.h"
+#include "wmark/action/WmarkDoBlockBodyTextAction.h"
 
 #include "wmark/WmarkAction.h"
 

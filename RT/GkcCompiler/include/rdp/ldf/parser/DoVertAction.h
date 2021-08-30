@@ -58,11 +58,11 @@ private:
 		//find left part
 		uintptr idx;
 		for ( idx = uCount; idx > 0; idx -- ) {
-			if ( arr[idx - 1].get_Value().uToken == CPL_TK_NULL )
+			if ( arr[idx - 1].uToken == CPL_TK_NULL )
 				break;
 		}
 		assert( idx < uCount );
-		uint uLeftPart = arr[idx].get_Value().uToken;
+		uint uLeftPart = arr[idx].uToken;
 		//add
 		RULEELEMENT re = { CPL_TK_NULL, LA_NULL };
 		arr.Add(re);  //may throw

@@ -45,7 +45,7 @@ public:
 		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, sym, spS, cr);
 		if( cr.IsFailed() )
 			return cr;
-		AstTree::Iterator iter(m_tree.Deref().GetAtPosition(spS.Deref().GetPosition()));
+		AstTree::Iterator iter(m_tree.Deref().ToIterator(spS.Deref().GetPosition()));
 		//root
 		AstTree::Iterator iterR(m_tree.Deref().GetRoot());
 		m_tree.Deref().SetParent(iter, iterR);

@@ -61,7 +61,7 @@ int _Cmd_CompileSingleFile(const ConstArray<ConstStringS>& args)
 	}
 
 	StringS strSrc(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
-	StringUtilHelper::MakeString(args[2].get_Value(), strSrc);
+	StringUtilHelper::MakeString(args[2], strSrc);
 	StringS strDest(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 	{
 		uintptr uPos;
@@ -73,7 +73,7 @@ int _Cmd_CompileSingleFile(const ConstArray<ConstStringS>& args)
 		//destination
 		if( uArgCount == 4 ) {
 			//extension
-			ConstStringS c_strDest(args[3].get_Value());
+			ConstStringS c_strDest(args[3]);
 			if( !_CheckFileExtension(c_strDest, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".htm")), uPos)
 				&& !_CheckFileExtension(c_strDest, DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".html")), uPos)
 				) {
@@ -117,7 +117,7 @@ public:
 
 		int ret = 0;
 		//-c
-		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-c"))) ) {
 			ret = _Cmd_CompileSingleFile(args);
 		}
 		else {

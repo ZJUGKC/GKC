@@ -53,7 +53,7 @@ public:
 		//check ranges
 		uintptr index = 0;
 		while( index < m_arr.GetCount() ) {
-			_RegexCharRange& rcrC = m_arr[index].get_Value();
+			_RegexCharRange& rcrC = m_arr[index];
 			//left
 			if( rcr.uHigh < rcrC.uLow - 1 )
 				break;
@@ -73,8 +73,8 @@ public:
 				//next
 				uintptr indexNext = index + 1;
 				while( indexNext < m_arr.GetCount() ) {
-					_RegexCharRange& rcrCurrent = m_arr[index].get_Value();
-					_RegexCharRange& rcrNext = m_arr[indexNext].get_Value();
+					_RegexCharRange& rcrCurrent = m_arr[index];
+					_RegexCharRange& rcrNext = m_arr[indexNext];
 					if( rcrCurrent.uHigh < rcrNext.uLow - 1 )
 						break;
 					//combine
@@ -104,7 +104,7 @@ public:
 		_RegexCharRange rcrV(rcr);
 		uintptr index = 0;
 		while( index < m_arr.GetCount() ) {
-			_RegexCharRange rcrC = m_arr[index].get_Value();
+			_RegexCharRange rcrC = m_arr[index];
 			//left
 			if( rcrV.uHigh < rcrC.uLow )
 				break;
@@ -127,11 +127,11 @@ public:
 				rcrK.uHigh = rcrV.uLow - 1;
 				m_arr.InsertAt(index, 1, rcrK);  //may throw
 				index ++;
-				m_arr[index].get_Value().uLow = rcrV.uLow;
+				m_arr[index].uLow = rcrV.uLow;
 				rcrC.uLow = rcrV.uLow;
 			} //end if
 			if( rcrV.uHigh < rcrC.uHigh ) {
-				m_arr[index].get_Value().uHigh = rcrV.uHigh;
+				m_arr[index].uHigh = rcrV.uHigh;
 				rcrK.uLow = rcrV.uHigh + 1;
 				rcrK.uHigh = rcrC.uHigh;
 				m_arr.InsertAt(index + 1, 1, rcrK);  //may throw
@@ -197,12 +197,12 @@ public:
 	const _RegexCharRange& GetRange(uintptr uIndex) const throw()
 	{
 		assert( uIndex < GetCount() );
-		return m_arr[uIndex].get_Value();
+		return m_arr[uIndex];
 	}
 	_RegexCharRange& GetRange(uintptr uIndex) throw()
 	{
 		assert( uIndex < GetCount() );
-		return m_arr[uIndex].get_Value();
+		return m_arr[uIndex];
 	}
 
 private:

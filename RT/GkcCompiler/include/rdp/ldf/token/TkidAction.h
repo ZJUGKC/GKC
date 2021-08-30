@@ -103,18 +103,10 @@ private:
 				break;
 			}
 
-			if ( is_id_char(ch) ) {
+			if ( is_id_char(ch) )
 				info.Append(ch);  //may throw
-				cr = info.AddCharEndCharIndex(1);
-				if ( cr.IsFailed() )
-					return cr;
-				cr = info.AddCharEndCol(1);
-				if ( cr.IsFailed() )
-					return cr;
-			}
-			else {
+			else
 				cr = stream.Deref().UngetChar(1);
-			}
 
 			if ( state == 5 ) {
 				info.set_ID(TK_TK);

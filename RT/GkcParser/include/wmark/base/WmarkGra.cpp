@@ -43,6 +43,7 @@ BEGIN_STATIC_CONST_STRING(g_wmark_gra)
 "	;" "\r\n"
 "block_body : TK_COMMENT_START { do_block_body_comment }" "\r\n"
 "	| TK_INDENT { do_block_body_indent }" "\r\n"
+"	| TK_TEXT { do_block_body_text }" "\r\n"
 "	;" "\r\n"
 	)
 END_STATIC_CONST_STRING(g_wmark_gra)

@@ -102,7 +102,7 @@ public:
 		if( m_rules.IsEmpty() )
 			return false;
 
-		m_uStartNT = m_rules[0].get_Value().pRule[0].uToken;
+		m_uStartNT = m_rules[0].pRule[0].uToken;
 
 		//table
 		if( !generate_first_set(uMaxTerminalID) )  //may throw
@@ -143,7 +143,7 @@ public:
 	void GetRule(uintptr index, RULEITEM& item) const noexcept
 	{
 		assert( index < m_rules.GetCount() );
-		item = m_rules[index].get_Value();
+		item = m_rules[index];
 	}
 
 private:
@@ -226,12 +226,12 @@ private:
 		uintptr uLastSize = vecIndex.GetCount();
 		uintptr uVecIdx = 0;
 		while( uVecIdx < vecIndex.GetCount() ) {
-			index = vecIndex[uVecIdx].get_Value();
-			uint uNT = m_rules[index].get_Value().pRule[1].uToken;
+			index = vecIndex[uVecIdx];
+			uint uNT = m_rules[index].pRule[1].uToken;
 			//find
 			bool bFound = false;
 			for( auto iterV(vecIndex.GetBegin()); iterV != vecIndex.GetEnd(); iterV.MoveNext() ) {
-				if( uNT == m_rules[iterV.get_Value()].get_Value().pRule[0].uToken ) {
+				if( uNT == m_rules[iterV.get_Value()].pRule[0].uToken ) {
 					bFound = true;
 					break;
 				}
@@ -255,9 +255,12 @@ private:
 			//the first nonterminal of right part cannot derive epsilon
 			if( iterF.get_Value().get_Second().Deref().iEpsilon < 0 )
 				return false;
-			auto iterP(m_map.Find(m_rules[index].get_Value().pRule[0].uToken));
+			auto iterP(m_map.Find(m_rules[index].pRule[0].uToken));
 			assert( iterP != m_map.GetEnd() );
 			//propagation
+			/*
+			terminals : left <-- (right, first item)
+			*/
 			for( auto iterF2 = iterF.get_Value().get_Second().Deref().mapTerminal.GetBegin();
 				iterF2 != iterF.get_Value().get_Second().Deref().mapTerminal.GetEnd();
 				iterF2.MoveNext() ) {
@@ -310,6 +313,7 @@ private:
 					uint uF = iter.get_Value().pRule[uNext].uToken;
 					if( uF == TK_EPSILON )
 						return false;
+					//add terminal
 					if( uF <= uMaxTerminalID ) {
 						if( iterF.get_Value().get_Second().Deref().mapTerminal.Find(uF) == iterF.get_Value().get_Second().Deref().mapTerminal.GetEnd() ) {
 							if( iterF.get_Value().get_Second().Deref().sFollow.Find(uF) == iterF.get_Value().get_Second().Deref().sFollow.GetEnd() )
@@ -318,6 +322,9 @@ private:
 						break;
 					}
 					//NT
+					/*
+					first set of NT --> (right, current item)
+					*/
 					auto iterP(m_map.Find(uF));
 					if( iterP == m_map.GetEnd() )
 						return false;
@@ -329,6 +336,7 @@ private:
 								iterF.get_Value().get_Second().Deref().sFollow.Insert(iterF2.get_Value().get_First());  //may throw
 						}
 					}
+					//derive EPS
 					if( !(iterP.get_Value().get_Second().Deref().iEpsilon < 0) )
 						break;
 					uNext ++;
@@ -343,6 +351,9 @@ private:
 		iterF.get_Value().get_Second().Deref().sFollow.Insert(CPL_TK_EOF);  //may throw
 
 		//propagation
+		/*
+		construct propagation table
+		*/
 		PropMap mapProp(MemoryHelper::GetCrtMemoryManager());
 		ShareArray<uint> vecToDo(ShareArrayHelper::MakeShareArray<uint>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 		iter = m_rules.GetBegin();
@@ -356,6 +367,7 @@ private:
 					break;
 				iterF = m_map.Find(uToken);
 				assert( iterF != m_map.GetEnd() );
+				//left --> (right, current item)
 				if( uToken != iter.get_Value().pRule[0].uToken ) {
 					if( iterP == mapProp.GetEnd() ) {
 						SharePtr<RBList<uint>> spItem(SharePtrHelper::MakeSharePtr<RBList<uint>>(MemoryHelper::GetCrtMemoryManager(), MemoryHelper::GetCrtMemoryManager()));  //may throw
@@ -365,13 +377,14 @@ private:
 					if( iterP.get_Value().get_Second().Deref().Find(uToken) == iterP.get_Value().get_Second().Deref().GetEnd() )
 						iterP.get_Value().get_Second().Deref().Insert(uToken);  //may throw
 				}
+				//derive EPS
 				if( !(iterF.get_Value().get_Second().Deref().iEpsilon < 0) )
 					break;
 			}
 		}
 		//loop
 		while( !vecToDo.IsEmpty() ) {
-			uint uToken = vecToDo[0].get_Value();
+			uint uToken = vecToDo[0];
 			vecToDo.RemoveAt(0);
 			auto iterP(mapProp.Find(uToken));
 			if( iterP == mapProp.GetEnd() )
@@ -384,6 +397,7 @@ private:
 				uint uNT = iterP2.get_Value();
 				auto iterF2(m_map.Find(uNT));
 				assert( iterF2 != m_map.GetEnd() );
+				//left --> (right, current item)
 				bool bChanged = false;
 				for( auto iterF3 = iterF.get_Value().get_Second().Deref().sFollow.GetBegin();
 					iterF3 != iterF.get_Value().get_Second().Deref().sFollow.GetEnd();

@@ -27,7 +27,7 @@ BEGIN_STATIC_CONST_STRING(g_won_gra)
 	STATIC_CONST_STRING_ENTRY(
 "\xEF\xBB\xBF"
 "%%" "\r\n"
-"value : TK_STRING { do_value_string }" "\r\n"
+"value : string_catenation { do_value_string_catenation }" "\r\n"
 "	| TK_NUMBER_INTEGER { do_value_number_integer }" "\r\n"
 "	| TK_NUMBER_FLOAT { do_value_number_float }" "\r\n"
 "	| TK_NUMBER_HEXADECIMAL { do_value_number_hexadecimal }" "\r\n"
@@ -36,6 +36,9 @@ BEGIN_STATIC_CONST_STRING(g_won_gra)
 "	| TK_BOOLEAN_TRUE { do_value_boolean_true }" "\r\n"
 "	| TK_BOOLEAN_FALSE { do_value_boolean_false }" "\r\n"
 "	| TK_KEY_NULL { do_value_null }" "\r\n"
+"	;" "\r\n"
+"string_catenation : string_catenation TK_STRING { do_string_catenation_string }" "\r\n"
+"	| TK_STRING { do_string_catenation }" "\r\n"
 "	;" "\r\n"
 "object : begin_object end_object { do_object_null }" "\r\n"
 "	| begin_object pair_list end_object { do_object_pair_list }" "\r\n"

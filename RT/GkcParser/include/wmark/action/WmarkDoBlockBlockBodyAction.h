@@ -41,12 +41,12 @@ public:
 		CallResult cr;
 		//get position
 		ShareCom<_ICplMetaDataPositionSymbolDataUtility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(IGrammarSymbolData, _ICplMetaDataPositionSymbolDataUtility, arrSymbol[1].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(IGrammarSymbolData, _ICplMetaDataPositionSymbolDataUtility, arrSymbol[1], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		CplMetaDataPosition pos(spU.Deref().GetPosition());
 		//set position
-		_COMPONENT_INSTANCE_INTERFACE(IGrammarSymbolData, _ICplMetaDataPositionSymbolDataUtility, arrSymbol[0].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(IGrammarSymbolData, _ICplMetaDataPositionSymbolDataUtility, arrSymbol[0], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		spU.Deref().SetPosition(pos);

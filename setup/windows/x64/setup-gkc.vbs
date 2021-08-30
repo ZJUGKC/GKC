@@ -10,17 +10,17 @@
 '
 
 'function
-Sub DecompressZipFile(objFSO, objShell, strZipFile, strDestPath)
-	Dim objSource, objFolderItem, objTarget
+Sub DecompressFolder(objFSO, objShell, strZipFile, strDestPath)
+	Dim objSource, objFolderItems, objTarget
 	Set objSource = objShell.NameSpace(objFSO.GetAbsolutePathName(strZipFile))
-	Set objFolderItem = objSource.Items()
+	Set objFolderItems = objSource.Items()
 	Set objTarget = objShell.NameSpace(strDestPath)
-	objTarget.CopyHere objFolderItem, 4 + 512 + 1024
+	objTarget.CopyHere objFolderItems, 4 + 512 + 1024
 	Do
 		WScript.Sleep 500
-	Loop Until objTarget.Items().Count >= objFolderItem.Count
+	Loop Until objTarget.Items().Count >= objFolderItems.Count
 	Set objTarget = Nothing
-	Set objFolderItem = Nothing
+	Set objFolderItems = Nothing
 	Set objSource = Nothing
 End Sub
 
@@ -183,7 +183,7 @@ End If
 If Not fso.FolderExists(strDest) Then
 	fso.CreateFolder(strDest)
 End If
-DecompressZipFile fso, objShell, strSrc, strDest
+DecompressFolder fso, objShell, strSrc, strDest
 fso.GetFolder(strDest & "\" & strPackageName).Name = "SYSTEM"
 strDest = strDest & "\" & "SYSTEM"
 

@@ -75,6 +75,13 @@ inline void call_constructor(T& t, Args&&... args)
 
 #pragma pop_macro("new")
 
+//destructor
+template <class T>
+inline void call_destructor(T& t) throw()
+{
+	t.~T();
+}
+
 //check derivations
 template <class T, class TBase>
 inline bool is_derived_from() throw()
@@ -334,27 +341,19 @@ public:
 
 	const typename T::EType& get_Value() const throw()
 	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		return tmp.get_Value();
+		return m_iter.get_Value();
 	}
 	typename T::EType& get_Value() throw()
 	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		return tmp.get_Value();
+		return m_iter.get_Value();
 	}
 	void set_Value(const typename T::EType& t)  //may throw
 	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		tmp.set_Value(t);
+		m_iter.set_Value(t);
 	}
 	void set_Value(typename T::EType&& t)  //may throw
 	{
-		T tmp(m_iter);
-		tmp.MovePrev();
-		tmp.set_Value(rv_forward(t));
+		m_iter.set_Value(rv_forward(t));
 	}
 
 	//methods
@@ -375,8 +374,73 @@ public:
 		return m_iter.CalcDelta(second.m_iter);
 	}
 
-private:
+protected:
 	T m_iter;
+};
+
+// reverse_iterator2<T>
+
+template <typename T>
+class reverse_iterator2 : public reverse_iterator<T>
+{
+private:
+	typedef reverse_iterator<T>  baseClass;
+
+public:
+	reverse_iterator2() throw()
+	{
+	}
+	explicit reverse_iterator2(const T& iter) throw() : baseClass(iter)
+	{
+	}
+	reverse_iterator2(const reverse_iterator2<T>& src) throw() : baseClass(static_cast<const baseClass&>(src))
+	{
+	}
+	~reverse_iterator2() throw()
+	{
+	}
+
+	//operators
+	reverse_iterator2<T>& operator=(const reverse_iterator2<T>& src) throw()
+	{
+		baseClass::operator=(static_cast<const baseClass&>(src));
+		return *this;
+	}
+
+	//logical
+	bool operator==(const reverse_iterator2<T>& right) const throw()
+	{
+		return baseClass::operator==(static_cast<const baseClass&>(right));
+	}
+	bool operator!=(const reverse_iterator2<T>& right) const throw()
+	{
+		return baseClass::operator!=(static_cast<const baseClass&>(right));
+	}
+
+	const typename T::EType& get_Value() const throw()
+	{
+		T tmp(baseClass::m_iter);
+		tmp.MovePrev();
+		return tmp.get_Value();
+	}
+	typename T::EType& get_Value() throw()
+	{
+		T tmp(baseClass::m_iter);
+		tmp.MovePrev();
+		return tmp.get_Value();
+	}
+	void set_Value(const typename T::EType& t)  //may throw
+	{
+		T tmp(baseClass::m_iter);
+		tmp.MovePrev();
+		tmp.set_Value(t);
+	}
+	void set_Value(typename T::EType&& t)  //may throw
+	{
+		T tmp(baseClass::m_iter);
+		tmp.MovePrev();
+		tmp.set_Value(rv_forward(t));
+	}
 };
 
 // -----Array-----
@@ -646,7 +710,7 @@ public:
 		return !operator==(right);
 	}
 
-	const Iterator operator[](uintptr index) const throw()
+	const T& operator[](uintptr index) const throw()
 	{
 		return GetAt(index);
 	}
@@ -672,7 +736,13 @@ public:
 	{
 		return Position(GetCount() - 1);
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	Position GetPosition(uintptr index) const throw()
+	{
+		assert( index < GetCount() );
+		return Position(index);
+	}
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return Iterator(ref_ptr<T>(baseClass::m_first + pos.GetIndex()));
 	}
@@ -692,17 +762,25 @@ public:
 	}
 	const reverse_iterator<Iterator> GetReverseBegin() const throw()
 	{
-		return reverse_iterator<Iterator>(GetEnd());
+		return reverse_iterator<Iterator>(ToIterator(GetTailPosition()));
 	}
 	const reverse_iterator<Iterator> GetReverseEnd() const throw()
 	{
-		return reverse_iterator<Iterator>(GetBegin());
+		return reverse_iterator<Iterator>(Iterator(ref_ptr<T>(baseClass::m_first - 1)));
+	}
+	const reverse_iterator2<Iterator> GetReverseBegin2() const throw()
+	{
+		return reverse_iterator2<Iterator>(GetEnd());
+	}
+	const reverse_iterator2<Iterator> GetReverseEnd2() const throw()
+	{
+		return reverse_iterator2<Iterator>(GetBegin());
 	}
 
-	const Iterator GetAt(uintptr index) const throw()
+	const T& GetAt(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return Iterator(ref_ptr<T>(baseClass::m_first + index));
+		return *(baseClass::m_first + index);
 	}
 
 private:
@@ -821,6 +899,44 @@ inline void copy_array_elements(const T* pSrc, T* pDest, uintptr size)
 
 #pragma pack(push, 1)
 
+// const array with prefix length
+template <typename T>
+class const_prefix_array
+{
+public:
+	explicit const_prefix_array(const T* p = NULL) noexcept : m_data(p)
+	{
+	}
+	uintptr GetCount() const noexcept
+	{
+		return m_data == NULL ? 0 : *((const uintptr*)m_data - 1);
+	}
+	const T* GetAddress() const noexcept
+	{
+		return m_data;
+	}
+	const_array<T> To_ConstArray() const noexcept
+	{
+		return const_array<T>(GetAddress(), GetCount());
+	}
+
+protected:
+	const T* m_data;
+};
+
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+
+// fixed_def_array<T, t_size>
+
+template <typename T, uintptr t_size>
+struct fixed_def_array
+{
+	uintptr uSize;
+	T data[t_size];
+};
+
 // fixed_array<T, t_size>
 
 template <typename T, uintptr t_size>
@@ -861,11 +977,11 @@ public:
 		return *this;
 	}
 
-	const Iterator operator[](uintptr index) const throw()
+	const T& operator[](uintptr index) const throw()
 	{
 		return GetAt(index);
 	}
-	Iterator operator[](uintptr index) throw()
+	T& operator[](uintptr index) throw()
 	{
 		return GetAt(index);
 	}
@@ -879,11 +995,17 @@ public:
 	{
 		return Position(c_size - 1);
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	Position GetPosition(uintptr index) const throw()
+	{
+		assert( index < t_size );
+		return Position(index);
+	}
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return Iterator(ref_ptr<T>(m_data + pos.GetIndex()));
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return Iterator(ref_ptr<T>(m_data + pos.GetIndex()));
 	}
@@ -911,30 +1033,46 @@ public:
 	}
 	const reverse_iterator<Iterator> GetReverseBegin() const throw()
 	{
-		return reverse_iterator<Iterator>(GetEnd());
+		return reverse_iterator<Iterator>(ToIterator(GetTailPosition()));
 	}
 	reverse_iterator<Iterator> GetReverseBegin() throw()
 	{
-		return reverse_iterator<Iterator>(GetEnd());
+		return reverse_iterator<Iterator>(ToIterator(GetTailPosition()));
 	}
 	const reverse_iterator<Iterator> GetReverseEnd() const throw()
 	{
-		return reverse_iterator<Iterator>(GetBegin());
+		return reverse_iterator<Iterator>(Iterator(ref_ptr<T>(m_data - 1)));
 	}
 	reverse_iterator<Iterator> GetReverseEnd() throw()
 	{
-		return reverse_iterator<Iterator>(GetBegin());
+		return reverse_iterator<Iterator>(Iterator(ref_ptr<T>(m_data - 1)));
+	}
+	const reverse_iterator2<Iterator> GetReverseBegin2() const throw()
+	{
+		return reverse_iterator2<Iterator>(GetEnd());
+	}
+	reverse_iterator2<Iterator> GetReverseBegin2() throw()
+	{
+		return reverse_iterator2<Iterator>(GetEnd());
+	}
+	const reverse_iterator2<Iterator> GetReverseEnd2() const throw()
+	{
+		return reverse_iterator2<Iterator>(GetBegin());
+	}
+	reverse_iterator2<Iterator> GetReverseEnd2() throw()
+	{
+		return reverse_iterator2<Iterator>(GetBegin());
 	}
 
-	const Iterator GetAt(uintptr index) const throw()
+	const T& GetAt(uintptr index) const throw()
 	{
 		assert( index < t_size );
-		return Iterator(ref_ptr<T>(m_data + index));
+		return *(m_data + index);
 	}
-	Iterator GetAt(uintptr index) throw()
+	T& GetAt(uintptr index) throw()
 	{
 		assert( index < t_size );
-		return Iterator(ref_ptr<T>(m_data + index));
+		return *(m_data + index);
 	}
 	void SetAt(uintptr index, const T& t)  //may throw
 	{
@@ -993,6 +1131,21 @@ public:
 	explicit delegate_base(func_type fn = nullptr) noexcept : m_func(fn)
 	{
 	}
+	delegate_base(const delegate_base& src) = delete;
+
+	void Release() noexcept
+	{
+		m_func = nullptr;
+	}
+	bool IsNull() const noexcept
+	{
+		return m_func == nullptr;
+	}
+	bool IsNullObject() const noexcept
+	{
+		return IsNull();
+	}
+
 	R operator()(Args&&... args)
 	{
 		return m_func(this, rv_forward<Args>(args)...);
@@ -1013,6 +1166,21 @@ public:
 	explicit delegate_base(func_type fn = nullptr) noexcept : m_func(fn)
 	{
 	}
+	delegate_base(const delegate_base& src) = delete;
+
+	void Release() noexcept
+	{
+		m_func = nullptr;
+	}
+	bool IsNull() const noexcept
+	{
+		return m_func == nullptr;
+	}
+	bool IsNullObject() const noexcept
+	{
+		return IsNull();
+	}
+
 	void operator()(Args&&... args)
 	{
 		m_func(this, rv_forward<Args>(args)...);

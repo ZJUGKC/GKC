@@ -66,50 +66,50 @@ public:
 		int ret = 0;
 
 		//-bom
-		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-bom"))) ) {
+		if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-bom"))) ) {
 			//-d
-			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-d"))) ) {
+			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-d"))) ) {
 				if( uArgCount != 5 ) {
 					_PrintVersion();
 					_PrintHelp();
 					return 1;
 				}
-				if( _Check_Same_File(args[3].get_Value(), args[4].get_Value()) ) {
+				if( _Check_Same_File(args[3], args[4]) ) {
 					return 1;
 				}
-				ret = _Cmd_Bom_Process(BOMTypes::None, args[3].get_Value(), args[4].get_Value());
+				ret = _Cmd_Bom_Process(BOMTypes::None, args[3], args[4]);
 			}
 			//-a
-			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-a"))) ) {
+			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-a"))) ) {
 				if( uArgCount != 6 ) {
 					_PrintVersion();
 					_PrintHelp();
 					return 1;
 				}
 				int iBomType = BOMTypes::None;
-				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF8"))) ) {
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF8"))) ) {
 					iBomType = BOMTypes::UTF8;
 				}
-				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF16LE"))) ) {
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF16LE"))) ) {
 					iBomType = BOMTypes::UTF16LE;
 				}
-				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF16BE"))) ) {
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF16BE"))) ) {
 					iBomType = BOMTypes::UTF16BE;
 				}
-				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF32LE"))) ) {
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF32LE"))) ) {
 					iBomType = BOMTypes::UTF32LE;
 				}
-				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF32BE"))) ) {
+				else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("UTF32BE"))) ) {
 					iBomType = BOMTypes::UTF32BE;
 				}
 				else {
 					ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid BOM Type!")));
 					return 1;
 				}
-				if( _Check_Same_File(args[4].get_Value(), args[5].get_Value()) ) {
+				if( _Check_Same_File(args[4], args[5]) ) {
 					return 1;
 				}
-				ret = _Cmd_Bom_Process(iBomType, args[4].get_Value(), args[5].get_Value());
+				ret = _Cmd_Bom_Process(iBomType, args[4], args[5]);
 			}
 			else {
 				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid BOM parameters!")));
@@ -117,13 +117,13 @@ public:
 			}
 		}
 		//-html
-		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-html"))) ) {
+		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-html"))) ) {
 			//-g
-			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-g"))) ) {
+			if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-g"))) ) {
 				bool bRTL = false;
 				uintptr uStartIndex = 3;
 				//-rtl
-				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-rtl"))) ) {
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-rtl"))) ) {
 					bRTL = true;
 					uStartIndex ++;
 				}
@@ -132,17 +132,17 @@ public:
 					_PrintHelp();
 					return 1;
 				}
-				if( _Check_Same_File(args[uStartIndex + 1].get_Value(), args[uStartIndex + 2].get_Value()) ) {
+				if( _Check_Same_File(args[uStartIndex + 1], args[uStartIndex + 2]) ) {
 					return 1;
 				}
-				ret = _Cmd_Generate_GitHub_Html(bRTL, args[uStartIndex].get_Value(), args[uStartIndex + 1].get_Value(), args[uStartIndex + 2].get_Value());  //may throw
+				ret = _Cmd_Generate_GitHub_Html(bRTL, args[uStartIndex], args[uStartIndex + 1], args[uStartIndex + 2]);  //may throw
 			}
 			//-x
-			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-x"))) ) {
+			else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[2], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-x"))) ) {
 				bool bRTL = false;
 				uintptr uStartIndex = 3;
 				//-rtl
-				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-rtl"))) ) {
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[3], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-rtl"))) ) {
 					bRTL = true;
 					uStartIndex ++;
 				}
@@ -153,7 +153,7 @@ public:
 				}
 				bool bLatest = false;
 				//-l
-				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[uStartIndex].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) ) {
+				if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[uStartIndex], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-l"))) ) {
 					bLatest = true;
 					uStartIndex ++;
 				}
@@ -162,10 +162,10 @@ public:
 					_PrintHelp();
 					return 1;
 				}
-				if( _Check_Same_File(args[uStartIndex + 2].get_Value(), args[uStartIndex + 3].get_Value()) ) {
+				if( _Check_Same_File(args[uStartIndex + 2], args[uStartIndex + 3]) ) {
 					return 1;
 				}
-				ret = _Cmd_Generate_XHtml_Html(bRTL, bLatest, args[uStartIndex].get_Value(), args[uStartIndex + 1].get_Value(), args[uStartIndex + 2].get_Value(), args[uStartIndex + 3].get_Value());  //may throw
+				ret = _Cmd_Generate_XHtml_Html(bRTL, bLatest, args[uStartIndex], args[uStartIndex + 1], args[uStartIndex + 2], args[uStartIndex + 3]);  //may throw
 			}
 			else {
 				ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid HTML parameters!")));
@@ -173,16 +173,16 @@ public:
 			}
 		}
 		//-encoding
-		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1].get_Value(), DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-encoding"))) ) {
+		else if( ConstStringCompareTrait<ConstStringS>::IsEQ(args[1], DECLARE_TEMP_CONST_STRING(ConstStringS, _S("-encoding"))) ) {
 			if( uArgCount != 6 ) {
 				_PrintVersion();
 				_PrintHelp();
 				return 1;
 			}
-			if( _Check_Same_File(args[4].get_Value(), args[5].get_Value()) ) {
+			if( _Check_Same_File(args[4], args[5]) ) {
 				return 1;
 			}
-			ret = _Cmd_Convert_Encoding(args[2].get_Value(), args[3].get_Value(), args[4].get_Value(), args[5].get_Value());  //may throw
+			ret = _Cmd_Convert_Encoding(args[2], args[3], args[4], args[5]);  //may throw
 		}
 		else {
 			ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Command error: Invalid parameters!")));

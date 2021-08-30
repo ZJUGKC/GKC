@@ -106,12 +106,12 @@ public:
 	const _RegexDotItem& GetItem(uintptr uIndex) const throw()
 	{
 		assert( uIndex < GetCount() );
-		return m_arr[uIndex].get_Value();
+		return m_arr[uIndex];
 	}
 	_RegexDotItem& GetItem(uintptr uIndex) throw()
 	{
 		assert( uIndex < GetCount() );
-		return m_arr[uIndex].get_Value();
+		return m_arr[uIndex];
 	}
 
 	void Add(const _RegexDotItem& item)
@@ -445,7 +445,7 @@ public:
 				arrDoneSet.Add();  //may throw
 				uFind = arrDoneSet.GetCount() - 1;
 			}
-			doneSet = RefPtr<_RegexDotItemSet>(arrDoneSet[uFind].get_Value());
+			doneSet = RefPtr<_RegexDotItemSet>(arrDoneSet[uFind]);
 			_RegexDotItemSet toDoSet;
 			_Regex_DotItem_Transition(item, rcr, toDoSet);  //may throw
 			_Regex_Process_ToDoSet(toDoSet, doneSet.Deref(), nextSet);  //may throw
@@ -515,7 +515,7 @@ public:
 		//loop
 		while( arrToDo.GetCount() > 0 ) {
 			//extract
-			_RegexStateList::Iterator iterC(arrToDo[0].get_Value());
+			_RegexStateList::Iterator iterC(arrToDo[0]);
 			arrToDo.RemoveAt(0);
 			//move
 			_RegexStateItem& itemState = iterC.get_Value();
@@ -541,10 +541,10 @@ public:
 				if( uFind == INVALID_ARRAY_INDEX ) {
 					m_arrState.Add(iterList);  //may throw
 					arrToDo.Add(iterList);  //may throw
-					arrNext[i].set_Value(m_arrState.GetCount() - 1);
+					arrNext[i] = m_arrState.GetCount() - 1;
 				}
 				else {
-					arrNext[i].set_Value(uFind);
+					arrNext[i] = uFind;
 					m_pool.RemoveAt(iterList);
 				}
 			} //end for
@@ -558,7 +558,7 @@ public:
 	const _RegexStateItem& GetState(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return m_arrState[index].get_Value().get_Value();
+		return m_arrState[index].get_Value();
 	}
 
 private:
@@ -566,7 +566,7 @@ private:
 	uintptr find_state_array(const _RegexDotItemSet& s) const throw()
 	{
 		for( uintptr i = 0; i < m_arrState.GetCount(); i ++ ) {
-			if( _Regex_DotItemSet_Is_Same(s, m_arrState[i].get_Value().get_Value().GetClosureSet()) )
+			if( _Regex_DotItemSet_Is_Same(s, m_arrState[i].get_Value().GetClosureSet()) )
 				return i;
 		}
 		return INVALID_ARRAY_INDEX;
@@ -599,11 +599,11 @@ inline void _Regex_Generate_Tables(const _Regex_AST& rast, FsaTable& table)
 	//transition
 	ShareArray<int> arrTransitionNum(ShareArrayHelper::MakeShareArray<int>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	arrTransitionNum.SetCount(iMaxStateNo + 1, 0);  //may throw
-	arrTransitionNum[0].set_Value(0);
+	arrTransitionNum[0] = 0;
 	for( int i = 1; i <= iMaxStateNo; i ++ ) {
 		uintptr uCount = rss.GetState(i - 1).GetTransitionCount();
 		assert( uCount < (uintptr)(Limits<int>::Max) );  //with last NULL item
-		arrTransitionNum[i].set_Value((int)uCount);
+		arrTransitionNum[i] = (int)uCount;
 	}
 
 	//table
@@ -616,9 +616,9 @@ inline void _Regex_Generate_Tables(const _Regex_AST& rast, FsaTable& table)
 		//return the first match in a state while conflicts occur
 		uintptr uMatch = rss.GetState(i - 1).GetMatchIndex();
 		table.SetState(i, FSA_STATE_STOP, uMatch == INVALID_ARRAY_INDEX ? 100 : -((int)(uMatch + 1)));
-		for( int j = 0; j < arrTransitionNum[i].get_Value(); j ++ ) {
+		for( int j = 0; j < arrTransitionNum[i]; j ++ ) {
 			const _RegexCharRange& rcr = rs.GetRange(j);
-			table.SetTransition(i, j, rcr.uLow, rcr.uHigh, (int)(arrNext[j].get_Value() + 1));
+			table.SetTransition(i, j, rcr.uLow, rcr.uHigh, (int)(arrNext[j] + 1));
 		}
 	}
 	for( int i = 1; i <= iMaxMatchNo; i ++ )

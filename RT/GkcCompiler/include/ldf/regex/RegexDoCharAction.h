@@ -42,7 +42,7 @@ public:
 		//character value
 		uint uValue = 0;
 		{
-			_LexerTokenString& str = arrSymbol[1].get_Value().Deref().get_Buffer().Deref();
+			_LexerTokenString& str = arrSymbol[1].Deref().get_Buffer().Deref();
 			if( str.GetLength() > 2 ) {
 				bool bOK = str.ToHexadecimalInteger(2, uValue);
 				(void)bOK;
@@ -57,7 +57,7 @@ public:
 		//uValue may be 0, such as [^...\x00-\x1F]
 		//set value
 		ShareCom<_I_RegexCharSymbolData_Utility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSymbolData_Utility, arrSymbol[0].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexCharSymbolData_Utility, arrSymbol[0], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		_RegexCharRange rcr;

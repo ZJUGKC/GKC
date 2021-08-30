@@ -42,12 +42,12 @@ public:
 		CallResult cr;
 		//position
 		ShareCom<_I_RegexPositionSymbolData_Utility> spS;
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[1].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[1], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
 		AstTree::Position pos(spS.Deref().GetPosition());
 		//set
-		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0].get_Value(), spS, cr);
+		_COMPONENT_INSTANCE_INTERFACE(_IGrammarSymbolData, _I_RegexPositionSymbolData_Utility, arrSymbol[0], spS, cr);
 		if( cr.IsFailed() )
 			return cr;
 		spS.Deref().SetPosition(pos);

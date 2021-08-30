@@ -148,8 +148,11 @@ private:
 					cr = _get_next_char(stream, info, ch);
 					if( cr.IsFailed() )
 						break;
+
 					if( ch != '\n' )
 						continue;
+
+					info.get_Data().Append(ch);  //may throw
 				}
 				//LN
 				else if( ch == '\n' ) {

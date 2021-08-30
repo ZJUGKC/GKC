@@ -18,6 +18,21 @@ This file contains main function for Console Application.
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//callback
+
+BOOL WINAPI _ctrl_handler(DWORD dwCtrlType)
+{
+	switch( dwCtrlType ) {
+	case CTRL_C_EVENT:
+	case CTRL_BREAK_EVENT:
+		stdout_attr_helper::get_attr().Restore();
+		break;
+	default:
+		break;
+	}
+	return FALSE;
+}
+
 //main
 
 int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
@@ -36,6 +51,9 @@ int wmain(int argc, wchar_t *argv[], wchar_t *envp[])
 
 	//locale
 	set_default_locale();
+
+	//ctrl
+	::SetConsoleCtrlHandler(&_ctrl_handler, TRUE);  //no check, FALSE, ::GetLastError()
 
 	//time
 	time_initialize();

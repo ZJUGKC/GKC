@@ -128,6 +128,7 @@ private:
 			szFormat[ret] = 0;
 		//no check
 		scan_format(szFormat, FixedArrayHelper::GetInternalPointer(str));
+		str.RecalcLength();
 	}
 };
 

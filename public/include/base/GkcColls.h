@@ -269,11 +269,12 @@ public:
 	{
 		return get_position(m_pRoot);
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return get_iterator(pos);
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return get_iterator(pos);
 	}
@@ -311,14 +312,14 @@ public:
 	{
 		_Node* pParent = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterParent.m_pos.m_refNode));
 		_Node* pAfter = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterAfter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(t, pParent, pAfter);  //may throw
+		_Node* pNewNode = new_node(pParent, pAfter, t);  //may throw
 		return get_iterator(pNewNode);
 	}
 	Iterator Insert(const Iterator& iterParent, const Iterator& iterAfter, T&& t)
 	{
 		_Node* pParent = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterParent.m_pos.m_refNode));
 		_Node* pAfter = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterAfter.m_pos.m_refNode));
-		_Node* pNewNode = new_node(rv_forward(t), pParent, pAfter);  //may throw
+		_Node* pNewNode = new_node(pParent, pAfter, rv_forward(t));  //may throw
 		return get_iterator(pNewNode);
 	}
 
@@ -425,37 +426,24 @@ private:
 	void root_allocate()
 	{
 		if( m_pRoot == NULL ) {
-			m_pRoot = node_pair_helper<_Node, T>::ConstructNode(m_freelist);  //may throw
+			m_pRoot = node_helper<_Node>::ConstructNode(m_freelist);  //may throw
 			m_pRoot->m_pNext = m_pRoot->m_pParent = m_pRoot->m_pChild = NULL;
 		}
 	}
 
 	//nodes
-	_Node* new_node(_Node* pParent, _Node* pAfter)
+	template <typename... Args>
+	_Node* new_node(_Node* pParent, _Node* pAfter, Args&&... args)
 	{
 		root_allocate();  //may throw
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist);  //may throw
-		fill_new_node(pNewNode, pParent, pAfter);
-		return pNewNode;
-	}
-	_Node* new_node(const T& t, _Node* pParent, _Node* pAfter)
-	{
-		root_allocate();  //may throw
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, t);  //may throw
-		fill_new_node(pNewNode, pParent, pAfter);
-		return pNewNode;
-	}
-	_Node* new_node(T&& t, _Node* pParent, _Node* pAfter)
-	{
-		root_allocate();  //may throw
-		_Node* pNewNode = node_pair_helper<_Node, T>::ConstructNode(m_freelist, rv_forward(t));  //may throw
+		_Node* pNewNode = node_helper<_Node>::ConstructNode(m_freelist, rv_forward<Args>(args)...);  //may throw
 		fill_new_node(pNewNode, pParent, pAfter);
 		return pNewNode;
 	}
 	//free
 	void free_node(_Node* pNode) throw()
 	{
-		node_pair_helper<_Node, T>::DestructNode(m_freelist, pNode, m_uElements);
+		node_helper<_Node>::DestructNode(m_freelist, pNode, m_uElements);
 	}
 
 	//remove

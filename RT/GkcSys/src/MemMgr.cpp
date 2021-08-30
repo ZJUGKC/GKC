@@ -36,4 +36,11 @@ GKC::IMemoryManager* _CrtMemoryManager_Get() throw()
 	return GKC::get_crt_mem_mgr();
 }
 
+//Mutex
+
+GKC::Mutex* _MemoryMutex_Get() throw()
+{
+	return GKC::get_mem_mutex();
+}
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -110,7 +110,7 @@ public:
 					return -2;
 				}
 				//accepted
-				if( !m_rpaAccepted.IsBlockNull() ) {
+				if( !m_bEmpty && !m_rpaAccepted.IsBlockNull() ) {
 					cr = m_rpaAccepted.Deref().DoAction(m_tokenInfo, m_vecError);
 					if( cr.IsFailed() )
 						return -2;
@@ -119,7 +119,7 @@ public:
 			}
 
 			//top
-			RULEELEMENT elem = m_stack.GetAt(m_stack.GetCount() - 1).get_Value();
+			RULEELEMENT elem = m_stack.GetAt(m_stack.GetCount() - 1);
 
 			// terminal
 			if( elem.uToken <= m_uMaxTerminalID ) {
@@ -171,6 +171,7 @@ public:
 				}
 				//pop
 				m_stack.RemoveAt(m_stack.GetCount() - 1);
+				break;
 			}
 		} //end while
 
@@ -182,13 +183,13 @@ public:
 			return false;
 		_RdPushDownStack skTemp(ShareArrayHelper::MakeShareArray<RULEELEMENT>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 		//stack
-		RULEELEMENT elem = m_stack.GetAt(m_stack.GetCount() - 1).get_Value();
+		RULEELEMENT elem = m_stack.GetAt(m_stack.GetCount() - 1);
 		while( true ) {
 			m_stack.RemoveAt(m_stack.GetCount() - 1);
 			skTemp.Add(elem);  //may throw
 			if( m_stack.IsEmpty() )
 				break;
-			elem = m_stack.GetAt(m_stack.GetCount() - 1).get_Value();
+			elem = m_stack.GetAt(m_stack.GetCount() - 1);
 			//check
 			if( elem.uToken <= m_uMaxTerminalID ) {
 				if( m_uCurrentEvent == elem.uToken )
@@ -201,11 +202,11 @@ public:
 			}
 		}
 		while( !skTemp.IsEmpty() ) {
-			m_stack.Add(skTemp.GetAt(skTemp.GetCount() - 1).get_Value());  //may throw
+			m_stack.Add(skTemp.GetAt(skTemp.GetCount() - 1));  //may throw
 			skTemp.RemoveAt(skTemp.GetCount() - 1);
 		}
 		//input
-		elem = m_stack.GetAt(m_stack.GetCount() - 1).get_Value();
+		elem = m_stack.GetAt(m_stack.GetCount() - 1);
 		while( true ) {
 			CallResult cr = m_refScanner.Deref().GetToken(m_tokenInfo);  //may throw
 			if( cr.IsFailed() )

@@ -143,7 +143,7 @@ public:
 	void GetPropagationAt(uintptr index, uintptr& uState, uintptr& uSeed) const throw()
 	{
 		assert( index < GetPropagationCount() );
-		const pairClass& pair = m_arrPropagation[index].get_Value();
+		const pairClass& pair = m_arrPropagation[index];
 		uState = pair.get_First();
 		uSeed  = pair.get_Second();
 	}
@@ -194,7 +194,7 @@ private:
 	void combine_propagation(const ShareArray<pairClass>& arr)
 	{
 		for( uintptr i = 0; i < arr.GetCount(); i ++ ) {
-			const pairClass& pair = arr[i].get_Value();
+			const pairClass& pair = arr[i];
 			uintptr uState = pair.get_First();
 			uintptr uSeed = pair.get_Second();
 			if( FindPropagation(uState, uSeed) == INVALID_ARRAY_INDEX )
@@ -228,12 +228,12 @@ public:
 	const _GraDotItem& GetItem(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return m_arr[index].get_Value();
+		return m_arr[index];
 	}
 	_GraDotItem& GetItem(uintptr index) throw()
 	{
 		assert( index < GetCount() );
-		return m_arr[index].get_Value();
+		return m_arr[index];
 	}
 
 	//find
@@ -264,7 +264,7 @@ public:
 			uintptr uIndex = find_item_array(item);
 			RefPtr<_GraDotItem> rItem;
 			if( uIndex != INVALID_ARRAY_INDEX ) {
-				rItem = RefPtr<_GraDotItem>(m_arr[uIndex].get_Value());
+				rItem = RefPtr<_GraDotItem>(m_arr[uIndex]);
 			}
 			else {
 				//add
@@ -364,7 +364,7 @@ private:
 		//loop
 		_GraTokenSet tsDone;
 		while( arrToDo.GetCount() > 0 ) {
-			_GraToken tkc(arrToDo[0].get_Value());
+			_GraToken tkc(arrToDo[0]);
 			arrToDo.RemoveAt(0);
 			//done
 			tsDone.Add(tkc);  //may throw
@@ -441,7 +441,7 @@ inline void _Gra_SeedItem_To_ClosureSet(const _GraDotItem& item, uintptr uSeedIn
 		arrStack.Add(itemA);  //may throw
 	} //end block
 	while( arrStack.GetCount() > 0 ) {
-		_GraDotItem itemC(arrStack[0].get_Value());
+		_GraDotItem itemC(arrStack[0]);
 		arrStack.RemoveAt(0);
 		uRuleNo = itemC.GetRuleNo();
 		uDotPos = itemC.GetDotPos();
@@ -620,7 +620,7 @@ public:
 
 	uintptr GetNextStateNo(uintptr index) const throw()
 	{
-		return m_arrNext[index].get_Value();
+		return m_arrNext[index];
 	}
 	const _GraTokenSet& GetReductionSet() const throw()
 	{
@@ -628,7 +628,7 @@ public:
 	}
 	uintptr GetReductionNo(uintptr index) const throw()
 	{
-		return m_arrReduction[index].get_Value();
+		return m_arrReduction[index];
 	}
 
 	uintptr GetShiftCount() const throw()
@@ -734,7 +734,7 @@ public:
 	}
 	const _GraStateItem& GetState(uintptr index) const throw()
 	{
-		return m_arrState[index].get_Value().get_Value();
+		return m_arrState[index].get_Value();
 	}
 
 	//generate
@@ -766,7 +766,7 @@ public:
 		//loop
 		while( arrToDo.GetCount() > 0 ) {
 			//extract
-			_GraStateList::Iterator iterC(arrToDo[0].get_Value());
+			_GraStateList::Iterator iterC(arrToDo[0]);
 			arrToDo.RemoveAt(0);
 			//closure set
 			_GraStateItem& itemState = iterC.get_Value();
@@ -795,14 +795,14 @@ public:
 					m_arrState.Add(iterList);  //may throw
 					arrToDo.Add(iterList);  //may throw
 					uintptr uStateNo = m_arrState.GetCount() - 1;
-					arrNext[i].set_Value(uStateNo);
+					arrNext[i] = uStateNo;
 					//propagation
 					_Gra_Calc_DotItemSet_Propagation_Relationship(nextSet, NULL, uStateNo, seedSet);  //may throw
 				}
 				else {
-					arrNext[i].set_Value(uFind);
+					arrNext[i] = uFind;
 					//propagation
-					_Gra_Calc_DotItemSet_Propagation_Relationship(nextSet, &(m_arrState[uFind].get_Value().get_Value().GetSeedSet()), uFind, seedSet);  //may throw
+					_Gra_Calc_DotItemSet_Propagation_Relationship(nextSet, &(m_arrState[uFind].get_Value().GetSeedSet()), uFind, seedSet);  //may throw
 					//remove
 					m_pool.RemoveAt(iterList);
 				}
@@ -818,14 +818,14 @@ public:
 		process_propagation_todo(arrPG);  //may throw
 		//reduction
 		for( uintptr i = 0; i < m_arrState.GetCount(); i ++ )
-			m_arrState[i].get_Value().get_Value().GenerateReduction();  //may throw
+			m_arrState[i].get_Value().GenerateReduction();  //may throw
 	}
 
 private:
 	uintptr find_state_array(const _GraDotItemSet& dis) const throw()
 	{
 		for( uintptr i = 0; i < m_arrState.GetCount(); i ++ ) {
-			if( dis.IsSameSet(m_arrState[i].get_Value().get_Value().GetSeedSet()) )
+			if( dis.IsSameSet(m_arrState[i].get_Value().GetSeedSet()) )
 				return i;
 		}
 		return INVALID_ARRAY_INDEX;
@@ -835,13 +835,13 @@ private:
 	void process_propagation_todo(ShareArray<RefPtr<_GraDotItem>>& arrPG)
 	{
 		while( arrPG.GetCount() > 0 ) {
-			const _GraDotItem& itemC = arrPG[0].get_Value().Deref();
+			const _GraDotItem& itemC = arrPG[0].Deref();
 			arrPG.RemoveAt(0);
 			//propagation
 			for( uintptr i = 0; i < itemC.GetPropagationCount(); i ++ ) {
 				uintptr uState, uSeed;
 				itemC.GetPropagationAt(i, uState, uSeed);
-				_GraDotItem& itemN = m_arrState[uState].get_Value().get_Value().GetSeedSet().GetItem(uSeed);
+				_GraDotItem& itemN = m_arrState[uState].get_Value().GetSeedSet().GetItem(uSeed);
 				if( itemN.CombineLookAhead(itemC) != 0 && itemN.GetPropagationCount() != 0 ) {  //may throw
 					RefPtr<_GraDotItem> rItem(itemN);
 					if( !(ArrayUtilHelper::Find<ShareArray<RefPtr<_GraDotItem>>>(arrPG, rItem).IsValid()) )
@@ -878,13 +878,13 @@ inline void _Gra_Generate_Tables(const TokenTable& tt, const TokenTable& nt, con
 	//transition
 	ShareArray<int> arrTransitionNum(ShareArrayHelper::MakeShareArray<int>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 	arrTransitionNum.SetCount(iMaxStateNo + 1, 0);  //may throw
-	arrTransitionNum[0].set_Value(0);
-	arrTransitionNum[1].set_Value(0);
+	arrTransitionNum[0] = 0;
+	arrTransitionNum[1] = 0;
 	for( int i = 2; i <= iMaxStateNo; i ++ ) {
 		const _GraStateItem& si = gss.GetState(i - 2);
 		uintptr uCount = SafeOperators::AddThrow(si.GetShiftCount(), si.GetReductionCount());  //may throw
 		assert( uCount < (uintptr)(Limits<int>::Max) );  //with last NULL item
-		arrTransitionNum[i].set_Value((int)uCount);
+		arrTransitionNum[i] = (int)uCount;
 	}
 
 	//table

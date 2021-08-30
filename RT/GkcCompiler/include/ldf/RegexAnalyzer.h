@@ -58,12 +58,12 @@ public:
 	const AstTree& GetAST(uintptr uIndex) const throw()
 	{
 		assert( uIndex < GetCount() );
-		return m_trees[uIndex].get_Value();
+		return m_trees[uIndex];
 	}
 	AstTree& GetAST(uintptr uIndex) throw()
 	{
 		assert( uIndex < GetCount() );
-		return m_trees[uIndex].get_Value();
+		return m_trees[uIndex];
 	}
 
 private:

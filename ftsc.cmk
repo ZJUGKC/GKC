@@ -1,0 +1,67 @@
+#
+# Copyright (c) 2021, Xin YUAN, courses of Zhejiang University
+# All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the 2-Clause BSD License.
+#
+# Author contact information:
+#   yxxinyuan@zju.edu.cn
+#
+
+# File To Source Code
+
+MACRO(SET_FILES_TO_SOURCE_CODE targetName isCpp fileList)
+	SET(_source_files "${ARGN}")
+	LIST(APPEND _source_files ${fileList})
+	# command name
+	SET(_cmd_name "file2code")
+	# destination directory
+	SET(_dest_dir "${CMAKE_CURRENT_BINARY_DIR}/ftsc")
+	IF(WIN32)
+		SET_TARGET_MKDIR(${targetName} FALSE ${_dest_dir})
+	ELSE(WIN32)
+		ADD_CUSTOM_COMMAND(OUTPUT ${_dest_dir}
+						COMMAND mkdir ${_dest_dir})
+	ENDIF(WIN32)
+	# options
+	IF(${isCpp})
+		SET(_ftsc_option "-cpp")
+		SET(_ftsc_ext ".cpp")
+	ELSE(${isCpp})
+		SET(_ftsc_option "-c")
+		SET(_ftsc_ext ".c")
+	ENDIF(${isCpp})
+	# each file
+	SET(_h_files "")
+	SET(_gen_files "")
+	FOREACH(_file ${_source_files})
+		SET(_input "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
+		STRING(REPLACE "/" "_" _dest_file ${_file})
+		STRING(REPLACE "." "_" _dest_file ${_dest_file})
+		STRING(REPLACE "-" "_" _dest_file ${_dest_file})
+		SET(_output "${_dest_dir}/${_dest_file}")
+		IF(WIN32)
+			STRING(REPLACE "/" "\\\\" _input ${_input})
+			STRING(REPLACE "/" "\\\\" _output ${_output})
+			SET_TARGET_CMD(${targetName} FALSE ${_cmd_name} ${_ftsc_option} ${_input} ${_output})
+		ELSE(WIN32)
+			ADD_CUSTOM_COMMAND(OUTPUT "${_output}.h" "${_output}${_ftsc_ext}"
+							COMMAND ${_cmd_name} ${_ftsc_option} ${_input} ${_output}
+							DEPENDS ${_input} ${_dest_dir})
+		ENDIF(WIN32)
+		LIST(APPEND _h_files "${_output}.h")
+		LIST(APPEND _gen_files "${_output}${_ftsc_ext}")
+	ENDFOREACH(_file)
+	# target
+	IF(WIN32)
+	ELSE(WIN32)
+		ADD_CUSTOM_TARGET(${targetName}_ftsc DEPENDS ${_dest_dir} ${_h_files} ${_gen_files})
+		ADD_DEPENDENCIES(${targetName} ${targetName}_ftsc)
+	ENDIF(WIN32)
+	# add generated source files
+	SET_SOURCE_FILES_PROPERTIES(${_gen_files} PROPERTIES GENERATED TRUE)
+	TARGET_SOURCES(${targetName} PUBLIC ${_gen_files})
+ENDMACRO(SET_FILES_TO_SOURCE_CODE)
+
+# end

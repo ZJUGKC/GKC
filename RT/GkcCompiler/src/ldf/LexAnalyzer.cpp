@@ -201,17 +201,15 @@ private:
 							uCount --;
 							break;
 						}
-						rStrV = RefPtr<_LexerTokenString>(m_token_regex[id - m_token_table.GetMinID()].get_Value());
+						rStrV = RefPtr<_LexerTokenString>(m_token_regex[id - m_token_table.GetMinID()]);
 					}
 					else {
-						rStrV = RefPtr<_LexerTokenString>(m_macro_regex[id - m_macro_table.GetMinID()].get_Value());
+						rStrV = RefPtr<_LexerTokenString>(m_macro_regex[id - m_macro_table.GetMinID()]);
 					}
-					str.SetAt(uLeftC, '(');
-					str.SetAt(uStart - 1, ')');
-					str.Delete(uLeftC + 1, uLen);
-					str.Insert(uLeftC + 1, rStrV.Deref());  //may throw
+					str.Delete(uLeftC, uLen + 2);
+					str.Insert(uLeftC, rStrV.Deref());  //may throw
 					//now uStart and uLength are invalid
-					uStart = uLeftC + 1 + rStrV.Deref().GetLength() + 1;
+					uStart = uLeftC + rStrV.Deref().GetLength();
 					uLength = str.GetLength();
 					break;
 				} while(true);

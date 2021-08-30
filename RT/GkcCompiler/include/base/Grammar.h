@@ -331,7 +331,7 @@ private:
 		ShareCom<_IGrammarAction> ret;
 		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;
-		ret = m_arrAction[uID].get_Value();
+		ret = m_arrAction[uID];
 		return ret;
 	}
 	//factories
@@ -360,13 +360,13 @@ private:
 			assert( uEventNo >= tt.GetMinID() );
 			uEventNo -= tt.GetMinID();
 			assert( (uintptr)uEventNo < m_arrTerminalFactory.GetCount() );
-			spFactory = m_arrTerminalFactory[uEventNo].get_Value();
+			spFactory = m_arrTerminalFactory[uEventNo];
 		}
 		else {
 			assert( uEventNo >= m_nonterminal_table.Deref().GetMinID());
 			uEventNo -= m_nonterminal_table.Deref().GetMinID();
 			assert( (uintptr)uEventNo < m_arrNonterminalFactory.GetCount() );
-			spFactory = m_arrNonterminalFactory[uEventNo].get_Value();
+			spFactory = m_arrNonterminalFactory[uEventNo];
 		} //end if
 		assert( !spFactory.IsBlockNull() );
 		//create

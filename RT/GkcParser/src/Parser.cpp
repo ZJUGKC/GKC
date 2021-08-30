@@ -44,6 +44,9 @@ This file contains parser functions.
 #include "won/base/WonGra.h"
 
 #include "won/action/WonDoCommonAction.h"
+#include "won/action/WonDoValueStringCatenationAction.h"
+#include "won/action/WonDoStringCatenationAction.h"
+#include "won/action/WonDoStringCatenationStringAction.h"
 
 #include "won/WonAction.h"
 #include "won/WonUtility.h"
@@ -63,6 +66,7 @@ This file contains parser functions.
 #include "wmark/action/WmarkDoBlockBlockBodyAction.h"
 #include "wmark/action/WmarkDoBlockBodyCommentAction.h"
 #include "wmark/action/WmarkDoBlockBodyIndentAction.h"
+#include "wmark/action/WmarkDoBlockBodyTextAction.h"
 
 #include "wmark/WmarkAction.h"
 #include "wmark/WmarkUtility.h"
@@ -100,6 +104,129 @@ inline void _Internal_WonUtility_Create(GKC::ShareCom<_IWonUtility>& sp, GKC::Ca
 inline void _Internal_WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::CallResult& cr) throw()
 {
 	_CREATE_COMPONENT_INSTANCE(WonParser, _IWonParser, sp, cr);
+}
+
+// Parse won to meta data
+
+inline void _delete_quotes(StringA& str) throw()
+{
+	assert( str.GetLength() >= 2 );
+	StringOpHelper::Delete(str.GetLength() - 1, 1, str);
+	StringOpHelper::Delete(0, 1, str);
+}
+inline bool _add_node(ShareCom<ICplMetaData>& spM, const ConstStringA& cstrToken, int iType, const CplMetaDataPosition& posCur, CplMetaDataPosition& pos, CallResult& cr) throw()
+{
+	CplMetaDataPosition posSymbol(spM.Deref().Find(cstrToken));
+	if( posSymbol.IsNull() ) {
+		cr = spM.Deref().InsertSymbol(cstrToken, 0, false, posSymbol);
+		if( cr.IsFailed() )
+			return false;
+	}
+	cr = spM.Deref().InsertAstNode((uint)iType, pos);
+	if( cr.IsFailed() )
+		return false;
+	spM.Deref().SetAstData(pos, posSymbol);
+	spM.Deref().SetAstParent(pos, posCur);
+	CplMetaDataPosition posParent(posCur);
+	CplAstNodeInfo info;
+	if( posCur.IsNull() ) {
+		spM.Deref().GetAstNodeInfo(pos, info);
+		posParent = info.posParent;
+		assert( !posParent.IsNull() );
+	}
+	spM.Deref().GetAstNodeInfo(posParent, info);
+	if( info.uType == _WonTokenTypes::BeginObject || info.uType == _WonTokenTypes::BeginArray ) {
+		if( info.posChild.IsNull() ) {
+			spM.Deref().SetAstChild(posParent, pos);
+		}
+		else {
+			CplMetaDataPosition pos1(info.posChild);
+			spM.Deref().GetAstNodeInfo(pos1, info);
+			CplMetaDataPosition pos2(info.posNext);
+			while( !pos2.IsNull() ) {
+				spM.Deref().GetAstNodeInfo(pos2, info);
+				pos1 = pos2;
+				pos2 = info.posNext;
+			}
+			spM.Deref().SetAstNext(pos1, pos);
+		}
+	}
+	else {
+		assert( info.posChild.IsNull() );
+		spM.Deref().SetAstChild(posParent, pos);
+	}
+	return true;
+}
+inline void _leave_current_level(ShareCom<ICplMetaData>& spM, CplMetaDataPosition& pos) throw()
+{
+	assert( !pos.IsNull() );
+	CplAstNodeInfo info;
+	spM.Deref().GetAstNodeInfo(pos, info);
+	assert( !info.posParent.IsNull() );
+	pos = info.posParent;
+}
+
+inline void _Internal_Won_Parse(const GKC::ShareCom<_IWonParser>& spParser, const GKC::ShareCom<GKC::ICplMetaData>& spMeta, GKC::CallResult& cr) throw()
+{
+	ShareCom<_IWonParser> spP(spParser);
+	ShareCom<ICplMetaData> spM(spMeta);
+	//start
+	cr = spP.Deref().Start();
+	if( cr.IsFailed() )
+		return ;
+	//loop
+	CplMetaDataPosition posCurrent;
+	CplMetaDataPosition pos;
+	StringA strToken;
+	while( true ) {
+		int iType;
+		cr = spP.Deref().GetNextToken(iType, strToken);
+		if( cr.IsFailed() )
+			return ;
+		if( cr.GetResult() == SystemCallResults::S_False )
+			break;
+		//types
+		switch( iType ) {
+		case _WonTokenTypes::ValueString:
+			_delete_quotes(strToken);
+		case _WonTokenTypes::ValueNumberInteger:
+		case _WonTokenTypes::ValueNumberFloat:
+		case _WonTokenTypes::ValueNumberHexadecimal:
+		case _WonTokenTypes::ValueBooleanTrue:
+		case _WonTokenTypes::ValueBooleanFalse:
+		case _WonTokenTypes::ValueNull:
+			if( !_add_node(spM, StringUtilHelper::To_ConstString(strToken), iType, posCurrent, pos, cr) )
+				return ;
+			break;
+		case _WonTokenTypes::Key:
+			_delete_quotes(strToken);
+		case _WonTokenTypes::BeginObject:
+		case _WonTokenTypes::BeginArray:
+			if( !_add_node(spM, StringUtilHelper::To_ConstString(strToken), iType, posCurrent, pos, cr) )
+				return ;
+			//enter
+			posCurrent = pos;
+			break;
+		case _WonTokenTypes::EndObject:
+		case _WonTokenTypes::EndPair:
+		case _WonTokenTypes::EndArray:
+			_leave_current_level(spM, posCurrent);
+			break;
+		default:
+			cr.SetResult(SystemCallResults::Fail);
+			return ;
+			break;
+		}
+	} //end while
+	//won
+	ConstStringA cstr(DECLARE_TEMP_CONST_STRING(ConstStringA, WON_ROOT_SYMBOL));
+	pos = spM.Deref().Find(cstr);
+	if( pos.IsNull() ) {
+		cr = spM.Deref().InsertSymbol(cstr, 0, false, pos);
+		if( cr.IsFailed() )
+			return ;
+	}
+	spM.Deref().SetData(pos, spM.Deref().GetAstStart());
 }
 
 // WmarkUtility
@@ -144,6 +271,12 @@ void _WonUtility_Create(GKC::ShareCom<_IWonUtility>& sp, GKC::CallResult& cr) th
 void _WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::CallResult& cr) throw()
 {
 	GKC::_Internal_WonParser_Create(sp, cr);
+}
+
+// Parse won to meta data
+void _Won_Parse(const GKC::ShareCom<_IWonParser>& spParser, const GKC::ShareCom<GKC::ICplMetaData>& spMeta, GKC::CallResult& cr) throw()
+{
+	GKC::_Internal_Won_Parse(spParser, spMeta, cr);
 }
 
 // WmarkUtility

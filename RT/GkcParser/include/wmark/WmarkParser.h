@@ -182,6 +182,9 @@ private:
 			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_INDENT"), objs.spBasicFactory);
 			if( cr.IsFailed() )
 				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "TK_TEXT"), objs.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
 			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "document"), objs.spPositionFactory);
 			if( cr.IsFailed() )
 				return cr;
@@ -272,6 +275,17 @@ private:
 				return cr;
 			arrUtility.Add(spU);  //may throw
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_body_indent"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			//Do-Block-Body-Text
+			cr = _Create_WmarkDoBlockBodyTextAction(was, spAction);
+			if( cr.IsFailed() )
+				return cr;
+			_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _ICplMetaDataActionUtility, spAction, spU, cr);
+			if( cr.IsFailed() )
+				return cr;
+			arrUtility.Add(spU);  //may throw
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_block_body_text"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 		} //end block

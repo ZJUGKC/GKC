@@ -685,4 +685,30 @@ inline uintptr calc_sub_string_act_length(uintptr uSrcLength, uintptr uStart, ui
 	return uRet;
 }
 
+#pragma pack(push, 1)
+
+// const string with prefix length
+template <typename Tchar>
+class const_prefix_string : public const_prefix_array<Tchar>
+{
+private:
+	typedef const_prefix_array<Tchar>  baseClass;
+
+public:
+	explicit const_prefix_string(const Tchar* p = NULL) noexcept : baseClass(p)
+	{
+	}
+	uintptr GetLength() const noexcept
+	{
+		uintptr uCount;
+		return baseClass::m_data == NULL ? 0 : ((uCount = *((const uintptr*)(baseClass::m_data) - 1), uCount == 0) ? 0 : uCount - 1);
+	}
+	const_string_t<Tchar> To_ConstString() const noexcept
+	{
+		return const_string_t<Tchar>(baseClass::GetAddress(), GetLength());
+	}
+};
+
+#pragma pack(pop)
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -56,7 +56,7 @@ private:
 	void do_action(ShareArray<ShareCom<_IGrammarSymbolData>>& arrSymbol)
 	{
 		//action
-		StringA str(arrSymbol[3].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
+		StringA str(arrSymbol[3].Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		uint uID = m_data.Deref().AddToReductionTable(StringUtilHelper::To_ConstString(str));  //may throw
 		(void)uID;
 		assert( uID == m_data.Deref().GetRuleSet().GetCount() - 1 );

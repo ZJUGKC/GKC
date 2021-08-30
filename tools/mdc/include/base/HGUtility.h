@@ -48,6 +48,11 @@ public:
 			SharePtr<_IndentGenerator> spCG(SharePtrHelper::MakeSharePtr<_IndentGenerator>(MemoryHelper::GetCrtMemoryManager()));  //may throw
 			m_map.InsertWithoutFind(WMARK_NOUN_INDENT, SharePtrHelper::TypeCast<_IndentGenerator, _IHtmlGenerator>(spCG));  //may throw
 		} //end block
+		//text
+		{
+			SharePtr<_TextGenerator> spCG(SharePtrHelper::MakeSharePtr<_TextGenerator>(MemoryHelper::GetCrtMemoryManager()));  //may throw
+			m_map.InsertWithoutFind(WMARK_NOUN_TEXT, SharePtrHelper::TypeCast<_TextGenerator, _IHtmlGenerator>(spCG));  //may throw
+		} //end block
 	}
 
 	SharePtr<_IHtmlGenerator> Find(uint uType) const throw()

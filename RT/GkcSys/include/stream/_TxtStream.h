@@ -669,7 +669,7 @@ protected:
 				//check
 				if( iMode == MODE_CRLF ) {
 					uintptr uNow = uStart;
-					auto iter(str.GetAt(uStart));
+					auto iter(str.ToIterator(str.GetPosition(uStart)));
 					for( ; iter != str.GetEnd(); iter.MoveNext(), uNow ++ ) {
 						uintptr uBack = uLength - uNow;
 						if( iter.get_Value() == '\n' ) {
@@ -717,7 +717,7 @@ protected:
 					uintptr uNow = uStart;
 					if( uStart == 0 ) {
 						//skip
-						auto iter(str.GetAt(uStart));
+						auto iter(str.ToIterator(str.GetPosition(uStart)));
 						for( ; iter != str.GetEnd(); iter.MoveNext(), uNow ++ ) {
 							if( !check_separator_set<typename TString::EType>(iter.get_Value(), carrSeparatorSet) )
 								break;
@@ -728,7 +728,7 @@ protected:
 					}
 					if( uLength != 0 ) {
 						//check
-						auto iter(str.GetAt(uStart));
+						auto iter(str.ToIterator(str.GetPosition(uStart)));
 						for( ; iter != str.GetEnd(); iter.MoveNext(), uNow ++ ) {
 							if( check_separator_set<typename TString::EType>(iter.get_Value(), carrSeparatorSet) ) {
 								uintptr uBack = uLength - uNow - 1;

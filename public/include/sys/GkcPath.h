@@ -58,6 +58,8 @@ public:
 	static void AppendSeparator(Tstring& str)
 	{
 		uintptr uLength = str.GetLength();
+		if( uLength == 0 )
+			return ;
 		if( !check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) ) {
 			typename Tstring::EType ch;
 			get_path_separator(ch);
@@ -149,7 +151,7 @@ public:
 	template <typename Tchar, uintptr t_size>
 	static uintptr ToUpperDirectory(FixedStringT<Tchar, t_size>& str) throw()
 	{
-		remove_separator(str);
+		RemovePathTrailingSeparator(str);
 		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
 		ToPathPart(uPos, str);
 		return uPos;
@@ -157,7 +159,7 @@ public:
 	template <typename Tchar>
 	static uintptr ToUpperDirectory(StringT<Tchar>& str) throw()
 	{
-		remove_separator(str);
+		RemovePathTrailingSeparator(str);
 		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
 		ToPathPart(uPos, str);
 		return uPos;
@@ -165,7 +167,7 @@ public:
 	template <typename Tchar>
 	static uintptr ToUpperDirectory(UniqueStringT<Tchar>& str) throw()
 	{
-		remove_separator(str);
+		RemovePathTrailingSeparator(str);
 		uintptr uPos = FindFilePartStart(StringUtilHelper::To_ConstString(str));
 		ToPathPart(uPos, str);
 		return uPos;
@@ -200,29 +202,6 @@ public:
 		get_absolute_path_prefix(sz, uLength);
 		ConstStringT<typename Tstring::EType> c_strPrefix(sz, uLength);
 		StringOpHelper::Insert(0, c_strPrefix, str);  //may throw
-	}
-
-private:
-	template <typename Tchar, uintptr t_size>
-	static void remove_separator(FixedStringT<Tchar, t_size>& str) throw()
-	{
-		uintptr uLength = str.GetLength();
-		if( check_path_last_separator(FixedArrayHelper::GetInternalPointer(str), uLength) )
-			str.SetLength(uLength - 1);
-	}
-	template <typename Tchar>
-	static void remove_separator(StringT<Tchar>& str) throw()
-	{
-		uintptr uLength = str.GetLength();
-		if( check_path_last_separator(ShareArrayHelper::GetInternalPointer(str), uLength) )
-			StringOpHelper::Delete(uLength - 1, 1, str);
-	}
-	template <typename Tchar>
-	static void remove_separator(UniqueStringT<Tchar>& str) throw()
-	{
-		uintptr uLength = str.GetLength();
-		if( check_path_last_separator(UniqueArrayHelper::GetInternalPointer(str), uLength) )
-			StringOpHelper::Delete(uLength - 1, 1, str);
 	}
 };
 

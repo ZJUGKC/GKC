@@ -27,24 +27,6 @@ namespace GKC {
 
 class WonParser : public _IWonParser
 {
-private:
-	struct _ActionSetList
-	{
-		_Won_ActionSet asValueString;
-		_Won_ActionSet asValueNumberInteger;
-		_Won_ActionSet asValueNumberFloat;
-		_Won_ActionSet asValueNumberHexadecimal;
-		_Won_ActionSet asValueBooleanTrue;
-		_Won_ActionSet asValueBooleanFalse;
-		_Won_ActionSet asValueNull;
-		_Won_ActionSet asBeginObject;
-		_Won_ActionSet asEndObject;
-		_Won_ActionSet asEndPair;
-		_Won_ActionSet asKey;
-		_Won_ActionSet asBeginArray;
-		_Won_ActionSet asEndArray;
-	};
-
 public:
 	WonParser() throw()
 	{
@@ -77,7 +59,7 @@ public:
 
 		//grammar analyzer
 		if( m_spGrammarAnalyzer.IsBlockNull() ) {
-			cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, RefPtr<_WonActionData>(m_data), m_action_set_list, m_spGrammarAnalyzer);
+			cr = create_grammar_analyzer(objs, m_spLexerAnalyzer, RefPtr<_WonActionData>(m_data), m_action_set, m_spGrammarAnalyzer);
 			if( cr.IsFailed() )
 				return cr;
 		}
@@ -111,7 +93,7 @@ public:
 			uintptr uCount = arrError.GetCount();
 			StringA strError;
 			if( uCount > 0 ) {
-				CallResult crCvt(convert_error_string(arrError[uCount - 1].get_Value(), strError));
+				CallResult crCvt(convert_error_string(arrError[uCount - 1], strError));
 				if( crCvt.IsFailed() ) {
 					iType = _WonTokenTypes::Unknown;
 					cr = crCvt;
@@ -189,7 +171,7 @@ private:
 	}
 	//create grammar analyzer
 	static CallResult create_grammar_analyzer(const _WonUtility_Objects& objs, const ShareCom<ILexerAnalyzer>& spLexerAnalyzer,
-											const RefPtr<_WonActionData>& data, const _ActionSetList& asl,
+											const RefPtr<_WonActionData>& data, const _Won_ActionSet& was,
 											ShareCom<IGrammarAnalyzer>& sp) throw()
 	{
 		//create
@@ -278,96 +260,113 @@ private:
 			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "value_list"), objs.spBasicFactory);
 			if( cr.IsFailed() )
 				return cr;
+			cr = spGrammarAnalyzer.Deref().SetFactory(DECLARE_TEMP_CONST_STRING(ConstStringA, "string_catenation"), objs.spBasicFactory);
+			if( cr.IsFailed() )
+				return cr;
 		} //end block
 		//actions
 		{
 			ShareCom<IGrammarAction> spAction;
-			//Do-Value-String
-			cr = create_action(_WonTokenTypes::ValueString, data, asl.asValueString, spAction);
+			//Do-Value-String-Catenation
+			cr = _Create_WonDoValueStringCatenationAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
-			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_string"), spAction);
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_string_catenation"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			//Do-String-Catenation
+			cr = _Create_WonDoStringCatenationAction(was, data, spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_string_catenation"), spAction);
+			if( cr.IsFailed() )
+				return cr;
+			//Do-String-Catenation-String
+			cr = _Create_WonDoStringCatenationStringAction(was, data, spAction);
+			if( cr.IsFailed() )
+				return cr;
+			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_string_catenation_string"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Number-Integer
-			cr = create_action(_WonTokenTypes::ValueNumberInteger, data, asl.asValueNumberInteger, spAction);
+			cr = _Create_WonDoValueNumberIntegerAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_number_integer"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Number-Float
-			cr = create_action(_WonTokenTypes::ValueNumberFloat, data, asl.asValueNumberFloat, spAction);
+			cr = _Create_WonDoValueNumberFloatAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_number_float"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Number-Hexadecimal
-			cr = create_action(_WonTokenTypes::ValueNumberHexadecimal, data, asl.asValueNumberHexadecimal, spAction);
+			cr = _Create_WonDoValueNumberHexadecimalAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_number_hexadecimal"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Boolean-True
-			cr = create_action(_WonTokenTypes::ValueBooleanTrue, data, asl.asValueBooleanTrue, spAction);
+			cr = _Create_WonDoValueBooleanTrueAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_boolean_true"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Boolean-False
-			cr = create_action(_WonTokenTypes::ValueBooleanFalse, data, asl.asValueBooleanFalse, spAction);
+			cr = _Create_WonDoValueBooleanFalseAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_boolean_false"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Value-Null
-			cr = create_action(_WonTokenTypes::ValueNull, data, asl.asValueNull, spAction);
+			cr = _Create_WonDoValueNullAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_value_null"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Begin-Object
-			cr = create_action(_WonTokenTypes::BeginObject, data, asl.asBeginObject, spAction);
+			cr = _Create_WonDoBeginObjectAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_begin_object"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-End-Object
-			cr = create_action(_WonTokenTypes::EndObject, data, asl.asEndObject, spAction);
+			cr = _Create_WonDoEndObjectAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_end_object"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Pair-Key-Value
-			cr = create_action(_WonTokenTypes::EndPair, data, asl.asEndPair, spAction);
+			cr = _Create_WonDoEndPairAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_pair_key_value"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Key-String
-			cr = create_action(_WonTokenTypes::Key, data, asl.asKey, spAction);
+			cr = _Create_WonDoKeyAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_key_string"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-Begin-Array
-			cr = create_action(_WonTokenTypes::BeginArray, data, asl.asBeginArray, spAction);
+			cr = _Create_WonDoBeginArrayAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_begin_array"), spAction);
 			if( cr.IsFailed() )
 				return cr;
 			//Do-End-Array
-			cr = create_action(_WonTokenTypes::EndArray, data, asl.asEndArray, spAction);
+			cr = _Create_WonDoEndArrayAction(was, data, spAction);
 			if( cr.IsFailed() )
 				return cr;
 			cr = spGrammarAnalyzer.Deref().SetAction(DECLARE_TEMP_CONST_STRING(ConstStringA, "do_end_array"), spAction);
@@ -378,22 +377,6 @@ private:
 		sp = spGrammarAnalyzer;
 		return cr;
 	}
-	//grammar action
-	static CallResult create_action(int iType, const RefPtr<_WonActionData>& data, const _Won_ActionSet& was, ShareCom<IGrammarAction>& sp) throw()
-	{
-		CallResult cr;
-		ShareCom<_IWonActionUtility> spU;
-		ShareCom<IGrammarAction> spAction;
-		cr = _Create_WonDoCommonAction(was, spAction);
-		if( cr.IsFailed() )
-			return cr;
-		_COMPONENT_INSTANCE_INTERFACE(IGrammarAction, _IWonActionUtility, spAction, spU, cr);
-		if( cr.IsFailed() )
-			return cr;
-		spU.Deref().SetData(iType, data);
-		sp = spAction;
-		return cr;
-	}
 
 private:
 	ShareCom<ILexerAnalyzer> m_spLexerAnalyzer;
@@ -402,7 +385,7 @@ private:
 	_WonActionData m_data;
 
 	//for actions
-	_ActionSetList m_action_set_list;
+	_Won_ActionSet m_action_set;
 
 private:
 	//noncopyable

@@ -95,6 +95,12 @@ public:
 		::_WonParser_Create(sp, cr);
 		return cr;
 	}
+	static CallResult ParseWon(const ShareCom<IWonParser>& spParser, const ShareCom<ICplMetaData>& spMeta) throw()
+	{
+		CallResult cr;
+		::_Won_Parse(spParser, spMeta, cr);
+		return cr;
+	}
 	static CallResult CreateWmarkUtility(ShareCom<IWmarkUtility>& sp) throw()
 	{
 		CallResult cr;

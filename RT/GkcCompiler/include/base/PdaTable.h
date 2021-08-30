@@ -139,7 +139,7 @@ public:
 		//transition number
 		int total_transition_num = 0;
 		for( int i = 2; i <= iMaxStateNo; i ++ ) {
-			int iNum = arrTransitionNum[i].get_Value();
+			int iNum = arrTransitionNum[i];
 			assert( iNum > 0 );
 			iNum = SafeOperators::AddThrow(iNum, (int)1);  //may throw
 			total_transition_num = SafeOperators::AddThrow(total_transition_num, iNum);  //may throw
@@ -170,7 +170,7 @@ public:
 		PDA_TRANSITION_ITEM* pItem = (PDA_TRANSITION_ITEM*)((byte*)pRule + sizeof(PDA_RULE_ITEM) * (iMaxRuleNo + 2));
 		for( int i = 2; i <= iMaxStateNo; i ++ ) {
 			pState[i].pTransition = pItem;
-			pItem += (arrTransitionNum[i].get_Value());
+			pItem += (arrTransitionNum[i]);
 			pItem->uEventFirstNo = PDA_LAST_EVENT_NO;
 			pItem->uEventLastNo  = PDA_LAST_EVENT_NO;
 			pItem->iNextState    = 0;

@@ -54,6 +54,11 @@ inline IMemoryManager* get_crt_mem_mgr() throw()
 // Mutex
 DECLARE_SA_GLOBAL_VARIABLE(Mutex, g_mutex)
 
+inline Mutex* get_mem_mutex() throw()
+{
+	return &(GET_SA_GLOBAL_VARIABLE(g_mutex));
+}
+
 // share_ptr_block
 DECLARE_SA_GLOBAL_VARIABLE(fixed_size_memory_pool<sizeof(share_ptr_block)>, g_spb_pool)
 

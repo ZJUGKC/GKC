@@ -61,6 +61,14 @@ DECLARE_GUID(GUID__IWlangParser)
 SA_FUNCTION void _WlangUtility_Create(GKC::ShareCom<_IWlangUtility>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _WlangParser_Create(GKC::ShareCom<_IWlangParser>& sp, GKC::CallResult& cr) throw();
 
+/*
+Meta data:
+
+| Symbol type          | data  |
+|:---------------------|:------|
+| WLANG_NOUN_NAMESPACE |       |
+*/
+
 //------------------------------------------------------------------------------
 // Won Parser
 
@@ -123,6 +131,31 @@ DECLARE_GUID(GUID__IWonParser)
 SA_FUNCTION void _WonUtility_Create(GKC::ShareCom<_IWonUtility>& sp, GKC::CallResult& cr) throw();
 SA_FUNCTION void _WonParser_Create(GKC::ShareCom<_IWonParser>& sp, GKC::CallResult& cr) throw();
 
+#define WON_ROOT_SYMBOL  "won"
+
+/*
+Meta data:
+
+| Symbol  | data               |
+|:--------|:-------------------|
+| "won"   | AST start position |
+
+| AST node type          | data              | child    |
+|:-----------------------|:------------------|:---------|
+| ValueString            | Symbol            |          |
+| ValueNumberInteger     | Symbol            |          |
+| ValueNumberFloat       | Symbol            |          |
+| ValueNumberHexadecimal | Symbol            |          |
+| ValueBooleanTrue       | Symbol            |          |
+| ValueBooleanFalse      | Symbol            |          |
+| ValueNull              | Symbol            |          |
+| BeginObject            | Symbol            | Key      |
+| Key                    | Symbol            | Value*** |
+| BeginArray             | Symbol            | Value***, Begin*** |
+*/
+
+SA_FUNCTION void _Won_Parse(const GKC::ShareCom<_IWonParser>& spParser, const GKC::ShareCom<GKC::ICplMetaData>& spMeta, GKC::CallResult& cr) throw();
+
 //------------------------------------------------------------------------------
 // Wmark Parser
 
@@ -158,17 +191,32 @@ DECLARE_GUID(GUID__IWmarkParser)
 
 #pragma pack(pop)
 
+//functions
+
+SA_FUNCTION void _WmarkUtility_Create(GKC::ShareCom<_IWmarkUtility>& sp, GKC::CallResult& cr) throw();
+SA_FUNCTION void _WmarkParser_Create(GKC::ShareCom<_IWmarkParser>& sp, GKC::CallResult& cr) throw();
+
 // macros for WMARK
 
 #define WMARK_ROOT_SYMBOL  "document"
 
 #define WMARK_NOUN_COMMENT  (CPL_METADATA_NOUN_START + 20)
 #define WMARK_NOUN_INDENT   (CPL_METADATA_NOUN_START + 21)
+#define WMARK_NOUN_TEXT     (CPL_METADATA_NOUN_START + 22)
 
-//functions
+/*
+Meta data:
 
-SA_FUNCTION void _WmarkUtility_Create(GKC::ShareCom<_IWmarkUtility>& sp, GKC::CallResult& cr) throw();
-SA_FUNCTION void _WmarkParser_Create(GKC::ShareCom<_IWmarkParser>& sp, GKC::CallResult& cr) throw();
+| Symbol     | data               |
+|:-----------|:-------------------|
+| "document" | AST start position |
+
+| AST node type      | data              | child   |
+|:-------------------|:------------------|:--------|
+| WMARK_NOUN_COMMENT |                   |         |
+| WMARK_NOUN_INDENT  |                   |         |
+| WMARK_NOUN_TEXT    | text              |         |
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_PARSER_H__

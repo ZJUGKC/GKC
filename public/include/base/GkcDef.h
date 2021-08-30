@@ -24,7 +24,7 @@ for cross-platform.
 
 //DEBUG
 #if ( defined(_DEBUG) || !defined(NDEBUG) )
-#define DEBUG
+#define GKC_DEBUG
 #endif
 
 //Machine Type
@@ -105,6 +105,10 @@ typedef ref_ptr_helper  RefPtrHelper;
 // ReverseIterator<T>
 template <typename T>
 using ReverseIterator = reverse_iterator<T>;
+
+// ReverseIterator2<T>
+template <typename T>
+using ReverseIterator2 = reverse_iterator2<T>;
 
 //------------------------------------------------------------------------------
 // Array
@@ -324,6 +328,17 @@ public:
 	void set_Second(T2&& t)
 	{
 		m_t2 = rv_forward(t);
+	}
+
+	void Set(const T1& t1, const T2& t2)
+	{
+		m_t1 = t1;
+		m_t2 = t2;
+	}
+	void Set(T1&& t1, T2&& t2)
+	{
+		m_t1 = rv_forward(t1);
+		m_t2 = rv_forward(t2);
 	}
 
 private:
@@ -721,11 +736,19 @@ public:
 	}
 	const ReverseIterator<typename thisClass::Iterator> GetReverseBegin() const throw()
 	{
-		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return ReverseIterator<typename thisClass::Iterator>(ToIterator(GetTailPosition()));
 	}
 	ReverseIterator<typename thisClass::Iterator> GetReverseBegin() throw()
 	{
-		return ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return ReverseIterator<typename thisClass::Iterator>(ToIterator(GetTailPosition()));
+	}
+	const ReverseIterator2<typename thisClass::Iterator> GetReverseBegin2() const throw()
+	{
+		return ReverseIterator2<typename thisClass::Iterator>(GetEnd());
+	}
+	ReverseIterator2<typename thisClass::Iterator> GetReverseBegin2() throw()
+	{
+		return ReverseIterator2<typename thisClass::Iterator>(GetEnd());
 	}
 
 	//methods
@@ -1353,6 +1376,156 @@ private:
 	//noncopyable
 	RWLockExclusive(const RWLockExclusive&) throw();
 	RWLockExclusive& operator=(const RWLockExclusive&) throw();
+};
+
+//------------------------------------------------------------------------------
+// Special Array
+
+// SObjArray<TObj>
+
+template <class TObj>
+class SObjArray
+{
+public:
+	typedef TObj  EObj;
+
+public:
+	SObjArray() throw() : m_p(NULL), m_uCount(0), m_uAlloc(0)
+	{
+	}
+	~SObjArray() throw()
+	{
+		if( m_p != NULL ) {
+			TObj* p = m_p;
+			for( uintptr i = 0; i < m_uCount; i ++ ) {
+				p->~TObj();
+				p ++;
+			}
+			crt_free(m_p);
+		}
+	}
+
+	//add
+	uintptr Add(const TObj& obj) throw()
+	{
+		//find null
+		uintptr uFind = INVALID_ARRAY_INDEX;
+		TObj* p = m_p;
+		for( uintptr i = 0; i < m_uCount; i ++ ) {
+			if( (*p).IsNullObject() ) {
+				uFind = i;
+				break;
+			}
+			p ++;
+		}
+		if( uFind != INVALID_ARRAY_INDEX ) {
+			m_p[uFind] = obj;
+			return uFind + 1;
+		}
+		//add
+		if( m_uCount < m_uAlloc ) {
+			call_constructor(m_p[m_uCount], obj);  //no throw
+			m_uCount ++;
+			return m_uCount;
+		}
+		//resize
+		uintptr uAlloc;
+		if( m_uCount == 0 ) {
+			uAlloc = 4;
+		}
+		else {
+			if( GKC::SafeOperators::Multiply(m_uCount, (uintptr)2, uAlloc).IsFailed() )
+				return 0;
+		}
+		uintptr uBytes;
+		if( GKC::SafeOperators::Multiply(uAlloc, (uintptr)sizeof(TObj), uBytes).IsFailed() )
+			return 0;
+		if( m_p == NULL )
+			p = (TObj*)crt_alloc(uBytes);
+		else
+			p = (TObj*)crt_realloc(m_p, uBytes);
+		if( p == NULL )
+			return 0;
+		//set
+		m_p = p;
+		m_uAlloc = uAlloc;
+		call_constructor(m_p[m_uCount], obj);  //no throw
+		m_uCount ++;
+		return m_uCount;
+	}
+	//remove
+	void Remove(uintptr uCookie) throw()
+	{
+		assert( uCookie > 0 && uCookie <= m_uCount );
+		m_p[uCookie - 1].Release();
+	}
+	//get
+	void GetObject(uintptr index, TObj& obj) const throw()
+	{
+		assert( index >= 0 && index < m_uCount );
+		obj = m_p[index];
+	}
+
+	uintptr GetCount() const throw()
+	{
+		return m_uCount;
+	}
+
+private:
+	TObj*    m_p;
+	uintptr  m_uCount;
+	uintptr  m_uAlloc;
+
+private:
+	//noncopyable
+	SObjArray(const SObjArray&) throw();
+	SObjArray& operator=(const SObjArray&) throw();
+};
+
+// SObjArrayWithLock<TObj>
+
+template <class TObj>
+class SObjArrayWithLock : public SObjArray<TObj>
+{
+private:
+	typedef SObjArray<TObj>  baseClass;
+
+public:
+	SObjArrayWithLock() throw()
+	{
+	}
+	~SObjArrayWithLock() throw()
+	{
+	}
+
+	void SetMutex(const RefPtr<Mutex>& mtx) throw()
+	{
+		m_mtx = mtx;
+	}
+
+	uintptr Add(const TObj& obj) throw()
+	{
+		MutexLock lock(m_mtx.Deref());
+		return baseClass::Add(obj);
+	}
+	void Remove(uintptr uCookie) throw()
+	{
+		MutexLock lock(m_mtx.Deref());
+		baseClass::Remove(uCookie);
+	}
+	void GetObject(uintptr index, TObj& obj) const throw()
+	{
+		MutexLock lock(m_mtx.Deref());
+		baseClass::GetObject(index, obj);
+	}
+
+private:
+	RefPtr<Mutex> m_mtx;
+
+private:
+	//noncopyable
+	SObjArrayWithLock(const SObjArrayWithLock&) throw();
+	SObjArrayWithLock& operator=(const SObjArrayWithLock&) throw();
 };
 
 //------------------------------------------------------------------------------

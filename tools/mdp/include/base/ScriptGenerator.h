@@ -34,7 +34,7 @@ inline void _Generate_Script_FILES_String(const ConstStringA& strDirPrefix,
 		StringUtilHelper::MakeString(strDirPrefix, strTemp);  //may throw
 		FsPathHelper::AppendSeparator(strTemp);  //may throw
 		StringUtilHelper::Append(flInfo.GetAt(i), strTemp);  //may throw
-		FsPathHelper::RemoveExtension(strTemp.GetLength() - 3, strTemp);
+		FsPathHelper::RemoveExtension(strTemp.GetLength() - 3, strTemp);  //delete '.md'
 		FsPathHelper::ConvertPathStringToPlatform(strTemp);
 		StringOpHelper::Insert(0, '\"', strTemp);  //may throw
 		StringOpHelper::Append('\"', strTemp);  //may throw

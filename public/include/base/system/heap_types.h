@@ -267,63 +267,18 @@ private:
 	free_list& operator=(const free_list&) throw();
 };
 
-// node_pair_helper<TNode, TPair>
+// node_helper<TNode>
 
-template <typename TNode, typename TPair>
-class node_pair_helper
+template <typename TNode>
+class node_helper
 {
 public:
 	//tools
-	static TNode* ConstructNode(free_list<TNode>& fl)  //may throw
+	template <typename... Args>
+	static TNode* ConstructNode(free_list<TNode>& fl, Args&&... args)  //may throw
 	{
-		TNode* pNewNode = fl.GetFreeNode();
-		call_constructor(*pNewNode);  //may throw
-		fl.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey>
-	static TNode* ConstructNode(free_list<TNode>& fl, const TKey& key)  //may throw
-	{
-		TNode* pNewNode = fl.GetFreeNode();
-		call_constructor(*pNewNode, key);  //may throw
-		fl.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey>
-	static TNode* ConstructNode(free_list<TNode>& fl, TKey&& key)  //may throw
-	{
-		TNode* pNewNode = fl.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(key));  //may throw
-		fl.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey, typename TValue>
-	static TNode* ConstructNode(free_list<TNode>& fl, const TKey& key, const TValue& val)  //may throw
-	{
-		TNode* pNewNode = fl.GetFreeNode();
-		call_constructor(*pNewNode, key, val);  //may throw
-		fl.PickFreeNode();
-		return pNewNode;
-	}
-	template <typename TKey, typename TValue>
-	static TNode* ConstructNode(free_list<TNode>& fl, TKey&& key, TValue&& val)  //may throw
-	{
-		TNode* pNewNode = fl.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(key), rv_forward(val));  //may throw
-		fl.PickFreeNode();
-		return pNewNode;
-	}
-	static TNode* ConstructNode(free_list<TNode>& fl, const TPair& pair)  //may throw
-	{
-		TNode* pNewNode = fl.GetFreeNode();
-		call_constructor(*pNewNode, pair);  //may throw
-		fl.PickFreeNode();
-		return pNewNode;
-	}
-	static TNode* ConstructNode(free_list<TNode>& fl, TPair&& pair)  //may throw
-	{
-		TNode* pNewNode = fl.GetFreeNode();
-		call_constructor(*pNewNode, rv_forward(pair));  //may throw
+		TNode* pNewNode = fl.GetFreeNode();  //may throw
+		call_constructor(*pNewNode, rv_forward<Args>(args)...);  //may throw
 		fl.PickFreeNode();
 		return pNewNode;
 	}
@@ -771,6 +726,7 @@ template <typename T>
 class unique_fixed_array
 {
 public:
+	typedef T  EType;
 	typedef array_position  Position;
 	typedef array_iterator<T>  Iterator;
 
@@ -805,11 +761,11 @@ public:
 		return *this;
 	}
 
-	const Iterator operator[](uintptr uIndex) const throw()
+	const T& operator[](uintptr uIndex) const throw()
 	{
 		return GetAt(uIndex);
 	}
-	Iterator operator[](uintptr uIndex) throw()
+	T& operator[](uintptr uIndex) throw()
 	{
 		return GetAt(uIndex);
 	}
@@ -841,11 +797,17 @@ public:
 	{
 		return Position(GetCount() - 1);
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	Position GetPosition(uintptr uIndex) const throw()
+	{
+		assert( uIndex < GetCount() );
+		return Position(uIndex);
+	}
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		return Iterator(ref_ptr<T>(m_p + pos.GetIndex()));
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		return Iterator(ref_ptr<T>(m_p + pos.GetIndex()));
 	}
@@ -871,16 +833,32 @@ public:
 	{
 		return Iterator(ref_ptr<T>(m_p + m_uCount));
 	}
-
-	const Iterator GetAt(uintptr uIndex) const throw()
+	const reverse_iterator<Iterator> GetReverseBegin() const throw()
 	{
-		assert( uIndex < GetCount() );
-		return Iterator(ref_ptr<T>(m_p + uIndex));
+		return reverse_iterator<Iterator>(ToIterator(GetTailPosition()));
 	}
-	Iterator GetAt(uintptr uIndex) throw()
+	reverse_iterator<Iterator> GetReverseBegin() throw()
+	{
+		return reverse_iterator<Iterator>(ToIterator(GetTailPosition()));
+	}
+	const reverse_iterator<Iterator> GetReverseEnd() const throw()
+	{
+		return reverse_iterator<Iterator>(Iterator(ref_ptr<T>(m_p - 1)));
+	}
+	reverse_iterator<Iterator> GetReverseEnd() throw()
+	{
+		return reverse_iterator<Iterator>(Iterator(ref_ptr<T>(m_p - 1)));
+	}
+
+	const T& GetAt(uintptr uIndex) const throw()
 	{
 		assert( uIndex < GetCount() );
-		return Iterator(ref_ptr<T>(m_p + uIndex));
+		return *(m_p + uIndex);
+	}
+	T& GetAt(uintptr uIndex) throw()
+	{
+		assert( uIndex < GetCount() );
+		return *(m_p + uIndex);
 	}
 	void SetAt(uintptr uIndex, const T& t)
 	{
@@ -983,8 +961,8 @@ public:
 	}
 
 protected:
-	uintptr m_uLength;
 	uintptr m_uAllocLength;
+	uintptr m_uLength;
 };
 
 // unique_com_block

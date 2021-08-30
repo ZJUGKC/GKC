@@ -17,17 +17,17 @@
 
 1. Finite State Automata (FSA)
 
-Implement a finite state automata named FiniteStateAutomata.
-It uses the matching algorithm of maximum length.
+	Implement a finite state automata named FiniteStateAutomata.
+	It uses the matching algorithm of maximum length.
 
 1. Push-down Automata (PDA)
 
-Implement a push-down automata named PushDownAutomata.
-It uses the symbol stack to process states and terminals/nonterminals.
+	Implement a push-down automata named PushDownAutomata.
+	It uses the symbol stack to process states and terminals/nonterminals.
 
 1. Parsers
 
-Implement lexer parser and grammar parser.
+	Implement lexer parser and grammar parser.
 
 ## Language Definition File
 
@@ -71,30 +71,30 @@ The syntax of regular expression is shown in the following tables:
 	| Symbols | Description |
 	|---------|-------------|
 	| R1R2    | R1 followed by R2 |
-	| R1`|`R2 | R1 or R2 |
+	| R1\|R2  | R1 or R2 |
 
 1. Others:
 
 	| Symbols | Description |
 	|---------|-------------|
-	| (R) | Grouped by R |
+	| (R)     | Grouped by R |
 	| {macro} | Quote the macro defined in definition block (it cannot be nested) |
 
 1. Escape characters:
 
 	| Symbols | Description |
 	|---------|-------------|
-	| \\ | '\' |
+	| \\\\    | `\` |
 	| \xDD, \xDDDD, \xDDDDDD, \xDDDDDDDD | Hexadecimal number |
 	| \r | Carriage return |
 	| \n | Line break |
 	| \t | Tab |
 	| \s | Space |
-	| \[, \] | Brackets |
-	| \(, \) | Parentheses |
-	| \{, \} | Curly braces |
-	| \?, \*, \+, \- | Question, Star, Plus, Minus |
-	| \^, `\|` | UpArrow, Vertical Line |
+	| \\[, \\] | Brackets |
+	| \\(, \\) | Parentheses |
+	| \\{, \\} | Curly braces |
+	| \\?, \\*, \\+, \\- | Question, Star, Plus, Minus |
+	| \\^, `\\|` | UpArrow, Vertical Line |
 
 The lex file for WLANG is named as `WlangLex.cpp`.
 

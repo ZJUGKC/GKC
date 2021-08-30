@@ -113,7 +113,7 @@ private:
 
 typedef bool (*_UnitTestFunc)(_UnitTestMessageBuffer& buffer);
 
-// _UnitTestMap
+// _UnitTestMap (Test Suite)
 
 class _UnitTestMap
 {
@@ -123,9 +123,9 @@ private:
 public:
 	struct ItemInfo
 	{
-		StringS             strName;  //test name
-		_UnitTestFunc       pFunc;    //function
-		mapClass::Iterator  iter;
+		StringS        strName;  //test name
+		_UnitTestFunc  pFunc;    //function
+		ArrayIterator<mapClass::Position>  iter;
 	};
 
 public:
@@ -138,7 +138,11 @@ public:
 	{
 		StringS strM(StringHelper::MakeEmptyString<CharS>(MemoryHelper::GetCrtMemoryManager()));
 		StringUtilHelper::MakeString(strName, strM);
-		m_map.Insert(strM, pFunc);
+		auto iter(m_map.Insert(strM, pFunc));
+		//array
+		if( m_arr.IsBlockNull() )
+			m_arr = ShareArrayHelper::MakeShareArray<mapClass::Position>(MemoryHelper::GetCrtMemoryManager());
+		m_arr.Add(iter.GetPosition());
 	}
 
 	uintptr GetCount() const throw()
@@ -149,15 +153,16 @@ public:
 	//enum
 	bool EnumFirst(ItemInfo& info) const throw()
 	{
-		info.iter = m_map.GetBegin();
+		info.iter = m_arr.GetBegin();
 		return EnumNext(info);
 	}
 	bool EnumNext(ItemInfo& info) const throw()
 	{
-		if( info.iter == m_map.GetEnd() )
+		if( info.iter == m_arr.GetEnd() )
 			return false;
-		info.strName = info.iter.get_Value().get_First();
-		info.pFunc   = info.iter.get_Value().get_Second();
+		auto iterMap(m_map.ToIterator(info.iter.get_Value()));
+		info.strName = iterMap.get_Value().get_First();
+		info.pFunc   = iterMap.get_Value().get_Second();
 		info.iter.MoveNext();
 		return true;
 	}
@@ -173,6 +178,7 @@ public:
 
 private:
 	mapClass  m_map;
+	ShareArray<mapClass::Position>  m_arr;
 };
 
 // _UnitTestMapHelper
@@ -342,15 +348,15 @@ public:
 
 // define Fixture
 #define GKC_TEST_FIXTURE(x)  \
-	class GKC_TEST_FIXTURE_##x { public:  \
+	class _GKC_TEST_FIXTURE_##x { public:  \
 	void Setup(); void Teardown();  \
 	public:  \
-	GKC_TEST_FIXTURE_##x() { Setup(); }  \
-	~GKC_TEST_FIXTURE_##x() { Teardown(); }  \
+	_GKC_TEST_FIXTURE_##x() { Setup(); }  \
+	~_GKC_TEST_FIXTURE_##x() { Teardown(); }  \
 	};
 
-#define GKC_TEST_SETUP(x)      void GKC_TEST_FIXTURE_##x::Setup()
-#define GKC_TEST_TEARDOWN(x)   void GKC_TEST_FIXTURE_##x::Teardown()
+#define GKC_TEST_SETUP(x)      void _GKC_TEST_FIXTURE_##x::Setup()
+#define GKC_TEST_TEARDOWN(x)   void _GKC_TEST_FIXTURE_##x::Teardown()
 
 // define string
 #define _GKC_TEST_TO_STRING(x)  #x

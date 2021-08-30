@@ -115,12 +115,12 @@ public:
 	const _GraToken& GetToken(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return m_arr[index].get_Value();
+		return m_arr[index];
 	}
 	_GraToken& GetToken(uintptr index) throw()
 	{
 		assert( index < GetCount() );
-		return m_arr[index].get_Value();
+		return m_arr[index];
 	}
 
 	uintptr Find(const _GraToken& tk) const throw()
@@ -182,12 +182,12 @@ public:
 	const _GraToken& GetToken(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return m_arrToken[index].get_Value();
+		return m_arrToken[index];
 	}
 	_GraToken& GetToken(uintptr index) throw()
 	{
 		assert( index < GetCount() );
-		return m_arrToken[index].get_Value();
+		return m_arrToken[index];
 	}
 
 private:
@@ -228,12 +228,12 @@ public:
 	const _GraRule& GetRule(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
-		return m_arr[index].get_Value();
+		return m_arr[index];
 	}
 	_GraRule& GetRule(uintptr index) throw()
 	{
 		assert( index < GetCount() );
-		return m_arr[index].get_Value();
+		return m_arr[index];
 	}
 
 private:

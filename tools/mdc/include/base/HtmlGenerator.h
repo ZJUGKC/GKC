@@ -70,7 +70,7 @@ inline CallResult _Generate_Html(ShareCom<ICplMetaData>& spMeta, ShareCom<ITextS
 		while( (uCount = arrStack.GetCount()) > 0 ) {
 			CplMetaDataPosition pos;
 			//pop
-			pos = arrStack.GetAt(uCount - 1).get_Value();
+			pos = arrStack.GetAt(uCount - 1);
 			arrStack.RemoveAt(uCount - 1);
 			//links
 			spMeta.Deref().GetAstNodeInfo(pos, astInfo);

@@ -26,6 +26,8 @@ This file contains GkcSys functions.
 
 SA_FUNCTION GKC::IMemoryManager* _CrtMemoryManager_Get() throw();
 
+SA_FUNCTION GKC::Mutex* _MemoryMutex_Get() throw();
+
 //------------------------------------------------------------------------------
 // share_ptr_block pool
 
@@ -621,155 +623,8 @@ public:
 	}
 };
 
-// _SObjArray<TSObj>
-
-template <class TSObj>
-class _SObjArray
-{
-public:
-	typedef TSObj  ESObj;
-
-public:
-	_SObjArray() throw() : m_p(NULL), m_uCount(0), m_uAlloc(0)
-	{
-	}
-	~_SObjArray() throw()
-	{
-		if( m_p != NULL ) {
-			TSObj* p = m_p;
-			for( uintptr i = 0; i < m_uCount; i ++ ) {
-				p->~TSObj();
-				p ++;
-			}
-			crt_free(m_p);
-		}
-	}
-
-	//add
-	uintptr Add(const TSObj& obj) throw()
-	{
-		//find null
-		uintptr uFind = INVALID_ARRAY_INDEX;
-		TSObj* p = m_p;
-		for( uintptr i = 0; i < m_uCount; i ++ ) {
-			if( (*p).IsNullObject() ) {
-				uFind = i;
-				break;
-			}
-			p ++;
-		}
-		if( uFind != INVALID_ARRAY_INDEX ) {
-			m_p[uFind] = obj;
-			return uFind + 1;
-		}
-		//add
-		if( m_uCount < m_uAlloc ) {
-			call_constructor(m_p[m_uCount], obj);  //no throw
-			m_uCount ++;
-			return m_uCount;
-		}
-		//resize
-		uintptr uAlloc;
-		if( m_uCount == 0 ) {
-			uAlloc = 4;
-		}
-		else {
-			if( GKC::SafeOperators::Multiply(m_uCount, (uintptr)2, uAlloc).IsFailed() )
-				return 0;
-		}
-		uintptr uBytes;
-		if( GKC::SafeOperators::Multiply(uAlloc, (uintptr)sizeof(TSObj), uBytes).IsFailed() )
-			return 0;
-		if( m_p == NULL )
-			p = (TSObj*)crt_alloc(uBytes);
-		else
-			p = (TSObj*)crt_realloc(m_p, uBytes);
-		if( p == NULL )
-			return 0;
-		//set
-		m_p = p;
-		m_uAlloc = uAlloc;
-		call_constructor(m_p[m_uCount], obj);  //no throw
-		m_uCount ++;
-		return m_uCount;
-	}
-	//remove
-	void Remove(uintptr uCookie) throw()
-	{
-		assert( uCookie > 0 && uCookie <= m_uCount );
-		m_p[uCookie - 1].Release();
-	}
-	//get
-	void GetObject(uintptr index, TSObj& obj) const throw()
-	{
-		assert( index >= 0 && index < m_uCount );
-		obj = m_p[index];
-	}
-
-	uintptr GetCount() const throw()
-	{
-		return m_uCount;
-	}
-
-private:
-	TSObj*   m_p;
-	uintptr  m_uCount;
-	uintptr  m_uAlloc;
-
-private:
-	//noncopyable
-	_SObjArray(const _SObjArray&) throw();
-	_SObjArray& operator=(const _SObjArray&) throw();
-};
-
-// _SObjArrayWithLock<TSObj>
-
-template <class TSObj>
-class _SObjArrayWithLock : public _SObjArray<TSObj>
-{
-private:
-	typedef _SObjArray<TSObj>  baseClass;
-
-public:
-	_SObjArrayWithLock() throw()
-	{
-	}
-	~_SObjArrayWithLock() throw()
-	{
-	}
-
-	void SetMutex(const GKC::RefPtr<GKC::Mutex>& mtx) throw()
-	{
-		m_mtx = mtx;
-	}
-
-	uintptr Add(const TSObj& obj) throw()
-	{
-		GKC::MutexLock lock(m_mtx.Deref());
-		return baseClass::Add(obj);
-	}
-	void Remove(uintptr uCookie) throw()
-	{
-		GKC::MutexLock lock(m_mtx.Deref());
-		baseClass::Remove(uCookie);
-	}
-	void GetObject(uintptr index, TSObj& obj) const throw()
-	{
-		GKC::MutexLock lock(m_mtx.Deref());
-		baseClass::GetObject(index, obj);
-	}
-
-private:
-	GKC::RefPtr<GKC::Mutex> m_mtx;
-
-private:
-	//noncopyable
-	_SObjArrayWithLock(const _SObjArrayWithLock&) throw();
-	_SObjArrayWithLock& operator=(const _SObjArrayWithLock&) throw();
-};
-
 // _SObjConnectionImpl<TSObjArray>
-//   TSObjArray : _SObjArray<TSObj> or _SObjArrayWithLock<TSObj>
+//   TSObjArray : SObjArray<TSObj> or SObjArrayWithLock<TSObj>
 
 template <class TSObjArray>
 class _SObjConnectionImpl
@@ -786,7 +641,7 @@ public:
 	{
 		m_arr.SetMutex(mtx);  //may be no-matching
 	}
-	uintptr Add(const typename TSObjArray::ESObj& obj) throw()
+	uintptr Add(const typename TSObjArray::EObj& obj) throw()
 	{
 		return m_arr.Add(obj);
 	}
@@ -794,7 +649,7 @@ public:
 	{
 		m_arr.Remove(uCookie);
 	}
-	void GetObject(uintptr index, typename TSObjArray::TSObj& obj) const throw()
+	void GetObject(uintptr index, typename TSObjArray::EObj& obj) const throw()
 	{
 		m_arr.GetObject(index, obj);
 	}
@@ -814,7 +669,7 @@ private:
 
 /*
 _SharePtr:
-User can define a proxy class named as Proxy_<event_class_name> derived from _SObjConnectionImpl<_SObjArray<_WeakPtr<event_class_name>>> or _SObjConnectionImpl<_SObjArrayWithLock<_WeakPtr<event_class_name>>>.
+User can define a proxy class named as Proxy_<event_class_name> derived from _SObjConnectionImpl<SObjArray<_WeakPtr<event_class_name>>> or _SObjConnectionImpl<SObjArrayWithLock<_WeakPtr<event_class_name>>>.
 This proxy class provides the fire functions with Fire_<event_method_name> format, and is used as the base class of main class.
 */
 
@@ -1455,7 +1310,7 @@ public:
 // _IComConnection methods
 	virtual uintptr Advise(const _WeakCom<void>& sp) throw()
 	{
-		return baseClass::Add(_ShareComHelper::TypeCast<void, typename TSObjArray::ESObj::EType>(sp));
+		return baseClass::Add(_ShareComHelper::TypeCast<void, typename TSObjArray::EObj::EType>(sp));
 	}
 	virtual void Unadvise(const uintptr& uCookie) throw()
 	{
@@ -1470,7 +1325,7 @@ private:
 
 /*
 _ShareCom:
-User can define a proxy class named as Proxy_<event_interface_name> derived from _ComConnectionImpl<_SObjArray<_WeakCom<event_interface_name>>> or _ComConnectionImpl<_SObjArrayWithLock<_WeakCom<event_interface_name>>>.
+User can define a proxy class named as Proxy_<event_interface_name> derived from _ComConnectionImpl<SObjArray<_WeakCom<event_interface_name>>> or _ComConnectionImpl<SObjArrayWithLock<_WeakCom<event_interface_name>>>.
 This proxy class provides the fire functions with Fire_<event_method_name> format, and is used as the base class of main class.
 
 The class used as method parameter type of interface should not be upgraded in a SA.
@@ -1653,11 +1508,11 @@ public:
 		return GetCount() == 0;
 	}
 
-	const Iterator operator[](uintptr index) const throw()
+	const T& operator[](uintptr index) const throw()
 	{
 		return GetAt(index);
 	}
-	Iterator operator[](uintptr index) throw()
+	T& operator[](uintptr index) throw()
 	{
 		return GetAt(index);
 	}
@@ -1671,12 +1526,18 @@ public:
 	{
 		return Position(GetCount() - 1);
 	}
-	const Iterator GetAtPosition(const Position& pos) const throw()
+	Position GetPosition(uintptr index) const throw()
+	{
+		assert( index < GetCount() );
+		return Position(index);
+	}
+
+	const Iterator ToIterator(const Position& pos) const throw()
 	{
 		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
 	}
-	Iterator GetAtPosition(const Position& pos) throw()
+	Iterator ToIterator(const Position& pos) throw()
 	{
 		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
@@ -1708,34 +1569,50 @@ public:
 		assert( !(baseClass::IsBlockNull()) );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + GetCount()));
 	}
-	const Iterator GetReverseBegin() const throw()
+	const GKC::ReverseIterator<Iterator> GetReverseBegin() const throw()
 	{
-		return GKC::ReverseIterator<Iterator>(GetEnd());
+		return GKC::ReverseIterator<Iterator>(ToIterator(GetTailPosition()));
 	}
-	Iterator GetReverseBegin() throw()
+	GKC::ReverseIterator<Iterator> GetReverseBegin() throw()
 	{
-		return GKC::ReverseIterator<Iterator>(GetEnd());
+		return GKC::ReverseIterator<Iterator>(ToIterator(GetTailPosition()));
 	}
-	const Iterator GetReverseEnd() const throw()
+	const GKC::ReverseIterator<Iterator> GetReverseEnd() const throw()
 	{
-		return GKC::ReverseIterator<Iterator>(GetBegin());
+		return GKC::ReverseIterator<Iterator>(Iterator(GKC::RefPtr<T>(get_array_address() - 1)));
 	}
-	Iterator GetReverseEnd() throw()
+	GKC::ReverseIterator<Iterator> GetReverseEnd() throw()
 	{
-		return GKC::ReverseIterator<Iterator>(GetBegin());
+		return GKC::ReverseIterator<Iterator>(Iterator(GKC::RefPtr<T>(get_array_address() - 1)));
+	}
+	const GKC::ReverseIterator2<Iterator> GetReverseBegin2() const throw()
+	{
+		return GKC::ReverseIterator2<Iterator>(GetEnd());
+	}
+	GKC::ReverseIterator2<Iterator> GetReverseBegin2() throw()
+	{
+		return GKC::ReverseIterator2<Iterator>(GetEnd());
+	}
+	const GKC::ReverseIterator2<Iterator> GetReverseEnd2() const throw()
+	{
+		return GKC::ReverseIterator2<Iterator>(GetBegin());
+	}
+	GKC::ReverseIterator2<Iterator> GetReverseEnd2() throw()
+	{
+		return GKC::ReverseIterator2<Iterator>(GetBegin());
 	}
 
-	const Iterator GetAt(uintptr index) const throw()
+	const T& GetAt(uintptr index) const throw()
 	{
 		assert( index < GetCount() );
 		assert( !(baseClass::IsBlockNull()) );
-		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
+		return *(get_array_address() + index);
 	}
-	Iterator GetAt(uintptr index) throw()
+	T& GetAt(uintptr index) throw()
 	{
 		assert( index < GetCount() );
 		assert( !(baseClass::IsBlockNull()) );
-		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
+		return *(get_array_address() + index);
 	}
 	void SetAt(uintptr index, const T& t)  //may throw
 	{
@@ -1828,7 +1705,7 @@ public:
 		uintptr uElement = pB->GetLength();
 		uintptr uNew = GKC::SafeOperators::AddThrow(uElement, (uintptr)1);
 		SetCount(uNew, 0, rv_forward<Args>(args)...);
-		return GetAt(uElement);
+		return ToIterator(GetPosition(uElement));
 	}
 	void Append(const _ShareArray<T>& src)  //may throw
 	{
@@ -1897,7 +1774,7 @@ public:
 			InsertAt(index, uSize);
 			try {
 				for( uintptr i = 0; i < uSize; i ++ ) {
-					SetAt(index + i, src[i].get_Value());
+					SetAt(index + i, src[i]);
 				}
 			}
 			catch(...) {
@@ -2210,26 +2087,34 @@ public:
 		assert( !(baseClass::IsBlockNull()) );
 		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
 	}
-	const typename thisClass::Iterator GetReverseBegin() const throw()
+	const GKC::ReverseIterator<typename thisClass::Iterator> GetReverseBegin() const throw()
 	{
-		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return GKC::ReverseIterator<typename thisClass::Iterator>(ToIterator(GetTailPosition()));
 	}
-	typename thisClass::Iterator GetReverseBegin() throw()
+	GKC::ReverseIterator<typename thisClass::Iterator> GetReverseBegin() throw()
 	{
-		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return GKC::ReverseIterator<typename thisClass::Iterator>(ToIterator(GetTailPosition()));
+	}
+	const GKC::ReverseIterator2<typename thisClass::Iterator> GetReverseBegin2() const throw()
+	{
+		return GKC::ReverseIterator2<typename thisClass::Iterator>(GetEnd());
+	}
+	GKC::ReverseIterator2<typename thisClass::Iterator> GetReverseBegin2() throw()
+	{
+		return GKC::ReverseIterator2<typename thisClass::Iterator>(GetEnd());
 	}
 
-	const typename thisClass::Iterator GetAt(uintptr index) const throw()
+	const Tchar& GetAt(uintptr index) const throw()
 	{
 		assert( index < GetLength() );
 		assert( !(baseClass::IsBlockNull()) );
-		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+		return *(baseClass::get_array_address() + index);
 	}
-	typename thisClass::Iterator GetAt(uintptr index) throw()
+	Tchar& GetAt(uintptr index) throw()
 	{
 		assert( index < GetLength() );
 		assert( !(baseClass::IsBlockNull()) );
-		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+		return *(baseClass::get_array_address() + index);
 	}
 	void SetAt(uintptr index, const Tchar& t)  //may throw
 	{
@@ -2520,11 +2405,11 @@ public:
 		return m_p == NULL;
 	}
 
-	const Iterator operator[](uintptr index) const noexcept
+	const T& operator[](uintptr index) const noexcept
 	{
 		return GetAt(index);
 	}
-	Iterator operator[](uintptr index) noexcept
+	T& operator[](uintptr index) noexcept
 	{
 		return GetAt(index);
 	}
@@ -2538,12 +2423,18 @@ public:
 	{
 		return Position(GetCount() - 1);
 	}
-	const Iterator GetAtPosition(const Position& pos) const noexcept
+	Position GetPosition(uintptr index) const noexcept
+	{
+		assert( index < GetCount() );
+		return Position(index);
+	}
+
+	const Iterator ToIterator(const Position& pos) const noexcept
 	{
 		assert( m_p != NULL );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
 	}
-	Iterator GetAtPosition(const Position& pos) noexcept
+	Iterator ToIterator(const Position& pos) noexcept
 	{
 		assert( m_p != NULL );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + pos.GetIndex()));
@@ -2575,34 +2466,50 @@ public:
 		assert( m_p != NULL );
 		return Iterator(GKC::RefPtr<T>(get_array_address() + GetCount()));
 	}
-	const Iterator GetReverseBegin() const noexcept
+	const GKC::ReverseIterator<Iterator> GetReverseBegin() const noexcept
 	{
-		return GKC::ReverseIterator<Iterator>(GetEnd());
+		return GKC::ReverseIterator<Iterator>(ToIterator(GetTailPosition()));
 	}
-	Iterator GetReverseBegin() noexcept
+	GKC::ReverseIterator<Iterator> GetReverseBegin() noexcept
 	{
-		return GKC::ReverseIterator<Iterator>(GetEnd());
+		return GKC::ReverseIterator<Iterator>(ToIterator(GetTailPosition()));
 	}
-	const Iterator GetReverseEnd() const noexcept
+	const GKC::ReverseIterator<Iterator> GetReverseEnd() const noexcept
 	{
-		return GKC::ReverseIterator<Iterator>(GetBegin());
+		return GKC::ReverseIterator<Iterator>(Iterator(GKC::RefPtr<T>(get_array_address() - 1)));
 	}
-	Iterator GetReverseEnd() noexcept
+	GKC::ReverseIterator<Iterator> GetReverseEnd() noexcept
 	{
-		return GKC::ReverseIterator<Iterator>(GetBegin());
+		return GKC::ReverseIterator<Iterator>(Iterator(GKC::RefPtr<T>(get_array_address() - 1)));
+	}
+	const GKC::ReverseIterator2<Iterator> GetReverseBegin2() const noexcept
+	{
+		return GKC::ReverseIterator2<Iterator>(GetEnd());
+	}
+	GKC::ReverseIterator2<Iterator> GetReverseBegin2() noexcept
+	{
+		return GKC::ReverseIterator2<Iterator>(GetEnd());
+	}
+	const GKC::ReverseIterator2<Iterator> GetReverseEnd2() const noexcept
+	{
+		return GKC::ReverseIterator2<Iterator>(GetBegin());
+	}
+	GKC::ReverseIterator2<Iterator> GetReverseEnd2() noexcept
+	{
+		return GKC::ReverseIterator2<Iterator>(GetBegin());
 	}
 
-	const Iterator GetAt(uintptr index) const noexcept
+	const T& GetAt(uintptr index) const noexcept
 	{
 		assert( index < GetCount() );
 		assert( m_p != NULL );
-		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
+		return *(get_array_address() + index);
 	}
-	Iterator GetAt(uintptr index) noexcept
+	T& GetAt(uintptr index) noexcept
 	{
 		assert( index < GetCount() );
 		assert( m_p != NULL );
-		return Iterator(GKC::RefPtr<T>(get_array_address() + index));
+		return *(get_array_address() + index);
 	}
 	void SetAt(uintptr index, const T& t)
 	{
@@ -2703,7 +2610,7 @@ public:
 		uintptr uElement = GetCount();
 		uintptr uNew = GKC::SafeOperators::AddThrow(uElement, (uintptr)1);  //may throw
 		SetCount(uNew, rv_forward<Args>(args)...);  //may throw
-		return GetAt(uElement);
+		return ToIterator(GetPosition(uElement));
 	}
 	void Append(const _UniqueArray<T>& src)
 	{
@@ -2763,7 +2670,7 @@ public:
 			InsertAt(index, uSize);  //may throw
 			try {
 				for ( uintptr i = 0; i < uSize; i ++ ) {
-					SetAt(index + i, src[i].get_Value());  //may throw
+					SetAt(index + i, src[i]);  //may throw
 				}
 			}
 			catch(...) {
@@ -2833,6 +2740,12 @@ public:
 	{
 		return GKC::ConstArray<T>(GetInternalPointer(sp), sp.GetCount());
 	}
+
+	template <typename T>
+	static const_prefix_array<T> to_const_prefix_array(const _UniqueArray<T>& sp) noexcept
+	{
+		return const_prefix_array<T>(GetInternalPointer(sp));
+	}
 };
 
 #pragma pack(push, 1)
@@ -2899,26 +2812,34 @@ public:
 		assert( !(baseClass::IsNull()) );
 		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + GetLength()));
 	}
-	const typename thisClass::Iterator GetReverseBegin() const noexcept
+	const GKC::ReverseIterator<typename thisClass::Iterator> GetReverseBegin() const noexcept
 	{
-		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return GKC::ReverseIterator<typename thisClass::Iterator>(ToIterator(GetTailPosition()));
 	}
-	typename thisClass::Iterator GetReverseBegin() noexcept
+	GKC::ReverseIterator<typename thisClass::Iterator> GetReverseBegin() noexcept
 	{
-		return GKC::ReverseIterator<typename thisClass::Iterator>(GetEnd());
+		return GKC::ReverseIterator<typename thisClass::Iterator>(ToIterator(GetTailPosition()));
+	}
+	const GKC::ReverseIterator2<typename thisClass::Iterator> GetReverseBegin2() const noexcept
+	{
+		return GKC::ReverseIterator2<typename thisClass::Iterator>(GetEnd());
+	}
+	GKC::ReverseIterator2<typename thisClass::Iterator> GetReverseBegin2() noexcept
+	{
+		return GKC::ReverseIterator2<typename thisClass::Iterator>(GetEnd());
 	}
 
-	const typename thisClass::Iterator GetAt(uintptr index) const noexcept
+	const Tchar& GetAt(uintptr index) const noexcept
 	{
 		assert( index < GetLength() );
 		assert( !(baseClass::IsNull()) );
-		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+		return *(baseClass::get_array_address() + index);
 	}
-	typename thisClass::Iterator GetAt(uintptr index) noexcept
+	Tchar& GetAt(uintptr index) noexcept
 	{
 		assert( index < GetLength() );
 		assert( !(baseClass::IsNull()) );
-		return typename thisClass::Iterator(GKC::RefPtr<Tchar>(baseClass::get_array_address() + index));
+		return *(baseClass::get_array_address() + index);
 	}
 	void SetAt(uintptr index, const Tchar& t)
 	{
@@ -3117,6 +3038,13 @@ public:
 		assert( !str.IsNull() );
 		return typename _UniqueStringT<Tchar>::Iterator(GKC::RefPtr<Tchar>(find_string_last_char(_UniqueArrayHelper::GetInternalPointer(str) + uStart, ch)));
 	}
+
+	//to const_prefix_string
+	template <typename Tchar>
+	static const_prefix_string<Tchar> to_const_prefix_string(const _UniqueStringT<Tchar>& str) noexcept
+	{
+		return const_prefix_string<Tchar>(_UniqueArrayHelper::GetInternalPointer(str));
+	}
 };
 
 //------------------------------------------------------------------------------
@@ -3127,6 +3055,27 @@ public:
 class _StringOpHelper
 {
 public:
+	template <typename Tchar>
+	static void Initialize(_StringT<Tchar>& str)
+	{
+		if ( str.IsBlockNull() )
+			str = _StringHelper::MakeEmptyString<Tchar>(GKC::RefPtr<GKC::IMemoryManager>(_CrtMemoryManager_Get()));  //may throw
+	}
+	template <typename Tchar>
+	static void Initialize(_UniqueStringT<Tchar>& str) throw()
+	{
+	}
+	template <typename Tchar>
+	static void Uninitialize(_StringT<Tchar>& str) throw()
+	{
+		str.Release();
+	}
+	template <typename Tchar>
+	static void Uninitialize(_UniqueStringT<Tchar>& str) throw()
+	{
+		str.Clear();
+	}
+
 	//Tstring : _StringT<Tchar> or _UniqueStringT<Tchar>
 
 	//append character
@@ -3193,8 +3142,8 @@ public:
 	static GKC::ArrayPosition Find(const TArray& arr, uintptr uStart, uintptr uCount, const typename TArray::EType& t) throw()
 	{
 		if( arr.GetCount() != 0 && uCount != 0 ) {
-			auto iterB(arr.GetAt(uStart));
-			auto iterE(arr.GetAt(uStart + uCount));  //no check : overflow
+			auto iterB(arr.ToIterator(arr.GetPosition(uStart)));
+			auto iterE(arr.ToIterator(arr.GetPosition(uStart + uCount)));  //no check : overflow
 			for( auto iter(iterB); iter != iterE; iter.MoveNext() ) {
 				if( TCompareTrait::IsEQ(iter.get_Value(), t) )
 					return arr.ToPosition(iter);
@@ -4046,22 +3995,22 @@ public:
 	{
 		ch = 0;
 		if( m_iType == Char8 )
-			ch = (GKC::CharF)(get_string<_StringA>().GetAt(uIndex).get_Value());
+			ch = (GKC::CharF)(get_string<_StringA>().GetAt(uIndex));
 		else if( m_iType == Char16 )
-			ch = (GKC::CharF)(get_string<_StringH>().GetAt(uIndex).get_Value());
+			ch = (GKC::CharF)(get_string<_StringH>().GetAt(uIndex));
 		else if( m_iType == Char32 )
-			ch = (GKC::CharF)(get_string<_StringL>().GetAt(uIndex).get_Value());
+			ch = (GKC::CharF)(get_string<_StringL>().GetAt(uIndex));
 		else
 			assert( false );
 	}
 	void SetAt(uintptr uIndex, const GKC::CharF& ch) throw()
 	{
 		if( m_iType == Char8 )
-			get_string<_StringA>().GetAt(uIndex).set_Value((GKC::CharA)ch);
+			get_string<_StringA>().GetAt(uIndex) = (GKC::CharA)ch;
 		else if( m_iType == Char16 )
-			get_string<_StringH>().GetAt(uIndex).set_Value((GKC::CharH)ch);
+			get_string<_StringH>().GetAt(uIndex) = (GKC::CharH)ch;
 		else if( m_iType == Char32 )
-			get_string<_StringL>().GetAt(uIndex).set_Value((GKC::CharL)ch);
+			get_string<_StringL>().GetAt(uIndex) = (GKC::CharL)ch;
 		else
 			assert( false );
 	}
@@ -4148,11 +4097,11 @@ private:
 	{
 		assert( iType >= None && iType < MaxType );
 		if( iType == Char8 )
-			call_constructor(get_string<_StringA>());
+			call_constructor(get_string<_StringA>());  //no throw
 		else if( iType == Char16 )
-			call_constructor(get_string<_StringH>());
+			call_constructor(get_string<_StringH>());  //no throw
 		else if( iType == Char32 )
-			call_constructor(get_string<_StringL>());
+			call_constructor(get_string<_StringL>());  //no throw
 	}
 
 	template <class TString>
@@ -4229,8 +4178,9 @@ public:
 		if ( m_p != NULL ) {
 			GKC::IMemoryManager* pMgr = get_block()->GetMemoryManager();
 			if ( pMgr != NULL ) {
-				get_sa_handle()->~sa_handle();
 				get_block()->DestructObject();
+				//may unload a SA
+				get_sa_handle()->~sa_handle();
 				pMgr->Free((uintptr)m_p);
 			}
 			m_p = NULL;
@@ -4330,7 +4280,7 @@ public:
 			throw;  //re-throw
 		}
 
-		call_constructor(*((sa_handle*)p));
+		call_constructor(*((sa_handle*)p));  //no throw
 
 		//initialize
 		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));

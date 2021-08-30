@@ -74,7 +74,7 @@ private:
 	{
 		CallResult cr;
 		//namespace
-		StringA str(arrSymbol[2].get_Value().Deref().get_Buffer().Deref().ToUTF8());  //may throw
+		StringA str(arrSymbol[2].Deref().get_Buffer().Deref().ToUTF8());  //may throw
 		ConstStringA c_str(StringUtilHelper::To_ConstString(str));
 		CplMetaDataPosition pos;
 		pos = find_symbol(c_str);
@@ -96,12 +96,12 @@ private:
 			}
 			m_spMeta.Deref().SetData(pos, posData);
 			_WlangNsClassMetaData& data = *((_WlangNsClassMetaData*)(m_spMeta.Deref().GetData(posData)));
-			data.SetRow(arrSymbol[2].get_Value().Deref().get_WordInfo().Deref().infoStart.uRow);
-			data.SetCol(arrSymbol[2].get_Value().Deref().get_WordInfo().Deref().infoStart.uCol);
+			data.SetRow(arrSymbol[2].Deref().get_WordInfo().Deref().infoStart.uRow);
+			data.SetCol(arrSymbol[2].Deref().get_WordInfo().Deref().infoStart.uCol);
 		}
 		//set position
 		ShareCom<_ICplMetaDataPositionSymbolDataUtility> spU;
-		_COMPONENT_INSTANCE_INTERFACE(IGrammarSymbolData, _ICplMetaDataPositionSymbolDataUtility, arrSymbol[0].get_Value(), spU, cr);
+		_COMPONENT_INSTANCE_INTERFACE(IGrammarSymbolData, _ICplMetaDataPositionSymbolDataUtility, arrSymbol[0], spU, cr);
 		if( cr.IsFailed() )
 			return cr;
 		spU.Deref().SetPosition(pos);

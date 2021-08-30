@@ -304,7 +304,7 @@ private:
 		ShareCom<_ILexerAction> ret;
 		if( m_arrAction.IsBlockNull() || (uintptr)uID >= m_arrAction.GetCount() )
 			return ret;
-		ret = m_arrAction[uID].get_Value();
+		ret = m_arrAction[uID];
 		return ret;
 	}
 

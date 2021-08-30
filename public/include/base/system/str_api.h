@@ -324,12 +324,12 @@ inline bool check_path_extension_start(const char_a& ch) throw()
 template <typename t_char>
 inline bool check_path_last_separator(const t_char* szString, uintptr uLength) throw()
 {
-	return uLength > 0 && check_path_separator(szString[uLength - 1]);
+	return uLength > 0 && (check_path_separator(szString[uLength - 1]) || check_drive_separator(szString[uLength - 1]));
 }
 template <typename t_char>
 inline bool check_path_deletable_last_separator(const t_char* szString, uintptr uLength) throw()
 {
-	return check_path_last_separator(szString, uLength)
+	return uLength > 0 && check_path_separator(szString[uLength - 1])
 		&& (uLength > 1) && !check_drive_separator(szString[uLength - 2]);
 }
 

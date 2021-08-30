@@ -17,6 +17,8 @@ SET(STRING_CXX_FLAGS "")
 IF(WIN32)
 	#Windows, Unicode and disable RTTI
 	SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} -D_UNICODE /GR-")
+	#Using UTF8 strings (char*) in assemblies
+	SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} /execution-charset:utf-8")
 ELSE(WIN32)
 	#Linux, hide all functions and disable RTTI
 	SET(STRING_CXX_FLAGS
@@ -186,7 +188,8 @@ MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
 	ADD_CUSTOM_COMMAND(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_name}
 		COMMAND ${CMAKE_COMMAND} -E copy ${_input}
-			${CMAKE_CURRENT_BINARY_DIR}/${_name})
+			${CMAKE_CURRENT_BINARY_DIR}/${_name}
+		DEPENDS ${_input})
 	#Generate PCH
 	ADD_CUSTOM_COMMAND(OUTPUT ${_output}
 		COMMAND ${CMAKE_CXX_COMPILER} ${_compile_FLAGS}
@@ -239,32 +242,50 @@ MACRO(SET_PCH targetName targetType pchHeader pchSource SourceList)
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_PCH)
 
-#Set post-building command
-MACRO(SET_POSTBUILD_CMD targetName strCmd)
+# since 3.16, you can use TARGET_PRECOMPILE_HEADERS(...)
+
+#Set additional target command
+MACRO(SET_TARGET_CMD targetName isPostBuilding strCmd)
 	IF(WIN32)
-		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
-							COMMAND ${strCmd} ARGS ${ARGN}
-							VERBATIM)
+		IF(${isPostBuilding})
+			ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
+								COMMAND ${strCmd} ARGS ${ARGN}
+								VERBATIM)
+		ELSE(${isPostBuilding})
+			ADD_CUSTOM_COMMAND(TARGET ${targetName} PRE_BUILD
+								COMMAND ${strCmd} ARGS ${ARGN}
+								VERBATIM)
+		ENDIF(${isPostBuilding})
 	ENDIF(WIN32)
 	IF(CMAKE_COMPILER_IS_GNUCXX)
-		ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
-							COMMAND ${strCmd} ARGS ${ARGN}
-							)
+		IF(${isPostBuilding})
+			ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
+								COMMAND ${strCmd} ARGS ${ARGN}
+								)
+		ELSE(${isPostBuilding})
+			ADD_CUSTOM_COMMAND(TARGET ${targetName} PRE_BUILD
+								COMMAND ${strCmd} ARGS ${ARGN}
+								)
+		ENDIF(${isPostBuilding})
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
-ENDMACRO(SET_POSTBUILD_CMD)
+ENDMACRO(SET_TARGET_CMD)
 
 #mkdir
-MACRO(SET_POSTBUILD_MKDIR targetName strDir)
+MACRO(SET_TARGET_MKDIR targetName isPostBuilding strDir)
 	SET(_source "${strDir}")
 	IF(WIN32)
 		STRING(REPLACE "/" "\\\\" _source ${_source})
 	ENDIF(WIN32)
-	SET_POSTBUILD_CMD(${targetName} mkdir ${_source})
-ENDMACRO(SET_POSTBUILD_MKDIR)
+	IF(WIN32)
+		SET_TARGET_CMD(${targetName} ${isPostBuilding} dir /a ${_source} "1>nul" "2>nul" "||" mkdir ${_source})
+	ELSE(WIN32)
+		SET_TARGET_CMD(${targetName} ${isPostBuilding} mkdir -p ${_source})
+	ENDIF(WIN32)
+ENDMACRO(SET_TARGET_MKDIR)
 
 #Source : the source string
 #Dest : the dest string
-MACRO(SET_POSTBUILD_COPY targetName Source Dest)
+MACRO(SET_TARGET_COPY targetName isPostBuilding Source Dest)
 	SET(_source "${Source}")
 	SET(_dest "${Dest}")
 
@@ -274,55 +295,55 @@ MACRO(SET_POSTBUILD_COPY targetName Source Dest)
 	ENDIF(WIN32)
 
 	IF(WIN32)
-		SET_POSTBUILD_CMD(${targetName} copy "/Y" "/L" "${_source}" "${_dest}")
+		SET_TARGET_CMD(${targetName} ${isPostBuilding} copy "/Y" "/L" "${_source}" "${_dest}")
 	ENDIF(WIN32)
 	IF(CMAKE_COMPILER_IS_GNUCXX)
-		SET_POSTBUILD_CMD(${targetName} cp -pdf ${_source} ${_dest})
+		SET_TARGET_CMD(${targetName} ${isPostBuilding} cp -pdf ${_source} ${_dest})
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
-ENDMACRO(SET_POSTBUILD_COPY)
+ENDMACRO(SET_TARGET_COPY)
 
 # strNeedPlatform: "platform" or "no-platform"
 # strNeedMachine:  "machine" or "no-machine"
 # strNeedConfig:   "config", "no-config" or "user-config"
 # strConfig: user config name, "", "Debug" or "Release"
-# output: POSTBUILD_SRC_PATH
-MACRO(SET_POSTBUILD_SRC_PATH strNeedPlatform strNeedMachine strNeedConfig strConfig SourcePath)
-	SET(POSTBUILD_SRC_PATH "${SourcePath}")
+# output: TARGET_SRC_PATH
+MACRO(SET_TARGET_SRC_PATH strNeedPlatform strNeedMachine strNeedConfig strConfig SourcePath)
+	SET(TARGET_SRC_PATH "${SourcePath}")
 	IF(${strNeedPlatform} STREQUAL "platform")
 		IF(WIN32)
-			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/windows")
+			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/windows")
 		ENDIF(WIN32)
 		IF(CMAKE_COMPILER_IS_GNUCXX)
-			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/linux")
+			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/linux")
 		ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 	ENDIF(${strNeedPlatform} STREQUAL "platform")
 	IF(${strNeedMachine} STREQUAL "machine")
 		IF(USE_64BITS)
-			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/x64")
+			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/x64")
 		ELSE(USE_64BITS)
-			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/x86")
+			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/x86")
 		ENDIF(USE_64BITS)
 	ENDIF(${strNeedMachine} STREQUAL "machine")
 	IF(WIN32)
 		IF(${strNeedConfig} STREQUAL "config")
-			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/$<CONFIG>")
+			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/$<CONFIG>")
 		ELSEIF(${strNeedConfig} STREQUAL "user-config")
-			SET(POSTBUILD_SRC_PATH "${POSTBUILD_SRC_PATH}/${strConfig}")
+			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/${strConfig}")
 		ELSE(${strNeedConfig} STREQUAL "config")
 		ENDIF(${strNeedConfig} STREQUAL "config")
 	ENDIF(WIN32)
-ENDMACRO(SET_POSTBUILD_SRC_PATH)
+ENDMACRO(SET_TARGET_SRC_PATH)
 
 # strSrcNeedConfig: "config" or "no-config"
 # strDestNeedConfig: "config" or "no-config"
-MACRO(SET_POSTBUILD_PATH_COPY targetName strNeedPlatform strNeedMachine strSrcNeedConfig strDestNeedConfig SourcePath Source Dest)
-	SET_POSTBUILD_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${strSrcNeedConfig} "" ${SourcePath})
-	SET(_source "${POSTBUILD_SRC_PATH}/${Source}")
-	SET_POSTBUILD_SRC_PATH("no-platform" "no-machine" ${strDestNeedConfig} "" ${Dest})
-	SET(_dest "${POSTBUILD_SRC_PATH}")
+MACRO(SET_TARGET_PATH_COPY targetName isPostBuilding strNeedPlatform strNeedMachine strSrcNeedConfig strDestNeedConfig SourcePath Source Dest)
+	SET_TARGET_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${strSrcNeedConfig} "" ${SourcePath})
+	SET(_source "${TARGET_SRC_PATH}/${Source}")
+	SET_TARGET_SRC_PATH("no-platform" "no-machine" ${strDestNeedConfig} "" ${Dest})
+	SET(_dest "${TARGET_SRC_PATH}")
 
-	SET_POSTBUILD_COPY(${targetName} ${_source} ${_dest})
-ENDMACRO(SET_POSTBUILD_PATH_COPY)
+	SET_TARGET_COPY(${targetName} ${isPostBuilding} ${_source} ${_dest})
+ENDMACRO(SET_TARGET_PATH_COPY)
 
 #check the building directory
 MACRO(CHECK_BUILDING_DIR)

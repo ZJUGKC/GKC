@@ -20,9 +20,7 @@ CHECK_UI_LIBS()
 
 #sub-directories
 ADD_SUBDIRECTORY(RT RT)
-ADD_SUBDIRECTORY(Service Service)
 ADD_SUBDIRECTORY(tools tools)
-ADD_SUBDIRECTORY(Client Client)
 ADD_SUBDIRECTORY(Compiler/wlc Compiler/wlc)
 ADD_SUBDIRECTORY(Compiler/file2code Compiler/file2code)
 ADD_SUBDIRECTORY(test test)

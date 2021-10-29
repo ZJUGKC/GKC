@@ -15,8 +15,6 @@ INCLUDE("common.cmk")
 PROJECT(GKC)
 
 CHECK_BUILDING_DIR()
-#UI
-CHECK_UI_LIBS()
 
 #sub-directories
 ADD_SUBDIRECTORY(RT RT)

@@ -222,3 +222,20 @@ into a zip file and redistribute it.
 
 	Compress the files, setup-gkc.sh, uninstall-gkc.sh, GKC-1.0.1-Linux.sh and GKC-1.0.1-Linux.tar.gz,
 into a zip file and redistribute it.
+
+### Pack for cpkg system
+
+```
+cpkg-info.txt (from cpkg-info.dev)
+LICENSE
+common.cmk
+ftsc.cmk
+bin/
+	generated executable files
+include/
+	<SOURCE>/public/include/* <SOURCE>/RT/GkcSys/public->sys <SOURCE>/RT/GkcCompiler/public->compiler <SOURCE>/RT/GkcParser/public->parser
+lib/
+	generated library files (dll, lib, so)
+licenses/
+	<SOURCE>/licenses/*
+```

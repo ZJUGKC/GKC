@@ -16,7 +16,11 @@ INCLUDE_DIRECTORIES(
 	"${PROJECT_SOURCE_DIR}/test/BasicTest/include"
 	"${PROJECT_SOURCE_DIR}/public/include")
 LINK_DIRECTORIES("${PROJECT_BINARY_DIR}/bin")
-SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/test-bin")
+IF($<CONFIG:Debug>)
+	SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
+ELSE()
+	SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/test-bin")
+ENDIF()
 SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/ShareTest.cpp" "src/StreamTest.cpp" "src/PkzTest.cpp")
 ADD_EXECUTABLE(BasicTest ${SRC_PCH_LIST} ${SRC_LIST})

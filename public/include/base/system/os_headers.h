@@ -36,6 +36,7 @@
 #if defined(GKC_OS_WINDOWS)
 	#include <tchar.h>
 	#include <mbstring.h>
+	#include <process.h>
 #elif defined(GKC_OS_LINUX)
 	#include <wchar.h>
 	#include <ctype.h>

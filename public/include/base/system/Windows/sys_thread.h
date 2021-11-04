@@ -113,7 +113,7 @@ private:
 // thread_impl<T>
 
 template <class T>
-class NO_VTABLE thread_impl
+class NOVTABLE thread_impl
 {
 private:
 	typedef thread_impl<T>  thisClass;

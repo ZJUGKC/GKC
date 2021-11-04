@@ -1529,6 +1529,24 @@ private:
 };
 
 //------------------------------------------------------------------------------
+//Thread
+
+// ThreadHelper
+
+class ThreadHelper
+{
+public:
+	static void Sleep(uint uTimeout) throw()
+	{
+		thread_sleep(uTimeout);
+	}
+};
+
+// ThreadImpl<T>
+template <class T>
+using ThreadImpl = thread_impl<T>;
+
+//------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////
 }

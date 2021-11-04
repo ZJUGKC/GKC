@@ -225,17 +225,28 @@ into a zip file and redistribute it.
 
 ### Pack for cpkg system
 
+dev:
+
 ```
 cpkg-info.txt (from cpkg-info.dev)
 LICENSE
 common.cmk
 ftsc.cmk
 bin/
-	generated executable files
+	generated executable files (exclude test programs)
 include/
 	<SOURCE>/public/include/* <SOURCE>/RT/GkcSys/public->sys <SOURCE>/RT/GkcCompiler/public->compiler <SOURCE>/RT/GkcParser/public->parser
 lib/
-	generated library files (dll, lib, so)
+	generated library files (lib)
 licenses/
 	<SOURCE>/licenses/*
+```
+
+rt:
+
+```
+cpkg-info.txt (from cpkg-info.rt)
+LICENSE
+lib/
+	generated library files (dll, so)
 ```

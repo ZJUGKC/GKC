@@ -19,6 +19,10 @@ This file contains main function for Console Application.
 ////////////////////////////////////////////////////////////////////////////////
 
 //signal
+/*
+The destructors of local objects are not called because ::exit() is called.
+All allocated system resources (memory, io, kernel, ...) are freed by process manager.
+*/
 static
 void __sig_int(int signo)
 {

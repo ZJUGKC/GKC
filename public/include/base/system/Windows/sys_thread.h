@@ -76,7 +76,7 @@ public:
 	bool Create(unsigned (__stdcall *start_address)(void*), void* arglist) throw()
 	{
 		assert( IsNull() );
-		m_h = (HANDLE)::_beginthreadex(NULL, 0, start_address, arglist, 0, &m_id);
+		m_h = (HANDLE)::_beginthreadex(NULL, 0, start_address, arglist, 0, (unsigned int*)(void*)(&m_id));
 		return m_h != NULL;	 // NULL, errno and _doserrno
 	}
 

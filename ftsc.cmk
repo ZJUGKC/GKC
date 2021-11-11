@@ -11,11 +11,20 @@
 
 # File To Source Code
 
+SET(_pkg_name GKC)
+
 MACRO(SET_FILES_TO_SOURCE_CODE targetName isCpp fileList)
 	SET(_source_files "${ARGN}")
 	LIST(APPEND _source_files ${fileList})
 	# command name
-	SET(_cmd_name "file2code")
+	IF(DEFINED STRING_${_pkg_name}_BIN)
+		SET(_cmd_name "${STRING_${_pkg_name}_BIN}/file2code")
+	ELSE()
+		SET(_cmd_name "file2code")
+	ENDIF()
+	IF(WIN32)
+		STRING(REPLACE "/" "\\\\" _cmd_name ${_cmd_name})
+	ENDIF()
 	# destination directory
 	SET(_dest_dir "${CMAKE_CURRENT_BINARY_DIR}/ftsc")
 	IF(WIN32)

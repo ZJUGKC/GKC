@@ -1,0 +1,5 @@
+#
+# Xin YUAN, 2021, BSD (2)
+#
+
+SET(STRING_GKC_LIBS GkcSys GkcCompiler GkcParser)

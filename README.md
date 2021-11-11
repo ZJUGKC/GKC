@@ -229,6 +229,7 @@ dev:
 
 ```
 cpkg-info.txt (from cpkg-info.dev)
+cpkg-import.cmk
 LICENSE
 common.cmk
 ftsc.cmk

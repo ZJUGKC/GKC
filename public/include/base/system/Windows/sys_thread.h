@@ -73,10 +73,11 @@ public:
 		m_id = 0;
 	}
 
-	bool Create(unsigned (__stdcall *start_address)(void*), void* arglist) throw()
+	//initflag : 0, CREATE_SUSPENDED, STACK_SIZE_PARAM_IS_A_RESERVATION
+	bool Create(unsigned (__stdcall *start_address)(void*), void* arglist, unsigned stack_size = 0, unsigned initflag = 0) throw()
 	{
 		assert( IsNull() );
-		m_h = (HANDLE)::_beginthreadex(NULL, 0, start_address, arglist, 0, (unsigned int*)(void*)(&m_id));
+		m_h = (HANDLE)::_beginthreadex(NULL, stack_size, start_address, arglist, initflag, (unsigned int*)(void*)(&m_id));
 		return m_h != NULL;	 // NULL, errno and _doserrno
 	}
 
@@ -104,6 +105,10 @@ public:
 		DWORD dwRet = ::ResumeThread(m_h);
 		return dwRet != (DWORD)-1;  // -1, ::GetLastError()
 	}
+
+private:
+	_os_crt_thread(const _os_crt_thread&) throw();
+	_os_crt_thread& operator=(const _os_crt_thread&) throw();
 
 private:
 	HANDLE m_h;
@@ -136,9 +141,9 @@ public:
 		m_thread.WaitForEnd();
 	}
 
-	bool Create() throw()
+	bool Create(uint uStackSize = 0) throw()
 	{
-		return m_thread.Create(&thread_proc, (void*)this);
+		return m_thread.Create(&thread_proc, (void*)this, uStackSize);
 	}
 
 protected:

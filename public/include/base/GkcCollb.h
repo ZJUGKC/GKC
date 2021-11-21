@@ -1199,6 +1199,27 @@ private:
 // Hash Table
 
 //internal
+
+// _hash_bucket_size
+
+class _hash_bucket_size
+{
+public:
+	static const uint* const GetPrimes() throw()
+	{
+		// List of primes such that c_Primes[i] is the smallest prime greater than 2^(5+i/3)
+		static constexpr const uint c_Primes[] = {
+			17, 23, 29, 37, 41, 53, 67, 83, 103, 131, 163, 211, 257, 331, 409, 521, 647, 821,
+			1031, 1291, 1627, 2053, 2591, 3251, 4099, 5167, 6521, 8209, 10331,
+			13007, 16411, 20663, 26017, 32771, 41299, 52021, 65537, 82571, 104033,
+			131101, 165161, 208067, 262147, 330287, 416147, 524309, 660563,
+			832291, 1048583, 1321139, 1664543, 2097169, 2642257, 3329023, 4194319,
+			5284493, 6658049, 8388617, 10568993, 13316089, Limits<uint>::Max
+		};
+		return c_Primes;
+	}
+};
+
 // _HashTable<TKey, TPair, THashTrait, TCompareTrait>
 
 template <typename TKey, class TPair, class THashTrait = DefaultHashTrait<TKey>, class TCompareTrait = DefaultCompareTrait<TKey>>
@@ -1608,22 +1629,13 @@ protected:
 	// bucket
 	uintptr pick_bucket_size(uintptr uElements) const throw()
 	{
-		// List of primes such that c_Primes[i] is the smallest prime greater than 2^(5+i/3)
-		static const uint c_Primes[] = {
-			17, 23, 29, 37, 41, 53, 67, 83, 103, 131, 163, 211, 257, 331, 409, 521, 647, 821,
-			1031, 1291, 1627, 2053, 2591, 3251, 4099, 5167, 6521, 8209, 10331,
-			13007, 16411, 20663, 26017, 32771, 41299, 52021, 65537, 82571, 104033,
-			131101, 165161, 208067, 262147, 330287, 416147, 524309, 660563,
-			832291, 1048583, 1321139, 1664543, 2097169, 2642257, 3329023, 4194319,
-			5284493, 6658049, 8388617, 10568993, 13316089, Limits<uint>::Max
-		};
-
 		uintptr uBins = (uintptr)(uElements / m_fOptimalLoad);
 		uintptr uBinsEstimate = uBins;
 		if( uBins > (uintptr)(Limits<uint>::Max) )
 			uBinsEstimate = (uintptr)(Limits<uint>::Max);
 
 		// Find the smallest prime greater than estimated value
+		const uint* const c_Primes = _hash_bucket_size::GetPrimes();
 		int iPrime = 0;
 		while( uBinsEstimate > (uintptr)(c_Primes[iPrime]) )
 			iPrime ++;

@@ -88,85 +88,85 @@ template <>
 class limits_base<char>
 {
 public:
-	static const char Lowest = SCHAR_MIN;
-	static const char Min = SCHAR_MIN;
-	static const char Max = SCHAR_MAX;
+	static constexpr const char Lowest = SCHAR_MIN;
+	static constexpr const char Min = SCHAR_MIN;
+	static constexpr const char Max = SCHAR_MAX;
 };
 template <>
 class limits_base<byte>
 {
 public:
-	static const byte Lowest = 0;
-	static const byte Min = 0;
-	static const byte Max = UCHAR_MAX;
+	static constexpr const byte Lowest = 0;
+	static constexpr const byte Min = 0;
+	static constexpr const byte Max = UCHAR_MAX;
 };
 
 template <>
 class limits_base<short>
 {
 public:
-	static const short Lowest = SHRT_MIN;
-	static const short Min = SHRT_MIN;
-	static const short Max = SHRT_MAX;
+	static constexpr const short Lowest = SHRT_MIN;
+	static constexpr const short Min = SHRT_MIN;
+	static constexpr const short Max = SHRT_MAX;
 };
 template <>
 class limits_base<ushort>
 {
 public:
-	static const ushort Lowest = 0;
-	static const ushort Min = 0;
-	static const ushort Max = USHRT_MAX;
+	static constexpr const ushort Lowest = 0;
+	static constexpr const ushort Min = 0;
+	static constexpr const ushort Max = USHRT_MAX;
 };
 
 template <>
 class limits_base<int>
 {
 public:
-	static const int Lowest = INT_MIN;
-	static const int Min = INT_MIN;
-	static const int Max = INT_MAX;
+	static constexpr const int Lowest = INT_MIN;
+	static constexpr const int Min = INT_MIN;
+	static constexpr const int Max = INT_MAX;
 };
 template <>
 class limits_base<uint>
 {
 public:
-	static const uint Lowest = 0;
-	static const uint Min = 0;
-	static const uint Max = UINT_MAX;
+	static constexpr const uint Lowest = 0;
+	static constexpr const uint Min = 0;
+	static constexpr const uint Max = UINT_MAX;
 };
 
 template <>
 class limits_base<int64>
 {
 public:
-	static const int64 Lowest = LLONG_MIN;
-	static const int64 Min = LLONG_MIN;
-	static const int64 Max = LLONG_MAX;
+	static constexpr const int64 Lowest = LLONG_MIN;
+	static constexpr const int64 Min = LLONG_MIN;
+	static constexpr const int64 Max = LLONG_MAX;
 };
 template <>
 class limits_base<uint64>
 {
 public:
-	static const uint64 Lowest = 0;
-	static const uint64 Min = 0;
-	static const uint64 Max = ULLONG_MAX;
+	static constexpr const uint64 Lowest = 0;
+	static constexpr const uint64 Min = 0;
+	static constexpr const uint64 Max = ULLONG_MAX;
 };
 
 template <>
 class limits_base<float>
 {
 public:
-	static const float Lowest;
-	static const float Min;
-	static const float Max;
+	static constexpr const float Lowest = -FLT_MAX;
+	static constexpr const float Min = FLT_MIN;
+	static constexpr const float Max = FLT_MAX;
 };
 template <>
 class limits_base<double>
 {
 public:
-	static const double Lowest;
-	static const double Min;
-	static const double Max;
+	static constexpr const double Lowest = -DBL_MAX;
+	static constexpr const double Min = DBL_MIN;
+	static constexpr const double Max = DBL_MAX;
 };
 
 //------------------------------------------------------------------------------

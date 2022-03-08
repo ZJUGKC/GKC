@@ -126,7 +126,7 @@ flags:
        Ignored when used with c, d, u, or s.
 0      The leading zeros are added until the minimum width is reached. If both 0 and – appear, or 0 is specified as an integer format (u, x, X, o, d) and a precision specification is also present (for example, %04.d), the 0 is ignored.
 -      Left align the result within the given field width.
-+      Use a sign (+ or –) to prefix the output value if it is of a signed type.
++      Use a sign (+ or -) to prefix the output value if it is of a signed type.
 blank  ' ', use a blank to prefix the output value if it is signed and positive. The blank is ignored if both the blank and + flags appear.
 
 width:

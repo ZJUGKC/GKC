@@ -367,11 +367,14 @@ typedef exception_t<system_call_results::Overflow>  overflow_exception;
 
 // -----traits-----
 
-// default_compare_trait<T>
+// compare_trait_base<T>
 
 template <typename T>
-class default_compare_trait
+class compare_trait_base
 {
+public:
+	typedef T  EType;
+
 public:
 	//common versions
 	static bool IsEQ(const T& t1, const T& t2) throw()
@@ -400,41 +403,37 @@ public:
 	}
 	static int Compare(const T& t1, const T& t2) throw()
 	{
-		if( IsLT(t1, t2 ) )
-			return -1;
-		if( IsEQ(t1, t2) )
-			return 0;
-		assert( IsGT(t1, t2) );
-		return 1;
+		return IsLT(t1, t2) ? -1 : (IsEQ(t1, t2) ? 0 : (assert( IsGT(t1, t2) ), 1));
 	}
+};
+
+// default_compare_trait<T>
+
+template <typename T>
+class default_compare_trait : public compare_trait_base<T>
+{
 };
 
 //special versions
 #define _DECLARE_INT_COMPARE_TRAIT(T)  \
-	template <> class default_compare_trait<T> {  \
+	template <> class default_compare_trait<T> : public compare_trait_base<T> {  \
 	public:  \
-	static bool IsEQ(const T& t1, const T& t2) throw() { return t1 == t2; }  \
-	static bool IsNE(const T& t1, const T& t2) throw() { return t1 != t2; }  \
-	static bool IsGT(const T& t1, const T& t2) throw() { return t1 > t2; }  \
-	static bool IsLT(const T& t1, const T& t2) throw() { return t1 < t2; }  \
-	static bool IsGE(const T& t1, const T& t2) throw() { return t1 >= t2; }  \
-	static bool IsLE(const T& t1, const T& t2) throw() { return t1 <= t2; }  \
-	static int Compare(const T& t1, const T& t2) throw() { return (int)(t1 - t2); }  \
+	static int Compare(const T& t1, const T& t2) throw() { return (int)t1 - (int)t2; }  \
 	};
 
+// sizeof(T) must be less than sizeof(int) or sizeof(unsigned int)
 _DECLARE_INT_COMPARE_TRAIT(char)
 _DECLARE_INT_COMPARE_TRAIT(byte)
 _DECLARE_INT_COMPARE_TRAIT(short)
 _DECLARE_INT_COMPARE_TRAIT(ushort)
-_DECLARE_INT_COMPARE_TRAIT(int)
-_DECLARE_INT_COMPARE_TRAIT(uint)
-_DECLARE_INT_COMPARE_TRAIT(int64)
-_DECLARE_INT_COMPARE_TRAIT(uint64)
 _DECLARE_INT_COMPARE_TRAIT(bool)
 
 template <>
 class default_compare_trait<float>
 {
+public:
+	typedef float  EType;
+
 public:
 	static bool IsEQ(const float& t1, const float& t2) throw()
 	{
@@ -469,6 +468,9 @@ public:
 template <>
 class default_compare_trait<double>
 {
+public:
+	typedef double  EType;
+
 public:
 	static bool IsEQ(const double& t1, const double& t2) throw()
 	{
@@ -578,7 +580,7 @@ public:
 	const_string_t() throw()
 	{
 	}
-	const_string_t(const Tchar* p, uintptr size) throw() : baseClass(p, size)
+	constexpr const_string_t(const Tchar* p, uintptr size) throw() : baseClass(p, size)
 	{
 	}
 	const_string_t(const thisClass& src) throw() : baseClass(static_cast<const baseClass&>(src))
@@ -587,9 +589,7 @@ public:
 	explicit const_string_t(const const_array_base<Tchar>& src) throw() : baseClass(src)
 	{
 	}
-	~const_string_t() throw()
-	{
-	}
+	//use default destructor
 
 	//operators
 	thisClass& operator=(const thisClass& src) throw()
@@ -695,7 +695,7 @@ private:
 	typedef const_prefix_array<Tchar>  baseClass;
 
 public:
-	explicit const_prefix_string(const Tchar* p = NULL) noexcept : baseClass(p)
+	explicit constexpr const_prefix_string(const Tchar* p = NULL) noexcept : baseClass(p)
 	{
 	}
 	uintptr GetLength() const noexcept

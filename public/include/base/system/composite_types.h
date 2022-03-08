@@ -689,9 +689,7 @@ public:
 		baseClass::m_first = src.m_first;
 		baseClass::m_size  = src.m_size;
 	}
-	~const_array() throw()
-	{
-	}
+	//use default destructor
 
 	//operators
 	const_array<T>& operator=(const const_array<T>& src) throw()
@@ -904,12 +902,12 @@ template <typename T>
 class const_prefix_array
 {
 public:
-	explicit const_prefix_array(const T* p = NULL) noexcept : m_data(p)
+	explicit constexpr const_prefix_array(const T* p = NULL) noexcept : m_data(p)
 	{
 	}
 	uintptr GetCount() const noexcept
 	{
-		return m_data == NULL ? 0 : *((const uintptr*)m_data - 1);
+		return m_data == NULL ? 0 : *((const uintptr*)(const void*)m_data - 1);
 	}
 	const T* GetAddress() const noexcept
 	{
@@ -943,7 +941,7 @@ template <typename T, uintptr t_size>
 class fixed_array
 {
 public:
-	static const uintptr c_size = t_size;  //!< The number of elements.
+	static constexpr const uintptr c_size = t_size;  //!< The number of elements.
 
 	typedef T EType;  //element type
 	//position

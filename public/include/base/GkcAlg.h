@@ -27,6 +27,15 @@ This file contains algorithms for collection classes.
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+// functions
+
+template <class TIterator, class TFunctor>
+inline void ForEach(const TIterator& iterBegin, const TIterator& iterEnd, const TFunctor& func)
+{
+	for ( TIterator iter(iterBegin); iter != iterEnd; iter.MoveNext() )
+		func(iter.get_Value());
+}
+
 // classes
 
 //------------------------------------------------------------------------------

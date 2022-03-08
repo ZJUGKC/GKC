@@ -24,6 +24,7 @@ The destructors of local objects are not called
 since system calls ::ExitProcess() after executing this callback.
 All allocated system resources (memory, io, kernel, ...) are freed by process manager.
 */
+static
 BOOL WINAPI _ctrl_handler(DWORD dwCtrlType)
 {
 	switch( dwCtrlType ) {

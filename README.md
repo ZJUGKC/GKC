@@ -241,6 +241,8 @@ lib/
 	generated library files (lib)
 licenses/
 	<SOURCE>/licenses/*
+scripts/
+	<SOURCE>/scripts/linux/* (only for linux)
 ```
 
 rt:

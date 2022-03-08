@@ -1679,6 +1679,7 @@ public:
 		share_array_block* pB = static_cast<share_array_block*>(baseClass::m_pB);
 		assert( pB->GetMemoryManager() != NULL );
 		uintptr uSize = pB->GetLength();
+		assert( uSize <= pB->GetAllocLength() );
 		if( uSize == pB->GetAllocLength() )
 			return ;
 		// shrink to desired size
@@ -1687,9 +1688,7 @@ public:
 			pB->DestroyArray<T>();
 			return ;
 		}
-		uintptr uBytes;
-		GKC::SafeOperators::Multiply(uSize, (uintptr)(sizeof(T)), uBytes);  //no check
-		T* pNew = (T*)(pB->GetMemoryManager()->Reallocate((uintptr)get_array_address(), uBytes));
+		T* pNew = (T*)(pB->GetMemoryManager()->Reallocate((uintptr)get_array_address(), uSize * sizeof(T)));
 		if( pNew == NULL )
 			return ;
 		set_array_address(pNew);
@@ -2585,6 +2584,7 @@ public:
 			return ;
 		unique_array_block* pB = (unique_array_block*)m_p;
 		uintptr uSize = pB->GetLength();
+		assert( uSize <= pB->GetAllocLength() );
 		if ( uSize == pB->GetAllocLength() )
 			return ;
 		// shrink to desired size
@@ -2593,10 +2593,7 @@ public:
 			RemoveAll();
 			return ;
 		}
-		uintptr uBytes;
-		GKC::SafeOperators::Multiply(uSize, (uintptr)(sizeof(T)), uBytes);  //no check
-		GKC::SafeOperators::Add(uBytes, (uintptr)(sizeof(unique_array_block)), uBytes);  //no check
-		void* pNew = (void*)(pB->GetMemoryManager()->Reallocate((uintptr)m_p, uBytes));
+		void* pNew = (void*)(pB->GetMemoryManager()->Reallocate((uintptr)m_p, uSize * sizeof(T) + sizeof(unique_array_block)));
 		if ( pNew == NULL )
 			return ;
 		m_p = pNew;
@@ -2701,7 +2698,7 @@ public:
 protected:
 	T* get_array_address() const noexcept
 	{
-		return (T*)((unique_array_block*)m_p + 1);
+		return (T*)(void*)((unique_array_block*)m_p + 1);
 	}
 
 protected:

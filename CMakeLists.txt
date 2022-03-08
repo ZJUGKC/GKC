@@ -14,6 +14,7 @@ INCLUDE("common.cmk")
 
 PROJECT(GKC)
 
+CHECK_BUILDING_SYSTEM()
 CHECK_BUILDING_DIR()
 
 #sub-directories

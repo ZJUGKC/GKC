@@ -731,13 +731,12 @@ public:
 	typedef array_iterator<T>  Iterator;
 
 public:
-	unique_fixed_array() throw() : m_p(NULL), m_uCount(0)
+	unique_fixed_array() throw() : m_p(NULL)
 	{
 	}
-	unique_fixed_array(unique_fixed_array<T>&& src) throw() : m_p(src.m_p), m_uCount(src.m_uCount)
+	unique_fixed_array(unique_fixed_array<T>&& src) throw() : m_p(src.m_p)
 	{
 		src.m_p = NULL;
-		src.m_uCount = 0;
 	}
 	~unique_fixed_array() throw()
 	{
@@ -754,8 +753,6 @@ public:
 				Free();
 				m_p = src.m_p;
 				src.m_p = NULL;
-				m_uCount = src.m_uCount;
-				src.m_uCount = 0;
 			}
 		}
 		return *this;
@@ -772,7 +769,7 @@ public:
 
 	uintptr GetCount() const throw()
 	{
-		return m_p == NULL ? 0 : m_uCount;
+		return m_p == NULL ? 0 : get_count();
 	}
 	bool IsNull() const throw()
 	{
@@ -782,8 +779,8 @@ public:
 	void Free() throw()
 	{
 		if( m_p != NULL ) {
-			call_array_destructors(m_p, m_uCount);
-			crt_free(m_p);
+			call_array_destructors(m_p, get_count());
+			crt_free(get_start_pointer());
 			m_p = NULL;
 		}
 	}
@@ -827,11 +824,11 @@ public:
 	}
 	const Iterator GetEnd() const throw()
 	{
-		return Iterator(ref_ptr<T>(m_p + m_uCount));
+		return Iterator(ref_ptr<T>(m_p + get_count()));
 	}
 	Iterator GetEnd() throw()
 	{
-		return Iterator(ref_ptr<T>(m_p + m_uCount));
+		return Iterator(ref_ptr<T>(m_p + get_count()));
 	}
 	const reverse_iterator<Iterator> GetReverseBegin() const throw()
 	{
@@ -872,8 +869,18 @@ public:
 	}
 
 protected:
-	T*       m_p;
-	uintptr  m_uCount;
+	uintptr& get_count() const throw()
+	{
+		assert( m_p != NULL );
+		return *((uintptr*)(void*)m_p - 1);
+	}
+	void* get_start_pointer() const throw()
+	{
+		return (void*)&(get_count());
+	}
+
+protected:
+	T*  m_p;
 
 private:
 	unique_fixed_array(const unique_fixed_array&) throw();
@@ -893,19 +900,20 @@ public:
 	{
 		assert( uCount > 0 );
 		uintptr uBytes = safe_operators::MultiplyThrow(uCount, (uintptr)sizeof(T));
-		T* p = (T*)crt_alloc(uBytes);
+		uBytes = safe_operators::AddThrow(uBytes, (uintptr)sizeof(uintptr));
+		void* p = crt_alloc(uBytes);
 		if( p == NULL )
 			throw outofmemory_exception();
 		try {
-			call_array_constructors(p, uCount, rv_forward<Args>(args)...);
+			call_array_constructors((byte*)p + sizeof(uintptr), uCount, rv_forward<Args>(args)...);
 		}
 		catch(...) {
 			crt_free(p);
 			throw;  //re-throw
 		}
 		unique_fixed_array<T> ret;
-		ret.m_p = p;
-		ret.m_uCount = uCount;
+		ret.m_p = (T*)((byte*)p + sizeof(uintptr));
+		ret.get_count() = uCount;
 		return ret;
 	}
 

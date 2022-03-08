@@ -337,6 +337,23 @@ MACRO(SET_TARGET_PATH_COPY targetName isPostBuilding strNeedPlatform strNeedMach
 	SET_TARGET_COPY(${targetName} ${isPostBuilding} ${_source} ${_dest})
 ENDMACRO(SET_TARGET_PATH_COPY)
 
+#check building system
+MACRO(CHECK_BUILDING_SYSTEM)
+	IF(WIN32)
+		IF(MSVC)
+		ELSE()
+			MESSAGE(FATAL_ERROR "MSVC should be used for compiling!")
+		ENDIF()
+	ELSEIF(UNIX)
+		IF(CMAKE_COMPILER_IS_GNUCXX)
+		ELSE()
+			MESSAGE(FATAL_ERROR "g++ should be used for compiling!")
+		ENDIF()
+	ELSE()
+		MESSAGE(FATAL_ERROR "This OS system is not supported!")
+	ENDIF()
+ENDMACRO()
+
 #check the building directory
 MACRO(CHECK_BUILDING_DIR)
 	IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")

@@ -12,5 +12,6 @@
 ADD_SUBDIRECTORY(mdc mdc)
 ADD_SUBDIRECTORY(mdp mdp)
 ADD_SUBDIRECTORY(txtf txtf)
+ADD_SUBDIRECTORY(fcmp fcmp)
 
 #end

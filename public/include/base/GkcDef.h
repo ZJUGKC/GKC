@@ -198,6 +198,9 @@ template <typename Tchar>
 class CharCaseIgnoreCompareTrait
 {
 public:
+	typedef Tchar  EType;
+
+public:
 	static bool IsEQ(const Tchar& t1, const Tchar& t2) throw()
 	{
 		return char_upper(t1) == char_upper(t2);
@@ -400,6 +403,9 @@ template <class T, class TCompareTrait = DefaultCompareTrait<typename T::EType>>
 class FixedArrayCompareTrait
 {
 public:
+	typedef T  EType;
+
+public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
 		typename T::EType* p1 = FixedArrayHelper::GetInternalPointer(t1);
@@ -476,6 +482,9 @@ public:
 template <class T, class TCompareTrait = DefaultCompareTrait<typename T::EType>>
 class FixedArrayBigEndianCompareTrait
 {
+public:
+	typedef T  EType;
+
 public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
@@ -557,6 +566,9 @@ template <class T>
 class ConstStringCompareTrait
 {
 public:
+	typedef T  EType;
+
+public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
 		return compare_string(ConstArrayHelper::GetInternalPointer(t1), ConstArrayHelper::GetInternalPointer(t2)) == 0;
@@ -592,6 +604,9 @@ public:
 template <class T>
 class ConstStringCaseIgnoreCompareTrait
 {
+public:
+	typedef T  EType;
+
 public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
@@ -856,6 +871,9 @@ template <class T>
 class FixedStringCompareTrait
 {
 public:
+	typedef T  EType;
+
+public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
 		return compare_string(FixedArrayHelper::GetInternalPointer(t1), FixedArrayHelper::GetInternalPointer(t2)) == 0;
@@ -891,6 +909,9 @@ public:
 template <class T>
 class FixedStringCaseIgnoreCompareTrait
 {
+public:
+	typedef T  EType;
+
 public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{

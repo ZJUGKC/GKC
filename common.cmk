@@ -12,19 +12,37 @@
 #string of compile flags
 
 #all warnings
-SET(STRING_CXX_FLAGS "")
 
+SET(STRING_C_FLAGS "")
 IF(WIN32)
-	#Windows, Unicode and disable RTTI
-	SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} -D_UNICODE /GR-")
+	#Windows, Unicode
+	SET(STRING_C_FLAGS "${STRING_C_FLAGS} -D_UNICODE /W3")
 	#Using UTF8 strings (char*) in assemblies
-	SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} /execution-charset:utf-8")
+	SET(STRING_C_FLAGS "${STRING_C_FLAGS} /execution-charset:utf-8")
 ELSE(WIN32)
-	#Linux, hide all functions and disable RTTI
-	SET(STRING_CXX_FLAGS
-		"${STRING_CXX_FLAGS} -Wall -D_FILE_OFFSET_BITS=64 -fvisibility=hidden -fno-rtti -std=c++11")
+	#Linux, hide all functions
+	SET(STRING_C_FLAGS "${STRING_C_FLAGS} -Wall -D_FILE_OFFSET_BITS=64 -fvisibility=hidden")
 ENDIF(WIN32)
 
+#CPP flags
+SET(STRING_CXX_FLAGS "")
+IF(WIN32)
+	#disable RTTI
+	SET(STRING_CXX_FLAGS "${STRING_C_FLAGS} /GR-")
+ELSE(WIN32)
+	#disable RTTI
+	SET(STRING_CXX_FLAGS "${STRING_C_FLAGS} -fno-rtti")
+ENDIF(WIN32)
+
+SET(STRING_CPP_VERSION "")
+IF(WIN32)
+ELSE(WIN32)
+	SET(STRING_CPP_VERSION "${STRING_CPP_VERSION} -std=c++11")
+ENDIF(WIN32)
+
+SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} ${STRING_CPP_VERSION}")
+
+#definitions
 ADD_DEFINITIONS(${STRING_CXX_FLAGS})
 
 #string of architecture

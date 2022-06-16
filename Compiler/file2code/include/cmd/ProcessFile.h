@@ -25,9 +25,8 @@ namespace GKC {
 
 // tools
 
-inline bool write_h_file(RefPtr<ITextStreamRoot>& refTS, const ConstStringS& strVar)
+inline bool write_h_file(RefPtr<ITextStreamRoot>& refTS, const StringA& strV) noexcept
 {
-	StringA strV(CS_S2U(strVar).GetV());  //may throw
 	CallResult cr;
 	cr = refTS.Deref().PutStringA(DECLARE_TEMP_CONST_STRING(ConstStringA, "#ifndef __FTSC_"));
 	if ( cr.IsFailed() )
@@ -83,9 +82,8 @@ private:
 	_BufferClass m_str;
 };
 
-inline bool write_source_file(RefPtr<IByteStream>& refInput, RefPtr<ITextStreamRoot>& refTS, const ConstStringS& strVar, uintptr uFileSize)
+inline bool write_source_file(RefPtr<IByteStream>& refInput, RefPtr<ITextStreamRoot>& refTS, const StringA& strV, uintptr uFileSize) noexcept
 {
-	StringA strV(CS_S2U(strVar).GetV());  //may throw
 	CallResult cr;
 	cr = refTS.Deref().PutStringA(DECLARE_TEMP_CONST_STRING(ConstStringA, "#include \""));
 	if ( cr.IsFailed() )
@@ -216,6 +214,8 @@ inline bool _Process_File(const ConstStringS& strSrc, const ConstStringS& strDes
 		return false;
 	}
 
+	StringA strV(CS_S2U(strVar).GetV());  //may throw
+
 	//.h
 	StringUtilHelper::MakeString(strDest, ustrDest);  //may throw
 	StringUtilHelper::Append(DECLARE_TEMP_CONST_STRING(ConstStringS, _S(".h")), ustrDest);  //may throw
@@ -230,7 +230,7 @@ inline bool _Process_File(const ConstStringS& strSrc, const ConstStringS& strDes
 		return false;
 	}
 	refTU.Deref().SetStream(refOutput);
-	if ( !write_h_file(refTS, strVar) ) { //may throw
+	if ( !write_h_file(refTS, strV) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot write to .h file!")));
 		return false;
 	}
@@ -252,7 +252,7 @@ inline bool _Process_File(const ConstStringS& strSrc, const ConstStringS& strDes
 	}
 	refTU.Deref().SetStream(refOutput);
 	refTS.Deref().Reset();
-	if ( !write_source_file(refInput, refTS, strVar, uFileSize) ) { //may throw
+	if ( !write_source_file(refInput, refTS, strV, uFileSize) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot write to c/cpp file!")));
 		return false;
 	}

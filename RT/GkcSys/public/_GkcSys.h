@@ -2165,6 +2165,9 @@ template <class T>
 class _StringCompareTrait
 {
 public:
+	typedef T  EType;
+
+public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
 		return compare_string(_ShareArrayHelper::GetInternalPointer(t1), _ShareArrayHelper::GetInternalPointer(t2)) == 0;
@@ -2200,6 +2203,9 @@ public:
 template <class T>
 class _StringCaseIgnoreCompareTrait
 {
+public:
+	typedef T  EType;
+
 public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
@@ -2888,6 +2894,9 @@ template <class T>
 class _UniqueStringCompareTrait
 {
 public:
+	typedef T  EType;
+
+public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{
 		return compare_string(_UniqueArrayHelper::GetInternalPointer(t1), _UniqueArrayHelper::GetInternalPointer(t2)) == 0;
@@ -2923,6 +2932,9 @@ public:
 template <class T>
 class _UniqueStringCaseIgnoreCompareTrait
 {
+public:
+	typedef T  EType;
+
 public:
 	static bool IsEQ(const T& t1, const T& t2) throw()
 	{

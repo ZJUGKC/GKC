@@ -86,7 +86,7 @@ public:
 		m_hd = ::dlopen(szFile, RTLD_LAZY);
 		return m_hd != NULL;
 	}
-	uintptr GetFunctionAddress(const char_a* szFunc) throw()
+	uintptr GetFunctionAddress(const char_a* szFunc) const throw()
 	{
 		assert( m_hd != NULL );
 		::dlerror();
@@ -563,7 +563,7 @@ public:
 
 	// name is case sensitive and limited to NAME_MAX-4 (251) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, int iCount) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, int iCount, bool& bExisting) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_psem == NULL && m_szName == NULL );
@@ -571,17 +571,24 @@ public:
 		char_a* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), true);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
+		bExisting = false;
 		//create
 		int res = 0;
-		sem_t* psem = ::sem_open(psz, O_CREAT /*| O_EXCL*/ | O_RDWR, S_IRWXU | S_IRWXG | (bGlobal ? S_IRWXO : 0), (unsigned int)iCount);
+		int oflag   = O_CREAT | O_RDWR;
+		mode_t mode = S_IRWXU | S_IRWXG | (bGlobal ? S_IRWXO : 0);
+		sem_t* psem = ::sem_open(psz, oflag | O_EXCL, mode, (unsigned int)iCount);
 		if( psem == SEM_FAILED ) {
-			res = _OS_CR_FROM_ERRORNO();
-			_sync_helper::free_sync_name(psz, true);
+			if( errno != EEXIST ) {
+				res = _OS_CR_FROM_ERRORNO();
+				_sync_helper::free_sync_name(psz, true);
+				return call_result(res);
+			}
+			bExisting = true;
+			psem = ::sem_open(psz, oflag, mode, (unsigned int)iCount);
+			assert( psem != SEM_FAILED );
 		}
-		else {
-			m_psem   = psem;
-			m_szName = psz;
-		}
+		m_psem   = psem;
+		m_szName = psz;
 		return call_result(res);
 	}
 	call_result Open(const ref_ptr<char_s>& str, bool bGlobal) throw()
@@ -723,9 +730,9 @@ public:
 
 	// name is case sensitive and limited to NAME_MAX-4 (251) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const ref_ptr<char_s>& str, bool bGlobal) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, bool& bExisting) throw()
 	{
-		return m_sem.Create(str, bGlobal, 1);
+		return m_sem.Create(str, bGlobal, 1, bExisting);
 	}
 	call_result Open(const ref_ptr<char_s>& str, bool bGlobal) throw()
 	{

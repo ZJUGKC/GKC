@@ -154,9 +154,21 @@ inline char_h* find_string_string(const char_h* s, const char_h* z) throw()
 }
 
 // char_is_*
+inline bool char_is_alnum(const char_h& ch) throw()
+{
+	return ::iswalnum((wint_t)ch) != 0;
+}
 inline bool char_is_alpha(const char_h& ch) throw()
 {
 	return ::iswalpha((wint_t)ch) != 0;
+}
+inline bool char_is_cntrl(const char_h& ch) throw()
+{
+	return ::iswcntrl((wint_t)ch) != 0;
+}
+inline bool char_is_graph(const char_h& ch) throw()
+{
+	return ::iswgraph((wint_t)ch) != 0;
 }
 inline bool char_is_lower(const char_h& ch) throw()
 {
@@ -185,6 +197,10 @@ inline bool char_is_space(const char_h& ch) throw()
 inline bool char_is_print(const char_h& ch) throw()
 {
 	return ::iswprint((wint_t)ch) != 0;
+}
+inline bool char_is_punct(const char_h& ch) throw()
+{
+	return ::iswpunct((wint_t)ch) != 0;
 }
 
 //------------------------------------------------------------------------------

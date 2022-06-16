@@ -20,7 +20,7 @@
 // char_lower
 inline char_a char_lower(char_a c) throw()
 {
-	return (char_a)::tolower((int)c);
+	return (char_a)::tolower((int)(unsigned char)c);
 }
 inline char_h char_lower(char_h c) throw()
 {
@@ -33,7 +33,7 @@ inline char_l char_lower(char_l c) throw()
 // char_upper
 inline char_a char_upper(char_a c) throw()
 {
-	return (char_a)::toupper((int)c);
+	return (char_a)::toupper((int)(unsigned char)c);
 }
 inline char_h char_upper(char_h c) throw()
 {
@@ -80,37 +80,53 @@ inline char_a* find_string_string(const char_a* s, const char_a* z) throw()
 }
 
 // char_is_*
+inline bool char_is_alnum(const char_a& ch) throw()
+{
+	return ::isalnum((int)(unsigned char)ch) != 0;
+}
 inline bool char_is_alpha(const char_a& ch) throw()
 {
-	return ::isalpha((int)ch) != 0;
+	return ::isalpha((int)(unsigned char)ch) != 0;
+}
+inline bool char_is_cntrl(const char_a& ch) throw()
+{
+	return ::iscntrl((int)(unsigned char)ch) != 0;
+}
+inline bool char_is_graph(const char_a& ch) throw()
+{
+	return ::isgraph((int)(unsigned char)ch) != 0;
 }
 inline bool char_is_lower(const char_a& ch) throw()
 {
-	return ::islower((int)ch) != 0;
+	return ::islower((int)(unsigned char)ch) != 0;
 }
 inline bool char_is_upper(const char_a& ch) throw()
 {
-	return ::isupper((int)ch) != 0;
+	return ::isupper((int)(unsigned char)ch) != 0;
 }
 inline bool char_is_digit(const char_a& ch) throw()
 {
-	return ::isdigit((int)ch) != 0;
+	return ::isdigit((int)(unsigned char)ch) != 0;
 }
 inline bool char_is_xdigit(const char_a& ch) throw()
 {
-	return ::isxdigit((int)ch) != 0;
+	return ::isxdigit((int)(unsigned char)ch) != 0;
 }
 inline bool char_is_blank(const char_a& ch) throw()
 {
-	return ::isblank((int)ch) != 0;
+	return ::isblank((int)(unsigned char)ch) != 0;
 }
 inline bool char_is_space(const char_a& ch) throw()
 {
-	return ::isspace((int)ch) != 0;
+	return ::isspace((int)(unsigned char)ch) != 0;
 }
 inline bool char_is_print(const char_a& ch) throw()
 {
-	return ::isprint((int)ch) != 0;
+	return ::isprint((int)(unsigned char)ch) != 0;
+}
+inline bool char_is_punct(const char_a& ch) throw()
+{
+	return ::ispunct((int)(unsigned char)ch) != 0;
 }
 
 //------------------------------------------------------------------------------

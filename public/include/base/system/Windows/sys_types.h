@@ -84,7 +84,7 @@ public:
 		m_hd = ::LoadLibraryW(szFile);
 		return m_hd != NULL;
 	}
-	uintptr GetFunctionAddress(const char_a* szFunc) throw()
+	uintptr GetFunctionAddress(const char_a* szFunc) const throw()
 	{
 		assert( m_hd != NULL );
 		return (uintptr)::GetProcAddress(m_hd, szFunc);
@@ -604,7 +604,7 @@ public:
 
 	// name is case sensitive and limited to MAX_PATH (255) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, int iCount) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, int iCount, bool& bExisting) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_hSema == NULL );
@@ -617,6 +617,8 @@ public:
 		m_hSema = ::CreateSemaphoreW(NULL, (LONG)iCount, (LONG)iCount, psz);
 		if( m_hSema == NULL )
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		else
+			bExisting = ::GetLastError() == ERROR_ALREADY_EXISTS;
 		_sync_helper::free_sync_name(psz, bGlobal);
 		return call_result((int)hRes);
 	}
@@ -738,7 +740,7 @@ public:
 
 	// name is case sensitive and limited to MAX_PATH (255) characters.
 	// recommend: maximum 240 characters
-	call_result Create(const ref_ptr<char_s>& str, bool bGlobal) throw()
+	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, bool& bExisting) throw()
 	{
 		assert( !str.IsNull() );
 		assert( m_hMutex == NULL );
@@ -751,6 +753,8 @@ public:
 		m_hMutex = ::CreateMutexW(NULL, FALSE, psz);
 		if( m_hMutex == NULL )
 			hRes = HRESULT_FROM_WIN32(::GetLastError());
+		else
+			bExisting = ::GetLastError() == ERROR_ALREADY_EXISTS;
 		_sync_helper::free_sync_name(psz, bGlobal);
 		return call_result((int)hRes);
 	}

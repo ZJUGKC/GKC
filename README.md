@@ -33,7 +33,7 @@ Assume the building directory has the same level of directory `GKC`.
 
 ##### Compiler
 
-Build Tools for Visual Studio 2019 without ATL, MFC and C++/CLI.
+Build Tools for Visual Studio 2022 without ATL, MFC and C++/CLI.
 
 ##### Latex
 
@@ -105,13 +105,13 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x86 machine:
 
 		```
-		cmake ../GKC -G "Visual Studio 16" -A Win32
+		cmake ../GKC -G "Visual Studio 17 2022" -A Win32
 		```
 
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 16" -A x64
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 17 2022" -A x64
 		```
 
 1. make:
@@ -163,13 +163,13 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x86 machine:
 
 		```
-		cmake ../GKC -G "Visual Studio 16" -A Win32
+		cmake ../GKC -G "Visual Studio 17 2022" -A Win32
 		```
 
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 16" -A x64
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 17 2022" -A x64
 		```
 
 1. make:

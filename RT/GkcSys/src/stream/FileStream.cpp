@@ -33,6 +33,7 @@ namespace GKC {
 BEGIN_COM_TYPECAST(FileStream)
 	COM_TYPECAST_ENTRY(_IByteStream, _IByteStream)
 	COM_TYPECAST_ENTRY(_IFileUtility, _IFileUtility)
+	COM_TYPECAST_ENTRY(_IStreamLocker, _IStreamLocker)
 END_COM_TYPECAST()
 
 ////////////////////////////////////////////////////////////////////////////////

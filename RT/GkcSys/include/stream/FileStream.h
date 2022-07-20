@@ -26,7 +26,8 @@ namespace GKC {
 // FileStream
 
 class FileStream : public _IByteStream,
-					public _IFileUtility
+					public _IFileUtility,
+					public _IStreamLocker
 {
 public:
 	FileStream() throw()
@@ -84,6 +85,17 @@ public:
 	virtual bool IsOpened() throw()
 	{
 		return m_hd.IsValid();
+	}
+
+// _IStreamLocker methods
+
+	virtual GKC::CallResult Lock(int64 iOffset, int64 iLen, bool bShare) throw()
+	{
+		return file_io_handle_helper::Lock(m_hd, iOffset, iLen, bShare, true);
+	}
+	virtual void Unlock(int64 iOffset, int64 iLen) throw()
+	{
+		file_io_handle_helper::Unlock(m_hd, iOffset, iLen);
 	}
 
 private:

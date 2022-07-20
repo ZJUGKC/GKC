@@ -241,6 +241,11 @@ typedef _IByteStream  IByteStream;
 
 #define GUID_IByteStream  GUID__IByteStream
 
+// IStreamLocker
+typedef _IStreamLocker  IStreamLocker;
+
+#define GUID_IStreamLocker  GUID__IStreamLocker
+
 // IFileUtility
 typedef _IFileUtility  IFileUtility;
 

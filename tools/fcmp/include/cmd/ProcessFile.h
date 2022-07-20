@@ -134,7 +134,8 @@ int _Process_File(const ConstStringS& strFile1, const ConstStringS& strFile2, bo
 		if ( ch1 != ch2 ) {
 			CharS buffer[1024];
 			int ret = value_to_string(buffer, sizeof(buffer) / sizeof(CharS),
-						_S("Different position: %I64d"), iBytes);
+						_S("Different position: %I64d [%d] -- [%d]"),
+						iBytes, (int)(byte)ch1, (int)(byte)ch2);
 			if ( ret >= 0 )
 				buffer[ret] = '\0';
 			ConsoleHelper::WriteLine(ConstStringS(buffer, ret));

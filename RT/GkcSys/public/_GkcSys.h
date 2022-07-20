@@ -4867,6 +4867,17 @@ public:
 
 DECLARE_GUID(GUID__IByteStream)
 
+// _IStreamLocker
+
+class NOVTABLE _IStreamLocker
+{
+public:
+	virtual GKC::CallResult Lock(int64 iOffset, int64 iLen, bool bShare) throw() = 0;
+	virtual void Unlock(int64 iOffset, int64 iLen) throw() = 0;
+};
+
+DECLARE_GUID(GUID__IStreamLocker)
+
 // _IFileUtility
 
 class NOVTABLE _IFileUtility

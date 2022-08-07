@@ -76,6 +76,11 @@ inline bool cvt_string(const char* szFrom, const char* szTo, const Tchar* sz, in
 {
 	assert( len >= 0 );
 
+	if ( len == 0 ) {
+		str.Clear();
+		return true;
+	}
+
 	size_t uSrcBytes = safe_operators::MultiplyThrow<uintptr, uintptr>((size_t)len, sizeof(Tchar));  // may throw
 	size_t uDestBytes = safe_operators::MultiplyThrow<uintptr, uintptr>((size_t)len, sizeof(typename Tstring::EType));  //may throw
 

@@ -78,7 +78,7 @@ public:
 	{
 		assert( IsNull() );
 		m_h = (HANDLE)::_beginthreadex(NULL, stack_size, start_address, arglist, initflag, (unsigned int*)(void*)(&m_id));
-		return m_h != NULL;	 // NULL, errno and _doserrno
+		return m_h != NULL;  // NULL, errno and _doserrno
 	}
 
 	bool GetPriority() const throw()

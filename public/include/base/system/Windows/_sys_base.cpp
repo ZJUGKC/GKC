@@ -26,7 +26,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //_os_module
 
-_os_module::_os_module() throw()
+inline _os_module::_os_module() throw()
 {
 	m_hInst = m_hInstResource = reinterpret_cast<HINSTANCE>(&__ImageBase);
 }

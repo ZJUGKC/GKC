@@ -13,9 +13,13 @@ strProjectFile=$3
 
 if [ -d "${strWorkspacePath}/$strItem" ]; then
 	rm -r "${strWorkspacePath}/$strItem"
-	sleep 1
+	sleep 0.05
 fi
 mkdir -p "${strWorkspacePath}/$strItem"
+if [ $? -ne 0 ]; then
+	echo "Error: cannot create directory."
+	exit 2
+fi
 
 strScriptRoot=$(dirname $(readlink -f "$0"))
 cd "$strScriptRoot"
@@ -25,17 +29,16 @@ echo "*** generate ***"
 ./mdp -e "$4" "$strProjectFile" "${strWorkspacePath}/$strItem"
 if [ $? -ne 0 ]; then
 	echo "Error: mdp error."
-	exit 2
+	exit 3
 fi
-sleep 2
+sleep 1
 
 echo "*** execute ***"
 cd "${strWorkspacePath}/$strItem/epub"
 bash build.sh
 if [ $? -ne 0 ]; then
 	echo "Error: build error."
-	exit 3
+	exit 4
 fi
-sleep 2
 
 exit 0

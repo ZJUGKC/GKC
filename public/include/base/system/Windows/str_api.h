@@ -408,6 +408,24 @@ inline void cvt_path_string_to_platform(char_h* szBuffer) throw()
 		++ ps;
 	}
 }
+inline void cvt_path_string_to_ufs(char_a* szBuffer) throw()
+{
+	char_a* ps = szBuffer;
+	while( *ps != 0 ) {
+		if( *ps == '\\' )
+			*ps = '/';
+		++ ps;
+	}
+}
+inline void cvt_path_string_to_ufs(char_h* szBuffer) throw()
+{
+	char_h* ps = szBuffer;
+	while( *ps != 0 ) {
+		if( *ps == L'\\' )
+			*ps = L'/';
+		++ ps;
+	}
+}
 
 //------------------------------------------------------------------------------
 // path

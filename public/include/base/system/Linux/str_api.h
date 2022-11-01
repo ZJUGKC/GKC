@@ -613,6 +613,12 @@ inline void cvt_path_string_to_platform(char_a* szBuffer) throw()
 inline void cvt_path_string_to_platform(char_l* szBuffer) throw()
 {
 }
+inline void cvt_path_string_to_ufs(char_a* szBuffer) throw()
+{
+}
+inline void cvt_path_string_to_ufs(char_l* szBuffer) throw()
+{
+}
 
 //------------------------------------------------------------------------------
 // path

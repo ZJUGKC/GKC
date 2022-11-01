@@ -312,6 +312,23 @@ MACRO(SET_TARGET_COPY targetName isPostBuilding Source Dest)
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_TARGET_COPY)
 
+MACRO(SET_TARGET_COPYDIR targetName isPostBuilding Source Dest)
+	SET(_source "${Source}")
+	SET(_dest "${Dest}")
+
+	IF(WIN32)
+		STRING(REPLACE "/" "\\\\" _source ${_source})
+		STRING(REPLACE "/" "\\\\" _dest ${_dest})
+	ENDIF(WIN32)
+
+	IF(WIN32)
+		SET_TARGET_CMD(${targetName} ${isPostBuilding} xcopy "/Q" "/Y" "/E" ${_source} ${_dest})
+	ENDIF(WIN32)
+	IF(CMAKE_COMPILER_IS_GNUCXX)
+		SET_TARGET_CMD(${targetName} ${isPostBuilding} cp -r ${_source} ${_dest})
+	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+ENDMACRO(SET_TARGET_COPYDIR)
+
 # strNeedPlatform: "platform" or "no-platform"
 # strNeedMachine:  "machine" or "no-machine"
 # strNeedConfig:   "config", "no-config" or "user-config"
@@ -354,6 +371,20 @@ MACRO(SET_TARGET_PATH_COPY targetName isPostBuilding strNeedPlatform strNeedMach
 
 	SET_TARGET_COPY(${targetName} ${isPostBuilding} ${_source} ${_dest})
 ENDMACRO(SET_TARGET_PATH_COPY)
+
+# string
+
+#set the parent path of output-path to OUTPUT_PARENT_PATH
+MACRO(SET_OUTPUT_PARENT_PATH output_path)
+	SET(OUTPUT_PARENT_PATH "${output_path}")
+	IF(WIN32)
+	ELSE(WIN32)
+		STRING(LENGTH ${OUTPUT_PARENT_PATH} _str_len)
+		STRING(FIND ${OUTPUT_PARENT_PATH} "/" _str_pos REVERSE)
+		MATH(EXPR _str_len "${_str_len} - ${_str_pos}")
+		STRING(SUBSTRING ${OUTPUT_PARENT_PATH} 0 ${_str_pos} OUTPUT_PARENT_PATH)
+	ENDIF(WIN32)
+ENDMACRO(SET_OUTPUT_PARENT_PATH)
 
 #check building system
 MACRO(CHECK_BUILDING_SYSTEM)

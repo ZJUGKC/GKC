@@ -53,6 +53,25 @@ public:
 		cvt_path_string_to_platform(UniqueArrayHelper::GetInternalPointer(str));
 	}
 
+	//convert path string to UFS
+	template <typename Tchar, uintptr t_size>
+	static void ConvertPathStringToUfs(INOUT FixedStringT<Tchar, t_size>& str) throw()
+	{
+		cvt_path_string_to_ufs(FixedArrayHelper::GetInternalPointer(str));
+	}
+	template <typename Tchar>
+	static void ConvertPathStringToUfs(INOUT StringT<Tchar>& str) throw()
+	{
+		assert( !str.IsBlockNull() );
+		cvt_path_string_to_ufs(ShareArrayHelper::GetInternalPointer(str));
+	}
+	template <typename Tchar>
+	static void ConvertPathStringToUfs(INOUT UniqueStringT<Tchar>& str) throw()
+	{
+		assert( !str.IsNull() );
+		cvt_path_string_to_ufs(UniqueArrayHelper::GetInternalPointer(str));
+	}
+
 	//separator
 	template <class Tstring>
 	static void AppendSeparator(Tstring& str)

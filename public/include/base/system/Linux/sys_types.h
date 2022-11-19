@@ -532,7 +532,7 @@ private:
 class interprocess_semaphore
 {
 public:
-	interprocess_semaphore() throw() : m_psem(NULL), m_szName(NULL)
+	interprocess_semaphore() throw() : m_psem(NULL), m_szName(NULL), m_bExisting(false)
 	{
 	}
 	~interprocess_semaphore() throw()
@@ -563,6 +563,7 @@ public:
 
 	// name is case sensitive and limited to NAME_MAX-4 (251) characters.
 	// recommend: maximum 240 characters
+	//   bGlobal is unuseful ( LOCAL = GLOBAL )
 	call_result Create(const ref_ptr<char_s>& str, bool bGlobal, int iCount, bool& bExisting) throw()
 	{
 		assert( !str.IsNull() );
@@ -571,11 +572,11 @@ public:
 		char_a* psz = _sync_helper::gen_sync_name(ref_ptr_helper::GetInternalPointer(str), true);
 		if( psz == NULL )
 			return call_result(CR_OUTOFMEMORY);
-		bExisting = false;
+		m_bExisting = false;
 		//create
 		int res = 0;
 		int oflag   = O_CREAT | O_RDWR;
-		mode_t mode = S_IRWXU | S_IRWXG | (bGlobal ? S_IRWXO : 0);
+		mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;  //S_IRWXO is necessary for forked process
 		sem_t* psem = ::sem_open(psz, oflag | O_EXCL, mode, (unsigned int)iCount);
 		if( psem == SEM_FAILED ) {
 			if( errno != EEXIST ) {
@@ -583,12 +584,13 @@ public:
 				_sync_helper::free_sync_name(psz, true);
 				return call_result(res);
 			}
-			bExisting = true;
+			m_bExisting = true;
 			psem = ::sem_open(psz, oflag, mode, (unsigned int)iCount);
 			assert( psem != SEM_FAILED );
 		}
 		m_psem   = psem;
 		m_szName = psz;
+		bExisting = m_bExisting;
 		return call_result(res);
 	}
 	call_result Open(const ref_ptr<char_s>& str, bool bGlobal) throw()
@@ -609,6 +611,7 @@ public:
 		else {
 			m_psem   = psem;
 			m_szName = psz;
+			m_bExisting = true;
 		}
 		return call_result(res);
 	}
@@ -620,7 +623,8 @@ public:
 			assert( res == 0 );
 			m_psem = NULL;
 			assert( m_szName != NULL );
-			::sem_unlink(m_szName);  //no check, the return value may not be equal to zero.
+			if( !m_bExisting )
+				::sem_unlink(m_szName);  //no check, the return value may not be equal to zero.
 			_sync_helper::free_sync_name(m_szName, true);
 			m_szName = NULL;
 		}
@@ -629,6 +633,7 @@ public:
 private:
 	sem_t*   m_psem;
 	char_a*  m_szName;
+	bool     m_bExisting;
 
 private:
 	//noncopyable
@@ -979,6 +984,7 @@ public:
 	}
 
 	//iMapType : file_mapping_types::*
+	//   bGlobal is unuseful ( LOCAL = GLOBAL )
 	call_result Create(const const_string_s& strName, bool bGlobal, uintptr uSize, int iMapType, bool& bAlreadyExisted) noexcept
 	{
 		int prot, oflag;

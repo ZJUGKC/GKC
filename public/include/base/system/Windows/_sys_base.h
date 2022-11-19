@@ -222,18 +222,17 @@ public:
 		//global
 		DECLARE_LOCAL_CONST_STRING(char_h, c_szGlobal, c_uGlobalLength, L"Global\\")
 		//generate
-		uintptr uCount = calc_string_length(pSrc);
+		uintptr uCount = calc_string_length(pSrc) + 1;
 		uintptr uNewCount;
 		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);
 		if( cr.IsFailed() )
 			return NULL;
-		char_h* pNew = (char_h*)crt_alloc((uNewCount + 1) * sizeof(char_h));
+		char_h* pNew = (char_h*)crt_alloc(uNewCount * sizeof(char_h));
 		if( pNew == NULL )
 			return NULL;
 		//copy
 		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(char_h), pNew);
-		mem_copy(pSrc, uCount * sizeof(char_h), pNew + c_uGlobalLength);
-		pNew[uNewCount] = 0;
+		mem_copy(pSrc, uCount * sizeof(char_h), pNew + c_uGlobalLength);  //including '\0'
 		return pNew;
 	}
 	static void free_global_name(char_h* p) throw()

@@ -27,18 +27,17 @@ public:
 		//global
 		DECLARE_LOCAL_CONST_STRING(char_a, c_szGlobal, c_uGlobalLength, "/")
 		//generate
-		uintptr uCount = calc_string_length(pSrc);
+		uintptr uCount = calc_string_length(pSrc) + 1;
 		uintptr uNewCount;
 		call_result cr = safe_operators::Add(uCount, c_uGlobalLength, uNewCount);
 		if( cr.IsFailed() )
 			return NULL;
-		char_a* pNew = (char_a*)crt_alloc((uNewCount + 1) * sizeof(char_a));
+		char_a* pNew = (char_a*)crt_alloc(uNewCount * sizeof(char_a));
 		if( pNew == NULL )
 			return NULL;
 		//copy
 		mem_copy(c_szGlobal, c_uGlobalLength * sizeof(char_a), pNew);
-		mem_copy(pSrc, uCount * sizeof(char_a), pNew + c_uGlobalLength);
-		pNew[uNewCount] = 0;
+		mem_copy(pSrc, uCount * sizeof(char_a), pNew + c_uGlobalLength);  //including '\0'
 		return pNew;
 	}
 	static void free_global_name(char_a* p) throw()
@@ -430,7 +429,7 @@ private:
 class _os_shm
 {
 public:
-	_os_shm() throw() : m_name(NULL)
+	_os_shm() throw() : m_name(NULL), m_bAlreadyExisted(false)
 	{
 	}
 	~_os_shm() throw()
@@ -442,9 +441,11 @@ public:
 	{
 		if( m_name != NULL ) {
 			m_map.Unmap();
-			int res = ::shm_unlink(m_name);
-			(void)res;
-			assert( res == 0 );  //-1, errno
+			if( !m_bAlreadyExisted ) {
+				int res = ::shm_unlink(m_name);
+				(void)res;
+				assert( res == 0 );  //-1, errno
+			}
 			_sync_helper::free_global_name(m_name);
 			m_name = NULL;
 		}
@@ -463,7 +464,7 @@ public:
 		if( pName == NULL )
 			return call_result(CR_OUTOFMEMORY);
 
-		bAlreadyExisted = false;
+		m_bAlreadyExisted = bCreate ? false : true;
 		int act_flag = oflag;
 		if( bCreate )
 			act_flag |= (O_CREAT | O_EXCL);
@@ -481,7 +482,7 @@ public:
 					_sync_helper::free_global_name(pName);
 					return cr;
 				}
-				bAlreadyExisted = true;
+				m_bAlreadyExisted = true;
 			}
 			else {
 				_sync_helper::free_global_name(pName);
@@ -507,6 +508,7 @@ public:
 
 		::close(fd);
 		m_name = pName;
+		bAlreadyExisted = m_bAlreadyExisted;
 		return cr;
 	}
 
@@ -526,6 +528,7 @@ public:
 private:
 	char* m_name;
 	_os_mmap m_map;
+	bool m_bAlreadyExisted;
 
 private:
 	//noncopyable

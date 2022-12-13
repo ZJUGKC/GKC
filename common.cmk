@@ -374,6 +374,15 @@ ENDMACRO(SET_TARGET_PATH_COPY)
 
 # string
 
+#set the actual path of output-path to OUTPUT_ACTUAL_PATH
+MACRO(SET_OUTPUT_ACTUAL_PATH output_path)
+	SET(OUTPUT_ACTUAL_PATH "${output_path}")
+	IF(WIN32)
+		SET(OUTPUT_ACTUAL_PATH "${OUTPUT_ACTUAL_PATH}/$<CONFIG>")
+	ELSE(WIN32)
+	ENDIF(WIN32)
+ENDMACRO(SET_OUTPUT_ACTUAL_PATH)
+
 #set the parent path of output-path to OUTPUT_PARENT_PATH
 MACRO(SET_OUTPUT_PARENT_PATH output_path)
 	SET(OUTPUT_PARENT_PATH "${output_path}")

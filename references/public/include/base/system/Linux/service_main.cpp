@@ -129,7 +129,7 @@ int main(int argc, char *argv[], char *envp[])
 	//mask
 	::umask(0);
 	//signal
-	::signal(SIGCHLD, SIG_IGN);  //no check
+	//::signal(SIGCHLD, SIG_IGN);  //no check
 
 /*
 	::signal(SIGINT, SIG_IGN);  //no check

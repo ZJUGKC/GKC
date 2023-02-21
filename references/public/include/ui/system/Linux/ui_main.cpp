@@ -78,7 +78,7 @@ int main(int argc, char *argv[], char *envp[])
 	//mask
 	::umask(0);
 	//signal
-	::signal(SIGCHLD, SIG_IGN);  //no check
+	//::signal(SIGCHLD, SIG_IGN);  //no check
 
 //command
 	const_array<const_string_s> args;

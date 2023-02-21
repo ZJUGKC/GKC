@@ -45,6 +45,7 @@ inline void ForEach(const TIterator& iterBegin, const TIterator& iterEnd, const 
 template <class TIterator, class TCompareTrait = DefaultCompareTrait<typename TIterator::EType>>
 inline bool BinarySearch(const TIterator& iterBegin, const TIterator& iterEnd, const typename TIterator::EType& val, TIterator& iterResult) noexcept
 {
+	iterResult = iterBegin;
 	// [iterBegin, iterEnd)
 	uintptr right = iterEnd.CalcDelta(iterBegin);
 	if ( right == 0 )
@@ -58,10 +59,14 @@ inline bool BinarySearch(const TIterator& iterBegin, const TIterator& iterEnd, c
 			iterResult = iter;
 			return true;
 		}
-		if ( TCompareTrait::IsLT(iter.get_Value(), val) )
+		if ( TCompareTrait::IsLT(iter.get_Value(), val) ) {
+			iterResult = iter;
+			iterResult.MoveNext();
 			left = mid + 1;
-		else
+		}
+		else {
 			right = mid;
+		}
 	}
 	return false;
 }

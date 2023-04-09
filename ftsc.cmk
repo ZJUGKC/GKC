@@ -13,7 +13,7 @@
 
 SET(_pkg_name GKC)
 
-MACRO(SET_FILES_TO_SOURCE_CODE targetName isCpp fileList)
+MACRO(SET_FILES_TO_SOURCE_CODE targetName isCpp isInBinary fileList)
 	SET(_source_files "${ARGN}")
 	LIST(APPEND _source_files ${fileList})
 	# command name
@@ -41,11 +41,15 @@ MACRO(SET_FILES_TO_SOURCE_CODE targetName isCpp fileList)
 		SET(_ftsc_option "-c")
 		SET(_ftsc_ext ".c")
 	ENDIF(${isCpp})
+	SET(_src_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+	IF(${isInBinary})
+		SET(_src_dir "${CMAKE_CURRENT_BINARY_DIR}")
+	ENDIF()
 	# each file
 	SET(_h_files "")
 	SET(_gen_files "")
 	FOREACH(_file ${_source_files})
-		SET(_input "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
+		SET(_input "${_src_dir}/${_file}")
 		STRING(REPLACE "/" "_" _dest_file ${_file})
 		STRING(REPLACE "." "_" _dest_file ${_dest_file})
 		STRING(REPLACE "-" "_" _dest_file ${_dest_file})

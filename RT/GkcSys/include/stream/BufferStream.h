@@ -51,13 +51,21 @@ public:
 	}
 	virtual GKC::CallResult Write(const uintptr& pv, const uint& uBytes, uint& uWritten) throw()
 	{
-		return CallResult(SystemCallResults::NotImpl);
+		assert( is_valid() );
+		uWritten = uBytes;
+		if( (int64)uBytes > m_iSize - m_iPos )
+			uWritten = (uint)(m_iSize - m_iPos);
+		if( uWritten != 0 ) {
+			mem_copy((const void*)pv, uWritten, (byte*)m_pBuffer + m_iPos);
+			m_iPos += ((int64)uWritten);
+		}
+		return CallResult();
 	}
 
 // _IByteStream methods
 	virtual GKC::CallResult Commit() throw()
 	{
-		return CallResult(SystemCallResults::NotImpl);
+		return CallResult();
 	}
 	virtual GKC::CallResult Seek(const uint& uMethod, const int64& iOffset, int64& iNewPos) throw()
 	{

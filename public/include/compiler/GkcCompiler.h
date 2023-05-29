@@ -233,6 +233,11 @@ typedef _IRdParserAction  IRdParserAction;
 
 #define GUID_IRdParserAction  GUID__IRdParserAction
 
+// IRdParserError
+typedef _IRdParserError  IRdParserError;
+
+#define GUID_IRdParserError  GUID__IRdParserError
+
 // IRdParser
 typedef _IRdParser  IRdParser;
 

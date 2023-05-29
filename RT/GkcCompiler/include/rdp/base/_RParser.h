@@ -62,6 +62,11 @@ public:
 	{
 		m_rpaAccepted = rpa;
 	}
+	void SetErrorAction(const GKC::ShareCom<_IRdParserError>& sp) noexcept
+	{
+		m_errorAction = sp;
+	}
+
 	void Start()
 	{
 		m_uMaxTerminalID = m_refTable.Deref().GetMaxTerminalID();
@@ -124,6 +129,10 @@ public:
 			// terminal
 			if( elem.uToken <= m_uMaxTerminalID ) {
 				if( elem.uToken != m_uCurrentEvent ) {
+					bool bChanged = false;
+					cr = do_error(m_uCurrentEvent, bChanged);
+					if( cr.IsSucceeded() && bChanged )
+						continue;
 					append_unexpected_error();  //may throw
 					return -1;
 				}
@@ -141,6 +150,10 @@ public:
 			// nonterminal
 			int iAct = m_refTable.Deref().Input(elem.uToken, m_uCurrentEvent);
 			if( iAct == 0 ) {
+				bool bChanged = false;
+				cr = do_error(m_uCurrentEvent, bChanged);
+				if( cr.IsSucceeded() && bChanged )
+					continue;
 				append_unexpected_error();  //may throw
 				return -1;
 			}
@@ -267,11 +280,36 @@ private:
 		}
 		return CallResult();
 	}
+	CallResult do_error(uint& uEvent, bool& bChanged) noexcept
+	{
+		CallResult cr;
+		if( !m_errorAction.IsBlockNull() ) {
+			ShareCom<_IRdScannerTables> spTables = m_refScanner.Deref().GetTables();
+			ConstStringA strEvent(
+				(uEvent == CPL_TK_EOF) ? DECLARE_TEMP_CONST_STRING(ConstStringA, "CPL_TK_EOF")
+					: spTables.Deref().GetTokenName(uEvent)
+				);
+			ShareCom<ITextStreamRoot> spText(m_refScanner.Deref().GetStream());
+			cr = m_errorAction.Deref().DoModifyEvent(strEvent, spText, bChanged);
+			if( cr.IsFailed() )
+				return cr;
+			if( bChanged ) {
+				uint uNewEvent;
+				if( !spTables.Deref().GetTokenID(strEvent, uNewEvent) ) {
+					cr.SetResult(SystemCallResults::Fail);
+					return cr;
+				}
+				uEvent = uNewEvent;
+			}
+		}
+		return cr;
+	}
 
 private:
 	//<action-id, action>
 	RBMap<uint, ShareCom<_IRdParserAction>>  m_map;
 	ShareCom<_IRdParserAction>  m_rpaAccepted;
+	ShareCom<_IRdParserError>  m_errorAction;
 	RefPtr<_RScanner>  m_refScanner;
 	RefPtr<_RTdTable>  m_refTable;
 	uint  m_uMaxTerminalID;

@@ -862,6 +862,7 @@ class NOVTABLE _IRdScannerTables
 {
 public:
 	virtual GKC::CallResult Generate(const GKC::ShareCom<GKC::ITextStreamRoot>& spStream) noexcept = 0;
+	virtual GKC::ConstStringA GetTokenName(uint uID) noexcept = 0;
 	virtual bool GetTokenID(const GKC::ConstStringA& strName, uint& uID) noexcept = 0;
 	virtual bool GetActionID(const GKC::ConstStringA& strName, uint& uAct) noexcept = 0;
 	virtual uint GetMaxTokenID() noexcept = 0;
@@ -915,6 +916,16 @@ public:
 
 DECLARE_GUID(GUID__IRdParserAction)
 
+// _IRdParserError
+
+class NOVTABLE _IRdParserError
+{
+public:
+	virtual GKC::CallResult DoModifyEvent(INOUT GKC::ConstStringA& strEvent, INOUT GKC::ShareCom<GKC::ITextStreamRoot>& spText, INOUT bool& bChanged) noexcept = 0;
+};
+
+DECLARE_GUID(GUID__IRdParserError)
+
 // _IRdParser
 
 class NOVTABLE _IRdParser
@@ -925,6 +936,7 @@ public:
 	virtual void ClearActions() noexcept = 0;
 	virtual GKC::CallResult AddAction(const GKC::ConstStringA& strAction, const GKC::ShareCom<_IRdParserAction>& spAction) noexcept = 0;
 	virtual void SetAcceptedAction(const GKC::ShareCom<_IRdParserAction>& spAction) noexcept = 0;
+	virtual void SetErrorAction(const GKC::ShareCom<_IRdParserError>& spAction) noexcept = 0;
 	virtual GKC::CallResult Start() noexcept = 0;
 	//return value: SystemCallResults::OK --- succeeded
 	//              SystemCallResults::S_EOF --- end

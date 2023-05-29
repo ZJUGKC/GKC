@@ -59,15 +59,12 @@ inline bool BinarySearch(const TIterator& iterBegin, const TIterator& iterEnd, c
 			iterResult = iter;
 			return true;
 		}
-		if ( TCompareTrait::IsLT(iter.get_Value(), val) ) {
-			iterResult = iter;
-			iterResult.MoveNext();
+		if ( TCompareTrait::IsLT(iter.get_Value(), val) )
 			left = mid + 1;
-		}
-		else {
+		else
 			right = mid;
-		}
 	}
+	iterResult.MoveDelta(left);
 	return false;
 }
 template <class TIterator, class TCompareTrait = DefaultCompareTrait<typename TIterator::EType>>

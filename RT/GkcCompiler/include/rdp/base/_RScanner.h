@@ -46,10 +46,18 @@ public:
 		assert( !spTables.IsBlockNull() );
 		m_spTables = spTables;
 	}
+	ShareCom<_IRdScannerTables> GetTables() noexcept
+	{
+		return m_spTables;
+	}
 	void SetStream(const ShareCom<ITextStreamRoot>& spStream) noexcept
 	{
 		assert( !spStream.IsBlockNull() );
 		m_spStream = spStream;
+	}
+	ShareCom<ITextStreamRoot> GetStream() const noexcept
+	{
+		return m_spStream;
 	}
 	void ClearActions() noexcept
 	{

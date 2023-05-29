@@ -81,6 +81,10 @@ public:
 	{
 		m_parser.SetAcceptedAction(spAction);
 	}
+	virtual void SetErrorAction(const GKC::ShareCom<_IRdParserError>& spAction) noexcept
+	{
+		m_parser.SetErrorAction(spAction);
+	}
 	virtual GKC::CallResult Start() noexcept
 	{
 		CallResult cr;

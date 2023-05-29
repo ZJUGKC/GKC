@@ -52,6 +52,10 @@ public:
 		}
 		return cr;
 	}
+	virtual GKC::ConstStringA GetTokenName(uint uID) noexcept
+	{
+		return m_token_table.GetName(uID);
+	}
 	virtual bool GetTokenID(const GKC::ConstStringA& strName, uint& uID) noexcept
 	{
 		uID = m_token_table.Find(strName);

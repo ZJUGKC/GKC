@@ -28,7 +28,7 @@ namespace GKC {
 class _RIdTable
 {
 public:
-	_RIdTable() noexcept : m_map(MemoryHelper::GetCrtMemoryManager()), m_uMaxID(1)
+	_RIdTable() noexcept : m_map(MemoryHelper::GetCrtMemoryManager()), m_uMinID(1), m_uMaxID(1)
 	{
 	}
 	_RIdTable(const _RIdTable&) = delete;
@@ -43,7 +43,14 @@ public:
 			m_arrId = ShareArrayHelper::MakeShareArray<StringA>(MemoryHelper::GetCrtMemoryManager());  //may throw
 		m_arrId.RemoveAll();
 		m_map.RemoveAll();
+		m_uMinID = uFirst;
 		m_uMaxID = uFirst;
+	}
+
+	ConstStringA GetName(uint uID) const noexcept
+	{
+		assert( uID >= m_uMinID && uID < m_uMaxID );
+		return StringUtilHelper::To_ConstString(m_arrId[uID - m_uMinID]);
 	}
 
 	//find
@@ -86,6 +93,7 @@ private:
 	HashMap<ConstStringA, uint, ConstStringHashTrait<ConstStringA>, ConstStringCompareTrait<ConstStringA>> m_map;
 	ShareArray<StringA> m_arrId;  //string pool
 
+	uint m_uMinID;
 	uint m_uMaxID;
 };
 

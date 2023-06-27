@@ -973,9 +973,9 @@ protected:
 	uintptr m_uLength;
 };
 
-// unique_com_block
+// unique_com_block_base
 
-struct unique_com_block : public unique_block_base
+struct unique_com_block_base : public unique_block_base
 {
 public:
 //methods
@@ -984,12 +984,34 @@ public:
 		m_pDestruction = pFunc;
 	}
 
+protected:
+	object_destruction_func m_pDestruction;
+};
+
+// unique_com_block
+
+struct unique_com_block : public unique_com_block_base
+{
+public:
+//methods
+	void SetAddress(void* p) noexcept
+	{
+		m_p = p;
+	}
+	void* GetAddress() const noexcept
+	{
+		return m_p;
+	}
+
 	//destruct
 	void DestructObject() noexcept
 	{
 		assert( m_pDestruction != NULL );
-		//destruction
-		m_pDestruction((byte*)this + sizeof(unique_com_block));
+		if( m_p != NULL ) {
+			//destruction
+			m_pDestruction(m_p);
+			m_p = NULL;
+		}
 	}
 
 	object_typecast_func GetTypeCastFunc() const noexcept
@@ -1002,8 +1024,8 @@ public:
 	}
 
 protected:
-	object_destruction_func m_pDestruction;
 	object_typecast_func m_pTypeCast;
+	void* m_p;
 };
 
 #pragma pack(pop)

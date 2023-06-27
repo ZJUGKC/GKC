@@ -23,12 +23,10 @@
 //  uTimeout: ms
 inline void thread_sleep(uint uTimeout) throw()
 {
-	uint uSecond = uTimeout / 1000;
-	uint uRest = uTimeout % 1000;
-	//no check
-	if( uSecond != 0 )
-		::sleep(uSecond);
-	::usleep(uRest * 1000);
+	struct timespec tms, tmd;
+	tms.tv_sec = uTimeout / 1000;
+	tms.tv_nsec = (uTimeout % 1000) * 1000 * 1000;
+	::nanosleep(&tms, &tmd);  //no check
 }
 
 // _os_pthread_attr

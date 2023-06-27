@@ -4139,6 +4139,12 @@ private:
 
 #pragma pack(push, 1)
 
+struct _unique_com_header
+{
+	sa_handle hd;
+	unique_com_block block;
+};
+
 // _UniqueCom
 
 class _UniqueCom
@@ -4202,17 +4208,22 @@ public:
 	}
 
 protected:
+	_unique_com_header* get_header() const noexcept
+	{
+		return (_unique_com_header*)m_p;
+	}
+
 	sa_handle* get_sa_handle() const noexcept
 	{
-		return (sa_handle*)m_p;
+		return &(get_header()->hd);
 	}
 	unique_com_block* get_block() const noexcept
 	{
-		return (unique_com_block*)((byte*)m_p + sizeof(sa_handle));
+		return &(get_header()->block);
 	}
 	void* get_object() const noexcept
 	{
-		return (byte*)m_p + sizeof(sa_handle) + sizeof(unique_com_block);
+		return get_block()->GetAddress();
 	}
 
 protected:
@@ -4242,9 +4253,10 @@ class _ScopeUniqueComObject
 public:
 	_ScopeUniqueComObject()
 	{
-		m_block.SetMemoryManager(NULL);
-		m_block.SetDestructionFunc(NULL);
-		m_block.SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+		m_header.block.SetMemoryManager(NULL);
+		m_header.block.SetDestructionFunc(NULL);
+		m_header.block.SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+		m_header.block.SetAddress(&m_t);
 	}
 	_ScopeUniqueComObject(const _ScopeUniqueComObject&) = delete;
 	_ScopeUniqueComObject& operator=(const _ScopeUniqueComObject&) = delete;
@@ -4253,9 +4265,11 @@ public:
 	}
 
 private:
-	sa_handle m_hd;
-	unique_com_block m_block;
+	_unique_com_header m_header;
 	T m_t;
+
+private:
+	friend class _UniqueComHelper;
 };
 
 #pragma pack(pop)
@@ -4272,13 +4286,13 @@ public:
 		assert( !mgr.IsNull() );
 
 		//allocate
-		uintptr uBytes = GKC::SafeOperators::AddThrow((uintptr)(sizeof(sa_handle) + sizeof(unique_com_block)), (uintptr)sizeof(T));
+		uintptr uBytes = GKC::SafeOperators::AddThrow((uintptr)sizeof(_unique_com_header), (uintptr)sizeof(T));
 		void* p = (void*)((const_cast<GKC::RefPtr<GKC::IMemoryManager>&>(mgr)).Deref().Allocate(uBytes));
 		if ( p == NULL )
 			throw GKC::OutOfMemoryException();
 
-		unique_com_block* pB = (unique_com_block*)((byte*)p + sizeof(sa_handle));
-		T* pT = (T*)(pB + 1);
+		_unique_com_header* ph = (_unique_com_header*)p;
+		T* pT = (T*)(void*)(ph + 1);
 		//constructor
 		try {
 			//may throw
@@ -4289,12 +4303,13 @@ public:
 			throw;  //re-throw
 		}
 
-		call_constructor(*((sa_handle*)p));  //no throw
+		call_constructor(ph->hd);  //no throw
 
 		//initialize
-		pB->SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
-		pB->SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
-		pB->SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+		ph->block.SetMemoryManager(GKC::RefPtrHelper::GetInternalPointer(mgr));
+		ph->block.SetDestructionFunc(&(_SObjSoloHelper::object_destruction<T>));
+		ph->block.SetTypeCastFunc(GKC::_Com_TypeCast_Func<T>::c_func);
+		ph->block.SetAddress(pT);
 
 		_UniqueCom ret;
 		//return value
@@ -4329,7 +4344,7 @@ public:
 	static _UniqueCom ToUniqueCom(const _ScopeUniqueComObject<T>& sp) noexcept
 	{
 		_UniqueCom ret;
-		ret.m_p = (void*)(&sp);
+		ret.m_p = (void*)&(sp.m_header);
 		return ret;
 	}
 

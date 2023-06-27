@@ -1106,12 +1106,24 @@ public:
 		return T( (n + (uAlign - 1)) & ~(T(uAlign) - 1) );
 	}
 	template <typename T>
+	static CallResult RoundUp(IN T n, IN uint uAlign, OUT T& r) throw()
+	{
+		assert( uAlign > 0 );
+		T v;
+		CallResult cr(SafeOperators::Add(n, T(uAlign - 1), v));
+		if( cr.IsFailed() )
+			return cr;
+		r = T( (v) & ~(T(uAlign) - 1) );
+		return cr;
+	}
+	template <typename T>
 	static T RoundUpThrow(IN T n, IN uint uAlign)
 	{
 		assert( uAlign > 0 );
 		T v = SafeOperators::AddThrow(n, T(uAlign - 1));
 		return T( (v) & ~(T(uAlign) - 1) );
 	}
+
 	template <typename T>
 	static T RoundDown(IN T n, IN uint uAlign) throw()
 	{

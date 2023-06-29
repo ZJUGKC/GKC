@@ -869,14 +869,19 @@ public:
 	}
 
 protected:
-	uintptr& get_count() const throw()
+	const uintptr& get_count() const throw()
+	{
+		assert( m_p != NULL );
+		return *((const uintptr*)(const void*)m_p - 1);
+	}
+	uintptr& get_count() throw()
 	{
 		assert( m_p != NULL );
 		return *((uintptr*)(void*)m_p - 1);
 	}
 	void* get_start_pointer() const throw()
 	{
-		return (void*)&(get_count());
+		return (void*)(const void*)&(get_count());
 	}
 
 protected:
@@ -982,6 +987,10 @@ public:
 	void SetDestructionFunc(object_destruction_func pFunc) noexcept
 	{
 		m_pDestruction = pFunc;
+	}
+	object_destruction_func GetDestructionFunc() const noexcept
+	{
+		return m_pDestruction;
 	}
 
 protected:

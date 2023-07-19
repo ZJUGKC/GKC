@@ -457,6 +457,71 @@ public:
 	}
 };
 
+// *** for Lite COM ***
+
+// LiteCom<T>
+template <class T>
+using LiteCom = _LiteCom<T>;
+
+// ILiteComBase
+typedef _ILiteComBase  ILiteComBase;
+
+// IFileStream
+typedef _IFileStream  IFileStream;
+
+// IMemoryStream
+typedef _IMemoryStream  IMemoryStream;
+
+// IBufferStream
+typedef _IBufferStream  IBufferStream;
+
+// ITextStream
+typedef _ITextStream  ITextStream;
+
+// IPkZip
+typedef _IPkZip  IPkZip;
+
+// IPkUnzip
+typedef _IPkUnzip  IPkUnzip;
+
+// LiteStreamHelper
+
+class LiteStreamHelper
+{
+public:
+	static LiteCom<IFileStream> CreateFileStream() noexcept
+	{
+		return _FileStream_CreateL();
+	}
+	static LiteCom<IMemoryStream> CreateMemoryStream() noexcept
+	{
+		return _MemoryStream_CreateL();
+	}
+	static LiteCom<IBufferStream> CreateBufferStream() noexcept
+	{
+		return _BufferStream_CreateL();
+	}
+	static LiteCom<ITextStream> CreateTextStream() noexcept
+	{
+		return _TextStream_CreateL();
+	}
+};
+
+// LiteCompressionHelper
+
+class LiteCompressionHelper
+{
+public:
+	static LiteCom<IPkZip> CreatePkZip() noexcept
+	{
+		return _PkZip_CreateL();
+	}
+	static LiteCom<IPkUnzip> CreatePkUnzip() noexcept
+	{
+		return _PkUnzip_CreateL();
+	}
+};
+
 // EnvironmentVariableHelper
 
 class EnvironmentVariableHelper

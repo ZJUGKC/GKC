@@ -670,6 +670,11 @@ public:
 	{
 	}
 
+	bool IsValid() const throw()
+	{
+		return m_sect.IsValid();
+	}
+
 	void Lock() throw()
 	{
 		m_sect.Lock();

@@ -48,6 +48,11 @@ public:
 		Term();
 	}
 
+	bool IsValid() const throw()
+	{
+		return m_bInitialized;
+	}
+
 	void Lock() throw()
 	{
 		assert( m_bInitialized );

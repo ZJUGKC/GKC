@@ -45,6 +45,9 @@ public:
 
 		CallResult cr;
 		{
+			//mutex lock
+			MutexLock mutex_lock(m_mutex);
+
 			//read lock
 			RWLockShared lock(m_rwlock.Deref());
 
@@ -59,6 +62,9 @@ public:
 
 		CallResult cr;
 		{
+			//mutex lock
+			MutexLock mutex_lock(m_mutex);
+
 			//write lock
 			RWLockExclusive lock(m_rwlock.Deref());
 
@@ -79,6 +85,9 @@ public:
 
 		CallResult cr;
 		{
+			//mutex lock
+			MutexLock mutex_lock(m_mutex);
+
 			//read lock
 			RWLockShared lock(m_rwlock.Deref());
 
@@ -120,6 +129,13 @@ public:
 	virtual GKC::CallResult Initialize() throw()
 	{
 		CallResult cr;
+		//mutex
+		if( !m_mutex.IsValid() ) {
+			cr = m_mutex.Init();
+			if( cr.IsFailed() )
+				return cr;
+		}
+		//array
 		try {
 			if( m_stm.GetArray().IsBlockNull() )
 				m_stm.GetArray() = _ShareArrayHelper::MakeShareArray<byte>(RefPtr<IMemoryManager>(_CrtMemoryManager_Get()));
@@ -139,6 +155,7 @@ public:
 			m_rwlock.Release();
 			return cr;
 		}
+		//position
 		m_stm.GetPos() = 0;
 		return cr;
 	}
@@ -162,24 +179,28 @@ public:
 		cr = _Create_Component_Instance<MemoryStream>(spC);
 		if( cr.IsFailed() )
 			return cr;
-		_COMPONENT_INSTANCE_INTERFACE(MemoryStream, _IByteStream, spC, sp, cr);
+		cr = spC.Deref().m_mutex.Init();
 		if( cr.IsFailed() )
 			return cr;
 		spC.Deref().m_stm.GetArray() = m_stm.GetArray();
 		spC.Deref().m_rwlock = m_rwlock;
 		spC.Deref().m_stm.GetPos()   = 0;
+		_COMPONENT_INSTANCE_INTERFACE(MemoryStream, _IByteStream, spC, sp, cr);
+		if( cr.IsFailed() )
+			return cr;
 		return cr;
 	}
 
 private:
 	bool is_valid() const throw()
 	{
-		return !m_stm.GetArray().IsBlockNull() && !m_rwlock.IsBlockNull();
+		return m_mutex.IsValid() && !m_stm.GetArray().IsBlockNull() && !m_rwlock.IsBlockNull();
 	}
 
 private:
 	_MemStream<_ShareArray<byte>, _ShareArrayHelper>  m_stm;
 	_SharePtr<RWLock>  m_rwlock;  //lock
+	Mutex  m_mutex;  // for position changed in this object
 
 private:
 	//noncopyable

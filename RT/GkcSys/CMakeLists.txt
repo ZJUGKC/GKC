@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES(
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Globals.cpp" "src/SobPool.cpp" "src/MemMgr.cpp"
-	"src/Stream.cpp" "src/ComClient.cpp" "src/HelpAuthoring.cpp" "src/Compression.cpp" "src/LiteCom.cpp"
+	"src/Stream.cpp" "src/ComClient.cpp" "src/HelpAuthoring.cpp" "src/Compression.cpp" "src/LiteCom.cpp" "src/Logger.cpp"
 	"src/stream/FileStream.cpp" "src/stream/MemoryStream.cpp" "src/stream/MemoryStreamU.cpp" "src/stream/BufferStream.cpp"
 	"src/stream/_TxtStream.cpp" "src/stream/TextStream.cpp" "src/stream/TextStreamU.cpp"
 	"src/compress/_PkCompress.cpp" "src/compress/PkzCompressor.cpp" "src/compress/PkzDecompressor.cpp")

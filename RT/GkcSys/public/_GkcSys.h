@@ -5190,6 +5190,14 @@ SA_FUNCTION void _PkzDecompressor_Create(_UniqueCom& sp, GKC::CallResult& cr) no
 
 #include "_LiteCom.h"
 
+//------------------------------------------------------------------------------
+// logger
+
+typedef GKC::RefPtr<_IByteStream> (*_LoggerCallback)();  //noexcept
+
+SA_FUNCTION void _Logger_SetCallback(_LoggerCallback p) noexcept;
+SA_FUNCTION void _Logger_Output(const GKC::CharA* szFile, int iLine, const GKC::CharA* szMessage) noexcept;
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif //__SA_GKC_SYS_H__
 ////////////////////////////////////////////////////////////////////////////////

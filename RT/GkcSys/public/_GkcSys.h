@@ -4894,13 +4894,35 @@ public:
 DECLARE_GUID(GUID__IStreamLocker)
 
 // _IFileUtility
+/*! \brief Interface of utility for File Stream.
 
+Interface of utility for File Stream.
+*/
 class NOVTABLE _IFileUtility
 {
 public:
-	// use platform path prefix
+	/*! \brief Open a file.
+
+	Open a file.
+	\param szFile [in] File name. Use platform path prefix.
+	\param iOpenType [in] Open type. It can be a value of
+	                      enumeration GKC::FileOpenTypes.
+	\param iCreateType [in] Create type. It can be a combination of
+	                        enumeration GKC::FileCreationTypes values.
+	\return A CallResult value.
+	\sa enum GKC::FileOpenTypes, enum GKC::FileCreationTypes.
+	*/
 	virtual GKC::CallResult Open(const GKC::RefPtr<GKC::CharS>& szFile, const int& iOpenType, const int& iCreateType) throw() = 0;
+	/*! \brief Close file.
+
+	Close file.
+	*/
 	virtual void Close() throw() = 0;
+	/*! \brief Check if the file is opened.
+
+	Check if the file is opened.
+	\return A boolean value.
+	*/
 	virtual bool IsOpened() throw() = 0;
 };
 
@@ -4920,21 +4942,47 @@ public:
 DECLARE_GUID(GUID__IMemoryUtility)
 
 // _IMemoryUtilityU
+/*! \brief Interface of utility for Memory Stream.
 
+Interface of utility for Memory Stream.
+\note The synchronization of these objects must be implemented by user.
+*/
 class NOVTABLE _IMemoryUtilityU
 {
 public:
+	/*! \brief Attach a data buffer to memory stream.
+
+	Attach a data buffer to memory stream. The length of stream
+	will be set to the size of array, the seek pointer will be set to zero.
+	\param sp [in, out] Specify a data buffer.
+	*/
 	virtual void Attach(_UniqueArray<byte>&& sp) noexcept = 0;
+	/*! \brief Detach a data buffer from memory stream.
+
+	Detach a data buffer from memory stream.
+	\return Data buffer.
+	*/
 	virtual _UniqueArray<byte> Detach() noexcept = 0;
 };
 
 DECLARE_GUID(GUID__IMemoryUtilityU)
 
 // _IBufferUtility
+/*! \brief Interface of utility for Buffer Stream.
 
+Interface of utility for Buffer Stream.
+\note The synchronization of these objects must be implemented by user.
+*/
 class NOVTABLE _IBufferUtility
 {
 public:
+	/*! \brief Attach a data buffer.
+
+	Attach a data buffer to stream.
+	\param p [in] A pointer to data buffer.
+	\param uBytes [in] The bytes of buffer.
+	\return A CallResult value.
+	*/
 	virtual GKC::CallResult SetBuffer(const uintptr& p, const uintptr& uBytes) throw() = 0;
 };
 
@@ -4943,23 +4991,29 @@ DECLARE_GUID(GUID__IBufferUtility)
 //for text stream
 
 // _BOMTypes
+/*! \brief An enumerator for text stream encoding BOM types.
 
+An enumerator for text stream encoding BOM types.
+*/
 BEGIN_ENUM(_BOMTypes)
-	ENUM_VALUE_ENTRY(None, 0)
-	ENUM_VALUE_ENTRY(Ansi, 1)
-	ENUM_VALUE_ENTRY(UTF8, 2)
-	ENUM_VALUE_ENTRY(UTF16LE, 3)
-	ENUM_VALUE_ENTRY(UTF16BE, 4)
-	ENUM_VALUE_ENTRY(UTF32LE, 5)
-	ENUM_VALUE_ENTRY(UTF32BE, 6)
+	ENUM_VALUE_ENTRY(None, 0)     //!< Invalid type
+	ENUM_VALUE_ENTRY(Ansi, 1)     //!< ANSI text
+	ENUM_VALUE_ENTRY(UTF8, 2)     //!< UTF8 text (default)
+	ENUM_VALUE_ENTRY(UTF16LE, 3)  //!< UTF16 little endian text
+	ENUM_VALUE_ENTRY(UTF16BE, 4)  //!< UTF16 big endian text
+	ENUM_VALUE_ENTRY(UTF32LE, 5)  //!< UTF32 little endian text
+	ENUM_VALUE_ENTRY(UTF32BE, 6)  //!< UTF32 big endian text
 END_ENUM()
 
 // _CRLFStyles
+/*! \brief An enumerator for text stream styles of CRLF.
 
+An enumerator for text stream styles of CRLF.
+*/
 BEGIN_ENUM(_CRLFStyles)
-	ENUM_VALUE_ENTRY(Windows, 0)
-	ENUM_VALUE_ENTRY(Unix, 1)
-	ENUM_VALUE_ENTRY(Mac, 2)
+	ENUM_VALUE_ENTRY(Windows, 0)  //!< windows
+	ENUM_VALUE_ENTRY(Unix, 1)     //!< unix and linux
+	ENUM_VALUE_ENTRY(Mac, 2)      //!< mac
 	ENUM_VALUE_ENTRY(Max, 3)
 END_ENUM()
 
@@ -4969,13 +5023,52 @@ class NOVTABLE _ITextStreamRoot
 {
 public:
 	virtual void Reset() throw() = 0;
+	/*! \brief Read the BOM and decide the text encoding type.
+
+	Read the BOM (Byte Order Mark) and decide the text encoding type.
+	\param iType [out] Receive the text encoding type. See enum GKC::BOMTypes.
+	\return A CallResult value.
+	\note The text type may be GKC::BOMTypes::None.
+	*/
 	virtual GKC::CallResult CheckBOM(int& iType) throw() = 0;
+	/*! \brief Set the text encoding BOM type.
+
+	Set the text encoding BOM type.
+	\param iType [in] Specify the text encoding BOM type. See enum GKC::BOMTypes.
+	*/
 	virtual void SetBOM(const int& iType) throw() = 0;
+	/*! \brief Get the text encoding BOM type.
+
+	Get the text encoding BOM type.
+	\return The text encoding BOM type. See enum GKC::BOMTypes.
+	*/
 	virtual int GetBOM() throw() = 0;
+	/*! \brief Set the style of CRLF.
+
+	Set the style of CRLF.
+	\param iStyle [in] Specify the style. See enum GKC::CRLFStyles.
+	*/
 	virtual void SetCRLFStyle(const int& iStyle) throw() = 0;
+	/*! \brief Get the style of CRLF.
+
+	Get the style of CRLF.
+	\return The style value. See enum GKC::CRLFStyles.
+	*/
 	virtual int GetCRLFStyle() throw() = 0;
-	// The return value SystemCallResults::S_EOF means the end of file is reached.
+	/*! \brief Get a character.
+
+	Get a character.
+	\param ch [out] Receive the character.
+	\return A CallResult value. The return value SystemCallResults::S_EOF means the end of file is reached.
+	*/
 	virtual GKC::CallResult GetCharA(GKC::CharA& ch) throw() = 0;
+	/*! \brief Unget characters.
+
+	Unget characters.
+	\param iCharNum [in] The number of characters.
+	\return A CallResult value.
+	\note This method must be called by correct text stream type.
+	*/
 	virtual GKC::CallResult UngetCharA(const int64& iCharNum) throw() = 0;
 	virtual GKC::CallResult GetCharH(GKC::CharH& ch) throw() = 0;
 	virtual GKC::CallResult UngetCharH(const int64& iCharNum) throw() = 0;
@@ -4983,12 +5076,29 @@ public:
 	virtual GKC::CallResult UngetCharL(const int64& iCharNum) throw() = 0;
 	virtual GKC::CallResult GetChar(GKC::CharF& ch) throw() = 0;
 	virtual GKC::CallResult UngetChar(const int64& iCharNum) throw() = 0;
+	/*! \brief Write the BOM.
+
+	Write the BOM.
+	\return A CallResult value.
+	*/
 	virtual GKC::CallResult WriteBOM() throw() = 0;
 	virtual GKC::CallResult MoveToEnd() throw() = 0;
+	/*! \brief Put a character.
+
+	Put a character.
+	\param ch [in] The character.
+	\return A CallResult value.
+	*/
 	virtual GKC::CallResult PutCharA(const GKC::CharA& ch) throw() = 0;
 	virtual GKC::CallResult PutCharH(const GKC::CharH& ch) throw() = 0;
 	virtual GKC::CallResult PutCharL(const GKC::CharL& ch) throw() = 0;
 	virtual GKC::CallResult PutChar(const GKC::CharF& ch) throw() = 0;
+	/*! \brief Write a string.
+
+	Write a string.
+	\param str [in] The string to be written.
+	\return A CallResult value.
+	*/
 	virtual GKC::CallResult PutStringA(const GKC::ConstStringA& str) throw() = 0;
 	virtual GKC::CallResult PutStringH(const GKC::ConstStringH& str) throw() = 0;
 	virtual GKC::CallResult PutStringL(const GKC::ConstStringL& str) throw() = 0;
@@ -4996,6 +5106,12 @@ public:
 	virtual GKC::CallResult PutNewLineH() throw() = 0;
 	virtual GKC::CallResult PutNewLineL() throw() = 0;
 	virtual GKC::CallResult PutNewLine() throw() = 0;
+	/*! \brief Write a line string.
+
+	Write a line string.
+	\param str [in] The string to be written.
+	\return A CallResult value.
+	*/
 	virtual GKC::CallResult PutLineA(const GKC::ConstStringA& str) throw() = 0;
 	virtual GKC::CallResult PutLineH(const GKC::ConstStringH& str) throw() = 0;
 	virtual GKC::CallResult PutLineL(const GKC::ConstStringL& str) throw() = 0;
@@ -5046,13 +5162,30 @@ DECLARE_GUID(GUID__ITextUtility)
 class NOVTABLE _ITextStreamStringU
 {
 public:
+	/*! \brief Get all string.
+
+	Get all string.
+	\param str [out] Receive the string.
+	\return A CallResult value.
+	*/
 	virtual GKC::CallResult GetAllStringA(_UniqueStringA& str) noexcept = 0;
 	virtual GKC::CallResult GetAllStringH(_UniqueStringH& str) noexcept = 0;
 	virtual GKC::CallResult GetAllStringL(_UniqueStringL& str) noexcept = 0;
-	// The return value SystemCallResults::S_EOF means the end of file is reached.
+	/*! \brief Get a string.
+
+	Get a string.
+	\param str [out] Receive the string.
+	\return A CallResult value. The return value SystemCallResults::S_EOF means the end of file is reached.
+	*/
 	virtual GKC::CallResult GetStringA(_UniqueStringA& str) noexcept = 0;
 	virtual GKC::CallResult GetStringH(_UniqueStringH& str) noexcept = 0;
 	virtual GKC::CallResult GetStringL(_UniqueStringL& str) noexcept = 0;
+	/*! \brief Get a line string.
+
+	Get a line string.
+	\param str [out] Receive the string.
+	\return A CallResult value. The return value SystemCallResults::S_EOF means the end of file is reached.
+	*/
 	virtual GKC::CallResult GetLineA(_UniqueStringA& str) noexcept = 0;
 	virtual GKC::CallResult GetLineH(_UniqueStringH& str) noexcept = 0;
 	virtual GKC::CallResult GetLineL(_UniqueStringL& str) noexcept = 0;
@@ -5065,7 +5198,19 @@ DECLARE_GUID(GUID__ITextStreamStringU)
 class NOVTABLE _ITextUtilityU
 {
 public:
+	/*! \brief Set stream object.
+
+	Set stream object.
+	\param rp [in] The interface pointer to stream. It can not be a NULL object.
+	*/
 	virtual void SetStream(const GKC::RefPtr<_IByteStream>& rp) noexcept = 0;
+	/*! \brief Set the separate character set string.
+
+	Set the separate character set string.
+	\param arr [in, out] The string for separate character set. If this value
+	                     is NULL string, the default separate string will be set.
+	\note Do not include '\r' and '\n' in this set.
+	*/
 	virtual void SetSeparatorSetA(_UniqueArray<GKC::CharA>&& arr) noexcept = 0;
 	virtual void SetSeparatorSetH(_UniqueArray<GKC::CharH>&& arr) noexcept = 0;
 	virtual void SetSeparatorSetL(_UniqueArray<GKC::CharL>&& arr) noexcept = 0;

@@ -1,4 +1,4 @@
-﻿/*
+/*
 ** Copyright (c) 2013, Xin YUAN, courses of Zhejiang University
 ** All rights reserved.
 **
@@ -366,6 +366,13 @@ public:
 	}
 
 	//copy
+	/*! \brief Copy stream.
+
+	Copy stream.
+	\param spSrc [in] Source stream interface pointer.
+	\param spDest [in] A pointer to the destination stream.
+	\return A CallResult value.
+	*/
 	static CallResult Copy(RefPtr<IByteStream>&& spSrc, RefPtr<IByteStream>&& spDest) throw()
 	{
 		CallResult cr;

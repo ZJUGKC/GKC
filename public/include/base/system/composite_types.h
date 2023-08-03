@@ -881,7 +881,7 @@ template <typename T>
 inline void call_array_destructors(T* p, uintptr size) throw()
 {
 	T* pT = p;
-	for( uintptr i = 0; i < size; i ++ ) {
+	for( uintptr i = size; i > 0; i -- ) {
 		pT->~T();
 		++ pT;
 	}

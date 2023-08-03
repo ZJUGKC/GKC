@@ -624,8 +624,8 @@ const char_type array_name[] = x;  \
 const uintptr len_name = sizeof(array_name) / sizeof(char_type) - 1;
 
 #define DECLARE_LOCAL_STATIC_CONST_STRING(char_type, array_name, len_name, x)  \
-static const char_type array_name[] = x;  \
-static const uintptr len_name = sizeof(array_name) / sizeof(char_type) - 1;
+static constexpr const char_type array_name[] = x;  \
+static constexpr const uintptr len_name = sizeof(array_name) / sizeof(char_type) - 1;
 
 // define temporary constant string object by constant array in a method body
 

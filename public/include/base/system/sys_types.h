@@ -26,18 +26,26 @@
 //File
 
 // file_open_types
+/*! \brief File types for opening.
 
+File types for opening.
+*/
 BEGIN_ENUM(file_open_types)
-	ENUM_VALUE_ENTRY(Read,       0x00000000)
-	ENUM_VALUE_ENTRY(Write,      0x00000001)
-	ENUM_VALUE_ENTRY(ReadWrite,  0x00000002)
+	ENUM_VALUE_ENTRY(Read,       0x00000000)  //!< Read
+	ENUM_VALUE_ENTRY(Write,      0x00000001)  //!< Write
+	ENUM_VALUE_ENTRY(ReadWrite,  0x00000002)  //!< Read and Write
 END_ENUM()
 
 // file_creation_types
-//   they can combine with <or> operation
+/*! \brief File types for creation.
+
+File types for creation.
+\note
+    They can combine with <or> operation.
+*/
 BEGIN_ENUM(file_creation_types)
-	ENUM_VALUE_ENTRY(Create,     0x00001000)
-	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)
+	ENUM_VALUE_ENTRY(Create,     0x00001000)  //!< Create
+	ENUM_VALUE_ENTRY(NoTruncate, 0x00002000)  //!< No truncate
 END_ENUM()
 
 // file_mapping_types
@@ -51,13 +59,16 @@ END_ENUM()
 #pragma pack(push, 1)
 
 // storage_status
+/*! \brief A structure for storage status.
 
+A structure for storage status.
+*/
 struct storage_status
 {
-	int64       iSize;     //storage size in bytes (such as file, memory)
-	time_value  tmAccess;  //time of last access
-	time_value  tmModify;  //time of last modification
-	time_value  tmCreate;  //time of creation
+	int64       iSize;     //!< storage size in bytes (such as file, memory)
+	time_value  tmAccess;  //!< time of last access
+	time_value  tmModify;  //!< time of last modification
+	time_value  tmCreate;  //!< time of creation
 };
 
 #pragma pack(pop)

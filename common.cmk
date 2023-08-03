@@ -268,11 +268,11 @@ MACRO(SET_TARGET_CMD targetName isPostBuilding strCmd)
 		IF(${isPostBuilding})
 			ADD_CUSTOM_COMMAND(TARGET ${targetName} POST_BUILD
 								COMMAND ${strCmd} ARGS ${ARGN}
-								VERBATIM)
+								) # VERBATIM)
 		ELSE(${isPostBuilding})
 			ADD_CUSTOM_COMMAND(TARGET ${targetName} PRE_BUILD
 								COMMAND ${strCmd} ARGS ${ARGN}
-								VERBATIM)
+								) # VERBATIM)
 		ENDIF(${isPostBuilding})
 	ENDIF(WIN32)
 	IF(CMAKE_COMPILER_IS_GNUCXX)

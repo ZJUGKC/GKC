@@ -39,7 +39,6 @@ public:
 	TextStreamU& operator=(const TextStreamU&) = delete;
 	~TextStreamU() noexcept
 	{
-		do_outstanding_work();
 	}
 
 // _ITextStreamStringU methods
@@ -81,14 +80,18 @@ public:
 	}
 
 // _ITextUtilityU methods
-	virtual void SetStream(const GKC::RefPtr<_IByteStream>& rp) noexcept
+	virtual void AttachStream(const GKC::RefPtr<_IByteStream>& rp) noexcept
 	{
 		assert( !rp.IsNull() );
 		if( m_refStream != rp ) {
-			do_outstanding_work();
 			//assignment
 			m_refStream = rp;
 		}
+	}
+	virtual GKC::RefPtr<_IByteStream> DetachStream() noexcept
+	{
+		do_outstanding_work();
+		return GKC::RefPtr<_IByteStream>(rv_forward(m_refStream));
 	}
 	virtual void SetSeparatorSetA(_UniqueArray<GKC::CharA>&& arr) noexcept
 	{

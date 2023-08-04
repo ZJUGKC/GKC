@@ -5149,7 +5149,19 @@ DECLARE_GUID(GUID__ITextStreamString)
 class NOVTABLE _ITextUtility
 {
 public:
+	/*! \brief Set stream object.
+
+	Set stream object.
+	\param rp [in] The shared interface pointer to stream. It can not be a NULL object.
+	*/
 	virtual void SetStream(const _ShareCom<_IByteStream>& sp) throw() = 0;
+	/*! \brief Set the separate character set string.
+
+	Set the separate character set string.
+	\param arr [in] The string for separate character set. If this value
+	                is NULL string, the default separate string will be set.
+	\note Do not include '\r' and '\n' in this set.
+	*/
 	virtual void SetSeparatorSetA(const _ShareArray<GKC::CharA>& arr) throw() = 0;
 	virtual void SetSeparatorSetH(const _ShareArray<GKC::CharH>& arr) throw() = 0;
 	virtual void SetSeparatorSetL(const _ShareArray<GKC::CharL>& arr) throw() = 0;
@@ -5198,12 +5210,18 @@ DECLARE_GUID(GUID__ITextStreamStringU)
 class NOVTABLE _ITextUtilityU
 {
 public:
-	/*! \brief Set stream object.
+	/*! \brief Attach stream object.
 
-	Set stream object.
+	Attach stream object.
 	\param rp [in] The interface pointer to stream. It can not be a NULL object.
 	*/
-	virtual void SetStream(const GKC::RefPtr<_IByteStream>& rp) noexcept = 0;
+	virtual void AttachStream(const GKC::RefPtr<_IByteStream>& rp) noexcept = 0;
+	/*! \brief Detach stream object.
+
+	Detach stream object.
+	\return The interface pointer to stream.
+	*/
+	virtual GKC::RefPtr<_IByteStream> DetachStream() noexcept = 0;
 	/*! \brief Set the separate character set string.
 
 	Set the separate character set string.

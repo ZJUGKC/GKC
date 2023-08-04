@@ -229,11 +229,12 @@ inline bool _Process_File(const ConstStringS& strSrc, const ConstStringS& strDes
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The .h file cannot be opened!")));
 		return false;
 	}
-	refTU.Deref().SetStream(refOutput);
+	refTU.Deref().AttachStream(refOutput);
 	if ( !write_h_file(refTS, strV) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot write to .h file!")));
 		return false;
 	}
+	refTU.Deref().DetachStream();
 
 	//.cpp
 	StringUtilHelper::MakeString(strDest, ustrDest);  //may throw
@@ -250,12 +251,13 @@ inline bool _Process_File(const ConstStringS& strSrc, const ConstStringS& strDes
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: The c/cpp file cannot be opened!")));
 		return false;
 	}
-	refTU.Deref().SetStream(refOutput);
+	refTU.Deref().AttachStream(refOutput);
 	refTS.Deref().Reset();
 	if ( !write_source_file(refInput, refTS, strV, uFileSize) ) {
 		ConsoleHelper::WriteLine(DECLARE_TEMP_CONST_STRING(ConstStringS, _S("Error: Cannot write to c/cpp file!")));
 		return false;
 	}
+	refTU.Deref().DetachStream();
 
 	return true;
 }

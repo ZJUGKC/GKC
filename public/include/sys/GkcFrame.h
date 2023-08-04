@@ -23,6 +23,10 @@ This file contains framework classes.
 	#error GkcFrame.h requires GkcCollb.h to be included first.
 #endif
 
+#ifndef __GKC_SYS_H__
+	#error GkcFrame.h requires GkcSys.h to be included first.
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////

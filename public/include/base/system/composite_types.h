@@ -1119,10 +1119,10 @@ template <typename T>
 class delegate_base;
 
 template <typename R, typename... Args>
-class delegate_base<R(Args&&...)>
+class delegate_base<R(Args...)>
 {
 private:
-	typedef delegate_base<R(Args&&...)>  thisClass;
+	typedef delegate_base<R(Args...)>  thisClass;
 	using func_type = R(*)(thisClass*, Args&&...);
 
 public:
@@ -1144,7 +1144,7 @@ public:
 		return IsNull();
 	}
 
-	R operator()(Args&&... args)
+	R operator()(Args... args)
 	{
 		return m_func(this, rv_forward<Args>(args)...);
 	}
@@ -1154,10 +1154,10 @@ private:
 };
 
 template <typename... Args>
-class delegate_base<void(Args&&...)>
+class delegate_base<void(Args...)>
 {
 private:
-	typedef delegate_base<void(Args&&...)>  thisClass;
+	typedef delegate_base<void(Args...)>  thisClass;
 	using func_type = void(*)(thisClass*, Args&&...);
 
 public:
@@ -1179,7 +1179,7 @@ public:
 		return IsNull();
 	}
 
-	void operator()(Args&&... args)
+	void operator()(Args... args)
 	{
 		m_func(this, rv_forward<Args>(args)...);
 	}

@@ -24,23 +24,25 @@ for cross-platform.
 
 //DEBUG
 #if ( defined(_DEBUG) || !defined(NDEBUG) )
-#define GKC_DEBUG
+	#define GKC_DEBUG
 #endif
 
 //Machine Type
 #if ( !defined(CM_X86) && !defined(CM_X64) )
-//windows
-#define GKC_OS_WINDOWS
-//WIN64
-#ifdef _WIN64
-#define WIN64
-#define CM_X64
+	//windows
+	#define GKC_OS_WINDOWS
+	//WIN64
+	#ifdef _WIN64
+		#ifndef WIN64
+			#define WIN64
+		#endif
+		#define CM_X64
+	#else
+		#define CM_X86
+	#endif //WIN64
 #else
-#define CM_X86
-#endif //WIN64
-#else
-//linux
-#define GKC_OS_LINUX
+	//linux
+	#define GKC_OS_LINUX
 #endif //Machine Type
 
 //basic types

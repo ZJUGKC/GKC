@@ -176,12 +176,19 @@ public:
 	{
 		assert( IsValid() );
 		assert( uBytes <= SSIZE_MAX );
-		ssize_t uRet = ::read(m_fd, pBuffer, (size_t)uBytes);
 		int res = 0;
-		if( uRet == -1 )
-			res = _OS_CR_FROM_ERRORNO();
-		else
-			uRead = (uint)uRet;
+		while( true ) {
+			ssize_t uRet = ::read(m_fd, pBuffer, (size_t)uBytes);
+			if( uRet == -1 ) {
+				if( errno == EINTR )
+					continue;
+				res = _OS_CR_FROM_ERRORNO();
+			}
+			else {
+				uRead = (uint)uRet;
+			}
+			break;
+		}
 		return call_result(res);
 	}
 	//write
@@ -189,12 +196,19 @@ public:
 	call_result Write(const void* pBuffer, uint uBytes, uint& uWritten) throw()
 	{
 		assert( IsValid() );
-		ssize_t uRet = ::write(m_fd, pBuffer, (size_t)uBytes);
 		int res = 0;
-		if( uRet == -1 )
-			res = _OS_CR_FROM_ERRORNO();
-		else
-			uWritten = (uint)uRet;
+		while( true ) {
+			ssize_t uRet = ::write(m_fd, pBuffer, (size_t)uBytes);
+			if( uRet == -1 ) {
+				if( errno == EINTR )
+					continue;
+				res = _OS_CR_FROM_ERRORNO();
+			}
+			else {
+				uWritten = (uint)uRet;
+			}
+			break;
+		}
 		return call_result(res);
 	}
 	//dup (a new reference, inherited)
@@ -305,8 +319,14 @@ S_IRWXU S_IRWXG S_IRWXO
 	{
 		assert( hd.IsValid() );
 		int res = 0;
-		if( ::ftruncate((int)(hd.GetHandle()), iSize) == -1 )
-			res = _OS_CR_FROM_ERRORNO();
+		while( true ) {
+			if( ::ftruncate((int)(hd.GetHandle()), iSize) == -1 ) {
+				if( errno == EINTR )
+					continue;
+				res = _OS_CR_FROM_ERRORNO();
+			}
+			break;
+		}
 		return call_result(res);
 	}
 	//get status
@@ -346,8 +366,14 @@ S_IRWXU S_IRWXG S_IRWXO
 		fl.l_whence = SEEK_SET;
 		fl.l_start  = iOffset;
 		fl.l_len    = iLen;
-		if( ::fcntl((int)(hd.GetHandle()), bBlock ? F_SETLKW : F_SETLK, &fl) == -1 )
-			res = _OS_CR_FROM_ERRORNO();
+		while( true ) {
+			if( ::fcntl((int)(hd.GetHandle()), bBlock ? F_SETLKW : F_SETLK, &fl) == -1 ) {
+				if( bBlock && errno == EINTR )
+					continue;
+				res = _OS_CR_FROM_ERRORNO();
+			}
+			break;
+		}
 		return call_result(res);
 	}
 	//unlock
@@ -474,9 +500,15 @@ public:
 	void Lock()  //may throw
 	{
 		assert( m_bInitialized );
-		int res = ::sem_wait(&m_sem);
-		if( res != 0 )
-			throw exception_base(call_result(CR_FAIL));
+		while( true ) {
+			int res = ::sem_wait(&m_sem);
+			if( res == -1 ) {
+				if( errno == EINTR )
+					continue;
+				throw exception_base(call_result(CR_FAIL));
+			}
+			break;
+		}
 	}
 	void Unlock() throw()
 	{
@@ -543,9 +575,15 @@ public:
 	void Lock()  //may throw
 	{
 		assert( m_psem != NULL );
-		int res = ::sem_wait(m_psem);
-		if( res != 0 )
-			throw exception_base(call_result(CR_FAIL));
+		while( true ) {
+			int res = ::sem_wait(m_psem);
+			if( res == -1 ) {
+				if( errno == EINTR )
+					continue;
+				throw exception_base(call_result(CR_FAIL));
+			}
+			break;
+		}
 	}
 	void Unlock() throw()
 	{
@@ -664,17 +702,21 @@ public:
 	void Lock() throw()
 	{
 		assert( m_bInitialized );
-		::pthread_mutex_lock(&m_mtx);
+		int ret = ::pthread_mutex_lock(&m_mtx);
+		(void)ret;
+		assert( ret == 0 );  //or error number
 	}
 	void Unlock() throw()
 	{
 		assert( m_bInitialized );
-		::pthread_mutex_unlock(&m_mtx);
+		int ret = ::pthread_mutex_unlock(&m_mtx);
+		(void)ret;
+		assert( ret == 0 );  //or error number
 	}
 	bool TryLock() throw()
 	{
 		assert( m_bInitialized );
-		return ::pthread_mutex_trylock(&m_mtx) == 0;
+		return ::pthread_mutex_trylock(&m_mtx) == 0;  //or error number
 	}
 
 	//methods
@@ -695,7 +737,9 @@ public:
 	void Term() throw()
 	{
 		if( m_bInitialized ) {
-			::pthread_mutex_destroy(&m_mtx);
+			int ret = ::pthread_mutex_destroy(&m_mtx);
+			(void)ret;
+			assert( ret == 0 );  //or error number
 			m_bInitialized = false;
 		}
 	}
@@ -780,7 +824,9 @@ public:
 	void Wait(inprocess_mutex& mtx) throw()
 	{
 		assert( m_bInitialized );
-		::pthread_cond_wait(&m_cv, &mtx.m_mtx);
+		int ret = ::pthread_cond_wait(&m_cv, &mtx.m_mtx);
+		(void)ret;
+		assert( ret == 0 );  //or error number
 	}
 	// uTimeout: 0 or number (ms)
 	bool TryWait(inprocess_mutex& mtx, uint uTimeout) throw()
@@ -798,18 +844,24 @@ public:
 	void Signal() throw()
 	{
 		assert( m_bInitialized );
-		::pthread_cond_signal(&m_cv);
+		int ret = ::pthread_cond_signal(&m_cv);
+		(void)ret;
+		assert( ret == 0 );  //or error number
 	}
 	void SignalAll() throw()
 	{
 		assert( m_bInitialized );
-		::pthread_cond_broadcast(&m_cv);
+		int ret = ::pthread_cond_broadcast(&m_cv);
+		(void)ret;
+		assert( ret == 0 );  //or error number
 	}
 
 	void Init() throw()
 	{
 		assert( !m_bInitialized );
-		::pthread_cond_init(&m_cv, NULL);
+		int res = ::pthread_cond_init(&m_cv, NULL);
+		(void)res;
+		assert( res == 0 );  //or error number
 		m_bInitialized = true;
 	}
 	void Term() throw()
@@ -817,7 +869,7 @@ public:
 		if( m_bInitialized ) {
 			int res = ::pthread_cond_destroy(&m_cv);
 			(void)res;
-			assert( res == 0 );
+			assert( res == 0 );  //or error number
 			m_bInitialized = false;
 		}
 	}
@@ -852,38 +904,38 @@ public:
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_rdlock(&m_rw);
 		(void)res;
-		assert( res == 0 );
+		assert( res == 0 );  //or error number
 	}
 	void LockExclusive() throw()
 	{
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_wrlock(&m_rw);
 		(void)res;
-		assert( res == 0 );
+		assert( res == 0 );  //or error number
 	}
 	void UnlockShared() throw()
 	{
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_unlock(&m_rw);
 		(void)res;
-		assert( res == 0 );
+		assert( res == 0 );  //or error number
 	}
 	void UnlockExclusive() throw()
 	{
 		assert( m_bInitialized );
 		int res = ::pthread_rwlock_unlock(&m_rw);
 		(void)res;
-		assert( res == 0 );
+		assert( res == 0 );  //or error number
 	}
 	bool TryLockShared() throw()
 	{
 		assert( m_bInitialized );
-		return ::pthread_rwlock_tryrdlock(&m_rw) == 0;
+		return ::pthread_rwlock_tryrdlock(&m_rw) == 0;  //or error number
 	}
 	bool TryLockExclusive() throw()
 	{
 		assert( m_bInitialized );
-		return ::pthread_rwlock_trywrlock(&m_rw) == 0;
+		return ::pthread_rwlock_trywrlock(&m_rw) == 0;  //or error number
 	}
 
 	void Init() throw()
@@ -891,7 +943,7 @@ public:
 		assert( !m_bInitialized );
 		int res = ::pthread_rwlock_init(&m_rw, NULL);
 		(void)res;
-		assert( res == 0 );
+		assert( res == 0 );  //or error number
 		m_bInitialized = true;
 	}
 	void Term() throw()
@@ -899,7 +951,7 @@ public:
 		if( m_bInitialized ) {
 			int res = ::pthread_rwlock_destroy(&m_rw);
 			(void)res;
-			assert( res == 0 );
+			assert( res == 0 );  //or error number
 			m_bInitialized = false;
 		}
 	}

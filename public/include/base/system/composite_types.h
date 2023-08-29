@@ -100,10 +100,20 @@ inline bool is_derived_from() throw()
 
 #pragma pack(push, 1)
 
+/*! \brief A template class for unmanaged type pointer.
+
+A template class for unmanaged type pointer. This means it will not delete
+object which is pointed by its member when it destroies.
+\tparam T The type.
+*/
 template <typename T>
 class ref_ptr
 {
 public:
+	/*! \brief Constructor
+
+	Constructor.
+	*/
 	ref_ptr() throw() : m_p(NULL)
 	{
 	}
@@ -113,6 +123,10 @@ public:
 	explicit ref_ptr(const T* p) throw() : m_p(const_cast<T*>(p))
 	{
 	}
+	/*! \brief Copy constructor
+
+	Copy constructor.
+	*/
 	ref_ptr(const ref_ptr<T>& src) throw() : m_p(src.m_p)
 	{
 	}
@@ -120,6 +134,10 @@ public:
 	{
 		src.m_p = NULL;
 	}
+	/*! \brief Destructor
+
+	Destructor.
+	*/
 	~ref_ptr() throw()
 	{
 	}
@@ -130,6 +148,12 @@ public:
 	}
 
 	//operators
+
+	/*! \brief Assignment
+
+	Assignment.
+	\return A reference of this class
+	*/
 	ref_ptr<T>& operator=(const ref_ptr<T>& src) throw()
 	{
 		m_p = src.m_p;
@@ -197,7 +221,7 @@ public:
 	}
 
 private:
-	T* m_p;
+	T* m_p;  //!< type pointer
 
 private:
 	friend class ref_ptr_helper;

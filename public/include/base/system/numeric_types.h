@@ -173,59 +173,49 @@ public:
 //float
 
 // float_helper
+/*! \brief A helper class for float data.
 
+A helper class for float data.
+*/
 class float_helper
 {
 public:
-	//T: float or double
+	/*! \brief Check if the variable is not a number.
+
+	Check if the variable is not a number(NAN).
+	\tparam T float or double.
+	\param t [in] The input number.
+	\return true for NAN, false for otherwise.
+	*/
 	template <typename T>
 	static bool IsNan(T t) throw()
 	{
 		return ::fpclassify(t) == FP_NAN;
 	}
+	/*! \brief Check if the value is infinite.
+
+	Check if the value is infinite.
+	\tparam T float or double.
+	\param t [in] The input value.
+	\return true for infinite(+-), false for finite(-INF<x<+INF).
+	*/
 	template <typename T>
 	static bool IsInf(T t) throw()
 	{
 		return ::fpclassify(t) == FP_INFINITE;
 	}
+	/*! \brief Check if the value is finite.
+
+	Check if the value is finite.
+	\tparam T float or double.
+	\param t [in] The input value.
+	\return true for finite, false for otherwise.
+	*/
 	template <typename T>
 	static bool IsFinite(T t) throw()
 	{
 		int c = ::fpclassify(t);
 		return c != FP_NAN && c != FP_INFINITE;
-	}
-
-	static float Ceil(float t) throw()
-	{
-		return ::ceilf(t);
-	}
-	static double Ceil(double t) throw()
-	{
-		return ::ceil(t);
-	}
-	static float Floor(float t) throw()
-	{
-		return ::floorf(t);
-	}
-	static double Floor(double t) throw()
-	{
-		return ::floor(t);
-	}
-	static float Round(float t) throw()
-	{
-		return ::roundf(t);
-	}
-	static double Round(double t) throw()
-	{
-		return ::round(t);
-	}
-	static float Trunc(float t) throw()
-	{
-		return ::truncf(t);
-	}
-	static double Trunc(double t) throw()
-	{
-		return ::trunc(t);
 	}
 };
 

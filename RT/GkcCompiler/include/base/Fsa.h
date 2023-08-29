@@ -40,6 +40,10 @@ namespace GKC {
 #pragma pack(push, 1)
 
 // FSA_TRANSITION_ITEM
+/*! \brief A structure for transition.
+
+A structure for transition.
+*/
 typedef struct _tagFSA_TransitionItem {
 	uint uEventFirstNo;  //!< The first No. of event. (uint)-2 means the last transition item.
 	uint uEventLastNo;   //!< The last No. of event.
@@ -47,6 +51,10 @@ typedef struct _tagFSA_TransitionItem {
 } FSA_TRANSITION_ITEM;
 
 // FSA_STATE_ITEM
+/*! \brief A structure for state.
+
+A structure for state.
+*/
 typedef struct _tagFSA_StateItem {
 	const FSA_TRANSITION_ITEM* pTransition;  //!< A pointer to transition array.
 	int iDefaultState;   //!< The default next state if no transitions are used.
@@ -54,11 +62,19 @@ typedef struct _tagFSA_StateItem {
 } FSA_STATE_ITEM;
 
 // FSA_MATCH_ITEM
+/*! \brief A structure for match.
+
+A structure for match.
+*/
 typedef struct _tagFSA_MatchItem {
 	int iMatch;  //!< The match No. 0 means no match. If this value is less than zero, the last event should be unput.
 } FSA_MATCH_ITEM;
 
 // FSA_TABLE
+/*! \brief A structure for state machine table.
+
+A structure for state machine table.
+*/
 typedef struct _tagFSA_Table {
 	int iMaxStateNo;      //!< The maximum state No. It must not be less than 1.
 	int iMaxMatchNo;      //!< The maximum match No. It must not be less than zero.
@@ -68,6 +84,14 @@ typedef struct _tagFSA_Table {
 
 #pragma pack(pop)
 
+/*! \brief Set parameters.
+
+Set parameters.
+\param iMaxStateNo [in] Specify the maximum state No.
+\param pState [in] A pointer to state array.
+\param iMaxMatchNo [in] Specify the maximum match No.
+\param pMatch [in] A pointer to match array.
+*/
 inline void _Init_Fsa_Table(FSA_TABLE& table,
 							int iMaxStateNo = 1, const FSA_STATE_ITEM* pState = NULL,
 							int iMaxMatchNo = 0, const FSA_MATCH_ITEM* pMatch = NULL) throw()
@@ -102,10 +126,20 @@ inline bool _Is_Fsa_Table_Valid(const FSA_TABLE& table) throw()
 // classes
 
 // FiniteStateAutomata
+/*! \brief A class for state machine.
 
+A class for state machine.
+\note In class FSA_TABLE, user must define enumerations of states (from 2 to nMaxStateNo),
+      stop states (0 or the match index of states must be <= 0), events (from 0 to nMaxEventNo) and matches (from 1 to nMaxMatchNo).
+      The state map and match map should also be defined.
+*/
 class FiniteStateAutomata
 {
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	FiniteStateAutomata() throw() : m_iCurrentState(FSA_STATE_START), m_iPrevState(FSA_STATE_START), m_iLastStopState(1), m_uBackEventNum(0), m_iMatch(0), m_uLastEventNo(0)
 	{
 		//init
@@ -123,6 +157,10 @@ public:
 	}
 
 	//set start state
+	/*! \brief Set the current state to START.
+
+	Set the current state to START.
+	*/
 	void SetStartState() throw()
 	{
 		m_iCurrentState  = FSA_STATE_START;
@@ -142,8 +180,11 @@ public:
 		m_iMatch         = 0;
 		m_uLastEventNo   = 0;
 	}
-	//back to the previous state
-	// User should not call this method repeatedly.
+	/*! \brief Back to the previous state.
+
+	Back to the previous state.
+	\note User should not call this method repeatedly.
+	*/
 	void BackState() throw()
 	{
 		m_iCurrentState  = m_iPrevState;
@@ -152,8 +193,11 @@ public:
 		m_iMatch         = 0;
 		m_uLastEventNo   = 0;
 	}
-	//Process state according to current event
-	// uEventNo : The input event No.
+	/*! \brief Process state according to current event.
+
+	Process state according to current event.
+	\param uEventNo [in] The input event No.
+	*/
 	void ProcessState(uint uEventNo) throw()
 	{
 		assert( !_Is_Fsa_Table_Null(m_table) );
@@ -178,24 +222,39 @@ public:
 		m_iCurrentState = m_table.pState[m_iCurrentState].iDefaultState;
 		post_process_current_state(uEventNo);
 	}
-	//Get current state
+	/*! \brief Get current state.
+
+	Get current state.
+	\return The current state.
+	*/
 	int GetCurrentState() const throw()
 	{
 		return m_iCurrentState;
 	}
-	//Check if the current state is stopped
+	/*! \brief Check if the current state is stopped.
+
+	Check if the current state is stopped.
+	\return true for stopped, false for otherwise.
+	*/
 	bool IsStopped() const throw()
 	{
 		return m_iCurrentState <= 0;
 	}
-	//Get last stop state
+	/*! \brief Get last stop state.
+
+	Get last stop state.
+	\return The stop state.
+	*/
 	int GetLastStopState() const throw()
 	{
 		return m_iLastStopState;
 	}
-	//Get match No. of current stopped state
-	//  uBackEventNum [out] Receive the the number of events needing to be backed.
-	//  return: The match No. It is not less than zero. 0 means no match (error).
+	/*! \brief Get match No. of current stopped state.
+
+	Get match No. of current stopped state.
+	\param uBackEventNum [out] Receive the number of events needing to be backed.
+	\return The match No. It is not less than zero. 0 means no match (error).
+	*/
 	int GetMatch(uint& uBackEventNum) const throw()
 	{
 		assert( m_iCurrentState <= 0 );

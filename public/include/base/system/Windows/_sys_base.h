@@ -18,6 +18,10 @@
 // Thread
 
 // Message Queue for thread
+/*! \brief Create a message queue for a thread.
+
+Create a message queue for a thread.
+*/
 inline void _os_create_thread_message_queue() throw()
 {
 	MSG msg;
@@ -70,7 +74,7 @@ public:
 	}
 
 	//methods
-	call_result Init(uint uSpinCount = 0) throw()
+	call_result Init(uint uSpinCount = 4000) throw()
 	{
 		assert( !m_bInitialized );
 

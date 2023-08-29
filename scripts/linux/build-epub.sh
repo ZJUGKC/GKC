@@ -24,9 +24,11 @@ fi
 strScriptRoot=$(dirname $(readlink -f "$0"))
 cd "$strScriptRoot"
 cd ../bin
+strBinPath=`pwd`
 
 echo "*** generate ***"
-./mdp -e "$4" "$strProjectFile" "${strWorkspacePath}/$strItem"
+# Do not use "$4" (quoted) when $4 is a null string
+./mdp -e $4 "$strProjectFile" "${strWorkspacePath}/$strItem"
 if [ $? -ne 0 ]; then
 	echo "Error: mdp error."
 	exit 3
@@ -34,6 +36,7 @@ fi
 sleep 1
 
 echo "*** execute ***"
+export PATH="$PATH:$strBinPath"
 cd "${strWorkspacePath}/$strItem/epub"
 bash build.sh
 if [ $? -ne 0 ]; then

@@ -358,7 +358,13 @@ inline bool guid_to_string(const guid& id, char_h* szBuffer) throw()
 
 //------------------------------------------------------------------------------
 // result_to_string
-//   uSize : buffer size in typed characters. It must be large than 0.
+/*! \brief Get message string from a call_result value.
+
+Get message string from a call_result (HRESULT) value.
+\param cr [in] A call_result (HRESULT) value.
+\param szBuffer [out] Receive the message string.
+\param uSize [in] Buffer size in typed characters. It must be large than 0.
+*/
 inline void result_to_string(const call_result& cr, char_a* szBuffer, uintptr uSize) throw()
 {
 	szBuffer[0] = 0;

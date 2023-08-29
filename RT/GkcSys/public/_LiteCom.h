@@ -35,19 +35,34 @@ public:
 };
 
 //_LiteCom<T>
-//  T: The major interface of component class
+/*! \brief Lite Com Smart Pointer.
 
+Lite Com Smart Pointer.
+\tparam T The major interface of component class
+*/
 template <class T>
 class _LiteCom
 {
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	_LiteCom() noexcept : m_p(NULL)
 	{
 	}
+	/*! \brief Move Constructor.
+
+	Move Constructor.
+	*/
 	_LiteCom(_LiteCom<T>&& src) noexcept : m_p(src.m_p)
 	{
 		src.m_p = NULL;
 	}
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	*/
 	_LiteCom<T>& operator=(_LiteCom<T>&& src) noexcept
 	{
 		if ( this != &src ) {

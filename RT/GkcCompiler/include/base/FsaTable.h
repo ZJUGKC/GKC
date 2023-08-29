@@ -42,62 +42,113 @@ namespace GKC {
 // --<source file>--
 
 // BEGIN_FSA_TRAIT_CLASS(cls_name)
+/*! \brief A macro for beginning a state map definition.
+
+A macro for beginning a state map definition.
+\param cls_name The class name.
+*/
 #define BEGIN_FSA_TRAIT_CLASS(cls_name)
 
 // FSA_BEGIN_STATE_TRANSITION(state_name)
-//   state_name : Specify the state name or state enumerator.
+/*! \brief Begin a state transition map.
+
+Begin a state transition map.
+\param state_name Specify the state name or state enumerator.
+*/
 #define FSA_BEGIN_STATE_TRANSITION(state_name)  \
 	const FSA_TRANSITION_ITEM _ti##state_name[] = {
 
 // FSA_STATE_TRANSITION_ENTRY(event_no, state_next)
-//   event_no : Specify the event No.
-//   state_next : Specify the next state.
+/*! \brief Define a state transition entry.
+
+Define a state transition entry.
+\param event_no Specify the event No.
+\param state_next Specify the next state.
+*/
 #define FSA_STATE_TRANSITION_ENTRY(event_no, state_next)  \
 	{event_no, event_no, state_next},
 
 // FSA_STATE_TRANSITION_RANGE_ENTRY(event_first, event_last, state_next)
-//   event_first : Specify the first event No.
-//   event_last : Specify the last event No.
-//   state_next : Specify the next state.
+/*! \brief Define a state transition range entry.
+
+Define a state transition range entry.
+\param event_first Specify the first event No.
+\param event_last Specify the last event No.
+\param state_next Specify the next state.
+*/
 #define FSA_STATE_TRANSITION_RANGE_ENTRY(event_first, event_last, state_next)  \
 	{event_first, event_last, state_next},
 
 // FSA_END_STATE_TRANSITION()
+/*! \brief End state transition map definition.
+
+End state transition map definition.
+*/
 #define FSA_END_STATE_TRANSITION()  \
 	{FSA_LAST_EVENT_NO, FSA_LAST_EVENT_NO, 0} };
 
 // FSA_BEGIN_STATE_SET()
+/*! \brief Begin a state set definition.
+
+Begin a state set definition.
+*/
 #define FSA_BEGIN_STATE_SET()  \
 	const FSA_STATE_ITEM _ti_state_map[] = {  \
 	{NULL, 0, 0},
 
 // FSA_STATE_SET_ENTRY(default_state, state_name, match_index)
-//   default_state : The default state.
-//   state_name : Specify the state name or state enumerator.
-//   match_index : Specify the match index.
-// The first entry has the index whose value is FSA_STATE_START. This map has at least one entry.
+/*! \brief Define a state entry.
+
+Define a state entry.
+\param default_state The default state.
+\param state_name Specify the state name or state enumerator.
+\param match_index Specify the match index.
+\note The first entry has the index whose value is FSA_STATE_START.
+      This map has at least one entry.
+*/
 #define FSA_STATE_SET_ENTRY(default_state, state_name, match_index)  \
 	{_ti##state_name, default_state, match_index},
 
 // FSA_END_STATE_SET()
+/*! \brief End the state set definition.
+
+End the state set definition.
+*/
 #define FSA_END_STATE_SET()  \
 	{NULL, 0, 0} };
 
 // FSA_BEGIN_MATCH()
+/*! \brief Begin a match map.
+
+Begin a match map.
+*/
 #define FSA_BEGIN_MATCH()  \
 	const FSA_MATCH_ITEM _ti_match_map[] = {  \
 	{0},
 
 // FSA_MATCH_ENTRY(match)
-//   match : Specify the match No. 0 means no match. If this value is less than zero, the last event should be unput. This map has at least one entry.
+/*! \brief Define a match entry.
+
+Define a match entry.
+\param match Specify the match No. 0 means no match. If this value is less than zero, the last event should be unput.
+\note This map has at least one entry.
+*/
 #define FSA_MATCH_ENTRY(match)  \
 	{match},
 
 // FSA_END_MATCH()
+/*! \brief End the match map.
+
+End the match map.
+*/
 #define FSA_END_MATCH()  \
 	{0} };
 
 // END_FSA_TRAIT_CLASS(cls_name)
+/*! \brief End a state map definition.
+
+End a state map definition.
+*/
 #define END_FSA_TRAIT_CLASS(cls_name)  \
 const FSA_TABLE _ti_fsa_table = {  \
 (int)(sizeof(_ti_state_map) / sizeof(FSA_STATE_ITEM)) - 2,  \

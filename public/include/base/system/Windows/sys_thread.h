@@ -81,29 +81,58 @@ public:
 		return m_h != NULL;  // NULL, errno and _doserrno
 	}
 
-	bool GetPriority() const throw()
+	/*! \brief Retrieves the priority value for the specified thread.
+
+	Retrieves the priority value for the specified thread.
+	\return If the function succeeds, the return value is the thread's priority level.
+	        If the function fails, the return value is THREAD_PRIORITY_ERROR_RETURN.
+	*/
+	int GetPriority() const throw()
 	{
 		assert( !IsNull() );
 		int ret = ::GetThreadPriority(m_h);
-		return ret != THREAD_PRIORITY_ERROR_RETURN;  // THREAD_PRIORITY_ERROR_RETURN, ::GetLastError()
+		return ret;
+		//bool bRet = ret != THREAD_PRIORITY_ERROR_RETURN;
+		//THREAD_PRIORITY_ERROR_RETURN, ::GetLastError()
 	}
+	/*! \brief Sets the priority value for the specified thread.
+
+	Sets the priority value for the specified thread.
+	\param iPriority [in] The priority value for the thread.
+	\return true for succeeded, false for otherwise.
+	*/
 	bool SetPriority(int iPriority) throw()
 	{
 		assert( !IsNull() );
 		BOOL bRet = ::SetThreadPriority(m_h, iPriority);
 		return bRet;  // FALSE, ::GetLastError()
 	}
-	bool Suspend() throw()
+	/*! \brief Suspends the specified thread.
+
+	Suspends the specified thread.
+	\return If the function succeeds, the return value is the thread's previous suspend count, otherwise, it is (DWORD)-1.
+	*/
+	DWORD Suspend() throw()
 	{
 		assert( !IsNull() );
 		DWORD dwRet = ::SuspendThread(m_h);
-		return dwRet != (DWORD)-1;  // -1, ::GetLastError()
+		return dwRet;
+		//bool bRet = dwRet != (DWORD)-1;
+		//-1, ::GetLastError()
 	}
-	bool Resume() throw()
+	/*! \brief Decrements a thread's suspend count.
+
+	Decrements a thread's suspend count. When the suspend count is decremented to zero, the execution of the thread is resumed.
+	\return If the function succeeds, the return value is the thread's previous suspend count.
+	        If the function fails, the return value is (DWORD)-1.
+	*/
+	DWORD Resume() throw()
 	{
 		assert( !IsNull() );
 		DWORD dwRet = ::ResumeThread(m_h);
-		return dwRet != (DWORD)-1;  // -1, ::GetLastError()
+		return dwRet;
+		//bool bRet = dwRet != (DWORD)-1;
+		//-1, ::GetLastError()
 	}
 
 private:

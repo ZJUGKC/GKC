@@ -22,10 +22,17 @@
 #pragma pack(push, 1)
 
 // sa_handle
+/*! \brief A class for shared assembly handle.
 
+A class for shared assembly handle.
+*/
 class sa_handle
 {
 public:
+	/* \brief Constructor
+
+	Constructor.
+	*/
 	sa_handle() throw() : m_hd(NULL)
 	{
 	}
@@ -33,6 +40,10 @@ public:
 	{
 		src.m_hd = NULL;
 	}
+	/*! \brief Destructor.
+
+	Destructor.
+	*/
 	~sa_handle() throw()
 	{
 		Free();
@@ -46,21 +57,38 @@ public:
 		return *this;
 	}
 
+	/*! \brief Check if the handle is NULL.
+
+	Check if the handle is NULL.
+	\return true for NULL, false for non-NULL.
+	*/
 	bool IsNull() const throw()
 	{
 		return m_hd == NULL;
 	}
 
+	/*! \brief Get handle.
+
+	Get handle.
+	*/
 	uintptr GetHandle() const throw()
 	{
 		return (uintptr)m_hd;
 	}
+	/*! \brief Attach a handle.
+
+	Attach a handle.
+	*/
 	void Attach(uintptr hd) throw()
 	{
 		//shared when m_hd==hd
 		Free();
 		m_hd = (HMODULE)hd;
 	}
+	/*! \brief Detach handle.
+
+	Detach handle.
+	*/
 	uintptr Detach() throw()
 	{
 		uintptr hd = (uintptr)m_hd;
@@ -69,6 +97,10 @@ public:
 	}
 
 //methods
+	/*! \brief Dump the shared assembly.
+
+	Dump the shared assembly.
+	*/
 	void Free() throw()
 	{
 		if( m_hd != NULL ) {
@@ -78,12 +110,24 @@ public:
 		}
 	}
 
+	/*! \brief Load a shared assembly.
+
+	Load a shared assembly (dll, so).
+	\param szFile [in] Library file name.
+	\return true for succeeded, false for otherwise.
+	*/
 	bool Load(const char_s* szFile) throw()
 	{
 		assert( m_hd == NULL );
 		m_hd = ::LoadLibraryW(szFile);
 		return m_hd != NULL;
 	}
+	/*! \brief Get function address.
+
+	Get function address.
+	\param szFunc [in] File name.
+	\return The function address. 0 means failure.
+	*/
 	uintptr GetFunctionAddress(const char_a* szFunc) const throw()
 	{
 		assert( m_hd != NULL );
@@ -91,7 +135,7 @@ public:
 	}
 
 private:
-	HMODULE m_hd;
+	HMODULE m_hd;  //!< Handle
 
 private:
 	//noncopyable

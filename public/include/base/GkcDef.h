@@ -241,7 +241,11 @@ using DefaultHashTrait = default_hash_trait<T>;
 //tuple
 
 // Pair<T1, T2>
+/*! \brief A template class for two types.
 
+A template class for two types.
+\tparam T1, T2 Two types.
+*/
 template <typename T1, typename T2>
 class Pair
 {
@@ -253,9 +257,19 @@ public:
 	typedef T2  E2;
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	\note It may throw exceptions.
+	*/
 	Pair()
 	{
 	}
+	/*! \brief Copy constructor.
+
+	Copy constructor.
+	\note It may throw exceptions.
+	*/
 	explicit Pair(const T1& t1) : m_t1(t1)
 	{
 	}
@@ -278,6 +292,11 @@ public:
 	{
 	}
 
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	\note It may throw exceptions.
+	*/
 	thisClass& operator=(const thisClass& src)
 	{
 		m_t1 = src.m_t1;
@@ -347,8 +366,8 @@ public:
 	}
 
 private:
-	T1 m_t1;
-	T2 m_t2;
+	T1 m_t1;  //!< first
+	T2 m_t2;  //!< second
 };
 
 // KeyHelper
@@ -1025,6 +1044,13 @@ private:
 //------------------------------------------------------------------------------
 // Swap
 
+/*! \brief Swap two variables.
+
+Swap two variables.
+\tparam T The variable type.
+\param t1, t2 [in, out] Two variables.
+\note It may throw exceptions.
+*/
 template <typename T>
 inline void Swap(T& t1, T& t2)
 {
@@ -1034,12 +1060,21 @@ inline void Swap(T& t1, T& t2)
 	t2 = static_cast<T&&>(tmp);
 }
 
-template <>
-inline void Swap<int>(int& t1, int& t2)
-{
-	assert( &t1 != &t2 );
-	t1 ^= t2 ^= t1 ^= t2;
-}
+//special versions
+
+#define _DECLARE_SPECIAL_SWAP(T)  \
+	template <> inline void Swap<T>(T& t1, T& t2) throw()  \
+	{ assert( &t1 != &t2 );  \
+	t1 ^= t2 ^= t1 ^= t2; }
+
+_DECLARE_SPECIAL_SWAP(char)
+_DECLARE_SPECIAL_SWAP(byte)
+_DECLARE_SPECIAL_SWAP(short)
+_DECLARE_SPECIAL_SWAP(ushort)
+_DECLARE_SPECIAL_SWAP(int)
+_DECLARE_SPECIAL_SWAP(uint)
+_DECLARE_SPECIAL_SWAP(int64)
+_DECLARE_SPECIAL_SWAP(uint64)
 
 //------------------------------------------------------------------------------
 // number
@@ -1053,13 +1088,424 @@ using Limits = limits_base<T>;
 // basic operators
 
 // FloatHelper
-typedef float_helper  FloatHelper;
+
+class FloatHelper : public float_helper
+{
+public:
+	/*! \brief Calculate the arccosine.
+
+	Calculate the arccosine.
+	\param x [in] The input value between -1 and 1.
+	\return The arccosine of x in the range 0 to PI radians.
+	*/
+	static double acos(double x) throw()
+	{
+		return ::acos(x);
+	}
+	static float acos(float x) throw()
+	{
+		return ::acosf(x);
+	}
+	/*! \brief Calculate the inverse hyperbolic cosine.
+
+	Calculate the inverse hyperbolic cosine.
+	\param x [in] Floating-point value.
+	\return The inverse hyperbolic cosine of x.
+	*/
+	static double acosh(double x) throw()
+	{
+		return ::acosh(x);
+	}
+	static float acosh(float x) throw()
+	{
+		return ::acoshf(x);
+	}
+	/*! \brief Calculate the arcsine.
+
+	Calculate the arcsine.
+	\param x [in] The input value.
+	\return The arcsine of x in the range -PI/2 to PI/2 radians.
+	*/
+	static double asin(double x) throw()
+	{
+		return ::asin(x);
+	}
+	static float asin(float x) throw()
+	{
+		return ::asinf(x);
+	}
+	/*! \brief Calculate the inverse hyperbolic sine.
+
+	Calculate the inverse hyperbolic sine.
+	\param x [in] Floating-point value.
+	\return The inverse hyperbolic sine of x.
+	*/
+	static double asinh(double x) throw()
+	{
+		return ::asinh(x);
+	}
+	static float asinh(float x) throw()
+	{
+		return ::asinhf(x);
+	}
+	/*! \brief Calculate the arctangent.
+
+	Calculate the arctangent of y/x.
+	\param y, x [in] The parameters.
+	\return The arctangent of y/x in the range -PI to PI radians.
+	*/
+	static double atan2(double y, double x) throw()
+	{
+		return ::atan2(y, x);
+	}
+	static float atan2(float y, float x) throw()
+	{
+		return ::atan2f(y, x);
+	}
+	/*! \brief Calculate the inverse hyperbolic tangent.
+
+	Calculate the inverse hyperbolic tangent.
+	\param x [in] Floating-point value.
+	\return The inverse hyperbolic tangent of x.
+	*/
+	static double atanh(double x) throw()
+	{
+		return ::atanh(x);
+	}
+	static float atanh(float x) throw()
+	{
+		return ::atanhf(x);
+	}
+	/*! \brief Calculate the cosine.
+
+	Calculate the cosine.
+	\param x [in] Angle in radians.
+	\return The cosine of x.
+	*/
+	static double cos(double x) throw()
+	{
+		return ::cos(x);
+	}
+	static float cos(float x) throw()
+	{
+		return ::cosf(x);
+	}
+	/*! \brief Calculate the hyperbolic cosine.
+
+	Calculate the hyperbolic cosine.
+	\param x [in] Angle in radians.
+	\return The hyperbolic cosine of x.
+	*/
+	static double cosh(double x) throw()
+	{
+		return ::cosh(x);
+	}
+	static float cosh(float x) throw()
+	{
+		return ::coshf(x);
+	}
+	/*! \brief Calculates the exponential.
+
+	Calculates the exponential.
+	\param x [in] Floating-point value.
+	\return The exponential value of the floating-point parameter x.
+	*/
+	static double exp(double x) throw()
+	{
+		return ::exp(x);
+	}
+	static float exp(float x) throw()
+	{
+		return ::expf(x);
+	}
+	/*! \brief Computes a real number from the mantissa and exponent.
+
+	Computes a real number from the mantissa and exponent.
+	\param x [in] Floating-point value.
+	\param exp [in] Integer exponent.
+	\return The value of x * 2^exp if successful. On overflow (depending on the sign of x),
+	        ldexp returns +/- HUGE_VAL.
+	*/
+	static double ldexp(double x, int exp) throw()
+	{
+		return ::ldexp(x, exp);
+	}
+	static float ldexp(float x, int exp) throw()
+	{
+		return ::ldexpf(x, exp);
+	}
+	/*! \brief Calculates logarithms.
+
+	Calculates logarithms.
+	\param x [in] Value whose logarithm is to be found.
+	\return The log functions return the natural logarithm(base e) of x if successful.
+	        The log10 functions return the base-10 logarithm.
+	        The log2 functions return the base-2 logarithm.
+	        If x is negative, these functions return an indefinite, by default.
+	        If x is 0, they return INF(infinite).
+	*/
+	static double log(double x) throw()
+	{
+		return ::log(x);
+	}
+	static float log(float x) throw()
+	{
+		return ::logf(x);
+	}
+	static double log10(double x) throw()
+	{
+		return ::log10(x);
+	}
+	static float log10(float x) throw()
+	{
+		return ::log10f(x);
+	}
+	static double log2(double x) throw()
+	{
+		return ::log2(x);
+	}
+	static float log2(float x) throw()
+	{
+		return ::log2f(x);
+	}
+	/*! \brief Calculates x raised to the power of y.
+
+	Calculates x raised to the power of y.
+	\param x [in] Base.
+	\param y [in] Exponent.
+	\return The value of x^y.
+	*/
+	static double pow(double x, double y) throw()
+	{
+		return ::pow(x, y);
+	}
+	static float pow(float x, float y) throw()
+	{
+		return ::powf(x, y);
+	}
+	/*! \brief Calculate sines.
+
+	Calculate sines.
+	\param x [in] Angle in radians.
+	\return The sine of x.
+	*/
+	static double sin(double x) throw()
+	{
+		return ::sin(x);
+	}
+	static float sin(float x) throw()
+	{
+		return ::sinf(x);
+	}
+	/*! \brief Calculate hyperbolic sines.
+
+	Calculate hyperbolic sines.
+	\param x [in] Angle in radians.
+	\return The hyperbolic sine of x.
+	*/
+	static double sinh(double x) throw()
+	{
+		return ::sinh(x);
+	}
+	static float sinh(float x) throw()
+	{
+		return ::sinhf(x);
+	}
+	/*! \brief Calculate the square root.
+
+	Calculate the square root.
+	\param x [in] The input parameter.
+	\return The square root of x.
+	*/
+	static double sqrt(double x) throw()
+	{
+		return ::sqrt(x);
+	}
+	static float sqrt(float x) throw()
+	{
+		return ::sqrtf(x);
+	}
+	/*! \brief Calculate the tangent.
+
+	Calculate the tangent.
+	\param x [in] Angle in radians.
+	\return The tangent of x.
+	*/
+	static double tan(double x) throw()
+	{
+		return ::tan(x);
+	}
+	static float tan(float x) throw()
+	{
+		return ::tanf(x);
+	}
+	/*! \brief Calculate hyperbolic tangent.
+
+	Calculate hyperbolic tangent.
+	\param x [in] Angle in radians.
+	\return The hyperbolic tangent of x.
+	*/
+	static double tanh(double x) throw()
+	{
+		return ::tanh(x);
+	}
+	static float tanh(float x) throw()
+	{
+		return ::tanhf(x);
+	}
+
+	static float ceil(float x) throw()
+	{
+		return ::ceilf(x);
+	}
+	static double ceil(double x) throw()
+	{
+		return ::ceil(x);
+	}
+	static float floor(float x) throw()
+	{
+		return ::floorf(x);
+	}
+	static double floor(double x) throw()
+	{
+		return ::floor(x);
+	}
+	/*! \brief Round-off a value to integer.
+
+	Round-off a value to integer.
+	\param x [in] The input value.
+	\return The rounded result. It can be casted to integer value.
+	*/
+	static float round(float x) throw()
+	{
+		return ::roundf(x);
+	}
+	static double round(double x) throw()
+	{
+		return ::round(x);
+	}
+	static float trunc(float x) throw()
+	{
+		return ::truncf(x);
+	}
+	static double trunc(double x) throw()
+	{
+		return ::trunc(x);
+	}
+};
 
 // SafeOperators
 typedef safe_operators  SafeOperators;
 
 // RandHelper
 typedef rand_helper  RandHelper;
+
+// NumberHelper
+/*! \brief A helper class for number.
+
+A helper class for number.
+*/
+class NumberHelper
+{
+public:
+	/*! \brief Calculate the greatest common divisor.
+
+	Calculate the greatest common divisor.
+	\tparam TType The typename of integer. It can be char,byte,short,ushort,int,uint,int64,uint64.
+	\param m, n [in] Two input numbers.
+	\return The greatest common divisor.
+	*/
+	template <typename TType>
+	static TType Gcd(const TType& m, const TType& n) throw()
+	{
+		if( m == 0 )  return n;
+		if( n == 0 )  return m;
+		TType p = m > n ? m : n;
+		TType q = p == m ? n : m;
+		TType r = p % q;
+		while( r != 0 ) {
+			p = q;
+			q = r;
+			r = p % q;
+		}
+		return q;
+	}
+
+	/*! \brief A sign function.
+
+	A sign function.
+	\param x [in] The input value.
+	\return An integer value. 0 means x is (or almost) 0, 1 means x is a positive number, -1 means x is a negative number.
+	*/
+	static int Sign(char x) throw()
+	{
+		return x == 0 ? 0 : (x & 0x80) ? -1 : 1;
+	}
+	static int Sign(short x) throw()
+	{
+		return x == 0 ? 0 : (x & 0x8000) ? -1 : 1;
+	}
+	static int Sign(int x) throw()
+	{
+		return x == 0 ? 0 : (x & ((uint)1 << 31)) ? -1 : 1;
+	}
+	static int Sign(int64 x) throw()
+	{
+		return x == 0 ? 0 : (x & ((uint64)1 << 63)) ? -1 : 1;
+	}
+	static int Sign(double x) throw()
+	{
+		return (x > -DBL_EPSILON && x < DBL_EPSILON) ? 0 : ( *((uint64*)&x) & ((uint64)1 << 63) ) ? -1 : 1;
+	}
+	static int Sign(float x) throw()
+	{
+		return (x > -FLT_EPSILON && x < FLT_EPSILON) ? 0 : ( *((uint*)&x) & ((uint)1 << 31) ) ? -1 : 1;
+	}
+	/*! \brief Absolute function.
+
+	Absolute function.
+	\param x [in] The input data.
+	\return The absolute value.
+	*/
+	static char Abs(char x) throw()
+	{
+		return (char)::abs((int)x);
+	}
+	static short Abs(short x) throw()
+	{
+		return (short)::abs((int)x);
+	}
+	static int Abs(int x) throw()
+	{
+		return ::abs(x);
+	}
+	static int64 Abs(int64 x) throw()
+	{
+		return ::llabs(x);  //::_abs64(src); /* for windows */
+	}
+	static float Abs(float x) throw()
+	{
+		return ::fabsf(x);
+	}
+	static double Abs(double x) throw()
+	{
+		return ::fabs(x);
+	}
+
+	//IsOdd
+	/*! \brief Check if the number is odd.
+
+	Check if the number is odd.
+	\tparam T The number type. It can be char, byte, short, ushort, int, uint, int64 or uint64.
+	\param t [in] The integer value.
+	\return true for odd number, false for otherwise.
+	*/
+	template <typename T>
+	static bool IsOdd(T t) throw()
+	{
+		return (t & (T)1) != 0;
+	}
+};
 
 //------------------------------------------------------------------------------
 // Memory
@@ -1098,8 +1544,14 @@ typedef unique_ptr_helper  UniquePtrHelper;
 class AlignHelper
 {
 public:
-	//T : Integer
-	//uAlign : it must be a value as 2^N.
+	/*! \brief Round up a value to power of 2.
+
+	Round up a value to power of 2.
+	\tparam T Integer type.
+	\param n [in] The input value.
+	\param uAlign [in] It must be a value as 2^N.
+	\return A rounded up value.
+	*/
 	template <typename T>
 	static T RoundUp(IN T n, IN uint uAlign) throw()
 	{
@@ -1126,6 +1578,14 @@ public:
 		return T( (v) & ~(T(uAlign) - 1) );
 	}
 
+	/*! \brief Round down a value to power of 2.
+
+	Round down a value to power of 2.
+	\tparam T Integer type.
+	\param n [in] The input value.
+	\param uAlign [in] It must be a value as 2^N.
+	\return A rounded down value.
+	*/
 	template <typename T>
 	static T RoundDown(IN T n, IN uint uAlign) throw()
 	{
@@ -1417,7 +1877,12 @@ private:
 // Special Array
 
 // SObjArray<TObj>
+/*! \brief An array class using cookie mode.
 
+An array class using cookie mode.
+\tparam TObj A type name.
+\note This class is not thread-safe.
+*/
 template <class TObj>
 class SObjArray
 {
@@ -1425,9 +1890,17 @@ public:
 	typedef TObj  EObj;
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	SObjArray() throw() : m_p(NULL), m_uCount(0), m_uAlloc(0)
 	{
 	}
+	/*! \brief Destructor.
+
+	Destructor.
+	*/
 	~SObjArray() throw()
 	{
 		if( m_p != NULL ) {
@@ -1441,9 +1914,16 @@ public:
 	}
 
 	//add
+	/*! \brief Add an element.
+
+	Add an element.
+	\param obj [in] The element of type T.
+	\return A cookie. 0 means failed.
+	*/
 	uintptr Add(const TObj& obj) throw()
 	{
 		//find null
+		//  Walk array and use empty slots if any.
 		uintptr uFind = INVALID_ARRAY_INDEX;
 		TObj* p = m_p;
 		for( uintptr i = 0; i < m_uCount; i ++ ) {
@@ -1457,6 +1937,8 @@ public:
 			m_p[uFind] = obj;
 			return uFind + 1;
 		}
+		//No empty slots so resize array.
+		//# of new slots is double of current size.
 		//add
 		if( m_uCount < m_uAlloc ) {
 			call_constructor(m_p[m_uCount], obj);  //no throw
@@ -1486,30 +1968,46 @@ public:
 		m_uAlloc = uAlloc;
 		call_constructor(m_p[m_uCount], obj);  //no throw
 		m_uCount ++;
-		return m_uCount;
+		return m_uCount;  //cookie minus one is index into array
 	}
 	//remove
+	/*! \brief Remove an element.
+
+	Remove an element.
+	\param uCookie [in] Specify the cookie to be removed.
+	*/
 	void Remove(uintptr uCookie) throw()
 	{
 		assert( uCookie > 0 && uCookie <= m_uCount );
 		m_p[uCookie - 1].Release();
 	}
 	//get
+	/*! \brief Get element by index.
+
+	Get element by index.
+	\param index [in] Specify the index.
+	\param obj [out] Revice the object.
+	*/
 	void GetObject(uintptr index, TObj& obj) const throw()
 	{
 		assert( index >= 0 && index < m_uCount );
 		obj = m_p[index];
 	}
 
+	/*! \brief Get total size of array.
+
+	Get total size of array.
+	\return The number of total elements.
+	*/
 	uintptr GetCount() const throw()
 	{
 		return m_uCount;
 	}
 
 private:
-	TObj*    m_p;
-	uintptr  m_uCount;
-	uintptr  m_uAlloc;
+	TObj*    m_p;       //!< Array of Object
+	uintptr  m_uCount;  //!< The number of elements
+	uintptr  m_uAlloc;  //!< The allocated number of elements
 
 private:
 	//noncopyable

@@ -34,6 +34,13 @@ namespace GKC {
 class FileManagementHelper
 {
 public:
+	/*! \brief Get executable file name.
+
+	Get executable file name.
+	\tparam Tchar Character type.
+	\param str [out] Receive the file name.
+	\return true for succeeded, false for otherwise.
+	*/
 	template <typename Tchar>
 	static bool GetExePathName(StringT<Tchar>& str)
 	{

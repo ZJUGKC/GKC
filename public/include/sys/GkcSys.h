@@ -303,7 +303,15 @@ class StreamHelper
 {
 public:
 	// file stream
-	//   use platform path prefix
+	/*! \brief Create file stream.
+
+	Create a file stream interface by file name.
+	\param strFile [in] The file name. Use platform path prefix.
+	\param iOpenType [in] Open type. It can be a value of FileOpenTypes.
+	\param iCreateType [in] Creation type. It can be a combination of enum FileCreationTypes.
+	\param sp [out] Receive the stream pointer.
+	\return A CallResult value.
+	*/
 	static CallResult CreateFileStream(const ConstStringS& strFile, int iOpenType, int iCreateType, ShareCom<IByteStream>& sp) throw()
 	{
 		CallResult cr;
@@ -311,6 +319,12 @@ public:
 		return cr;
 	}
 	// memory stream
+	/*! \brief Create a memory stream object.
+
+	Create a memory stream object.
+	\param sp [out] Receive the interface pointer of stream.
+	\return A CallResult value.
+	*/
 	static CallResult CreateMemoryStream(ShareCom<IByteStream>& sp) throw()
 	{
 		CallResult cr;
@@ -318,6 +332,14 @@ public:
 		return cr;
 	}
 	// buffer stream
+	/*! \brief Create a buffer stream object.
+
+	Create a buffer stream object.
+	\param pv [in] A pointer to data buffer.
+	\param uBytes [in] The bytes of buffer. It can not be 0.
+	\param sp [out] Receive the pointer to IByteStream.
+	\return A CallResult value.
+	*/
 	static CallResult CreateBufferStream(const uintptr pv, uintptr uBytes, ShareCom<IByteStream>& sp) throw()
 	{
 		CallResult cr;
@@ -325,7 +347,13 @@ public:
 		return cr;
 	}
 	// text stream
-	//   this object is not thread-safe
+	/*! \brief Create a text stream.
+
+	Create a text stream.
+	\param sp [out] Receive the interface pointer of text stream object.
+	\return A CallResult value.
+	\note This object is not thread-safe.
+	*/
 	static CallResult CreateTextStream(ShareCom<ITextStreamRoot>& sp) throw()
 	{
 		CallResult cr;
@@ -534,7 +562,14 @@ public:
 class EnvironmentVariableHelper
 {
 public:
-	// Tstring : StringT<Tchar> or UniqueStringT<Tchar>
+	/*! \brief Get the environment variable.
+
+	Retrieves the contents of the specified variable from the environment block of the calling process.
+	\tparam Tstring StringT<Tchar> or UniqueStringT<Tchar>.
+	\param strName [in] The name of the environment variable.
+	\param strVar [out] Receives the contents of the specified environment variable.
+	\return true for succeeded, false for otherwise.
+	*/
 	template <class Tstring>
 	static bool Query(const ConstStringT<typename Tstring::EType>& strName, Tstring& strVar)
 	{

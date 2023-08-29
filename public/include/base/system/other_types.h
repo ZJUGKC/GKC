@@ -92,13 +92,22 @@ END_ENUM()
 class byte_order_helper
 {
 public:
-	//Check the host system's endian
+	/*! \brief Check the host system's endian.
+
+	Check the host system's endian.
+	\return true for big endian, false for little endian.
+	*/
 	static bool IsBigEndianHost() throw()
 	{
 		uint u = 1;
 		return *((byte*)&u) != 0x01;
 	}
-	//Swap an integer's byte order
+	/*! \brief Swap an integer's byte order.
+
+	Swap an integer's byte order.
+	\param x [in] The input value.
+	\return The swapped value.
+	*/
 	static ushort Swap(ushort x) throw()
 	{
 		return ((x & 0x00FF) << 8) | ((x >> 8) & 0x00FF);

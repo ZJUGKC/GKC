@@ -3119,6 +3119,16 @@ public:
 	}
 
 	//replace
+	/*! \brief Replace characters in a string.
+
+	Replace characters in a string.
+	\tparam Tstring A string type.
+	\tparam TCompareTrait A compare trait type.
+	\param chOld [in] The character will be replaced.
+	\param chNew [in] The character used to replace.
+	\param str [in, out] Specify the string.
+	\return The number of replaced characters.
+	*/
 	template <class Tstring, class TCompareTrait = GKC::DefaultCompareTrait<typename Tstring::EType>>
 	static uintptr Replace(const typename Tstring::EType& chOld, const typename Tstring::EType& chNew, INOUT Tstring& str) throw()
 	{

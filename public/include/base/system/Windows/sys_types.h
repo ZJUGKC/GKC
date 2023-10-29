@@ -853,7 +853,6 @@ public:
 	}
 	~inprocess_condition() throw()
 	{
-		Term();
 	}
 
 	void Wait(inprocess_mutex& mtx) throw()
@@ -886,9 +885,6 @@ public:
 		::InitializeConditionVariable(&m_cv);
 		m_bInitialized = true;
 	}
-	void Term() throw()
-	{
-	}
 
 private:
 	CONDITION_VARIABLE  m_cv;
@@ -912,7 +908,6 @@ public:
 	}
 	~inprocess_rwlock() throw()
 	{
-		Term();
 	}
 
 	void LockShared() throw()
@@ -951,9 +946,6 @@ public:
 		assert( !m_bInitialized );
 		::InitializeSRWLock(&m_rw);
 		m_bInitialized = true;
-	}
-	void Term() throw()
-	{
 	}
 
 private:

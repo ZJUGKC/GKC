@@ -323,17 +323,29 @@ private:
 // -----Iterator-----
 
 // reverse_iterator<T>
+/*! \brief A reverse iterator class.
 
+A reverse iterator class.
+\tparam T An iterator class.
+*/
 template <typename T>
 class reverse_iterator
 {
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	reverse_iterator() throw()
 	{
 	}
 	explicit reverse_iterator(const T& iter) throw() : m_iter(iter)
 	{
 	}
+	/*! \brief Copy Constructor.
+
+	Copy Constructor.
+	*/
 	reverse_iterator(const reverse_iterator<T>& src) throw() : m_iter(src.m_iter)
 	{
 	}
@@ -342,6 +354,10 @@ public:
 	}
 
 	//operators
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	*/
 	reverse_iterator<T>& operator=(const reverse_iterator<T>& src) throw()
 	{
 		m_iter = src.m_iter;
@@ -354,10 +370,18 @@ public:
 	}
 
 	//logical
+	/*! \brief Equal operator
+
+	Equal operator.
+	*/
 	bool operator==(const reverse_iterator<T>& right) const throw()
 	{
 		return m_iter == right.m_iter;
 	}
+	/*! \brief Nonequal operator
+
+	Nonequal operator.
+	*/
 	bool operator!=(const reverse_iterator<T>& right) const throw()
 	{
 		return m_iter != right.m_iter;
@@ -399,11 +423,15 @@ public:
 	}
 
 protected:
-	T m_iter;
+	T m_iter;  //!< A wrapper iterator object.
 };
 
 // reverse_iterator2<T>
+/*! \brief Another reverse iterator class.
 
+Another reverse iterator class.
+\tparam T An iterator class.
+*/
 template <typename T>
 class reverse_iterator2 : public reverse_iterator<T>
 {
@@ -411,12 +439,20 @@ private:
 	typedef reverse_iterator<T>  baseClass;
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	reverse_iterator2() throw()
 	{
 	}
 	explicit reverse_iterator2(const T& iter) throw() : baseClass(iter)
 	{
 	}
+	/*! \brief Copy Constructor.
+
+	Copy Constructor.
+	*/
 	reverse_iterator2(const reverse_iterator2<T>& src) throw() : baseClass(static_cast<const baseClass&>(src))
 	{
 	}
@@ -425,6 +461,10 @@ public:
 	}
 
 	//operators
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	*/
 	reverse_iterator2<T>& operator=(const reverse_iterator2<T>& src) throw()
 	{
 		baseClass::operator=(static_cast<const baseClass&>(src));
@@ -432,10 +472,18 @@ public:
 	}
 
 	//logical
+	/*! \brief Equal operator
+
+	Equal operator.
+	*/
 	bool operator==(const reverse_iterator2<T>& right) const throw()
 	{
 		return baseClass::operator==(static_cast<const baseClass&>(right));
 	}
+	/*! \brief Nonequal operator
+
+	Nonequal operator.
+	*/
 	bool operator!=(const reverse_iterator2<T>& right) const throw()
 	{
 		return baseClass::operator!=(static_cast<const baseClass&>(right));
@@ -558,7 +606,11 @@ private:
 };
 
 // array_iterator<T>
+/*! \brief A template iterator class for array classes.
 
+A template iterator class for array classes.
+\tparam T A typename for element.
+*/
 template <typename T>
 class array_iterator
 {
@@ -566,12 +618,20 @@ public:
 	typedef T  EType;
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	array_iterator() throw()
 	{
 	}
 	explicit array_iterator(const ref_ptr<T>& element) throw() : m_element(element)
 	{
 	}
+	/*! \brief Copy Constructor.
+
+	Copy Constructor.
+	*/
 	array_iterator(const array_iterator<T>& src) throw() : m_element(src.m_element)
 	{
 	}
@@ -579,6 +639,10 @@ public:
 	{
 	}
 
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	*/
 	array_iterator<T>& operator=(const array_iterator<T>& src) throw()
 	{
 		m_element = src.m_element;
@@ -617,26 +681,51 @@ public:
 	}
 
 	//logical
+
+	/*! \brief Equal operator
+
+	Equal operator.
+	*/
 	bool operator==(const array_iterator<T>& right) const throw()
 	{
 		return m_element == right.m_element;
 	}
+	/*! \brief Nonequal operator
+
+	Nonequal operator.
+	*/
 	bool operator!=(const array_iterator<T>& right) const throw()
 	{
 		return m_element != right.m_element;
 	}
+	/*! \brief LT operator
+
+	LT operator.
+	*/
 	bool operator<(const array_iterator<T>& right) const throw()
 	{
 		return m_element < right.m_element;
 	}
+	/*! \brief GT operator
+
+	GT operator.
+	*/
 	bool operator>(const array_iterator<T>& right) const throw()
 	{
 		return right < *this;
 	}
+	/*! \brief LE operator
+
+	LE operator.
+	*/
 	bool operator<=(const array_iterator<T>& right) const throw()
 	{
 		return !operator>(right);
 	}
+	/*! \brief GE operator
+
+	GE operator.
+	*/
 	bool operator>=(const array_iterator<T>& right) const throw()
 	{
 		return !operator<(right);
@@ -661,7 +750,7 @@ public:
 	}
 
 private:
-	ref_ptr<T> m_element;
+	ref_ptr<T> m_element;  //!< A pointer to current element.
 };
 
 //const definition:
@@ -951,16 +1040,26 @@ protected:
 #pragma pack(push, 1)
 
 // fixed_def_array<T, t_size>
+/*! \brief A template structure for fixed array.
 
+A template structure for fixed array.
+\tparam T The element type.
+\tparam t_size The size of array.
+*/
 template <typename T, uintptr t_size>
 struct fixed_def_array
 {
 	uintptr uSize;
-	T data[t_size];
+	T data[t_size];  //!< The fixed array.
 };
 
 // fixed_array<T, t_size>
+/*! \brief A template class for fixed array.
 
+A template class for fixed array.
+\tparam T The element type.
+\tparam t_size The size of array.
+*/
 template <typename T, uintptr t_size>
 class fixed_array
 {
@@ -977,10 +1076,20 @@ private:
 	typedef fixed_array<T, t_size>  thisClass;
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	\note It may throw exceptions.
+	*/
 	fixed_array() //may throw
 	{
 		assert( t_size > 0 );
 	}
+	/*! \brief Copy constructor.
+
+	Copy constructor.
+	\note It may throw exceptions.
+	*/
 	fixed_array(const thisClass& src)  //may throw
 	{
 		assert( t_size > 0 );
@@ -991,6 +1100,11 @@ public:
 	}
 
 	//operators
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	\note It may throw exceptions.
+	*/
 	thisClass& operator=(const thisClass& src)  //may throw
 	{
 		if( this != &src ) {
@@ -999,6 +1113,10 @@ public:
 		return *this;
 	}
 
+	/*! \brief Index operator.
+
+	Index operator.
+	*/
 	const T& operator[](uintptr index) const throw()
 	{
 		return GetAt(index);
@@ -1086,6 +1204,12 @@ public:
 		return reverse_iterator2<Iterator>(GetBegin());
 	}
 
+	/*! \brief Get the element.
+
+	Get the element.
+	\param index [in] Specify the index.
+	\return The reference to element.
+	*/
 	const T& GetAt(uintptr index) const throw()
 	{
 		assert( index < t_size );
@@ -1096,6 +1220,13 @@ public:
 		assert( index < t_size );
 		return *(m_data + index);
 	}
+	/*! \brief Set the element.
+
+	Set the element.
+	\param index [in] Specify the index.
+	\param t [in] Specify the element value.
+	\note It may throw exceptions.
+	*/
 	void SetAt(uintptr index, const T& t)  //may throw
 	{
 		assert( index < t_size );
@@ -1108,7 +1239,7 @@ public:
 	}
 
 protected:
-	T m_data[t_size];  //array
+	T m_data[t_size];  //!< The fixed array.
 
 private:
 	friend class fixed_array_helper;
@@ -1122,7 +1253,13 @@ class fixed_array_helper
 {
 public:
 	//internal pointer
-	//  T: fixed_array<...>
+	/*! \brief Get the data pointer.
+
+	Get the data pointer.
+	\tparam T Fixed array type, i.e., fixed_array<...>.
+	\param arr [in] Specify the fixed array object.
+	\return The data pointer.
+	*/
 	template <class T>
 	static typename T::EType* GetInternalPointer(const T& arr) throw()
 	{

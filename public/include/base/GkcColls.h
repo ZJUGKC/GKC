@@ -31,7 +31,11 @@ namespace GKC {
 
 //------------------------------------------------------------------------------
 // MultiwayTree<T>
+/*! \brief A class for multiway tree.
 
+A class for multiway tree.
+\tparam T The element type.
+*/
 template <typename T>
 class MultiwayTree
 {
@@ -98,6 +102,11 @@ public:
 		{
 			return RefPtr<T>(m_refNode.Deref().m_t);
 		}
+		/*! \brief Get the element.
+
+		Get the element.
+		\return The reference to element.
+		*/
 		const T& get_Value() const throw()
 		{
 			return m_refNode.Deref().m_t;
@@ -106,6 +115,12 @@ public:
 		{
 			return m_refNode.Deref().m_t;
 		}
+		/*! \brief Set the element.
+
+		Set the element.
+		\param t [in] The element value.
+		\note It may throw exceptions.
+		*/
 		void set_Value(const T& t)
 		{
 			m_refNode.Deref().m_t = t;  //may throw
@@ -234,11 +249,19 @@ public:
 	};
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	explicit MultiwayTree(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(), uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
 				: m_pRoot(NULL), m_uElements(1),
 				m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
+	/*! \brief Destructor.
+
+	Destructor.
+	*/
 	~MultiwayTree() throw()
 	{
 		RemoveAll();
@@ -251,16 +274,31 @@ public:
 		m_freelist.SetMemoryManager(RefPtrHelper::GetInternalPointer(mgr));
 	}
 
+	/*! \brief Get the number of nodes.
+
+	Get the number of nodes.
+	\return The number of nodes.
+	*/
 	uintptr GetCount() const throw()
 	{
 		return m_uElements - 1;
 	}
+	/*! \brief Check if the collection is empty.
+
+	Check if the collection is empty.
+	\return true for empty, false for non-empty.
+	*/
 	bool IsEmpty() const throw()
 	{
 		return m_uElements <= 1;
 	}
 
 	//position
+	/*! \brief Get the root position.
+
+	Get the root position.
+	\return The root position.
+	*/
 	const Position GetRootPosition() const throw()
 	{
 		return get_position(m_pRoot);
@@ -290,6 +328,10 @@ public:
 	}
 
 	//methods
+	/*! \brief Remove all nodes.
+
+	Remove all nodes.
+	*/
 	void RemoveAll() throw()
 	{
 		//root
@@ -301,6 +343,15 @@ public:
 	}
 
 	//insert
+	/*! \brief Insert a node.
+
+	Insert a node.
+	\param iterParent [in] The parent iterator.
+	\param iterAfter [in] The iterator to be inserted after.
+	\param t [in] The element value.
+	\return The iterator of the new node.
+	\note It may throw exceptions.
+	*/
 	Iterator Insert(const Iterator& iterParent, const Iterator& iterAfter)
 	{
 		_Node* pParent = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iterParent.m_pos.m_refNode));
@@ -324,12 +375,26 @@ public:
 	}
 
 	//remove
+	/*! \brief Remove a node.
+
+	Remove a node.
+	\param iter [in] Specify the iterator.
+	*/
 	void RemoveAt(const Iterator& iter) throw()
 	{
-		assert( !iter.IsNull() );
-		assert( iter != GetRoot() );
+		RemoveAt(iter.GetPosition());
+	}
+	/*! \brief Remove a node.
 
-		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(iter.m_pos.m_refNode));
+	Remove a node.
+	\param pos [in] Specify the position.
+	*/
+	void RemoveAt(const Position& pos) throw()
+	{
+		assert( !pos.IsNull() );
+		assert( pos != GetRootPosition() );
+
+		_Node* pOldNode = const_cast<_Node*>(RefPtrHelper::GetInternalPointer(pos.m_refNode));
 		//break
 		break_link(pOldNode);
 		//children

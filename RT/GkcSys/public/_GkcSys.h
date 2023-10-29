@@ -179,6 +179,11 @@ protected:
 	}
 
 public:
+	/*! \brief Check if the object is NULL.
+
+	Check if the object is NULL.
+	\return true for NULL object, false for otherwise.
+	*/
 	bool IsBlockNull() const throw()
 	{
 		return m_pB == NULL;
@@ -303,9 +308,17 @@ private:
 	typedef _ShareSoloBase<TBlock>  thisClass;
 
 protected:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	_ShareSoloBase() throw() : m_pT(NULL)
 	{
 	}
+	/*! \brief Copy constructor.
+
+	Copy constructor.
+	*/
 	_ShareSoloBase(const _ShareSoloBase& src) throw() : _SHARESOLOBASE_BASE_CLASS(static_cast<const _SHARESOLOBASE_BASE_CLASS&>(src)), m_pT(src.m_pT)
 	{
 	}
@@ -313,11 +326,19 @@ protected:
 	{
 		_SObjHelper::MoveDirect((void*&)(m_pT), (void*&)(src.m_pT));
 	}
+	/*! \brief Destructor.
+
+	Destructor.
+	*/
 	~_ShareSoloBase() throw()
 	{
 		Release();
 	}
 
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	*/
 	_ShareSoloBase<TBlock>& operator=(const _ShareSoloBase<TBlock>& src) throw()
 	{
 		_SHARESOLOBASE_BASE_CLASS::operator=(static_cast<const _SHARESOLOBASE_BASE_CLASS&>(src));
@@ -332,6 +353,10 @@ protected:
 //overriders
 
 public:
+	/*! \brief Free the object.
+
+	Free the object.
+	*/
 	void Release() throw()
 	{
 		if( _SHARESOLOBASE_BASE_CLASS::m_pB != NULL ) {
@@ -355,7 +380,7 @@ protected:
 	}
 
 protected:
-	void* m_pT;  //A pointer to object
+	void* m_pT;  //!< A pointer to object
 
 private:
 	friend class _SHARESOLOBASE_BASE_CLASS;
@@ -432,7 +457,11 @@ private:
 };
 
 // _SharePtr<T>
+/*! \brief A template class for shared pointer.
 
+A template class for shared pointer.
+\tparam T The object type.
+*/
 template <typename T>
 class _SharePtr : public _ShareSoloBase<share_ptr_block>
 {
@@ -441,24 +470,48 @@ private:
 	typedef _SharePtr<T>  thisClass;
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	_SharePtr() throw()
 	{
 	}
+	/*! \brief Copy constructor.
+
+	Copy constructor.
+	*/
 	_SharePtr(const _SharePtr& src) throw() : baseClass(static_cast<const baseClass&>(src))
 	{
 	}
+	/*! \brief Right-value copy constructor.
+
+	Right-value copy constructor.
+	*/
 	_SharePtr(_SharePtr&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
+	/*! \brief Destructor.
+
+	Destructor.
+	*/
 	~_SharePtr() throw()
 	{
 	}
 
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	*/
 	_SharePtr<T>& operator=(const _SharePtr<T>& src) throw()
 	{
 		baseClass::operator=(static_cast<const baseClass&>(src));
 		return *this;
 	}
+	/*! \brief Right-value assignment operator.
+
+	Right-value assignment operator.
+	*/
 	_SharePtr<T>& operator=(_SharePtr<T>&& src) throw()
 	{
 		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
@@ -474,6 +527,11 @@ public:
 		return !operator==(right);
 	}
 
+	/*! \brief Get the object.
+
+	Get the object.
+	\return A reference to object.
+	*/
 	const T& Deref() const throw()
 	{
 		assert( !IsBlockNull() && m_pT != NULL );
@@ -1450,7 +1508,11 @@ private:
 };
 
 // _ShareArray<T>
+/*! \brief A template class for shared array.
 
+A template class for shared array.
+\tparam T The element type.
+*/
 template <typename T>
 class _ShareArray : public _ShareArrayBase<T>
 {
@@ -1464,24 +1526,48 @@ public:
 	typedef GKC::ArrayIterator<T>  Iterator;
 
 public:
+	/*! \brief Constructor.
+
+	Constructor.
+	*/
 	_ShareArray() throw()
 	{
 	}
+	/*! \brief Copy constructor.
+
+	Copy constructor.
+	*/
 	_ShareArray(const _ShareArray& src) throw() : baseClass(static_cast<const baseClass&>(src))
 	{
 	}
+	/*! \brief Right-value copy constructor.
+
+	Right-value copy constructor.
+	*/
 	_ShareArray(_ShareArray&& src) throw() : baseClass(rv_forward(static_cast<baseClass&>(src)))
 	{
 	}
+	/*! \brief Destructor.
+
+	Destructor.
+	*/
 	~_ShareArray() throw()
 	{
 	}
 
+	/*! \brief Assignment operator.
+
+	Assignment operator.
+	*/
 	_ShareArray<T>& operator=(const _ShareArray<T>& src) throw()
 	{
 		baseClass::operator=(static_cast<const baseClass&>(src));
 		return *this;
 	}
+	/*! \brief Right-value assignment operator.
+
+	Right-value assignment operator.
+	*/
 	_ShareArray<T>& operator=(_ShareArray<T>&& src) throw()
 	{
 		baseClass::operator=(rv_forward(static_cast<baseClass&>(src)));
@@ -1978,6 +2064,12 @@ public:
 	}
 
 	//internal pointer
+	/*! \brief Get the beginning pointer of array.
+
+	Get the beginning pointer of array.
+	\param sp [in] Specify the array object.
+	\return A pointer to the beginning of array.
+	*/
 	template <typename T>
 	static T* GetInternalPointer(const _ShareArray<T>& sp) throw()
 	{
@@ -2451,6 +2543,11 @@ public:
 	}
 
 	//iterator
+	/*! \brief Get the beginning iterator.
+
+	Get the beginning iterator.
+	\return Return the beginning iterator.
+	*/
 	const Iterator GetBegin() const noexcept
 	{
 		assert( m_p != NULL );
@@ -2461,6 +2558,11 @@ public:
 		assert( m_p != NULL );
 		return Iterator(GKC::RefPtr<T>(get_array_address()));
 	}
+	/*! \brief Get the end iterator.
+
+	Get the end iterator.
+	\return Return the end iterator.
+	*/
 	const Iterator GetEnd() const noexcept
 	{
 		assert( m_p != NULL );
@@ -2534,6 +2636,7 @@ public:
 	{
 		//clear
 		if ( uCount == 0 ) {
+			//shrink to nothing
 			RemoveAll();
 			return ;
 		}
@@ -2541,21 +2644,25 @@ public:
 		uintptr uAllocLength = (m_p == NULL) ? 0 : ((unique_array_block*)m_p)->GetAllocLength();
 		//enough
 		if ( uCount <= uAllocLength ) {
+			// it fits
 			if ( uCount > uOldSize ) {
+				// initialize the new elements
 				call_array_constructors(get_array_address() + uOldSize, uCount - uOldSize, rv_forward<Args>(args)...);  //may throw
 			}
 			else if ( uOldSize > uCount ) {
+				// destroy the old elements
 				call_array_destructors(get_array_address() + uCount, uOldSize - uCount);
 			}
 			((unique_array_block*)m_p)->SetLength(uCount);
 			return ;
 		}
-		//new size
+		//new size, this avoids heap fragmentation in many situations
 		uintptr uGrowBy = uOldSize / 8;
 		uGrowBy = (uGrowBy < 4) ? 4 : ((uGrowBy > 1024) ? 1024 : uGrowBy);
+		// granularity
 		uAllocLength = GKC::SafeOperators::AddThrow(uAllocLength, uGrowBy);  //may throw
 		if ( uCount > uAllocLength )
-			uAllocLength = uCount;
+			uAllocLength = uCount;  // no slush
 		uintptr uBytes = GKC::SafeOperators::MultiplyThrow(uAllocLength, (uintptr)sizeof(T));  //may throw
 		uBytes = GKC::SafeOperators::AddThrow(uBytes, (uintptr)sizeof(unique_array_block));  //may throw
 		//grow
@@ -2617,7 +2724,7 @@ public:
 	}
 	void Append(const _UniqueArray<T>& src)
 	{
-		assert( this != &src );
+		assert( this != &src );  //cannot append to itself
 		uintptr uOldSize = GetCount();
 		uintptr uSrcSize = src.GetCount();
 		uintptr uNewSize = GKC::SafeOperators::AddThrow(uOldSize, uSrcSize);  //may throw
@@ -2628,7 +2735,7 @@ public:
 
 	void Copy(const _UniqueArray<T>& src)
 	{
-		assert( this != &src );
+		assert( this != &src );  //cannot append to itself
 		uintptr uSize = src.GetCount();
 		SetCount(uSize);  //may throw
 		if( uSize != 0 )

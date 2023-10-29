@@ -77,6 +77,7 @@ public:
 	bool Create(unsigned (__stdcall *start_address)(void*), void* arglist, unsigned stack_size = 0, unsigned initflag = 0) throw()
 	{
 		assert( IsNull() );
+		// _beginthreadex calls CreateThread which will set the last error value before it returns.
 		m_h = (HANDLE)::_beginthreadex(NULL, stack_size, start_address, arglist, initflag, (unsigned int*)(void*)(&m_id));
 		return m_h != NULL;  // NULL, errno and _doserrno
 	}
@@ -168,6 +169,7 @@ public:
 	void WaitForEnd() throw()
 	{
 		m_thread.WaitForEnd();
+		m_thread.Close();
 	}
 
 	bool Create(uint uStackSize = 0) throw()

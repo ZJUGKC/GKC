@@ -601,7 +601,7 @@ public:
 		}
 
 	protected:
-		Position  m_pos;
+		Position  m_pos;  //!< The position.
 
 	private:
 		friend thisClass;
@@ -613,15 +613,27 @@ public:
 		typedef Iterator  baseClass;
 
 	public:
+		/*! \brief Constructor.
+
+		Constructor.
+		*/
 		Iterator2() throw()
 		{
 		}
+		/*! \brief Copy constructor.
+
+		Copy constructor.
+		*/
 		Iterator2(const Iterator2& src) throw() : baseClass(static_cast<const baseClass&>(src)), m_refList(src.m_refList)
 		{
 		}
 		~Iterator2() throw()
 		{
 		}
+		/*! \brief Assignment operator.
+
+		Assignment operator.
+		*/
 		Iterator2& operator=(const Iterator2& src) throw()
 		{
 			baseClass::operator=(static_cast<const baseClass&>(src));
@@ -646,7 +658,7 @@ public:
 		}
 
 	private:
-		RefPtr<thisClass>  m_refList;
+		RefPtr<thisClass>  m_refList;  //!< A pointer to collection.
 
 	private:
 		friend thisClass;
@@ -721,6 +733,11 @@ public:
 	{
 		return get_iterator(m_pTail);
 	}
+	/*! \brief Get the beginning iterator.
+
+	Get the beginning iterator.
+	\return Return the beginning iterator.
+	*/
 	const Iterator GetBegin() const throw()
 	{
 		return GetHead();
@@ -729,6 +746,11 @@ public:
 	{
 		return GetHead();
 	}
+	/*! \brief Get the end iterator.
+
+	Get the end iterator.
+	\return Return the end iterator.
+	*/
 	const Iterator GetEnd() const throw()
 	{
 		return get_iterator(NULL);
@@ -1035,7 +1057,7 @@ public:
 	Iterator FindIndex(uintptr uIndex) const throw()
 	{
 		if( uIndex > m_uElements )
-			return get_iterator(NULL);
+			return get_iterator(NULL);  // went too far
 		if( m_pHead == NULL )
 			return get_iterator(NULL);
 		_Node* pNode = m_pHead;
@@ -1308,15 +1330,27 @@ public:
 	class Iterator
 	{
 	public:
+		/*! \brief Constructor.
+
+		Constructor.
+		*/
 		Iterator() throw()
 		{
 		}
+		/*! \brief Copy constructor.
+
+		Copy constructor.
+		*/
 		Iterator(const Iterator& src) throw() : m_refTable(src.m_refTable), m_pos(src.m_pos)
 		{
 		}
 		~Iterator() throw()
 		{
 		}
+		/*! \brief Assignment operator.
+
+		Assignment operator.
+		*/
 		Iterator& operator=(const Iterator& src) throw()
 		{
 			m_refTable = src.m_refTable;
@@ -1364,8 +1398,8 @@ public:
 		}
 
 	private:
-		RefPtr<thisClass>  m_refTable;
-		Position  m_pos;
+		RefPtr<thisClass>  m_refTable;  //!< A pointer to collection.
+		Position  m_pos;  //!< Position to element.
 
 		friend thisClass;
 	};
@@ -1434,6 +1468,11 @@ public:
 	}
 
 	//iterator
+	/*! \brief Get the beginning iterator.
+
+	Get the beginning iterator.
+	\return Return the beginning iterator.
+	*/
 	const Iterator GetBegin() const throw()
 	{
 		return get_iterator(get_first_node());
@@ -1442,6 +1481,11 @@ public:
 	{
 		return get_iterator(get_first_node());
 	}
+	/*! \brief Get the end iterator.
+
+	Get the end iterator.
+	\return Return the end iterator.
+	*/
 	const Iterator GetEnd() const throw()
 	{
 		return get_iterator(NULL);
@@ -2041,6 +2085,13 @@ private:
 //
 //   The red-black tree code is based on the the descriptions in
 //   "Introduction to Algorithms", by Cormen, Leiserson, and Rivest
+//
+// red-black properties of tree:
+// 1) Every node is either red or black
+// 2) Every leaf (NIL) is black
+// 3) If a node is red, both its children are black
+// 4) Every simple path from a node to a descendant leaf node contains
+//    the same number of black nodes
 
 template <typename TKey, class TPair, class TCompareTrait = DefaultCompareTrait<TKey>>
 class _RBTree
@@ -2143,15 +2194,27 @@ public:
 	class Iterator
 	{
 	public:
+		/*! \brief Constructor.
+
+		Constructor.
+		*/
 		Iterator() throw()
 		{
 		}
+		/*! \brief Copy constructor.
+
+		Copy constructor.
+		*/
 		Iterator(const Iterator& src) throw() : m_refTree(src.m_refTree), m_pos(src.m_pos)
 		{
 		}
 		~Iterator() throw()
 		{
 		}
+		/*! \brief Assignment operator.
+
+		Assignment operator.
+		*/
 		Iterator& operator=(const Iterator& src) throw()
 		{
 			m_refTree = src.m_refTree;
@@ -2204,8 +2267,8 @@ public:
 		}
 
 	protected:
-		RefPtr<thisClass>  m_refTree;
-		Position  m_pos;
+		RefPtr<thisClass>  m_refTree;  //!< A pointer to collection.
+		Position  m_pos;  //!< Position to element.
 
 	private:
 		friend thisClass;
@@ -2244,13 +2307,16 @@ public:
 		friend thisClass;
 	};
 
-public:
+protected:
+	// protected to prevent instantiation
 	explicit _RBTree(const RefPtr<IMemoryManager>& mgr = RefPtr<IMemoryManager>(),
 					uintptr uMinElements = 10, uintptr uMaxElements = 10) throw()
 					: m_mgr(mgr), m_pRoot(NULL), m_uElements(0), m_pNil(NULL),
 					m_freelist(RefPtrHelper::GetInternalPointer(mgr), uMinElements, uMaxElements)
 	{
 	}
+
+public:
 	~_RBTree() throw()
 	{
 		RemoveAll();
@@ -2325,6 +2391,11 @@ public:
 	{
 		return get_iterator(to_maximum_node(m_pRoot));
 	}
+	/*! \brief Get the beginning iterator.
+
+	Get the beginning iterator.
+	\return Return the beginning iterator.
+	*/
 	const Iterator GetBegin() const throw()
 	{
 		return GetHead();
@@ -2333,6 +2404,11 @@ public:
 	{
 		return GetHead();
 	}
+	/*! \brief Get the end iterator.
+
+	Get the end iterator.
+	\return Return the end iterator.
+	*/
 	const Iterator GetEnd() const throw()
 	{
 		return get_iterator(NULL);

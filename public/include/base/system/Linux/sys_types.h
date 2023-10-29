@@ -864,6 +864,8 @@ public:
 		assert( res == 0 );  //or error number
 		m_bInitialized = true;
 	}
+
+private:
 	void Term() throw()
 	{
 		if( m_bInitialized ) {
@@ -946,6 +948,8 @@ public:
 		assert( res == 0 );  //or error number
 		m_bInitialized = true;
 	}
+
+private:
 	void Term() throw()
 	{
 		if( m_bInitialized ) {

@@ -674,7 +674,7 @@ private:
 		uint uTest              = 0;
 		while( *sz != 0 ) {
 			uHash = (uHash << uOneEighth) + (uint)(*sz ++);
-			if( (uTest = uHash & uHighBits) != 0 ) {
+			if( (uTest = (uHash & uHighBits)) != 0 ) {
 				uHash = ((uHash ^ (uTest >> uThreeQuarters)) & (~uHighBits));
 			}
 		}
@@ -690,7 +690,7 @@ private:
 		uint uTest              = 0;
 		while( *sz != 0 ) {
 			uHash = (uHash << uOneEighth) + (uint)char_upper(*sz ++);
-			if( (uTest = uHash & uHighBits) != 0 ) {
+			if( (uTest = (uHash & uHighBits)) != 0 ) {
 				uHash = ((uHash ^ (uTest >> uThreeQuarters)) & (~uHighBits));
 			}
 		}

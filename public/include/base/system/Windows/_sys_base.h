@@ -502,7 +502,7 @@ public:
 			pTemp->Release();
 		}
 	}
-	// Compare two objects
+	// Compare two objects for equivalence
 	bool IsEqualObject(IN IUnknown* pOther) const throw()
 	{
 		if( m_p == NULL && pOther == NULL )

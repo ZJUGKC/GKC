@@ -316,7 +316,7 @@ public:
 	//Find
 	Iterator FindIndex(uintptr uIndex) const throw()
 	{
-		if( uIndex > m_uElements )
+		if( uIndex >= m_uElements )
 			return get_iterator(NULL);
 		if( m_pHead == NULL )
 			return get_iterator(NULL);
@@ -1056,7 +1056,7 @@ public:
 	//Find
 	Iterator FindIndex(uintptr uIndex) const throw()
 	{
-		if( uIndex > m_uElements )
+		if( uIndex >= m_uElements )
 			return get_iterator(NULL);  // went too far
 		if( m_pHead == NULL )
 			return get_iterator(NULL);

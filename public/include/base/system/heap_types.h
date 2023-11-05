@@ -648,6 +648,19 @@ public:
 		return m_p == NULL;
 	}
 
+	void Attach(T* p) throw()
+	{
+		if( m_p != p )
+			Release();
+		m_p = p;
+	}
+	T* Detach() throw()
+	{
+		T* p = m_p;
+		m_p = NULL;
+		return p;
+	}
+
 	const T& Deref() const throw()
 	{
 		assert( !IsNull() );

@@ -1935,7 +1935,7 @@ public:
 		}
 		if( uFind != INVALID_ARRAY_INDEX ) {
 			m_p[uFind] = obj;
-			return uFind + 1;
+			return uFind + 1;  //cookie minus one is index into array
 		}
 		//No empty slots so resize array.
 		//# of new slots is double of current size.
@@ -1943,7 +1943,7 @@ public:
 		if( m_uCount < m_uAlloc ) {
 			call_constructor(m_p[m_uCount], obj);  //no throw
 			m_uCount ++;
-			return m_uCount;
+			return m_uCount;  //cookie minus one is index into array
 		}
 		//resize
 		uintptr uAlloc;
@@ -1979,7 +1979,7 @@ public:
 	void Remove(uintptr uCookie) throw()
 	{
 		assert( uCookie > 0 && uCookie <= m_uCount );
-		m_p[uCookie - 1].Release();
+		m_p[uCookie - 1].Release();  //cookie minus one is an index into the array
 	}
 	//get
 	/*! \brief Get element by index.

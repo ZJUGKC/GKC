@@ -111,9 +111,23 @@ inline bool create_directory(const char_s* szPath) throw()
 {
 	return ::CreateDirectoryW(szPath, NULL) ? true : false;  //::GetLastError(), may be ERROR_ALREADY_EXISTS
 }
+inline bool create_directory(const char_s* szPath, bool& bExisting) throw()
+{
+	bExisting = false;
+	if( !::CreateDirectoryW(szPath, NULL) ) {
+		if( ::GetLastError() != ERROR_ALREADY_EXISTS )
+			return false;
+		bExisting = true;
+	}
+	return true;
+}
 
 // delete_directory
 //   szPath: use platform path prefix
+//
+//   To recursively delete the files in a directory,
+//   use the SHFileOperationW function.
+//
 inline bool delete_directory(const char_s* szPath) throw()
 {
 	return ::RemoveDirectoryW(szPath) ? true : false;  //::GetLastError()

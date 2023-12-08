@@ -96,6 +96,16 @@ inline void ForEachFunc(const TIterator1& iterBegin1, const TIterator1& iterEnd1
 // ordered
 
 // binary search
+/*! \brief Search an element using binary method.
+
+Search an element using binary method.
+\param iterBegin [in] The first iterator.
+\param iterEnd [in] The iterator past the last one.
+\param val [in] Specify the keyword.
+\param iterResult [out] If the return value is true, this variable receives the position of that element.
+                        If the return value is false, this variable receives the position at which the element can be inserted.
+\return true means the specified element is found, false means otherwise.
+*/
 template <class TIterator, class TCompareTrait = DefaultCompareTrait<typename TIterator::EType>>
 inline bool BinarySearch(const TIterator& iterBegin, const TIterator& iterEnd, const typename TIterator::EType& val, TIterator& iterResult) noexcept
 {

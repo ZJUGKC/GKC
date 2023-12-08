@@ -20,14 +20,46 @@ for cross-platform.
 #define __GKC_UI_DEF_H__
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifndef __GKC_DEF_H__
+	#error GkcUIDef.h requires GkcDef.h to be included first.
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 //os headers
 #include "system/os_headers.h"
+
+//basic
+#include "system/basic_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace GKC {
 ////////////////////////////////////////////////////////////////////////////////
 
+//ColorQuad
+/*! \brief A type for color quad.
 
+A type for color quad.
+\note The format of color is ARGB.
+\verbatim
+   ARGB
+MSB    LSB
+Little-endian : BGRA
+Big-endian : ARGB
+\endverbatim
+*/
+typedef color_quad  ColorQuad;
+
+//------------------------------------------------------------------------------
+
+//UiSize
+typedef ui_size  UiSize;
+
+//UiPoint
+typedef ui_point  UiPoint;
+
+//UiRect
+typedef ui_rect  UiRect;
 
 ////////////////////////////////////////////////////////////////////////////////
 }

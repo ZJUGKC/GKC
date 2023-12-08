@@ -19,7 +19,7 @@
 //------------------------------------------------------------------------------
 // time
 
-extern LARGE_INTEGER  _os_g_time_liFreq;
+extern LARGE_INTEGER  _os_g_time_liFreq;  //!< frequency
 
 inline void time_initialize() throw()
 {
@@ -70,11 +70,14 @@ inline void _os_filetime_to_timevalue(const FILETIME& ft, time_value& tv) throw(
 				(v % TIME_SECOND_100_NS) * 100);
 }
 
+// UTC -> local
 inline bool _os_is_valid_filetime(const FILETIME& ft) throw()
 {
+	//convert original time to local time.
 	FILETIME ftLocal;
 	if( !::FileTimeToLocalFileTime(&ft, &ftLocal) )
 		return false;  //FALSE, ::GetLastError()
+	// then convert that time to system time
 	SYSTEMTIME st;
 	if( !::FileTimeToSystemTime(&ftLocal, &st) )
 		return false;  //FALSE, ::GetLastError()

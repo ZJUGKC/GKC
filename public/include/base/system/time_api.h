@@ -144,6 +144,10 @@ protected:
 class time_span : public _time_def
 {
 public:
+	static constexpr const int c_MaxDaysInSpan = 3615897L;
+
+public:
+// Constructors
 	time_span() throw()
 	{
 	}
@@ -196,6 +200,11 @@ public:
 		return tmp;
 	}
 
+	time_span operator-() const throw()
+	{
+		return time_span(-m_iSeconds, -m_iNanoseconds);
+	}
+
 //methods
 	void Initialize(int64 iS, int64 iNS) throw()
 	{
@@ -204,17 +213,27 @@ public:
 		normalize();
 	}
 
+// Attributes
+
+	// component days in span
 	int64 GetDays() const throw()
 	{
 		return m_iSeconds / (24 * 3600);
 	}
+	// component hours in span (-23 to 23)
 	int64 GetHours() const throw()
 	{
 		return m_iSeconds / 3600;
 	}
+	// component minutes in span (-59 to 59)
 	int64 GetMinutes() const throw()
 	{
 		return m_iSeconds / 60;
+	}
+	// component seconds in span (-59 to 59)
+	int64 GetSeconds() const throw()
+	{
+		return m_iSeconds;
 	}
 	void GetDetail(int& iHours, int& iMinutes, int& iSeconds) const throw()
 	{
@@ -229,6 +248,7 @@ public:
 class time_value : public _time_def
 {
 public:
+// Constructors
 	time_value() throw()
 	{
 	}
@@ -295,13 +315,13 @@ public:
 typedef struct _tag_time_detail
 {
 	int iYear;           // year
-	int iMonth;          // [1 --- 12]
-	int iDay;            // [1 --- 31]
-	int iDayOfWeek;      // [0 --- 6] since Sunday
-	int iDayOfYear;      // [0 --- 365]
-	int iHour;           // [0 --- 23]
-	int iMinute;         // [0 --- 59]
-	int iSecond;         // [0 --- 60] leap seconds
+	int iMonth;          // [1 --- 12] Month of year (1 = January)
+	int iDay;            // [1 --- 31] Day of month (1-31)
+	int iDayOfWeek;      // [0 --- 6] (since Sunday) Day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+	int iDayOfYear;      // [0 --- 365] Days since start of year (0 = January 1)
+	int iHour;           // [0 --- 23] Hour in day (0-23)
+	int iMinute;         // [0 --- 59] Minute in hour (0-59)
+	int iSecond;         // [0 --- 60] (leap seconds) Second in minute (0-59)
 	int64 iNanoseconds;  // [0 --- 999999999]
 } time_detail;
 

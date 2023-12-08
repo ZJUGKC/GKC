@@ -80,6 +80,16 @@ inline bool create_directory(const char_s* szPath) throw()
 {
 	return ::mkdir(szPath, S_IRWXU | S_IRWXG | S_IRWXO) == 0;  //-1, errno, may be EEXIST
 }
+inline bool create_directory(const char_s* szPath, bool& bExisting) throw()
+{
+	bExisting = false;
+	if( ::mkdir(szPath, S_IRWXU | S_IRWXG | S_IRWXO) == -1 ) { //0
+		if( errno != EEXIST )
+			return false;
+		bExisting = true;
+	}
+	return true;
+}
 
 // delete_directory
 inline bool delete_directory(const char_s* szPath) throw()

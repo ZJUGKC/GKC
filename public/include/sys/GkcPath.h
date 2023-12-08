@@ -73,6 +73,12 @@ public:
 	}
 
 	//separator
+	/*! \brief Append a path separator to the end of the string.
+
+	Append a path separator to the end of the string.
+	\tparam Tstring A string type.
+	\param str [in,out] Input a path and receive the result string.
+	*/
 	template <class Tstring>
 	static void AppendSeparator(Tstring& str)
 	{
@@ -98,7 +104,13 @@ public:
 		uPos = szFind - szSrc;
 		return true;
 	}
-	//  uPos: this value is returned by FindExtensionStart().
+	/*! \brief Remove the extension of a string.
+
+	Remove the extension of a string.
+	\tparam Tchar A character type.
+	\param uPos [in] The index of extension start. This value is returned by FindExtensionStart().
+	\param str [in, out] Input a source string and receive the result string.
+	*/
 	template <typename Tchar, uintptr t_size>
 	static void RemoveExtension(uintptr uPos, FixedStringT<Tchar, t_size>& str) throw()
 	{
@@ -142,6 +154,12 @@ public:
 		StringOpHelper::Delete(uPos, str.GetLength() - uPos, str);
 	}
 
+	/*! \brief Remove the tailing path separator of string.
+
+	Remove the tailing path separator of string.
+	\tparam Tchar A character type.
+	\param str [in, out] Input a path and receive the result string.
+	*/
 	template <typename Tchar, uintptr t_size>
 	static void RemovePathTrailingSeparator(FixedStringT<Tchar, t_size>& str) throw()
 	{

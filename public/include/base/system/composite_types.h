@@ -161,7 +161,7 @@ public:
 	}
 	ref_ptr<T>& operator=(ref_ptr<T>&& src) throw()
 	{
-		if ( &src != this ) {
+		if( &src != this ) {
 			m_p = src.m_p;
 			src.m_p = NULL;
 		}

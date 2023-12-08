@@ -448,6 +448,12 @@ inline void get_path_separator(char_h& ch) throw()
 	ch = L'\\';
 }
 
+/*! \brief Check if a character is directory separator.
+
+Check if a character is directory separator.
+\param ch [in] A character.
+\return A boolean value. true for directory separator.
+*/
 inline bool check_path_separator(const char_a& ch) throw()
 {
 	return ch == '\\' || ch == '/';

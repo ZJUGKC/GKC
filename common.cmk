@@ -52,9 +52,6 @@ ENDIF(WIN32)
 
 SET(STRING_CXX_FLAGS "${STRING_CXX_FLAGS} ${STRING_CPP_VERSION}")
 
-#definitions
-ADD_DEFINITIONS(${STRING_CXX_FLAGS})
-
 #source files as UTF8 encoding
 
 MACRO(SET_SOURCE_FILES_UTF8)
@@ -62,6 +59,17 @@ MACRO(SET_SOURCE_FILES_UTF8)
 		ADD_DEFINITIONS("/source-charset:utf-8")
 	ENDIF(WIN32)
 ENDMACRO(SET_SOURCE_FILES_UTF8)
+
+#set target type
+
+#targetType: "shared" or "exe"
+#Tis macro will add SHARED_LIBRARY macro to shared library target while SET_PCH is not called
+MACRO(SET_TARGET_TYPE targetType)
+	STRING(COMPARE EQUAL ${targetType} "shared" IsShared)
+	IF(${IsShared})
+		ADD_DEFINITIONS("-DSHARED_LIBRARY")
+	ENDIF(${IsShared})
+ENDMACRO(SET_TARGET_TYPE)
 
 #string of architecture
 

@@ -60,6 +60,14 @@ public:
 		return bRet;
 	}
 
+	/*! \brief Get full path by current device and directory.
+
+	Get full path by current device and directory.
+	\tparam Tchar Character type.
+	\param str [in] The file name, can be an absolute path or a relative path.
+	\param strFull [out] Receive the full absoulte path.
+	\return true for succeeded, false for otherwise.
+	*/
 	template <typename Tchar>
 	static bool GetFullPathName(const ConstStringT<Tchar>& str, StringT<Tchar>& strFull)
 	{
@@ -78,6 +86,13 @@ public:
 	}
 
 	//current directory
+	/*! \brief Get current directory.
+
+	Get current directory.
+	\tparam Tchar Character type.
+	\param str [out] Receive the current directory.
+	\return true for succeeded, false for failed.
+	*/
 	template <typename Tchar>
 	static bool GetCurrentDirectory(StringT<Tchar>& str)
 	{
@@ -94,6 +109,12 @@ public:
 		str.RecalcLength();
 		return bRet;
 	}
+	/*! \brief Set current directory.
+
+	Set current directory.
+	\param str [in] The directory string.
+	\return true for succeeded, false for failed.
+	*/
 	template <typename Tchar>
 	static bool SetCurrentDirectory(const ConstStringT<Tchar>& str) throw()
 	{
@@ -101,29 +122,76 @@ public:
 	}
 
 	//check existing
+	/*! \brief Check whether the file exists.
+
+	Check whether the file exists.
+	\tparam Tchar Character type.
+	\param str [in] Specify the file name.
+	\return true for existing, false for missing.
+	*/
 	template <typename Tchar>
 	static bool CheckFileExists(const ConstStringT<Tchar>& str) throw()
 	{
 		return check_file_exists(ConstArrayHelper::GetInternalPointer(str));
 	}
+	/*! \brief Check whether the directory exists.
+
+	Check whether the directory exists.
+	\tparam Tchar Character type.
+	\param str [in] Specify the directory name.
+	\return true for existing, false for missing.
+	*/
 	template <typename Tchar>
 	static bool CheckDirectoryExists(const ConstStringT<Tchar>& str) throw()
 	{
 		return check_directory_exists(ConstArrayHelper::GetInternalPointer(str));
 	}
 
-	//this method returns failure if the directory already exists.
+	/*! \brief Create a directory.
+
+	Create a directory.
+	\tparam Tchar Character type.
+	\param str [in] The directory string.
+	\return true for succeeded, false for failed.
+	\note If the specified directory already exists, this function will return failure.
+	*/
 	template <typename Tchar>
 	static bool CreateDirectory(const ConstStringT<Tchar>& str) throw()
 	{
 		return create_directory(ConstArrayHelper::GetInternalPointer(str));
 	}
+	/*! \brief Create a directory.
+
+	Create a directory.
+	\tparam Tchar Character type.
+	\param str [in] The directory string.
+	\param bExisting [out] Receive the flag whether the directory already exists.
+	\return true for succeeded, false for failed.
+	*/
+	template <typename Tchar>
+	static bool CreateDirectory(const ConstStringT<Tchar>& str, bool& bExisting) throw()
+	{
+		return create_directory(ConstArrayHelper::GetInternalPointer(str), bExisting);
+	}
+	/*! \brief Delete a directory.
+
+	Delete a directory.
+	\tparam Tchar Character type.
+	\param str [in] The directory string.
+	\return true for succeeded, false for failed.
+	*/
 	template <typename Tchar>
 	static bool DeleteDirectory(const ConstStringT<Tchar>& str) throw()
 	{
 		return delete_directory(ConstArrayHelper::GetInternalPointer(str));
 	}
-	//Create directory regardless of the missing of intermediate directories.
+	/*! \brief Create directory regardless of the missing of intermediate directories.
+
+	Create directory regardless of the missing of intermediate directories.
+	\tparam Tchar Character type.
+	\param str [in] The directory to be created.
+	\return true for succeeded, false for failed.
+	*/
 	template <typename Tchar>
 	static bool ForceDirectory(const ConstStringT<Tchar>& str) throw()
 	{
@@ -147,12 +215,27 @@ public:
 		return force_directory(UniqueArrayHelper::GetInternalPointer(str));
 	}
 
+	/*! \brief Delete a file.
+
+	Delete a file.
+	\tparam Tchar Character type.
+	\param str [in] The string of file name.
+	\return true for succeeded, false for failed.
+	*/
 	template <typename Tchar>
 	static bool DeleteFile(const ConstStringT<Tchar>& str) throw()
 	{
 		return delete_file(ConstArrayHelper::GetInternalPointer(str));
 	}
 	//Rename directory/file
+	/*! \brief Rename a directory or file.
+
+	Rename a directory or file.
+	\tparam Tchar Character type.
+	\param strOld [in] The string of current dir/file name.
+	\param strNew [in] The string of new dir/file name.
+	\return true for succeeded, false for failed.
+	*/
 	template <typename Tchar>
 	static bool RenameFile(const ConstStringT<Tchar>& strOld, const ConstStringT<Tchar>& strNew) throw()
 	{

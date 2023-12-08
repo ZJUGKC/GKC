@@ -163,17 +163,15 @@ public:
 	//Swap a float's byte order
 	static float Swap(float x) throw()
 	{
-		uint* p1 = (uint*)&x;
-		uint v = Swap(*p1);
-		float* p2 = (float*)&v;
-		return *p2;
+		union_pair<float, uint> up{.v1 = x};
+		up.v2 = Swap(up.v2);
+		return up.v1;
 	}
 	static double Swap(double x) throw()
 	{
-		uint64* p1 = (uint64*)&x;
-		uint64 v = Swap(*p1);
-		double* p2 = (double*)&v;
-		return *p2;
+		union_pair<double, uint64> up{.v1 = x};
+		up.v2 = Swap(up.v2);
+		return up.v1;
 	}
 
 	//GUID

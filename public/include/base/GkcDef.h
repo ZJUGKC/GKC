@@ -102,6 +102,14 @@ using RefPtr = ref_ptr<T>;
 typedef ref_ptr_helper  RefPtrHelper;
 
 //------------------------------------------------------------------------------
+// Pair
+
+// UnionPair<T1, T2>
+
+template <typename T1, typename T2>
+using UnionPair = union_pair<T1, T2>;
+
+//------------------------------------------------------------------------------
 // Iterator
 
 // ReverseIterator<T>
@@ -1049,10 +1057,10 @@ private:
 Swap two variables.
 \tparam T The variable type.
 \param t1, t2 [in, out] Two variables.
-\note It may throw exceptions.
+\note Do not throw exceptions in move operator of T.
 */
 template <typename T>
-inline void Swap(T& t1, T& t2)
+inline void Swap(T& t1, T& t2) throw()
 {
 	assert( &t1 != &t2 );
 	T tmp = static_cast<T&&>(t1);
@@ -1455,11 +1463,13 @@ public:
 	}
 	static int Sign(double x) throw()
 	{
-		return (x > -DBL_EPSILON && x < DBL_EPSILON) ? 0 : ( *((uint64*)&x) & ((uint64)1 << 63) ) ? -1 : 1;
+		UnionPair<double, uint64> up{.v1 = x};
+		return (x > -DBL_EPSILON && x < DBL_EPSILON) ? 0 : ( up.v2 & ((uint64)1 << 63) ) ? -1 : 1;
 	}
 	static int Sign(float x) throw()
 	{
-		return (x > -FLT_EPSILON && x < FLT_EPSILON) ? 0 : ( *((uint*)&x) & ((uint)1 << 31) ) ? -1 : 1;
+		UnionPair<float, uint> up{.v1 = x};
+		return (x > -FLT_EPSILON && x < FLT_EPSILON) ? 0 : ( up.v2 & ((uint)1 << 31) ) ? -1 : 1;
 	}
 	/*! \brief Absolute function.
 

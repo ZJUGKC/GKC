@@ -320,6 +320,16 @@ private:
 	weak_object_ref& operator=(T&& t) throw();
 };
 
+// -----Pair-----
+
+// union_pair<T1, T2>
+
+template <typename T1, typename T2>
+struct union_pair
+{
+	union { T1 v1; T2 v2; };
+};
+
 // -----Iterator-----
 
 // reverse_iterator<T>

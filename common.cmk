@@ -24,16 +24,6 @@ ELSE(WIN32)
 	SET(STRING_C_FLAGS "${STRING_C_FLAGS} -Wall -D_FILE_OFFSET_BITS=64 -fvisibility=hidden")
 ENDIF(WIN32)
 
-#macros
-IF(WIN32)
-ELSE(WIN32)
-	IF(USE_64BITS)
-		SET(STRING_C_FLAGS "${STRING_C_FLAGS} -DCM_X64")
-	ELSE(USE_64BITS)
-		SET(STRING_C_FLAGS "${STRING_C_FLAGS} -DCM_X86")
-	ENDIF(USE_64BITS)
-ENDIF(WIN32)
-
 #CPP flags
 SET(STRING_CXX_FLAGS "")
 IF(WIN32)
@@ -71,15 +61,6 @@ MACRO(SET_TARGET_TYPE targetType)
 	ENDIF(${IsShared})
 ENDMACRO(SET_TARGET_TYPE)
 
-#string of architecture
-
-SET(STRING_MACHINE_ARCH "")
-IF(USE_64BITS)
-	SET(STRING_MACHINE_ARCH "64")
-ELSE(USE_64BITS)
-	SET(STRING_MACHINE_ARCH "32")
-ENDIF(USE_64BITS)
-
 #string of link flags
 
 SET(STRING_LINK_FLAGS_TARGET "")
@@ -100,16 +81,6 @@ MACRO(SET_TARGET_SUBSYSTEM strSubSystem)
 		SET(STRING_LINK_FLAGS_TARGET
 			"${STRING_LINK_FLAGS_TARGET_SAVED} /SUBSYSTEM:${strSub}")
 	ENDIF(WIN32)
-	#Linux, set x64 flags
-	IF(CMAKE_COMPILER_IS_GNUCXX)
-		IF(USE_64BITS)
-			SET(strSub "-m64")
-		ELSE(USE_64BITS)
-			SET(strSub "-m32")
-		ENDIF(USE_64BITS)
-		SET(STRING_LINK_FLAGS_TARGET
-			"${STRING_LINK_FLAGS_TARGET_SAVED} ${strSub}")
-	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_TARGET_SUBSYSTEM)
 
 SET(STRING_LINK_EXTRA_LIBS "")
@@ -122,19 +93,6 @@ ELSE(WIN32)
 		${STRING_LINK_EXTRA_LIBS_SAVED} dl pthread uuid rt)
 ENDIF(WIN32)
 SET(STRING_LINK_EXTRA_LIBS ${STRING_LINK_EXTRA_LIBS_SAVED})
-
-#macro of set extra-libs
-MACRO(SET_LINK_EXTRA_LIBS LibList)
-	SET(libs ${ARGN})
-	LIST(APPEND libs ${LibList})
-	SET(STRING_LINK_EXTRA_LIBS ${STRING_LINK_EXTRA_LIBS_SAVED})
-	FOREACH(libname ${libs})
-		IF(WIN32)
-			SET(libname "${libname}.lib")
-		ENDIF(WIN32)
-		LIST(APPEND STRING_LINK_EXTRA_LIBS ${libname})
-	ENDFOREACH(libname)
-ENDMACRO(SET_LINK_EXTRA_LIBS)
 
 #Macro of Precompiled Header
 
@@ -205,14 +163,6 @@ MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
 	ENDFOREACH(item)
 	#additional compile flags from ADD_DEFINITIONS()
 	LIST(APPEND _compile_FLAGS ${STRING_CXX_FLAGS})
-	#check x64 platform
-	IF(USE_64BITS)
-		LIST(APPEND _compile_FLAGS "-m64")
-		LIST(APPEND _compile_FLAGS "-DCM_X64")
-	ELSE(USE_64BITS)
-		LIST(APPEND _compile_FLAGS "-m32")
-		LIST(APPEND _compile_FLAGS "-DCM_X86")
-	ENDIF(USE_64BITS)
 	#check shared library
 	IF(${IsShared})
 		LIST(APPEND _compile_FLAGS "-fPIC")
@@ -237,12 +187,6 @@ MACRO(UNIX_SET_PCH targetName IsShared pchHeader pchSource)
 	#Use PCH by -include
 	SET(Sources ${USE_PCH_SOURCES})
 	SET(src_compile_flags "-include ${_name} -Winvalid-pch")
-	#x64
-	IF(USE_64BITS)
-		SET(src_compile_flags "${src_compile_flags} -m64 -DCM_X64")
-	ELSE(USE_64BITS)
-		SET(src_compile_flags "${src_compile_flags} -m32 -DCM_X86")
-	ENDIF(USE_64BITS)
 	#shared library
 	IF(${IsShared})
 		SET(src_compile_flags
@@ -354,49 +298,6 @@ MACRO(SET_TARGET_COPYDIR targetName isPostBuilding Source Dest)
 		SET_TARGET_CMD(${targetName} ${isPostBuilding} cp -r ${_source} ${_dest})
 	ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO(SET_TARGET_COPYDIR)
-
-# strNeedPlatform: "platform" or "no-platform"
-# strNeedMachine:  "machine" or "no-machine"
-# strNeedConfig:   "config", "no-config" or "user-config"
-# strConfig: user config name, "", "Debug" or "Release"
-# output: TARGET_SRC_PATH
-MACRO(SET_TARGET_SRC_PATH strNeedPlatform strNeedMachine strNeedConfig strConfig SourcePath)
-	SET(TARGET_SRC_PATH "${SourcePath}")
-	IF(${strNeedPlatform} STREQUAL "platform")
-		IF(WIN32)
-			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/windows")
-		ENDIF(WIN32)
-		IF(CMAKE_COMPILER_IS_GNUCXX)
-			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/linux")
-		ENDIF(CMAKE_COMPILER_IS_GNUCXX)
-	ENDIF(${strNeedPlatform} STREQUAL "platform")
-	IF(${strNeedMachine} STREQUAL "machine")
-		IF(USE_64BITS)
-			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/x64")
-		ELSE(USE_64BITS)
-			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/x86")
-		ENDIF(USE_64BITS)
-	ENDIF(${strNeedMachine} STREQUAL "machine")
-	IF(WIN32)
-		IF(${strNeedConfig} STREQUAL "config")
-			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/$<CONFIG>")
-		ELSEIF(${strNeedConfig} STREQUAL "user-config")
-			SET(TARGET_SRC_PATH "${TARGET_SRC_PATH}/${strConfig}")
-		ELSE(${strNeedConfig} STREQUAL "config")
-		ENDIF(${strNeedConfig} STREQUAL "config")
-	ENDIF(WIN32)
-ENDMACRO(SET_TARGET_SRC_PATH)
-
-# strSrcNeedConfig: "config" or "no-config"
-# strDestNeedConfig: "config" or "no-config"
-MACRO(SET_TARGET_PATH_COPY targetName isPostBuilding strNeedPlatform strNeedMachine strSrcNeedConfig strDestNeedConfig SourcePath Source Dest)
-	SET_TARGET_SRC_PATH(${strNeedPlatform} ${strNeedMachine} ${strSrcNeedConfig} "" ${SourcePath})
-	SET(_source "${TARGET_SRC_PATH}/${Source}")
-	SET_TARGET_SRC_PATH("no-platform" "no-machine" ${strDestNeedConfig} "" ${Dest})
-	SET(_dest "${TARGET_SRC_PATH}")
-
-	SET_TARGET_COPY(${targetName} ${isPostBuilding} ${_source} ${_dest})
-ENDMACRO(SET_TARGET_PATH_COPY)
 
 # string
 

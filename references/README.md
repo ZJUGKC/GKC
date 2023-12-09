@@ -6,6 +6,62 @@
 	sudo apt-get install pkg-config
 	```
 
+### Testing
+
+#### Windows
+
+1. CMake:
+...
+	* x64 machine:
+
+		```
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 17 2022" -A x64
+		```
+
+#### Linux
+
+1. CMake:
+...
+	* x86 machine:
+
+		```
+		cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles"
+		```
+
+	* x64 machine:
+
+		```
+		cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -DUSE_64BITS=1 -G "Unix Makefiles"
+		```
+
+### Release
+
+#### Windows
+
+1. CMake:
+...
+	* x64 machine:
+
+		```
+		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 17 2022" -A x64
+		```
+
+#### Linux
+
+1. CMake:
+...
+	* x86 machine:
+
+		```
+		cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles"
+		```
+
+	* x64 machine:
+
+		```
+		cmake ../GKC -DCMAKE_BUILD_TYPE=Release -DUSE_64BITS=1 -G "Unix Makefiles"
+		```
+
 ## Install
 
 Install GKC in the computers on client end or server end for production and running infrastructure.

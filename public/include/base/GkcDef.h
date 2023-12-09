@@ -28,7 +28,7 @@ for cross-platform.
 #endif
 
 //Machine Type
-#if ( !defined(CM_X86) && !defined(CM_X64) )
+#if defined(WIN32)
 	//windows
 	#define GKC_OS_WINDOWS
 	//WIN64
@@ -40,9 +40,17 @@ for cross-platform.
 	#else
 		#define CM_X86
 	#endif //WIN64
-#else
+#elif defined(__linux__)
 	//linux
 	#define GKC_OS_LINUX
+	//X64
+	#if defined(__x86_64__)
+		#define CM_X64
+	#else //__i386__
+		#define CM_X86
+	#endif
+#else
+	#error This OS system is not supported!
 #endif //Machine Type
 
 //basic types
@@ -1463,12 +1471,12 @@ public:
 	}
 	static int Sign(double x) throw()
 	{
-		UnionPair<double, uint64> up{.v1 = x};
+		UnionPair<double, uint64> up{x};
 		return (x > -DBL_EPSILON && x < DBL_EPSILON) ? 0 : ( up.v2 & ((uint64)1 << 63) ) ? -1 : 1;
 	}
 	static int Sign(float x) throw()
 	{
-		UnionPair<float, uint> up{.v1 = x};
+		UnionPair<float, uint> up{x};
 		return (x > -FLT_EPSILON && x < FLT_EPSILON) ? 0 : ( up.v2 & ((uint)1 << 31) ) ? -1 : 1;
 	}
 	/*! \brief Absolute function.

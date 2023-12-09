@@ -163,13 +163,13 @@ public:
 	//Swap a float's byte order
 	static float Swap(float x) throw()
 	{
-		union_pair<float, uint> up{.v1 = x};
+		union_pair<float, uint> up{x};
 		up.v2 = Swap(up.v2);
 		return up.v1;
 	}
 	static double Swap(double x) throw()
 	{
-		union_pair<double, uint64> up{.v1 = x};
+		union_pair<double, uint64> up{x};
 		up.v2 = Swap(up.v2);
 		return up.v1;
 	}

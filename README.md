@@ -66,6 +66,12 @@ for composing papers, books and slides.
 	sudo apt-get install uuid-dev
 	```
 
+1. Install X11:
+
+	```
+	sudo apt-get install libx11-dev
+	```
+
 ##### Latex
 
 1. Install TexLive:
@@ -111,7 +117,7 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 17 2022" -A x64
+		cmake ../GKC -G "Visual Studio 17 2022" -A x64
 		```
 
 1. make:
@@ -130,17 +136,10 @@ change the item `Default Compiler` to `XeLaTeX`.
 #### Linux
 
 1. CMake:
-	* x86 machine:
 
-		```
-		cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles"
-		```
-
-	* x64 machine:
-
-		```
-		cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -DUSE_64BITS=1 -G "Unix Makefiles"
-		```
+	```
+	cmake ../GKC -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles"
+	```
 
 1. make:
 
@@ -169,7 +168,7 @@ change the item `Default Compiler` to `XeLaTeX`.
 	* x64 machine:
 
 		```
-		cmake ../GKC -DUSE_64BITS=1 -G "Visual Studio 17 2022" -A x64
+		cmake ../GKC -G "Visual Studio 17 2022" -A x64
 		```
 
 1. make:
@@ -196,17 +195,10 @@ into a zip file and redistribute it.
 #### Linux
 
 1. CMake:
-	* x86 machine:
 
-		```
-		cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles"
-		```
-
-	* x64 machine:
-
-		```
-		cmake ../GKC -DCMAKE_BUILD_TYPE=Release -DUSE_64BITS=1 -G "Unix Makefiles"
-		```
+	```
+	cmake ../GKC -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles"
+	```
 
 1. make:
 

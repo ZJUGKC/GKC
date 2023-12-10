@@ -33,7 +33,7 @@ public:
 		uintptr uArgCount = args.GetCount();
 
 		//args
-		if( uArgCount > 3 ) {
+		if( uArgCount != 2 ) {
 			return 1;
 		}
 

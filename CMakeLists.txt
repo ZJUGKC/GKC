@@ -23,6 +23,7 @@ ADD_DEFINITIONS(${STRING_CXX_FLAGS})
 #sub-directories
 ADD_SUBDIRECTORY(RT RT)
 ADD_SUBDIRECTORY(tools tools)
+ADD_SUBDIRECTORY(Client Client)
 ADD_SUBDIRECTORY(Compiler/wlc Compiler/wlc)
 ADD_SUBDIRECTORY(Compiler/file2code Compiler/file2code)
 ADD_SUBDIRECTORY(test test)

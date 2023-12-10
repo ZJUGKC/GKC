@@ -16,7 +16,7 @@ This file contains main function for UI program.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "../../base/system/_sys_cmdline.h"
+#include "../../../../public/include/base/system/_sys_cmdline.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +29,6 @@ This file contains main function for UI program.
 #endif
 
 //others
-#include "../../base/system/_sys_base.cpp"
+#include "../../../../public/include/base/system/_sys_base.cpp"
 
 ////////////////////////////////////////////////////////////////////////////////

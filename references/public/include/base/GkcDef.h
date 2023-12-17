@@ -16,3 +16,9 @@
 	//linux
 	#define GKC_OS_LINUX
 #endif //Machine Type
+
+//------------------------------------------------------------------------------
+// The macro of SERVICE:
+// User must define a macro: GKC_SERVICE_NAME
+//   e.g., #define GKC_SERVICE_NAME  _S("Host Server")
+//------------------------------------------------------------------------------

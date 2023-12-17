@@ -46,7 +46,7 @@ int APIENTRY wWinMain(IN HINSTANCE hInstance,
 		LPWSTR* szArgList = NULL;
 		int     iArgs = 0;
 		szArgList = ::CommandLineToArgvW(lpszCommandLine, &iArgs);
-		if( szArgList == NULL ) {
+		if( szArgList == NULL ) { //::GetLastError()
 			::MessageBoxW(NULL, L"Cannot initialize command line!", L"Error", MB_OK);
 			return -1;
 		}

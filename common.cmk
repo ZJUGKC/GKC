@@ -50,38 +50,33 @@ MACRO(SET_SOURCE_FILES_UTF8)
 	ENDIF(WIN32)
 ENDMACRO(SET_SOURCE_FILES_UTF8)
 
-#set target type
-
-#targetType: "shared" or "exe"
-#Tis macro will add SHARED_LIBRARY macro to shared library target while SET_PCH is not called
-MACRO(SET_TARGET_TYPE targetType)
-	STRING(COMPARE EQUAL ${targetType} "shared" IsShared)
-	IF(${IsShared})
-		ADD_DEFINITIONS("-DSHARED_LIBRARY")
-	ENDIF(${IsShared})
-ENDMACRO(SET_TARGET_TYPE)
-
 #string of link flags
 
 SET(STRING_LINK_FLAGS_TARGET "")
 SET(STRING_LINK_FLAGS_TARGET_SAVED "")
 
-#macro of set sub-system
-#strSubSystem: Foreground or Background
-#In Windows, Foreground is CONSOLE, Background is WINDOWS
-MACRO(SET_TARGET_SUBSYSTEM strSubSystem)
-	#Windows, set sub-system
+#set target type
+
+#targetType: "shared", "console" or "normal"
+#This macro must be called before SET_TARGET_PROPERTIES(...)
+MACRO(SET_TARGET_TYPE targetType)
+	STRING(COMPARE EQUAL ${targetType} "shared" IsSet)
+	IF(${IsSet})
+		ADD_DEFINITIONS("-DSHARED_LIBRARY")
+	ENDIF(${IsSet})
 	IF(WIN32)
-		STRING(COMPARE EQUAL ${strSubSystem} "Foreground" IsFore)
-		IF(IsFore)
-			SET(strSub CONSOLE)
-		ELSE(IsFore)
-			SET(strSub WINDOWS)
-		ENDIF(IsFore)
-		SET(STRING_LINK_FLAGS_TARGET
-			"${STRING_LINK_FLAGS_TARGET_SAVED} /SUBSYSTEM:${strSub}")
+		STRING(COMPARE EQUAL ${targetType} "console" IsSet)
+		IF(${IsSet})
+			SET(STRING_LINK_FLAGS_TARGET
+				"${STRING_LINK_FLAGS_TARGET_SAVED} /SUBSYSTEM:CONSOLE")
+		ELSE(${IsSet})
+			SET(STRING_LINK_FLAGS_TARGET
+				"${STRING_LINK_FLAGS_TARGET_SAVED} /SUBSYSTEM:WINDOWS")
+		ENDIF(${IsSet})
 	ENDIF(WIN32)
-ENDMACRO(SET_TARGET_SUBSYSTEM)
+ENDMACRO(SET_TARGET_TYPE)
+
+#string of extra libraries
 
 SET(STRING_LINK_EXTRA_LIBS "")
 SET(STRING_LINK_EXTRA_LIBS_SAVED "")

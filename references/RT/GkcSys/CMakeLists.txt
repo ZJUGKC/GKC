@@ -1,4 +1,6 @@
 
+SET_TARGET_SUBSYSTEM("Background")
+
 SET_TARGET_PATH_COPY(GkcSys TRUE "platform" "machine" "config" "config" "${PROJECT_SOURCE_DIR}/others/redist" "*" "${LIBRARY_OUTPUT_PATH}")
 #setup scripts
 FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/_pack")

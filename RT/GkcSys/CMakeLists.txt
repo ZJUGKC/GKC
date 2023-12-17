@@ -24,7 +24,7 @@ SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Globals.cpp" "src/SobPool.cpp"
 	"src/compress/_PkCompress.cpp" "src/compress/PkzCompressor.cpp" "src/compress/PkzDecompressor.cpp")
 ADD_LIBRARY(GkcSys SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcSys "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
-SET_TARGET_SUBSYSTEM("Background")
+SET_TARGET_TYPE("shared")
 SET_TARGET_PROPERTIES(GkcSys PROPERTIES OUTPUT_NAME "GkcSys"
 	VERSION 1.0 SOVERSION 1
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")

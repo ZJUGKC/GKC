@@ -31,7 +31,7 @@ SET(SRC_LIST "src/Main.cpp" "src/Public.cpp" "src/Parser.cpp"
 	"src/wmark/WmarkAction.cpp" "src/wmark/WmarkUtility.cpp" "src/wmark/WmarkParser.cpp")
 ADD_LIBRARY(GkcParser SHARED ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(GkcParser "shared" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
-SET_TARGET_SUBSYSTEM("Background")
+SET_TARGET_TYPE("shared")
 SET_TARGET_PROPERTIES(GkcParser PROPERTIES OUTPUT_NAME "GkcParser"
 	VERSION 1.0 SOVERSION 1
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")

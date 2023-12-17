@@ -18,8 +18,21 @@ ELSE(USE_64BITS)
 	SET(STRING_MACHINE_ARCH "32")
 ENDIF(USE_64BITS)
 
+#macro of set sub-system
+#strSubSystem: Foreground or Background
+#In Windows, Foreground is CONSOLE, Background is WINDOWS
 MACRO(SET_TARGET_SUBSYSTEM strSubSystem)
-...
+	#Windows, set sub-system
+	IF(WIN32)
+		STRING(COMPARE EQUAL ${strSubSystem} "Foreground" IsFore)
+		IF(IsFore)
+			SET(strSub CONSOLE)
+		ELSE(IsFore)
+			SET(strSub WINDOWS)
+		ENDIF(IsFore)
+		SET(STRING_LINK_FLAGS_TARGET
+			"${STRING_LINK_FLAGS_TARGET_SAVED} /SUBSYSTEM:${strSub}")
+	ENDIF(WIN32)
 	#Linux, set x64 flags
 	IF(CMAKE_COMPILER_IS_GNUCXX)
 		IF(USE_64BITS)

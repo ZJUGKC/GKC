@@ -87,6 +87,5 @@ struct storage_status
 //------------------------------------------------------------------------------
 
 #define program_entry_point  GKC::ProgramEntryPoint
-#define service_main_loop    GKC::ServiceMainLoop
 
 ////////////////////////////////////////////////////////////////////////////////

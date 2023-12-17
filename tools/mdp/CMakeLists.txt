@@ -23,7 +23,7 @@ SET(SRC_PCH_LIST "src/PreComp.cpp")
 SET(SRC_LIST "src/Main.cpp" "src/Global.cpp" "src/Public.cpp")
 ADD_EXECUTABLE(mdp ${SRC_PCH_LIST} ${SRC_LIST})
 SET_PCH(mdp "exe" "PreComp.h" ${SRC_PCH_LIST} ${SRC_LIST})
-SET_TARGET_SUBSYSTEM("Foreground")
+SET_TARGET_TYPE("console")
 SET_TARGET_PROPERTIES(mdp PROPERTIES OUTPUT_NAME "mdp"
 	LINK_FLAGS "${STRING_LINK_FLAGS_TARGET}")
 TARGET_LINK_LIBRARIES(mdp GkcSys GkcCompiler GkcParser ${STRING_LINK_EXTRA_LIBS})
